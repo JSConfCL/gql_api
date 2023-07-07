@@ -1,3 +1,4 @@
+# 🚨 DEFAULT CONFIG 🚨
 name = "graphql-api-dev"
 compatibility_date = "2022-09-29"
 main = "src/index.ts"
@@ -6,24 +7,36 @@ main = "src/index.ts"
 command = "npm run generate && npm run build"
 
 [vars]
-ENVIRONMENT = "dev"
 GRAPHQL_BASE_ENDPOINT = "/"
 GRAPHQL_KV_CACHE = ""
 
+[define]
+_APP_ENV = "'development'"
+
+
+
+# 🚨 PRODUCTION CONFIG 🚨
 [env.production]
 name = "graphql-api-prod"
 route = "api.jschile.org/*"
 
 [env.production.vars]
-ENVIRONMENT = "production"
 GRAPHQL_BASE_ENDPOINT = "/"
 GRAPHQL_KV_CACHE = ""
 
+[env.production.define]
+_APP_ENV = "'production'"
+
+
+
+# 🚨 STAGING CONFIG 🚨
 [env.staging]
 name = "graphql-api-staging"
 route = "api.jsconf.dev/*"
 
 [env.staging.vars]
-ENVIRONMENT = "staging"
 GRAPHQL_BASE_ENDPOINT = "/"
 GRAPHQL_KV_CACHE = ""
+
+[env.staging.define]
+_APP_ENV = "'production'"

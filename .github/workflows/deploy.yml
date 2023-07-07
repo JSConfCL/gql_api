@@ -25,9 +25,15 @@ jobs:
           key: ${{ runner.os }}-npm-${{ env.cache-name }}
       - name: 📥 Download deps
         run: npm ci
-      - name: 🚀 Deploy to Cloudflare Workers with Wrangler using Node
+      - name: 🚀 Deploy to Cloudflare Workers — STAGING
         uses: demosjarco/wrangler-action-node@v1.1.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }}
           wranglerVersion: "3.1.2"
           command: deploy --env staging
+      - name: 🚀 Deploy to Cloudflare Workers — DEVELOPENT
+        uses: demosjarco/wrangler-action-node@v1.1.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }}
+          wranglerVersion: "3.1.2"
+          command: deploy

@@ -1,7 +1,8 @@
 import { createYoga, createSchema } from "graphql-yoga";
+import { APP_ENV } from "~/env";
 
 const yoga = createYoga({
-  landingPage: false,
+  landingPage: APP_ENV !== "production",
   graphqlEndpoint: "/graphql",
   graphiql: {
     title: "JSChileORG GraphiQL",
@@ -30,6 +31,7 @@ const yoga = createYoga({
     },
   }),
 });
+
 export default {
   // eslint-disable-next-line @typescript-eslint/unbound-method
   fetch: yoga.fetch,
