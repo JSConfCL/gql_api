@@ -1,6 +1,16 @@
 import { createYoga, createSchema } from "graphql-yoga";
 
 const yoga = createYoga({
+  landingPage: false,
+  graphqlEndpoint: "/graphql",
+  graphiql: {
+    title: "JSChileORG GraphiQL",
+    // Aun debatiendo si SSE o WSS (no se si CF Workers/yoga soportará WSS bien)
+    subscriptionsProtocol: "SSE",
+    // Podríamos hacer un JSON stringify,
+    // pero quiero evitar acciones q bloqueen el eventloop para cuando se inicie el worker.
+    headers: '{"Authorization":"Bearer your-auth-key"}',
+  },
   cors: {
     origin: ["http://localhost:3000", "https://localhost:3000"],
     credentials: true,
