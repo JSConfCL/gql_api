@@ -19,7 +19,7 @@ jobs:
       - name: 📦 Cache Package Dependencies
         uses: actions/cache@v3
         env:
-          cache-name: node_modules-18
+          cache-name: STAGING
         with:
           path: ~/.npm
           key: ${{ runner.os }}-npm-${{ env.cache-name }}
