@@ -24,9 +24,8 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}
       - name: 📥 Download deps
         run: yarn install --frozen-lockfile
-      - name: 🧶 Publish worker to Cloudflare
-        uses: cloudflare/wrangler-action@2.0.0
+      - name: Deploy to Cloudflare Workers with Wrangler using Node
+        uses: demosjarco/wrangler-action-node@v1.1.1
         with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }}
           command: publish --env production
