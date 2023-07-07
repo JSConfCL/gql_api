@@ -1,6 +1,6 @@
 name = "graphql-api-dev"
-main = "build/index.js"
 compatibility_date = "2022-09-29"
+main = "src/index.ts"
 
 [build]
 command = "npm run generate && npm run build"
