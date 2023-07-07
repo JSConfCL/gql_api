@@ -21,8 +21,8 @@ jobs:
         env:
           cache-name: node_modules-18
         with:
-          path: node_modules
-          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ env.cache-name }}
       - name: 📥 Download deps
         run: npm ci
       - name: 🚀 Deploy to Cloudflare Workers with Wrangler using Node
