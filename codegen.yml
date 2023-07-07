@@ -6,11 +6,9 @@ generates:
       - typescript
       - typescript-resolvers
     config:
-      enumsAsConst: true
       namingConvention:
         enumValues: keep
-      # enumValues:
-      #   VoteStatus:
-      #     UP: 1
-      #     DOWN: -1
-      #     NONE: 0
+      constEnums: true
+      nonOptionalTypename: true
+      avoidOptionals: true
+      useTypeImports: true
