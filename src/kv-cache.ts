@@ -1,4 +1,7 @@
-import type { KeyValueCacheSetOptions, KeyValueCache } from "@apollo/utils.keyvaluecache";
+import type {
+  KeyValueCacheSetOptions,
+  KeyValueCache,
+} from "@apollo/utils.keyvaluecache";
 import type { KVNamespacePutOptions } from "@cloudflare/workers-types";
 
 export class KVCache implements KeyValueCache {
@@ -11,7 +14,8 @@ export class KVCache implements KeyValueCache {
     const opts: KVNamespacePutOptions = {};
 
     if (options) {
-      opts.expirationTtl = Number(options.ttl) < 60 ? Number(options.ttl) : undefined;
+      opts.expirationTtl =
+        Number(options.ttl) < 60 ? Number(options.ttl) : undefined;
     }
 
     return GRAPHQL_CACHE.put(key, value, opts);

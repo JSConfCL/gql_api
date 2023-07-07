@@ -1,15 +1,18 @@
-import { ApolloServer } from '@apollo/server';
-import { startServerAndCreateCloudflareWorkersHandler, CloudflareWorkersHandler } from '@as-integrations/cloudflare-workers'
-import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { ApolloServer } from "@apollo/server";
+import {
+  startServerAndCreateCloudflareWorkersHandler,
+  CloudflareWorkersHandler,
+} from "@as-integrations/cloudflare-workers";
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
 
-import typeDefs from '~/schema.graphql';
-import resolvers from '~/resolvers';
+import typeDefs from "~/schema.graphql";
+import resolvers from "~/resolvers";
 import PokemonAPI from "~/datasources/pokemon-api";
-import { KVCache } from '~/kv-cache';
+import { KVCache } from "~/kv-cache";
 
 interface ContextValue {
   dataSources: ApolloDataSources;
-};
+}
 
 const server = new ApolloServer<ContextValue>({
   typeDefs,
@@ -24,16 +27,19 @@ const server = new ApolloServer<ContextValue>({
   ],
 });
 
-export const createGraphQLHandler = (options: GraphQLOptions): CloudflareWorkersHandler => {
+export const createGraphQLHandler = (
+  options: GraphQLOptions,
+): CloudflareWorkersHandler => {
   return startServerAndCreateCloudflareWorkersHandler(server, {
+    // eslint-disable-next-line @typescript-eslint/require-await
     context: async ({ request }) => {
       const cache = options.kvCache ? new KVCache() : server.cache;
 
-        const dataSources: ApolloDataSources = {
-          pokemonAPI: new PokemonAPI({ cache, fetch: fetch.bind(globalThis) }),
-        };
+      const dataSources: ApolloDataSources = {
+        pokemonAPI: new PokemonAPI({ cache, fetch: fetch.bind(globalThis) }),
+      };
 
-        return { dataSources };
+      return { dataSources };
     },
   });
-}
+};

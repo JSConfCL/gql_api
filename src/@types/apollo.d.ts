@@ -1,5 +1,5 @@
-import type PokemonAPI from '~/datasources/pokemon-api';
-import type { CorsOptions } from 'apollo-server-integration-cloudflare-workers';
+import type PokemonAPI from "~/datasources/pokemon-api";
+import type { CorsOptions } from "apollo-server-integration-cloudflare-workers";
 
 export {};
 
@@ -12,7 +12,7 @@ declare global {
     baseEndpoint: string;
 
     // When a request's path isn't matched, forward it to the origin
-    forwardUnmatchedRequestsToOrigin?: boolean,
+    forwardUnmatchedRequestsToOrigin?: boolean;
 
     // Enable debug mode to return script errors directly in browser
     debug?: boolean;

@@ -7,6 +7,4 @@ src/@types/schema.generated.ts
 node_modules
 .env
 
-# yarn.lock
 yarn-error.log
-package-lock.json

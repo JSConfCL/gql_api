@@ -1,14 +1,15 @@
 {
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", "**/*.json"],
   "compilerOptions": {
-    "target": "ES2019",
+    "target": "ESNext",
     "module": "CommonJS",
-    "lib": ["ES2019"],
+    "lib": ["ESNext"],
     "strict": true,
-    "allowJs": true,
+    "allowJs": false,
+    "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
-    "types": ["@cloudflare/workers-types"],
-    "typeRoots": ["node_modules/@types", "src/@types"],
+    "noImplicitAny": true,
+    "types": ["@cloudflare/workers-types/2022-11-30"],
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"]

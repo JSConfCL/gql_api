@@ -9,18 +9,21 @@ A template for kick starting a Cloudflare worker project to deploy Apollo Server
 - Enable Playground / Sandbox by adding `plugins` + `introspection`:
 
 ```javascript
-const server = new ApolloServer<ContextValue>({
-  typeDefs,
-  resolvers,
-  introspection: true,
-  plugins: [
-    ApolloServerPluginLandingPageLocalDefault({ footer: false }),
-    // ApolloServerPluginLandingPageProductionDefault({
-    //   graphRef: 'my-graph-id@my-graph-variant',
-    //   footer: false,
-    // })
-  ],
-});
+const server =
+  new ApolloServer() <
+  ContextValue >
+  {
+    typeDefs,
+    resolvers,
+    introspection: true,
+    plugins: [
+      ApolloServerPluginLandingPageLocalDefault({ footer: false }),
+      // ApolloServerPluginLandingPageProductionDefault({
+      //   graphRef: 'my-graph-id@my-graph-variant',
+      //   footer: false,
+      // })
+    ],
+  };
 ```
 
 ## Example
@@ -71,6 +74,7 @@ Open up [http://0.0.0.0:8787](http://0.0.0.0:8787) and you should be ready to go
 If you don't already have an account, then [create a cloudflare account here](https://dash.cloudflare.com/sign-up) and after verifying your email address with Cloudflare, go to your dashboard and set up your free custom Cloudflare Workers subdomain.
 
 Please change the environment variables for Cloudflare Workers in `wrangler.toml` file:
+
 ```toml
 # Example
 [env.production]
