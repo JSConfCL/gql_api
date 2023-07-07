@@ -1,0 +1,40 @@
+name: Deploy to STAGING
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Cloudflare Workers
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⏳ Cloning repo
+        uses: actions/checkout@v3
+      - name: ⬢ Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: 📦 Cache Package Dependencies
+        uses: actions/cache@v3
+        env:
+          cache-name: node_modules-18
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ env.cache-name }}
+      - name: 📦 Cache Build Output
+        uses: actions/cache@v3
+        env:
+          cache-name: STAGING
+        with:
+          path: .build
+          key: ${{ runner.os }}-build_output-${{ env.cache-name }}
+      - name: 📥 Download deps
+        run: npm ci
+      - name: 🚀 Deploy to Cloudflare Workers
+        uses: demosjarco/wrangler-action-node@v1.1.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }}
+          wranglerVersion: "3.1.2"
+          command: deploy --env staging
