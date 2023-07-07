@@ -1,0 +1,33 @@
+{
+  "name": "worker-apollo-server",
+  "main": "./build/index.js",
+  "scripts": {
+    "generate": "graphql-codegen --config codegen.yml",
+    "build": "NODE_ENV=production node worker.build.js",
+    "dev": "miniflare --watch --debug --host 0.0.0.0 --kv GRAPHQL_CACHE",
+    "deploy": "wrangler publish",
+    "deploy-prod": "wrangler publish --env production"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20221111.1",
+    "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
+    "@esbuild-plugins/node-modules-polyfill": "^0.1.4",
+    "@graphql-codegen/cli": "^2.13.1",
+    "@graphql-codegen/typescript": "^2.7.3",
+    "@graphql-codegen/typescript-resolvers": "^2.7.3",
+    "@graphql-tools/optimize": "^1.3.1",
+    "@luckycatfactory/esbuild-graphql-loader": "^3.7.0",
+    "esbuild": "^0.15.3",
+    "miniflare": "2.11.0",
+    "typescript": "^4.8.4"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "dependencies": {
+    "@apollo/datasource-rest": "^4.3.2",
+    "@apollo/server": "^4.3.0",
+    "@as-integrations/cloudflare-workers": "^0.1.0",
+    "graphql": "^16.6.0"
+  }
+}
