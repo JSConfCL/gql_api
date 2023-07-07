@@ -1,5 +1,8 @@
 import { createYoga, createSchema } from "graphql-yoga";
+import { useCSRFPrevention } from "@graphql-yoga/plugin-csrf-prevention";
+import { useMaskedErrors } from "@envelop/core";
 import { APP_ENV } from "~/env";
+import { useImmediateIntrospection } from "@envelop/immediate-introspection";
 
 const yoga = createYoga({
   landingPage: APP_ENV !== "production",
@@ -10,7 +13,8 @@ const yoga = createYoga({
     subscriptionsProtocol: "SSE",
     // Podríamos hacer un JSON stringify,
     // pero quiero evitar acciones q bloqueen el eventloop para cuando se inicie el worker.
-    headers: '{"Authorization":"Bearer your-auth-key"}',
+    headers:
+      '{"Authorization":"Bearer YOUR_AUTH_TOKEN_HERE", "x-graphql-csrf-token": "your-csrf-token"}',
   },
   cors: {
     origin: ["http://localhost:3000", "https://localhost:3000"],
@@ -30,6 +34,15 @@ const yoga = createYoga({
       },
     },
   }),
+  logging: "debug",
+  plugins: [
+    APP_ENV === "production" &&
+      useCSRFPrevention({
+        requestHeaders: ["x-graphql-csrf-token"],
+      }),
+    APP_ENV === "production" && useMaskedErrors(),
+    useImmediateIntrospection(),
+  ].filter(Boolean),
 });
 
 export default {
