@@ -1,25 +1,29 @@
-name = "graphql-api-local"
+name = "graphql-api-dev"
 main = "build/index.js"
-workers_dev = true
 compatibility_date = "2022-09-29"
 
 [build]
 command = "npm run generate && npm run build"
 
 [vars]
+ENVIRONMENT = "dev"
 GRAPHQL_BASE_ENDPOINT = "/"
 GRAPHQL_KV_CACHE = ""
 
 [env.production]
-name = "graphql-api"
+name = "graphql-api-prod"
+route = "api.jschile.org/*"
 
 [env.production.vars]
+ENVIRONMENT = "production"
 GRAPHQL_BASE_ENDPOINT = "/"
 GRAPHQL_KV_CACHE = ""
 
 [env.staging]
-name = "graphql-api"
+name = "graphql-api-staging"
+route = "api.jsconf.dev/*"
 
 [env.staging.vars]
+ENVIRONMENT = "staging"
 GRAPHQL_BASE_ENDPOINT = "/"
 GRAPHQL_KV_CACHE = ""
