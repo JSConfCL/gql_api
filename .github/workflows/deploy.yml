@@ -10,21 +10,22 @@ jobs:
     name: Deploy to Cloudflare Workers
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: ⎔ Setup node
+      - name: ⏳ Cloning repo
+        uses: actions/checkout@v3
+      - name: ⬢ Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: "16.x"
-      - name: ⎔ Cache node_modules
+          node-version: 18
+      - name: ⬢ Cache node_modules
         uses: actions/cache@v3
         env:
-          cache-name: node_modules-16x
+          cache-name: node_modules-18
         with:
           path: node_modules
           key: ${{ runner.os }}-build-${{ env.cache-name }}
       - name: 📥 Download deps
-        run: yarn install --frozen-lockfile
-      - name: Deploy to Cloudflare Workers with Wrangler using Node
+        run: npm ci
+      - name: 🚀 Deploy to Cloudflare Workers with Wrangler using Node
         uses: demosjarco/wrangler-action-node@v1.1.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }}
