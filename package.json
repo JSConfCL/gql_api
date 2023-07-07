@@ -3,10 +3,7 @@
   "main": "./build/index.js",
   "scripts": {
     "generate": "graphql-codegen --config codegen.yml",
-    "build": "NODE_ENV=production node worker.build.js",
-    "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info",
-    "deploy": "wrangler publish",
-    "deploy-prod": "wrangler publish --env production"
+    "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230628.0",

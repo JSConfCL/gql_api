@@ -3,15 +3,13 @@ name = "graphql-api-dev"
 compatibility_date = "2022-09-29"
 main = "src/index.ts"
 
-[build]
-command = "npm run generate && npm run build"
-
 [vars]
 GRAPHQL_BASE_ENDPOINT = "/"
 GRAPHQL_KV_CACHE = ""
 
 [define]
 _APP_ENV = "'development'"
+_AUTH_COOKIE_NAME = "'JSCHILE_ORG_AUTH_COOKIE'"
 
 
 
@@ -26,6 +24,7 @@ GRAPHQL_KV_CACHE = ""
 
 [env.production.define]
 _APP_ENV = "'production'"
+_AUTH_COOKIE_NAME = "'JSCHILE_ORG_AUTH_COOKIE'"
 
 
 
@@ -40,3 +39,4 @@ GRAPHQL_KV_CACHE = ""
 
 [env.staging.define]
 _APP_ENV = "'production'"
+_AUTH_COOKIE_NAME = "'JSCHILE_ORG_AUTH_COOKIE'"

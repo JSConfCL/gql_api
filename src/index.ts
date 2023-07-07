@@ -1,7 +1,7 @@
 import { createYoga, createSchema } from "graphql-yoga";
 import { useCSRFPrevention } from "@graphql-yoga/plugin-csrf-prevention";
 import { useMaskedErrors } from "@envelop/core";
-import { APP_ENV } from "~/env";
+import { APP_ENV, AUTH_COOKIE_NAME } from "~/env";
 import { useImmediateIntrospection } from "@envelop/immediate-introspection";
 import { parse } from "cookie";
 
@@ -20,7 +20,6 @@ const yoga = createYoga({
   cors: {
     origin: ["http://localhost:3000", "https://localhost:3000"],
     credentials: true,
-    allowedHeaders: ["X-Custom-Header"],
     methods: ["POST"],
   },
   schema: createSchema({
@@ -44,7 +43,12 @@ const yoga = createYoga({
     APP_ENV === "production" && useMaskedErrors(),
     useImmediateIntrospection(),
   ].filter(Boolean),
-  context: ({ request }) => {},
+  context: ({ request }) => {
+    const JWT = parse(request.headers.get("cookie") ?? "")[AUTH_COOKIE_NAME];
+    return {
+      JWT,
+    };
+  },
 });
 
 export default {
