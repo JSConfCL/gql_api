@@ -28,4 +28,4 @@ jobs:
         uses: demosjarco/wrangler-action-node@v1.1.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }}
-          command: publish --env production
+          command: publish --env staging

@@ -84,7 +84,7 @@ binding = "GRAPHQL_CACHE"
 id = "ba46c41d96544abba4aae3600c4955eb"
 [env.production.vars]
 GRAPHQL_BASE_ENDPOINT = "/"
-GRAPHQL_KV_CACHE = "true"
+GRAPHQL_KV_CACHE = ""
 ```
 
 Once that's done, you should be able to deploy your app:
@@ -114,7 +114,7 @@ Your worker has access to the following bindings:
   - GRAPHQL_CACHE: dbdc624f2c684f1bb88fa38ab249a13e
 - Vars:
   - GRAPHQL_BASE_ENDPOINT: "/"
-  - GRAPHQL_KV_CACHE: "true"
+  - GRAPHQL_KV_CACHE: ""
 Total Upload: 1520.16 KiB / gzip: 285.68 KiB
 Uploaded worker-apollo-server (2.71 sec)
 Published worker-apollo-server (0.28 sec)
