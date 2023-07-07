@@ -23,13 +23,6 @@ jobs:
         with:
           path: ~/.npm
           key: ${{ runner.os }}-npm-${{ env.cache-name }}
-      - name: 📦 Cache Build Output
-        uses: actions/cache@v3
-        env:
-          cache-name: STAGING
-        with:
-          path: .build
-          key: ${{ runner.os }}-build_output-${{ env.cache-name }}
       - name: 📥 Download deps
         run: npm ci
       - name: 🚀 Deploy to Cloudflare Workers
