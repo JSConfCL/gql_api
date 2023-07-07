@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      - name: ⬢ Cache node_modules
+      - name: 📦 Cache Package Dependencies
         uses: actions/cache@v3
         env:
           cache-name: node_modules-18
