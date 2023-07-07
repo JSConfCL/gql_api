@@ -24,7 +24,7 @@ jobs:
           path: ~/.npm
           key: ${{ runner.os }}-npm-${{ env.cache-name }}
       - name: 📥 Download deps
-        run: npm ci --prefer-offline --no-audit
+        run: npm ci --prefer-offline --no-audit --cache ~/.npm
       - name: 🚀 Deploy to Cloudflare Workers
         uses: demosjarco/wrangler-action-node@v1.1.1
         with:
