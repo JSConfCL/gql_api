@@ -38,5 +38,5 @@ GRAPHQL_BASE_ENDPOINT = "/"
 GRAPHQL_KV_CACHE = ""
 
 [env.staging.define]
-_APP_ENV = "'production'"
+_APP_ENV = "'staging'"
 _AUTH_COOKIE_NAME = "'JSCHILE_ORG_AUTH_COOKIE'"
