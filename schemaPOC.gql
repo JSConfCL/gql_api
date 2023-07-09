@@ -1,0 +1,116 @@
+# ENUMS
+enum TicketStatus {
+  ASSIGNED
+  RESERVED
+  CREATED
+  REJECTED
+  REDEEMED
+}
+
+enum ActivityStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ActivityVisibility {
+  PUBLIC
+  HIDDEN
+}
+
+enum EventStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum EventVisibility {
+  PUBLIC
+  HIDDEN
+}
+
+# TYPES
+"""
+information of a specific user
+"""
+type User {
+  id: ID!
+  username: String!
+  tickets: [Ticket!]!
+  communities: [Community!]!
+}
+
+type Ticket {
+  id: ID!
+  activity: [Activity!]!
+  status: TicketStatus
+  user: User
+}
+
+type Event {
+  id: ID!
+  activity: [Activity!]!
+  community: Community
+  status: EventStatus!
+  visibility: EventVisibility!
+}
+
+type Activity {
+  id: ID!
+  event: Event!
+  tickets: [Ticket!]!
+  status: ActivityStatus!
+  visibility: ActivityVisibility!
+  tags: [Tag!]!
+}
+
+type Community {
+  iD: ID!
+  events: [Event!]!
+  name: String!
+  description: String!
+  tags: [Tag!]!
+  users: [User!]!
+}
+
+type Tag {
+  id: ID!
+  name: String!
+  description: String
+}
+
+# INPUTS
+input UserSearchInput {
+  id: ID
+  username: String
+  email: String
+}
+input EventSearchInput {
+  id: ID
+  description: String
+  name: String
+  tags: [Tag!]
+}
+input CommunitySearchInput {
+  id: ID
+  name: String
+  email: String
+  tags: [Tag!]
+}
+input TagsSearchInput {
+  name: String
+}
+
+# QUERIES
+type Query {
+  user(id: ID!): User
+  me: User
+  users(input: UserSearchInput): [User!]!
+  community(id: ID!): Community
+  communities(input: CommunitySearchInput): [Community!]!
+  event(id: ID!): Event
+  events(input: EventSearchInput): [Event!]!
+  searchTags(input: TagsSearchInput): [Tag!]!
+}
+
+schema {
+  query: Query
+}
