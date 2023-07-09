@@ -1,12 +1,10 @@
 import { text, timestamp, pgTable, uuid } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
-  id: uuid("id"),
+  id: uuid("id").defaultRandom(),
   name: text("name"),
   email: text("email"),
   externalId: text("external_id"),
-  password: text("password"),
-  role: text("role").$type<"admin" | "customer">(),
-  createdAt: timestamp("created_at"),
+  createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at"),
 });
