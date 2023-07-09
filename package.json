@@ -24,6 +24,7 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@clerk/edge": "^1.13.2",
     "@envelop/core": "^4.0.0",
     "@envelop/immediate-introspection": "^2.0.0",
     "@envelop/rate-limiter": "^5.0.0",

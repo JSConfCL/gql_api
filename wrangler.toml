@@ -11,6 +11,8 @@ GRAPHQL_KV_CACHE = ""
 _APP_ENV = "'development'"
 _AUTH_COOKIE_NAME = "'JSCHILE_ORG_AUTH_COOKIE'"
 
+[placement]
+mode = "smart"
 
 
 # 🚨 PRODUCTION CONFIG 🚨
@@ -26,6 +28,9 @@ GRAPHQL_KV_CACHE = ""
 _APP_ENV = "'production'"
 _AUTH_COOKIE_NAME = "'JSCHILE_ORG_AUTH_COOKIE'"
 
+[env.production.placement]
+mode = "smart"
+
 
 
 # 🚨 STAGING CONFIG 🚨
@@ -40,3 +45,6 @@ GRAPHQL_KV_CACHE = ""
 [env.staging.define]
 _APP_ENV = "'staging'"
 _AUTH_COOKIE_NAME = "'JSCHILE_ORG_AUTH_COOKIE'"
+
+[env.staging.placement]
+mode = "smart"
