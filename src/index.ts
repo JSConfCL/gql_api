@@ -4,8 +4,10 @@ import { useMaskedErrors } from "@envelop/core";
 import { APP_ENV, AUTH_COOKIE_NAME } from "~/env";
 import { useImmediateIntrospection } from "@envelop/immediate-introspection";
 import { parse } from "cookie";
+import { getDb } from "~/datasources/db";
+import { Env } from "worker-configuration";
 
-const yoga = createYoga({
+const yoga = createYoga<Env>({
   landingPage: APP_ENV !== "production",
   graphqlEndpoint: "/graphql",
   graphiql: {
@@ -43,10 +45,13 @@ const yoga = createYoga({
     APP_ENV === "production" && useMaskedErrors(),
     useImmediateIntrospection(),
   ].filter(Boolean),
-  context: ({ request }) => {
+  context: ({ request, DATABASE_URL }) => {
     const JWT = parse(request.headers.get("cookie") ?? "")[AUTH_COOKIE_NAME];
+    console.log("DATABASE_URL", DATABASE_URL);
+    const DB = getDb(DATABASE_URL);
     return {
       JWT,
+      DB,
     };
   },
 });
