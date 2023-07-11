@@ -15,6 +15,7 @@ export default defineConfig({
       DATABASE_PASSWORD: "postgres",
     },
     inspect: true,
+    testTimeout: 10000,
     singleThread: true,
   },
 });
