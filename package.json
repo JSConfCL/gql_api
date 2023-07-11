@@ -5,6 +5,7 @@
     "drizzle-kit": "drizzle-kit",
     "generate": "drizzle-kit generate:pg",
     "migrate": "tsx migrate.ts",
+    "test": "vitest",
     "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info"
   },
   "devDependencies": {
@@ -23,6 +24,7 @@
     "prettier": "^3.0.0",
     "tsx": "^3.12.7",
     "typescript": "^4.8.4",
+    "vitest": "^0.33.0",
     "wrangler": "^3.1.2"
   },
   "engines": {

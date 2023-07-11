@@ -1,0 +1,43 @@
+name: Graphql and Database Tests
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: ⏳ Cloning repo
+        uses: actions/checkout@v3
+
+      - name: ⬢ Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: 📦 Cache Package Dependencies
+        uses: actions/cache@v3
+        env:
+          cache-name: STAGING
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ env.cache-name }}
+
+      - name: 📥 Download deps
+        run: npm ci --prefer-offline --no-audit --cache ~/.npm
+
+      - name: Run tests
+        run: npm test
