@@ -1,6 +1,10 @@
 name: Graphql and Database Tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
   build:
@@ -31,7 +35,7 @@ jobs:
       - name: 📦 Cache Package Dependencies
         uses: actions/cache@v3
         env:
-          cache-name: STAGING
+          cache-name: TESTS
         with:
           path: ~/.npm
           key: ${{ runner.os }}-npm-${{ env.cache-name }}
