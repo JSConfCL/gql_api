@@ -2,29 +2,37 @@ import { faker } from "@faker-js/faker";
 import { NodePgDatabase, drizzle } from "drizzle-orm/node-postgres";
 import { Client } from "pg";
 
-if (!process.env.DATABASE_PORT || !Number(process.env.DATABASE_PORT)) {
+const {
+  DATABASE_PORT,
+  DATABASE_HOST,
+  DATABASE_USER,
+  DATABASE_PASSWORD,
+  DATABASE_NAME,
+} = process.env;
+if (DATABASE_PORT === undefined || !Number(DATABASE_PORT)) {
   throw new Error("Missing process.env.DATABASE_PORT");
 }
-if (!process.env.DATABASE_HOST) {
+if (!DATABASE_HOST) {
   throw new Error("Missing process.env.DATABASE_HOST");
 }
-if (!process.env.DATABASE_USER) {
+if (!DATABASE_USER) {
   throw new Error("Missing process.env.DATABASE_USER");
 }
-if (!process.env.DATABASE_PASSWORD) {
+if (DATABASE_PASSWORD === undefined) {
   throw new Error("Missing process.env.DATABASE_PASSWORD");
 }
-if (!process.env.DATABASE_NAME) {
+if (DATABASE_NAME === undefined) {
   throw new Error("Missing process.env.DATABASE_NAME");
 }
+const a = DATABASE_USER;
 
 const createDatabase = async (): Promise<string> => {
   const client = new Client({
-    port: Number(process.env.DATABASE_PORT),
-    host: process.env.DATABASE_HOST,
-    user: process.env.DATABASE_USER,
-    password: process.env.DATABASE_PASSWORD,
-    database: process.env.DATABASE_NAME,
+    port: Number(DATABASE_PORT),
+    host: DATABASE_HOST,
+    user: DATABASE_USER,
+    password: DATABASE_PASSWORD,
+    database: DATABASE_NAME,
   });
   // Podriamos considerar usar un nombre menos random. Por ejemplo, el nombre del archivo de test parseado.
   // Asi podriamos facilmente ver los datos en el test q falla.
@@ -38,9 +46,7 @@ const createDatabase = async (): Promise<string> => {
 
     console.log("CREANDO BDD ", new_database);
     await client.query(`CREATE DATABASE ${new_database};`);
-    await client.query(
-      `GRANT ALL ON SCHEMA public TO ${process.env.DATABASE_USER!};`,
-    );
+    await client.query(`GRANT ALL ON SCHEMA public TO ${DATABASE_USER};`);
     await client.query(`GRANT ALL ON SCHEMA public TO public;`);
     console.log("BDD CREADA ", new_database);
     return new_database;
@@ -64,10 +70,10 @@ export const getTestDB = async () => {
   const database = await createDatabase();
   console.log("Conectandose a la BDD: ", database);
   const client = new Client({
-    port: Number(process.env.DATABASE_PORT),
-    host: process.env.DATABASE_HOST,
-    user: process.env.DATABASE_USER,
-    password: process.env.DATABASE_PASSWORD,
+    port: Number(DATABASE_PORT),
+    host: DATABASE_HOST,
+    user: DATABASE_USER,
+    password: DATABASE_PASSWORD,
     database,
   });
   await client.connect();
