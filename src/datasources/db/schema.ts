@@ -11,5 +11,5 @@ export const user = sqliteTable("user", {
   createdAt: integer("created_at", { mode: "timestamp_ms" }).default(NOW),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }),
 });
-export const selectUser = createSelectSchema(user);
-export const insertUser = createInsertSchema(user);
+export const selectUserSchema = createSelectSchema(user);
+export const insertUserSchema = createInsertSchema(user);

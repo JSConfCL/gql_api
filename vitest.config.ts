@@ -7,13 +7,6 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
-    env: {
-      DATABASE_PORT: "5432",
-      DATABASE_HOST: "localhost",
-      DATABASE_NAME: "postgres",
-      DATABASE_USER: "postgres",
-      DATABASE_PASSWORD: "postgres",
-    },
     inspect: true,
     testTimeout: 10000,
     singleThread: true,

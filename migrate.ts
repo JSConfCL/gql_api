@@ -1,12 +1,6 @@
 import { config } from "dotenv";
-import { drizzle } from "drizzle-orm/libsql";
-import { migrate } from "drizzle-orm/libsql/migrator";
 import { createClient } from "@libsql/client";
-
-// const client = createClient({
-//   url: "DATABASE_URL",
-//   authToken: "DATABASE_AUTH_TOKEN",
-// });
+import { runMigration } from "~/tests/seeds/runMigrations";
 
 config({ path: process.cwd() + "/.dev.vars", override: true });
 
@@ -18,19 +12,11 @@ if (!process.env.DATABASE_TOKEN) {
   throw new Error("DATABASE_URL is not defined");
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 const sql = createClient({
   url: process.env.DATABASE_URL,
   authToken: process.env.DATABASE_TOKEN,
 });
-const db = drizzle(sql);
-const main = async () => {
-  await migrate(db, {
-    migrationsFolder: process.cwd() + "/drizzle/migrations",
-  });
-  process.exit(0);
-};
-main()
+runMigration(sql)
   .then(() => console.log("Done!"))
   .catch((e) => {
     console.error(e);
