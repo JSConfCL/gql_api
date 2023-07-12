@@ -2,46 +2,32 @@ import { faker } from "@faker-js/faker";
 import { createClient } from "@libsql/client";
 import { LibSQLDatabase, drizzle } from "drizzle-orm/libsql";
 import sqlite3 from "sqlite3";
+import { mkdir } from "fs/promises";
 import { runMigration } from "~/tests/seeds/runMigrations";
 
-const {
-  DATABASE_PORT,
-  DATABASE_HOST,
-  DATABASE_USER,
-  DATABASE_PASSWORD,
-  DATABASE_NAME,
-} = process.env;
-if (DATABASE_PORT === undefined || !Number(DATABASE_PORT)) {
-  throw new Error("Missing process.env.DATABASE_PORT");
-}
-if (!DATABASE_HOST) {
-  throw new Error("Missing process.env.DATABASE_HOST");
-}
-if (!DATABASE_USER) {
-  throw new Error("Missing process.env.DATABASE_USER");
-}
-if (DATABASE_PASSWORD === undefined) {
-  throw new Error("Missing process.env.DATABASE_PASSWORD");
-}
-if (DATABASE_NAME === undefined) {
-  throw new Error("Missing process.env.DATABASE_NAME");
-}
+sqlite3.verbose();
 
-const createSQLiteFile = (NEW_DATABASE_NAME: string) => {
-  const DB_URL = process.cwd() + ".test_dbs/" + NEW_DATABASE_NAME + ".db";
-  return new Promise<string>((resolve, reject) => {
-    return new sqlite3.Database(DB_URL, sqlite3.OPEN_READWRITE, (err) =>
-      err ? reject(err) : resolve(DB_URL),
-    );
+const createSQLiteFile = (DB_URL: string) =>
+  new Promise<string>((resolve, reject) => {
+    console.log("Creating SQLite file", DB_URL);
+    return new sqlite3.Database("", (err) => {
+      if (err) {
+        console.log("ERROR Creating SQLite ", DB_URL, err);
+        return reject(err);
+      }
+      return resolve(DB_URL);
+    });
   });
-};
 
 const createDatabase = async (): Promise<string> => {
-  const new_database = `__JSCHILE_TEST__${faker.string
-    .uuid()
-    .replaceAll("-", "_")}`;
-  const databasePath = await createSQLiteFile(new_database);
-  return databasePath;
+  const new_database = `${faker.string.uuid().replaceAll("-", "_")}`;
+  const folder = process.cwd() + "/.test_dbs";
+  const file = `${folder}/${new_database}`;
+  await mkdir(folder, { recursive: true });
+  console.log("folder created", folder);
+  await createSQLiteFile(file);
+  console.log("DB created", file);
+  return `file:///${file}`;
 };
 
 let drizzleCache: LibSQLDatabase<Record<string, never>> | null = null;
@@ -54,14 +40,17 @@ export const getTestDB = async () => {
     return drizzleCache;
   }
   const database = await createDatabase();
+  console.log("DATABASE_URL", database);
+  console.log("Creating Client");
   const sql = createClient({
     url: database,
   });
+  console.log("Client created", sql);
   await runMigration(sql);
   // await client.connect();
   // Running a dummy query to ensure the connection is established
   console.log("Corriendo query de prueba");
-  const result = await sql.execute("SELECT NOW()");
+  const result = await sql.execute("SELECT sqlite_version();");
   console.log("Query de prueba corrida", result);
   console.log("Conectado a la BDD: ", database);
   drizzleCache = drizzle(sql);
