@@ -1,10 +1,13 @@
-import { text, timestamp, pgTable, uuid } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 
-export const user = pgTable("user", {
-  id: uuid("id").defaultRandom().notNull(),
+export const user = sqliteTable("user", {
+  id: text("id").primaryKey(),
   name: text("name"),
   email: text("email"),
   externalId: text("external_id").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).default(
+    sql`SELECT TIME(‘now’)`,
+  ),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }),
 });

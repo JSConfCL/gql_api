@@ -1,6 +1,4 @@
 import { faker } from "@faker-js/faker";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
 import { user } from "~/datasources/db/schema";
 import { InsertUser } from "~/datasources/db/types";
 import { getTestDB } from "~/tests/seeds/db";

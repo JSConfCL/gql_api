@@ -3,7 +3,10 @@
   "main": "./build/index.js",
   "scripts": {
     "drizzle-kit": "drizzle-kit",
-    "generate": "drizzle-kit generate:pg",
+    "db:generate": "drizzle-kit generate:sqlite",
+    "db:check": "drizzle-kit check:sqlite",
+    "db:up": "drizzle-kit up:sqlite",
+    "db:push": "drizzle-kit push:sqlite",
     "migrate": "tsx migrate.ts",
     "test": "vitest",
     "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info"
@@ -38,6 +41,7 @@
     "@envelop/rate-limiter": "^5.0.0",
     "@faker-js/faker": "^8.0.2",
     "@graphql-yoga/plugin-csrf-prevention": "^2.0.3",
+    "@libsql/client": "^0.3.0",
     "@neondatabase/serverless": "^0.4.26",
     "@pothos/core": "^3.30.0",
     "cookie": "^0.5.0",
