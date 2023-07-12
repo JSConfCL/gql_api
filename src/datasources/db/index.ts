@@ -1,11 +1,14 @@
-import { Pool } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
 
-export const getDb = (DATABASE_URL?: string) => {
-  if (!DATABASE_URL) {
-    throw new Error("DATABASE_URL is not defined");
-  }
-  const pool = new Pool({ connectionString: DATABASE_URL });
+export const getDb = ({
+  url,
+  authToken,
+}: {
+  url: string;
+  authToken: string;
+}) => {
+  const pool = createClient({ url, authToken });
   const db = drizzle(pool);
   return db;
 };

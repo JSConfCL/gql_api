@@ -45,10 +45,18 @@ const yoga = createYoga<Env>({
     APP_ENV === "production" && useMaskedErrors(),
     useImmediateIntrospection(),
   ].filter(Boolean),
-  context: ({ request, DATABASE_URL }) => {
+  context: ({ request, DATABASE_URL, DATABASE_TOKEN }) => {
+    if (!DATABASE_URL) {
+      throw new Error("Missing DATABASE_URL");
+    }
+    if (!DATABASE_TOKEN) {
+      throw new Error("Missing DATABASE_TOKEN");
+    }
     const JWT = parse(request.headers.get("cookie") ?? "")[AUTH_COOKIE_NAME];
-    console.log("DATABASE_URL", DATABASE_URL);
-    const DB = getDb(DATABASE_URL);
+    const DB = getDb({
+      authToken: DATABASE_TOKEN,
+      url: DATABASE_URL,
+    });
     return {
       JWT,
       DB,

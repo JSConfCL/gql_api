@@ -6,6 +6,7 @@ main = "src/index.ts"
 [vars]
 GRAPHQL_BASE_ENDPOINT = "/"
 GRAPHQL_KV_CACHE = ""
+DATABASE_URL="libsql://6e82d2eeb39748-tickets-staging-fforres.turso.io"
 
 [define]
 _APP_ENV = "'development'"
@@ -27,6 +28,8 @@ GRAPHQL_KV_CACHE = ""
 [env.production.define]
 _APP_ENV = "'production'"
 _AUTH_COOKIE_NAME = "'JSCHILE_ORG_AUTH_COOKIE'"
+# DATABASE_URL="" # SET ON THE DASHBOARD
+# DATABASE_URL="" # SET ON THE DASHBOARD
 
 [env.production.placement]
 mode = "smart"
@@ -45,6 +48,7 @@ GRAPHQL_KV_CACHE = ""
 [env.staging.define]
 _APP_ENV = "'staging'"
 _AUTH_COOKIE_NAME = "'JSCHILE_ORG_AUTH_COOKIE'"
+DATABASE_URL="libsql://6e82d2eeb39748-tickets-staging-fforres.turso.io"
 
 [env.staging.placement]
 mode = "smart"

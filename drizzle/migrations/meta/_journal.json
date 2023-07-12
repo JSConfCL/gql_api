@@ -1,19 +1,12 @@
 {
   "version": "5",
-  "dialect": "pg",
+  "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
       "version": "5",
-      "when": 1688945591661,
-      "tag": "0000_harsh_rictor",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1689052914318,
-      "tag": "0001_soft_lila_cheney",
+      "when": 1689182471779,
+      "tag": "0000_furry_jane_foster",
       "breakpoints": true
     }
   ]

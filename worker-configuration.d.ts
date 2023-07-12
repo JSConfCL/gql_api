@@ -2,7 +2,8 @@
 export interface Env {
   GRAPHQL_BASE_ENDPOINT: "/";
   GRAPHQL_KV_CACHE: "";
-  DATABASE_URL: string;
+  DATABASE_URL: string | undefined;
+  DATABASE_TOKEN: string | undefined;
 }
 
 declare global {
