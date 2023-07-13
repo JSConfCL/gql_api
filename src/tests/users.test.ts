@@ -1,4 +1,4 @@
-import { it, describe, assert } from "vitest";
+import { it, describe } from "vitest";
 import { insertUser } from "~/tests/seeds";
 
 describe("Users Graphql Tests", () => {

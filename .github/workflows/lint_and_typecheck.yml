@@ -44,7 +44,7 @@ jobs:
           path: tsconfig.tsbuildinfo
           key: CACHE-${{ env.cache-name }}-${{ hashFiles('tsconfig.tsbuildinfo') }}
 
-      - name: 📥 Download deps
+      - name: 📥 Install dependencies
         run: npm ci --prefer-offline --no-audit --cache ~/.npm
 
       - name: Run Linter
