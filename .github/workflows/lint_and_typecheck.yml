@@ -53,7 +53,7 @@ jobs:
       - name: Run Typecheck
         run: npm run typecheck
 
-      - name: 📦 Upload Cached Package Dependencies
+      - name: 🆙 Upload Cached Package Dependencies
         uses: actions/cache/save@v3
         # if: github.ref == 'refs/heads/main'
         env:
@@ -62,7 +62,7 @@ jobs:
           path: ~/.npm
           key: CACHE-${{ env.cache-name }}
 
-      - name: 📦 Download Cached Eslint output
+      - name: 🆙 Upload Cached Eslint output
         uses: actions/cache/save@v3
         # if: github.ref == 'refs/heads/main'
         env:
@@ -71,7 +71,7 @@ jobs:
           path: .eslintcache
           key: CACHE-${{ env.cache-name }}
 
-      - name: 📦 Download Cached Typescript output
+      - name: 🆙 Upload Cached Typescript output
         uses: actions/cache/save@v3
         # if: github.ref == 'refs/heads/main'
         env:
