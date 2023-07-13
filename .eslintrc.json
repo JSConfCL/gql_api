@@ -17,7 +17,12 @@
     "project": "./tsconfig.json"
   },
   "plugins": ["@typescript-eslint"],
-  "rules": {},
+  "rules": {
+    // Es re-funcional nuestra API, no nos sirve esta regla realmente y causa
+    // varios falsos positivos
+    // https://typescript-eslint.io/rules/unbound-method/
+    "@typescript-eslint/unbound-method": "off"
+  },
   "ignorePatterns": [
     "/.cache",
     "/.git",

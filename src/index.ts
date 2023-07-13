@@ -1,4 +1,4 @@
-import { createYoga, createSchema } from "graphql-yoga";
+import { createYoga } from "graphql-yoga";
 import { useCSRFPrevention } from "@graphql-yoga/plugin-csrf-prevention";
 import { useMaskedErrors } from "@envelop/core";
 import { APP_ENV, AUTH_COOKIE_NAME } from "~/env";
@@ -6,6 +6,7 @@ import { useImmediateIntrospection } from "@envelop/immediate-introspection";
 import { parse } from "cookie";
 import { getDb } from "~/datasources/db";
 import { Env } from "worker-configuration";
+import { schema } from "~/schema";
 
 const yoga = createYoga<Env>({
   landingPage: APP_ENV !== "production",
@@ -24,18 +25,7 @@ const yoga = createYoga<Env>({
     credentials: true,
     methods: ["POST"],
   },
-  schema: createSchema({
-    typeDefs: /* GraphQL */ `
-      type Query {
-        hello: String!
-      }
-    `,
-    resolvers: {
-      Query: {
-        hello: () => "Hello World!",
-      },
-    },
-  }),
+  schema,
   logging: "debug",
   plugins: [
     APP_ENV === "production" &&
@@ -65,6 +55,5 @@ const yoga = createYoga<Env>({
 });
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   fetch: yoga.fetch,
 };

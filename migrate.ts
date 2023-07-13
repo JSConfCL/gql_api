@@ -1,6 +1,6 @@
 import { config } from "dotenv";
 import { createClient } from "@libsql/client";
-import { runMigration } from "~/tests/seeds/runMigrations";
+import { runMigration } from "~/datasources/db/runMigrations";
 
 config({ path: process.cwd() + "/.dev.vars", override: true });
 

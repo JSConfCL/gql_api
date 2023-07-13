@@ -3,7 +3,7 @@ import { createClient } from "@libsql/client";
 import { LibSQLDatabase, drizzle } from "drizzle-orm/libsql";
 import sqlite3 from "sqlite3";
 import { mkdir } from "fs/promises";
-import { runMigration } from "~/tests/seeds/runMigrations";
+import { runMigration } from "~/datasources/db/runMigrations";
 
 const createSQLiteFile = (DB_URL: string) =>
   new Promise<string>((resolve, reject) => {

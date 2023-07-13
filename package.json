@@ -26,6 +26,7 @@
     "drizzle-kit": "^0.19.3",
     "eslint": "^8.44.0",
     "eslint-config-prettier": "^8.8.0",
+    "graphql-tag": "^2.12.6",
     "prettier": "^3.0.0",
     "sqlite3": "^5.1.6",
     "tsx": "^3.12.7",

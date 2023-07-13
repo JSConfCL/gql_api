@@ -4,10 +4,18 @@ import {
   insertUserSchema,
   selectUserSchema,
 } from "~/datasources/db/schema";
-import { getTestDB } from "~/tests/seeds/db";
+import { getTestDB } from "~/tests/fixtures/databaseHelper";
 import { z } from "zod";
+import { schema } from "~/schema";
+import { Env } from "worker-configuration";
+import { createYoga } from "graphql-yoga";
+import { buildHTTPExecutor } from "@graphql-tools/executor-http";
 
 const insertUserRequest = insertUserSchema.deepPartial();
+
+export const executeGraphqlOperation = buildHTTPExecutor({
+  fetch: createYoga<Env>({ schema }).fetch,
+});
 
 export const insertUser = async (
   partialNewUser?: z.infer<typeof insertUserRequest>,
