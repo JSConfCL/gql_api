@@ -55,6 +55,7 @@ jobs:
 
       - name: 🆙 Upload Cached Package Dependencies
         uses: actions/cache/save@v3
+        if: always()
         # if: github.ref == 'refs/heads/main'
         env:
           cache-name: NPM
@@ -64,6 +65,7 @@ jobs:
 
       - name: 🆙 Upload Cached Eslint output
         uses: actions/cache/save@v3
+        if: always()
         # if: github.ref == 'refs/heads/main'
         env:
           cache-name: ESLINT
@@ -73,6 +75,7 @@ jobs:
 
       - name: 🆙 Upload Cached Typescript output
         uses: actions/cache/save@v3
+        if: always()
         # if: github.ref == 'refs/heads/main'
         env:
           cache-name: TYPESCRIPT
