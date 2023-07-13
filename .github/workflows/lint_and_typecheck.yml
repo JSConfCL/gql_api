@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Mover clone/setup/cache_restore/cache_save a un composite action 🙏
+    # Considerar Mover clone/setup/caches a un composite action 🙏
     steps:
       - name: ⏳ Cloning repo
         uses: actions/checkout@v3
@@ -21,31 +21,28 @@ jobs:
           node-version: 18
 
       - name: 📦 Download Cached Package Dependencies
-        uses: actions/cache/restore@v3
-        id: cache-npm
+        uses: actions/cache@v3
         env:
           cache-name: NPM
         with:
           path: ~/.npm
-          key: CACHE-${{ env.cache-name }}
+          key: CACHE-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
 
       - name: 📦 Download Cached Eslint output
-        uses: actions/cache/restore@v3
-        id: cache-eslint
+        uses: actions/cache@v3
         env:
           cache-name: ESLINT
         with:
           path: .eslintcache
-          key: CACHE-${{ env.cache-name }}
+          key: CACHE-${{ env.cache-name }}-${{ hashFiles('.eslintcache') }}
 
       - name: 📦 Download Cached Typescript output
-        uses: actions/cache/restore@v3
-        id: cache-typescript
+        uses: actions/cache@v3
         env:
           cache-name: TYPESCRIPT
         with:
           path: tsconfig.tsbuildinfo
-          key: CACHE-${{ env.cache-name }}
+          key: CACHE-${{ env.cache-name }}-${{ hashFiles('tsconfig.tsbuildinfo') }}
 
       - name: 📥 Download deps
         run: npm ci --prefer-offline --no-audit --cache ~/.npm
@@ -55,27 +52,3 @@ jobs:
 
       - name: Run Typecheck
         run: npm run typecheck
-
-      - name: 🆙 Upload Cached Package Dependencies
-        uses: actions/cache/save@v3
-        if: always()
-        # if: github.ref == 'refs/heads/main'
-        with:
-          path: ~/.npm
-          key: ${{ steps.cache-npm.outputs.cache-primary-key }}
-
-      - name: 🆙 Upload Cached Eslint output
-        uses: actions/cache/save@v3
-        if: always()
-        # if: github.ref == 'refs/heads/main'
-        with:
-          path: .eslintcache
-          key: ${{ steps.cache-eslint.outputs.cache-primary-key }}
-
-      - name: 🆙 Upload Cached Typescript output
-        uses: actions/cache/save@v3
-        if: always()
-        # if: github.ref == 'refs/heads/main'
-        with:
-          path: tsconfig.tsbuildinfo
-          key: ${{ steps.cache-typescript.outputs.cache-primary-key }}
