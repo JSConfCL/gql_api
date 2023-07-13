@@ -19,31 +19,29 @@ jobs:
         with:
           node-version: 18
 
-      - name: 📦 Cache Package Dependencies
-        uses: actions/cache@v3
+      - name: 📦 Download Cached Package Dependencies
+        uses: actions/cache/restore@v3
         env:
-          cache-name: TESTS
+          cache-name: NPM
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ env.cache-name }}
+          key: CACHE-${{ env.cache-name }}
 
-      - name: 📦 Cache eslint output
-        uses: actions/cache@v3
-        # if: github.ref == 'refs/heads/main'
+      - name: 📦 Download Cached Eslint output
+        uses: actions/cache/restore@v3
         env:
           cache-name: ESLINT
         with:
           path: .eslintcache
-          key: ${{ runner.os }}-npm-${{ env.cache-name }}
+          key: CACHE-${{ env.cache-name }}
 
-      - name: 📦 Cache Typescript output
-        uses: actions/cache@v3
-        # if: github.ref == 'refs/heads/main'
+      - name: 📦 Download Cached Typescript output
+        uses: actions/cache/restore@v3
         env:
           cache-name: TYPESCRIPT
         with:
           path: tsconfig.tsbuildinfo
-          key: ${{ runner.os }}-npm-${{ env.cache-name }}
+          key: CACHE-${{ env.cache-name }}
 
       - name: 📥 Download deps
         run: npm ci --prefer-offline --no-audit --cache ~/.npm
@@ -53,3 +51,30 @@ jobs:
 
       - name: Run Typecheck
         run: npm run lint
+
+      - name: 📦 Upload Cached Package Dependencies
+        uses: actions/cache/save@v3
+        # if: github.ref == 'refs/heads/main'
+        env:
+          cache-name: NPM
+        with:
+          path: tsconfig.tsbuildinfo
+          key: CACHE-${{ env.cache-name }}
+
+      - name: 📦 Download Cached Eslint output
+        uses: actions/cache/save@v3
+        # if: github.ref == 'refs/heads/main'
+        env:
+          cache-name: ESLINT
+        with:
+          path: tsconfig.tsbuildinfo
+          key: CACHE-${{ env.cache-name }}
+
+      - name: 📦 Download Cached Typescript output
+        uses: actions/cache/save@v3
+        # if: github.ref == 'refs/heads/main'
+        env:
+          cache-name: TYPESCRIPT
+        with:
+          path: tsconfig.tsbuildinfo
+          key: CACHE-${{ env.cache-name }}
