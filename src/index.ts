@@ -7,8 +7,9 @@ import { parse } from "cookie";
 import { getDb } from "~/datasources/db";
 import { Env } from "worker-configuration";
 import { schema } from "~/schema";
+import { initContextCache } from "@pothos/core";
 
-const yoga = createYoga<Env>({
+export const yoga = createYoga<Env>({
   landingPage: APP_ENV !== "production",
   graphqlEndpoint: "/graphql",
   graphiql: {
@@ -42,12 +43,14 @@ const yoga = createYoga<Env>({
     if (!DATABASE_TOKEN) {
       throw new Error("Missing DATABASE_TOKEN");
     }
+
     const JWT = parse(request.headers.get("cookie") ?? "")[AUTH_COOKIE_NAME];
     const DB = getDb({
       authToken: DATABASE_TOKEN,
       url: DATABASE_URL,
     });
     return {
+      ...initContextCache(),
       JWT,
       DB,
     };

@@ -3,7 +3,7 @@ import { executeGraphqlOperation, insertUser } from "~/tests/fixtures";
 import gql from "graphql-tag";
 
 const getUsersQuery = gql/* GraphQL */ `
-  query Users {
+  {
     users {
       id
       name
@@ -19,6 +19,8 @@ describe("Users Graphql Tests", () => {
     const response = await executeGraphqlOperation({
       document: getUsersQuery,
     });
-    console.log(user, user2, response);
+    console.log(user, user2);
+    console.log(response.errors[0]);
+    // TODO Agregar asserts
   });
 });

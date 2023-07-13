@@ -1,20 +1,25 @@
 import { faker } from "@faker-js/faker";
 import { createClient } from "@libsql/client";
 import { LibSQLDatabase, drizzle } from "drizzle-orm/libsql";
-import sqlite3 from "sqlite3";
 import { mkdir } from "fs/promises";
 import { runMigration } from "~/datasources/db/runMigrations";
 
 const createSQLiteFile = (DB_URL: string) =>
   new Promise<string>((resolve, reject) => {
     console.info("Creating SQLite file", DB_URL);
-    return new sqlite3.Database("", (err) => {
-      if (err) {
-        console.info("ERROR Creating SQLite ", DB_URL, err);
+    import("sqlite3")
+      .then((sqlite3) => {
+        new sqlite3.Database("", (err) => {
+          if (err) {
+            console.info("ERROR Creating SQLite ", DB_URL, err);
+            return reject(err);
+          }
+          return resolve(DB_URL);
+        });
+      })
+      .catch((err) => {
         return reject(err);
-      }
-      return resolve(DB_URL);
-    });
+      });
   });
 
 const createDatabase = async (): Promise<string> => {

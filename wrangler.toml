@@ -1,6 +1,6 @@
 # 🚨 DEFAULT CONFIG 🚨
 name = "graphql-api-dev"
-compatibility_date = "2022-09-29"
+compatibility_date = "2023-06-06"
 main = "src/index.ts"
 
 [vars]

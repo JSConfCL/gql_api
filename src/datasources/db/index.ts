@@ -1,6 +1,7 @@
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client/web";
+import { LibSQLDatabase, drizzle } from "drizzle-orm/libsql";
 
+let db: LibSQLDatabase<Record<string, never>> | null = null;
 export const getDb = ({
   url,
   authToken,
@@ -8,7 +9,9 @@ export const getDb = ({
   url: string;
   authToken: string;
 }) => {
-  const pool = createClient({ url, authToken });
-  const db = drizzle(pool);
+  if (!db) {
+    const pool = createClient({ url, authToken });
+    db = drizzle(pool);
+  }
   return db;
 };

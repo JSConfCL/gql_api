@@ -1,20 +1,21 @@
 import { faker } from "@faker-js/faker";
 import {
-  user,
+  userSchema,
   insertUserSchema,
   selectUserSchema,
 } from "~/datasources/db/schema";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 import { z } from "zod";
-import { schema } from "~/schema";
-import { Env } from "worker-configuration";
-import { createYoga } from "graphql-yoga";
+// import { schema } from "~/schema";
+// import { Env } from "worker-configuration";
+// import { createYoga } from "graphql-yoga";
 import { buildHTTPExecutor } from "@graphql-tools/executor-http";
+import { yoga } from "~/index";
 
 const insertUserRequest = insertUserSchema.deepPartial();
 
 export const executeGraphqlOperation = buildHTTPExecutor({
-  fetch: createYoga<Env>({ schema }).fetch,
+  fetch: yoga.fetch,
 });
 
 export const insertUser = async (
@@ -32,6 +33,10 @@ export const insertUser = async (
   } satisfies z.infer<typeof insertUserSchema>;
   const newUser = insertUserSchema.parse(possibleUser);
   const testDB = await getTestDB();
-  const data = await testDB.insert(user).values(newUser).returning().get();
+  const data = await testDB
+    .insert(userSchema)
+    .values(newUser)
+    .returning()
+    .get();
   return selectUserSchema.parse(data);
 };

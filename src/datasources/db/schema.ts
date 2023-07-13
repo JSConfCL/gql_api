@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 const NOW = sql`(strftime('%s', 'now'))`;
-export const user = sqliteTable("user", {
+export const userSchema = sqliteTable("user", {
   id: text("id").primaryKey(),
   name: text("name"),
   email: text("email"),
@@ -11,5 +11,5 @@ export const user = sqliteTable("user", {
   createdAt: integer("created_at", { mode: "timestamp_ms" }).default(NOW),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }),
 });
-export const selectUserSchema = createSelectSchema(user);
-export const insertUserSchema = createInsertSchema(user);
+export const selectUserSchema = createSelectSchema(userSchema);
+export const insertUserSchema = createInsertSchema(userSchema);
