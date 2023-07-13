@@ -10,6 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Mover clone/setup/cache_restore/cache_save a un composite action 🙏
     steps:
       - name: ⏳ Cloning repo
         uses: actions/checkout@v3
@@ -50,7 +51,7 @@ jobs:
         run: npm run lint
 
       - name: Run Typecheck
-        run: npm run lint
+        run: npm run typecheck
 
       - name: 📦 Upload Cached Package Dependencies
         uses: actions/cache/save@v3
@@ -58,7 +59,7 @@ jobs:
         env:
           cache-name: NPM
         with:
-          path: tsconfig.tsbuildinfo
+          path: ~/.npm
           key: CACHE-${{ env.cache-name }}
 
       - name: 📦 Download Cached Eslint output
@@ -67,7 +68,7 @@ jobs:
         env:
           cache-name: ESLINT
         with:
-          path: tsconfig.tsbuildinfo
+          path: .eslintcache
           key: CACHE-${{ env.cache-name }}
 
       - name: 📦 Download Cached Typescript output
