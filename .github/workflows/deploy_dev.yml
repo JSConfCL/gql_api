@@ -3,7 +3,7 @@ name: Deploy to DEV
 on:
   workflow_run:
     # Esto tiene q hacer match con los nombres de los workflows de tests
-    workflows: ["Graphql and Database Tests"]
+    workflows: ["Graphql and Database Tests", "Lint and Typecheck"]
     branches: [main]
     types:
       - completed

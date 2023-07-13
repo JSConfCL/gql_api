@@ -1,0 +1,55 @@
+name: Lint and Typecheck
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⏳ Cloning repo
+        uses: actions/checkout@v3
+
+      - name: ⬢ Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: 📦 Cache Package Dependencies
+        uses: actions/cache@v3
+        env:
+          cache-name: TESTS
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ env.cache-name }}
+
+      - name: 📦 Cache eslint output
+        uses: actions/cache@v3
+        # if: github.ref == 'refs/heads/main'
+        env:
+          cache-name: ESLINT
+        with:
+          path: .eslintcache
+          key: ${{ runner.os }}-npm-${{ env.cache-name }}
+
+      - name: 📦 Cache Typescript output
+        uses: actions/cache@v3
+        # if: github.ref == 'refs/heads/main'
+        env:
+          cache-name: TYPESCRIPT
+        with:
+          path: tsconfig.tsbuildinfo
+          key: ${{ runner.os }}-npm-${{ env.cache-name }}
+
+      - name: 📥 Download deps
+        run: npm ci --prefer-offline --no-audit --cache ~/.npm
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Run Typecheck
+        run: npm run lint

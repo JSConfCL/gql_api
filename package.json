@@ -10,6 +10,8 @@
     "db:studio": "drizzle-kit studio --verbose",
     "migrate": "tsx migrate.ts",
     "test": "vitest",
+    "lint": "eslint ./src --cache",
+    "typecheck": "tsc",
     "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info"
   },
   "devDependencies": {
@@ -28,6 +30,7 @@
     "sqlite3": "^5.1.6",
     "tsx": "^3.12.7",
     "typescript": "^4.8.4",
+    "uuid": "^9.0.0",
     "vite-tsconfig-paths": "^4.2.0",
     "vitest": "^0.33.0",
     "wrangler": "^3.1.2"
