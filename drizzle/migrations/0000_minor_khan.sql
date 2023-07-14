@@ -6,3 +6,5 @@ CREATE TABLE `user` (
 	`created_at` integer DEFAULT (strftime('%s', 'now')),
 	`updated_at` integer
 );
+--> statement-breakpoint
+CREATE INDEX `user_name_idx` ON `user` (`name`);

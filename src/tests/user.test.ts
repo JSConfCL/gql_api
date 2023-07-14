@@ -1,4 +1,4 @@
-import { it, describe, assert, expect } from "vitest";
+import { it, describe, assert } from "vitest";
 import { executeGraphqlOperation, insertUser } from "~/tests/fixtures";
 import gql from "graphql-tag";
 

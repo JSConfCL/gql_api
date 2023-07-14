@@ -1,4 +1,3 @@
-// import { DateTimeResolver } from "graphql-scalars";
 import SchemaBuilder from "@pothos/core";
 import { LibSQLDatabase } from "drizzle-orm/libsql";
 
@@ -9,5 +8,3 @@ export const builder = new SchemaBuilder<{
 }>({});
 
 builder.queryType({});
-
-// builder.mutationType();
