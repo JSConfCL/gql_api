@@ -1,16 +1,16 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "1dfb6ad5-206c-4fd6-a805-3d36b09c227f",
+  "id": "66747323-c4bc-4de2-86fc-65ac48714bac",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "user": {
-      "name": "user",
+    "users": {
+      "name": "users",
       "columns": {
         "id": {
           "name": "id",
           "type": "text",
-          "primaryKey": true,
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -21,9 +21,23 @@
           "notNull": false,
           "autoincrement": false
         },
+        "bio": {
+          "name": "bio",
+          "type": "text(1024)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "email": {
           "name": "email",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "username": {
+          "name": "username",
+          "type": "text(64)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -41,7 +55,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "(strftime('%s', 'now'))"
+          "default": "current_timestamp"
         },
         "updated_at": {
           "name": "updated_at",
@@ -52,12 +66,19 @@
         }
       },
       "indexes": {
-        "user_name_idx": {
-          "name": "user_name_idx",
+        "users_id_unique": {
+          "name": "users_id_unique",
           "columns": [
-            "name"
+            "id"
           ],
-          "isUnique": false
+          "isUnique": true
+        },
+        "users_username_unique": {
+          "name": "users_username_unique",
+          "columns": [
+            "username"
+          ],
+          "isUnique": true
         }
       },
       "foreignKeys": {},

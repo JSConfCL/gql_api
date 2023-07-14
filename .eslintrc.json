@@ -25,17 +25,19 @@
         // Es re-funcional nuestra API, no nos sirve esta regla realmente y causa
         // varios falsos positivos
         // https://typescript-eslint.io/rules/unbound-method/
-        "@typescript-eslint/unbound-method": "off"
+        "@typescript-eslint/unbound-method": "off",
+        // No nos sirve esta regla realmente y causa varios falsos positivos
+        // https://typescript-eslint.io/rules/no-non-null-assertion/
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        // No nos sirve esta regla realmente y causa varios falsos positivos
+        // https://typescript-eslint.io/rules/no-non-null-assertion/
+        "@typescript-eslint/no-unsafe-arguments": "off"
       }
     },
     // PARA LOS TESTS
     {
-      "files": ["*.test.ts"],
-      "rules": {
-        // No nos sirve esta regla realmente y causa varios falsos positivos
-        // https://typescript-eslint.io/rules/no-non-null-assertion/
-        "@typescript-eslint/no-unsafe-member-access": "off"
-      }
+      "files": ["*.test.ts", ""],
+      "rules": {}
     }
   ],
   "ignorePatterns": [

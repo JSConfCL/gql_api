@@ -1,8 +1,8 @@
 import { faker } from "@faker-js/faker";
 import {
-  userSchema,
-  insertUserSchema,
-  selectUserSchema,
+  usersSchema,
+  insertUsersSchema,
+  selectUsersSchema,
 } from "~/datasources/db/schema";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 import { z } from "zod";
@@ -13,7 +13,7 @@ import { buildHTTPExecutor } from "@graphql-tools/executor-http";
 import { initContextCache } from "@pothos/core";
 import { parse } from "cookie";
 
-const insertUserRequest = insertUserSchema.deepPartial();
+const insertUserRequest = insertUsersSchema.deepPartial();
 
 export const executeGraphqlOperation = buildHTTPExecutor({
   fetch: createYoga<Env>({
@@ -42,13 +42,13 @@ export const insertUser = async (
     createdAt: partialNewUser?.createdAt,
     name: partialNewUser?.name,
     updatedAt: partialNewUser?.updatedAt,
-  } satisfies z.infer<typeof insertUserSchema>;
-  const newUser = insertUserSchema.parse(possibleUser);
+  } satisfies z.infer<typeof insertUsersSchema>;
+  const newUser = insertUsersSchema.parse(possibleUser);
   const testDB = await getTestDB();
   const data = await testDB
-    .insert(userSchema)
+    .insert(usersSchema)
     .values(newUser)
     .returning()
     .get();
-  return selectUserSchema.parse(data);
+  return selectUsersSchema.parse(data);
 };
