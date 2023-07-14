@@ -9,3 +9,10 @@ node_modules
 
 yarn-error.log
 .dev.vars
+
+.test_dbs
+
+.eslintcache
+tsconfig.tsbuildinfo
+
+.DS_STORE

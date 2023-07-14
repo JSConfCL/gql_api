@@ -1,8 +1,17 @@
-import { Pool } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
+import { createClient } from "@libsql/client/web";
+import { LibSQLDatabase, drizzle } from "drizzle-orm/libsql";
 
-export const getDb = (DATABASE_URL: string) => {
-  const pool = new Pool({ connectionString: DATABASE_URL });
-  const db = drizzle(pool);
+let db: LibSQLDatabase<Record<string, never>> | null = null;
+export const getDb = ({
+  url,
+  authToken,
+}: {
+  url: string;
+  authToken: string;
+}) => {
+  if (!db) {
+    const pool = createClient({ url, authToken });
+    db = drizzle(pool);
+  }
   return db;
 };

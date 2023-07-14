@@ -3,8 +3,15 @@
   "main": "./build/index.js",
   "scripts": {
     "drizzle-kit": "drizzle-kit",
-    "generate": "drizzle-kit generate:pg",
+    "db:generate": "drizzle-kit generate:sqlite",
+    "db:check": "drizzle-kit check:sqlite",
+    "db:up": "drizzle-kit up:sqlite",
+    "db:push": "drizzle-kit push:sqlite",
+    "db:studio": "drizzle-kit studio --verbose",
     "migrate": "tsx migrate.ts",
+    "test": "vitest",
+    "lint": "eslint ./src --cache",
+    "typecheck": "tsc",
     "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info"
   },
   "devDependencies": {
@@ -16,13 +23,17 @@
     "@types/cookie": "^0.5.1",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.61.0",
-    "drizzle-kit": "^0.19.3",
+    "drizzle-kit": "^0.19.5",
     "eslint": "^8.44.0",
     "eslint-config-prettier": "^8.8.0",
-    "postgres": "^3.3.5",
+    "graphql-tag": "^2.12.6",
     "prettier": "^3.0.0",
+    "sqlite3": "^5.1.6",
     "tsx": "^3.12.7",
     "typescript": "^4.8.4",
+    "uuid": "^9.0.0",
+    "vite-tsconfig-paths": "^4.2.0",
+    "vitest": "^0.33.0",
     "wrangler": "^3.1.2"
   },
   "engines": {
@@ -33,15 +44,17 @@
     "@envelop/core": "^4.0.0",
     "@envelop/immediate-introspection": "^2.0.0",
     "@envelop/rate-limiter": "^5.0.0",
+    "@faker-js/faker": "^8.0.2",
     "@graphql-yoga/plugin-csrf-prevention": "^2.0.3",
+    "@libsql/client": "^0.3.0",
     "@neondatabase/serverless": "^0.4.26",
     "@pothos/core": "^3.30.0",
     "cookie": "^0.5.0",
-    "drizzle-orm": "^0.27.0",
+    "drizzle-orm": "^0.27.2",
+    "drizzle-zod": "^0.4.4",
     "graphql": "^16.7.1",
     "graphql-yoga": "^4.0.3",
     "nexus": "^1.3.0",
-    "pg": "^8.11.1",
-    "postgresjs": "^1.1.2"
+    "zod": "^3.21.4"
   }
 }

@@ -1,4 +1,4 @@
-import { createYoga, createSchema } from "graphql-yoga";
+import { createYoga } from "graphql-yoga";
 import { useCSRFPrevention } from "@graphql-yoga/plugin-csrf-prevention";
 import { useMaskedErrors } from "@envelop/core";
 import { APP_ENV, AUTH_COOKIE_NAME } from "~/env";
@@ -6,8 +6,10 @@ import { useImmediateIntrospection } from "@envelop/immediate-introspection";
 import { parse } from "cookie";
 import { getDb } from "~/datasources/db";
 import { Env } from "worker-configuration";
+import { schema } from "~/schema";
+import { initContextCache } from "@pothos/core";
 
-const yoga = createYoga<Env>({
+export const yoga = createYoga<Env>({
   landingPage: APP_ENV !== "production",
   graphqlEndpoint: "/graphql",
   graphiql: {
@@ -24,18 +26,7 @@ const yoga = createYoga<Env>({
     credentials: true,
     methods: ["POST"],
   },
-  schema: createSchema({
-    typeDefs: /* GraphQL */ `
-      type Query {
-        hello: String!
-      }
-    `,
-    resolvers: {
-      Query: {
-        hello: () => "Hello World!",
-      },
-    },
-  }),
+  schema,
   logging: "debug",
   plugins: [
     APP_ENV === "production" &&
@@ -45,11 +36,21 @@ const yoga = createYoga<Env>({
     APP_ENV === "production" && useMaskedErrors(),
     useImmediateIntrospection(),
   ].filter(Boolean),
-  context: ({ request, DATABASE_URL }) => {
+  context: ({ request, DATABASE_URL, DATABASE_TOKEN }) => {
+    if (!DATABASE_URL) {
+      throw new Error("Missing DATABASE_URL");
+    }
+    if (!DATABASE_TOKEN) {
+      throw new Error("Missing DATABASE_TOKEN");
+    }
+
     const JWT = parse(request.headers.get("cookie") ?? "")[AUTH_COOKIE_NAME];
-    console.log("DATABASE_URL", DATABASE_URL);
-    const DB = getDb(DATABASE_URL);
+    const DB = getDb({
+      authToken: DATABASE_TOKEN,
+      url: DATABASE_URL,
+    });
     return {
+      ...initContextCache(),
       JWT,
       DB,
     };
@@ -57,6 +58,5 @@ const yoga = createYoga<Env>({
 });
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   fetch: yoga.fetch,
 };
