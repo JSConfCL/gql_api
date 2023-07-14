@@ -7,16 +7,6 @@ enum TicketStatus {
   REDEEMED
 }
 
-enum ActivityStatus {
-  ACTIVE
-  INACTIVE
-}
-
-enum ActivityVisibility {
-  PUBLIC
-  HIDDEN
-}
-
 enum EventStatus {
   ACTIVE
   INACTIVE
@@ -49,16 +39,9 @@ type Event {
   id: ID!
   activity: [Activity!]!
   community: Community
+  tickets: [Ticket!]!
   status: EventStatus!
   visibility: EventVisibility!
-}
-
-type Activity {
-  id: ID!
-  event: Event!
-  tickets: [Ticket!]!
-  status: ActivityStatus!
-  visibility: ActivityVisibility!
   tags: [Tag!]!
 }
 
