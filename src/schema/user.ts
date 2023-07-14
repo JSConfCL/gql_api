@@ -8,9 +8,10 @@ const UserRef = builder.objectRef<UserGraphqlSchema>("User");
 builder.objectType(UserRef, {
   description: "Representation of auser",
   fields: (t) => ({
-    id: t.exposeString("id", {}),
+    id: t.exposeString("id", { nullable: false }),
     name: t.exposeString("name", { nullable: true }),
     email: t.exposeString("email", { nullable: true }),
+    username: t.exposeString("username", { nullable: false }),
   }),
 });
 

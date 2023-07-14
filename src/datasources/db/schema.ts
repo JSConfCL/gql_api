@@ -7,7 +7,7 @@ export const usersSchema = sqliteTable("users", {
   name: text("name"),
   bio: text("bio", { length: 1024 }),
   email: text("email"),
-  username: text("username", { length: 64 }).unique(),
+  username: text("username", { length: 64 }).unique().notNull(),
   externalId: text("external_id").notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).default(
     sql`current_timestamp`,

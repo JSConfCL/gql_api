@@ -42,6 +42,7 @@ export const insertUser = async (
     createdAt: partialNewUser?.createdAt,
     name: partialNewUser?.name,
     updatedAt: partialNewUser?.updatedAt,
+    username: partialNewUser?.username ?? faker.internet.userName(),
   } satisfies z.infer<typeof insertUsersSchema>;
   const newUser = insertUsersSchema.parse(possibleUser);
   const testDB = await getTestDB();
