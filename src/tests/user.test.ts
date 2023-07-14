@@ -1,4 +1,4 @@
-import { it, describe } from "vitest";
+import { it, describe, assert, expect } from "vitest";
 import { executeGraphqlOperation, insertUser } from "~/tests/fixtures";
 import gql from "graphql-tag";
 
@@ -19,8 +19,11 @@ describe("Users Graphql Tests", () => {
     const response = await executeGraphqlOperation({
       document: getUsersQuery,
     });
-    console.log(user, user2);
-    console.log(response.errors[0]);
-    // TODO Agregar asserts
+    // Odio estos ANY. Pero por ahora nos desbloquea. hasta que hagamos
+    // code-generation y podemos tener typed documents... es lo que hay 😅
+    assert.equal((response as any).errors, undefined);
+    assert.equal((response as any).data.users.length, 2);
+    assert.equal((response as any).data.users[0].id, user.id);
+    assert.equal((response as any).data.users[1].id, user2.id);
   });
 });
