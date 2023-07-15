@@ -8,6 +8,13 @@
       "when": 1689355558571,
       "tag": "0000_blue_moon_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1689386464783,
+      "tag": "0001_lame_forgotten_one",
+      "breakpoints": true
     }
   ]
 }
