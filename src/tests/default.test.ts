@@ -9,7 +9,7 @@ const statusQuery = gql/* GraphQL */ `
 `;
 
 describe("Users Graphql Tests", () => {
-  it("Should return a list of users", async () => {
+  it("Should do a basic test", async () => {
     // No me gusta este ANY, pero por ahora nos desbloquea. hasta que hagamos
     // code-generation y podemos tener typed documents, es lo que hay. podriamos
     // hacer algo como esto:
@@ -19,6 +19,7 @@ describe("Users Graphql Tests", () => {
     const response: any = await executeGraphqlOperation({
       document: statusQuery,
     });
+    console.log("response", response);
     assert.equal(response?.data?.status, "Hello, . We are up and running!");
   });
 });
