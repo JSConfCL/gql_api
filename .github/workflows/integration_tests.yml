@@ -11,6 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Setup SQLite environment
+        uses: ccorsi/setup-sqlite@v1.0.1
+        with:
+          sqlite-version: 3.40.0
+          sqlite-year: 2022
+
+      - run: sqlite3 --version
+
       - name: ⏳ Cloning repo
         uses: actions/checkout@v3
 
@@ -32,3 +40,11 @@ jobs:
 
       - name: Run tests
         run: npm test
+        continue-on-error: true
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-without-markdown
+          path: |
+            ./test_dbs

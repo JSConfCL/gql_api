@@ -16,25 +16,22 @@ export const usersSchema = sqliteTable("users", {
 });
 export const selectUsersSchema = createSelectSchema(usersSchema);
 export const insertUsersSchema = createInsertSchema(usersSchema);
-// export const userRelations = relations(usersSchema, ({ many }) => ({
-//   communities: many(communitySchema),
-// }));
 
-// export const communitySchema = sqliteTable(
-//   "communities",
-//   {
-//     id: text("id").primaryKey().notNull(),
-//     name: text("name"),
-//     email: text("email"),
-//     externalId: text("external_id").notNull(),
-//     createdAt: integer("created_at", { mode: "timestamp_ms" }).default(NOW),
-//     updatedAt: integer("updated_at", { mode: "timestamp_ms" }),
-//   },
-//   (table) => {
-//     return {
-//       nameIdx: index("user_name_idx").on(table.name),
-//     };
-//   },
-// );
-// export const selectCommunitySchema = createSelectSchema(communitySchema);
-// export const insertCommunitySchema = createInsertSchema(communitySchema);
+export const userRelations = relations(usersSchema, ({ many }) => ({
+  communities: many(communitySchema),
+}));
+
+export const communitySchema = sqliteTable("communities", {
+  id: text("id").unique().notNull(),
+  name: text("name").notNull(),
+  description: text("descrtiption", { length: 1024 }),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).default(
+    sql`current_timestamp`,
+  ),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }),
+});
+export const selectCommunitySchema = createSelectSchema(communitySchema);
+export const insertCommunitySchema = createInsertSchema(communitySchema);
+export const communityRelations = relations(usersSchema, ({ many }) => ({
+  users: many(usersSchema),
+}));
