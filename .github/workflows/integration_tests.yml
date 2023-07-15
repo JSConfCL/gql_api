@@ -17,6 +17,8 @@ jobs:
           sqlite-version: 3.40.0
           sqlite-year: 2022
 
+      - run: sqlite3 --version
+
       - name: ⏳ Cloning repo
         uses: actions/checkout@v3
 
