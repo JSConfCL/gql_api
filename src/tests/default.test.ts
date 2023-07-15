@@ -19,7 +19,6 @@ describe("Users Graphql Tests", () => {
     const response: any = await executeGraphqlOperation({
       document: statusQuery,
     });
-    console.log("response", response);
     assert.equal(response?.data?.status, "Hello, . We are up and running!");
   });
 });
