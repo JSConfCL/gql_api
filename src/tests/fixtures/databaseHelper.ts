@@ -20,14 +20,14 @@ const createDatabase = () => {
   return new Promise<string>((resolve, reject) => {
     exec(command, (err, stdout, stderr) => {
       if (err) {
-        console.error(err);
+        console.error("ERROR CREATING DB", err);
         return reject(err);
       }
       if (stderr) {
-        console.error(stderr);
+        console.error("STDERR", stderr);
         return reject(stderr);
       }
-      // console.info("Database created");
+      console.info("Database created", databasePath);
       return resolve(`${databasePath}`);
     });
   });
@@ -43,13 +43,16 @@ export const getTestDB = async () => {
     console.info("🆕 Creando una nueva BDD");
   }
   const databaseName = await createDatabase();
+  const url = `file:///${databaseName}`;
+  console.info("CREATING CLIENT WITH FILE: ", url);
   const client = createClient({
-    url: `file:///${databaseName}`,
+    url,
   });
+  console.info("CREATING CLIENT DRIZZLE");
   drizzleCache = drizzle(client);
+  console.info("MIGRATING");
   await migrate(drizzleCache, {
     migrationsFolder,
-    migrationsTable: "migrations",
   });
   return drizzleCache;
 };
