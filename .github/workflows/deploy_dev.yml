@@ -29,9 +29,7 @@ jobs:
           key: CACHE-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
       - name: 📥 Install dependencies
         run: npm ci --prefer-offline --no-audit --cache ~/.npm
-      - name: 🚀 Deploy to Cloudflare Workers
-        uses: demosjarco/wrangler-action-node@v1.1.1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }}
-          wranglerVersion: "3.1.2"
-          command: deploy
+      - name: 🛳️ DEPLOY Cloudflare Workers
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }}
+        run: npx wrangler deploy --define HONEYCOMB_TOKEN:"${{ secrets.HONEYCOMB_TOKEN_DEV }}"
