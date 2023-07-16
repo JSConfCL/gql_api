@@ -4,12 +4,14 @@ export interface Env {
   GRAPHQL_KV_CACHE: "";
   DATABASE_URL: string | undefined;
   DATABASE_TOKEN: string | undefined;
+  AUTH_COOKIE_NAME: string | undefined;
+  OTEL_SERVICE_NAME: string;
 }
 
 declare global {
   // Declare types for replace variables
   const _APP_ENV: "development" | "production" | "staging";
-  const _AUTH_COOKIE_NAME: string;
+  const HONEYCOMB_TOKEN: string | undefined;
 }
 
 export {};

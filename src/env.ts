@@ -5,4 +5,3 @@
 // Esto es útil para permitir al compiler, realizar ead-code-elimination en distintos environments.
 
 export const APP_ENV = _APP_ENV;
-export const AUTH_COOKIE_NAME = _AUTH_COOKIE_NAME;
