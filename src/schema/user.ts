@@ -3,7 +3,7 @@ import { selectUsersSchema, usersSchema } from "~/datasources/db/schema";
 import { z } from "zod";
 
 type UserGraphqlSchema = z.infer<typeof selectUsersSchema>;
-const UserRef = builder.objectRef<UserGraphqlSchema>("User");
+export const UserRef = builder.objectRef<UserGraphqlSchema>("User");
 
 builder.objectType(UserRef, {
   description: "Representation of auser",

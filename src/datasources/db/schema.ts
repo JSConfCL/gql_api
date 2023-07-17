@@ -24,7 +24,10 @@ export const userRelations = relations(usersSchema, ({ many }) => ({
 export const communitySchema = sqliteTable("communities", {
   id: text("id").unique().notNull(),
   name: text("name").notNull(),
-  description: text("descrtiption", { length: 1024 }),
+  description: text("description", { length: 1024 }),
+  status: text("status", { enum: ["active", "inactive"] })
+    .default("inactive")
+    .notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).default(
     sql`current_timestamp`,
   ),
