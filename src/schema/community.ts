@@ -8,6 +8,7 @@ import {
 import { z } from "zod";
 import { UserRef } from "~/schema/user";
 import { _ } from "drizzle-orm/select.types.d-b947a018";
+import { eq, like } from "drizzle-orm";
 
 type CommunityGraphqlSchema = z.infer<typeof selectCommunitySchema>;
 const CommunityRef = builder.objectRef<CommunityGraphqlSchema>("Community");
@@ -22,7 +23,7 @@ builder.objectType(CommunityRef, {
     users: t.field({
       type: [UserRef],
       resolve: async (root, args, ctx) => {
-        console.log({ root });
+        console.log("Representation of a Community", { root });
         const communities = await ctx.DB.select().from(usersSchema).all();
         return communities.map((u) => selectUsersSchema.parse(u));
       },
@@ -31,26 +32,21 @@ builder.objectType(CommunityRef, {
 });
 
 const CommnunityStatus = builder.enumType("CommnunityStatus", {
-  values: {
-    Active: {
-      value: "active",
-    },
-    Inactive: {
-      value: "inactive",
-    },
-  },
+  values: ["active", "inactive"] as const,
 });
 
 builder.queryFields((t) => ({
   communities: t.field({
     type: [CommunityRef],
     resolve: async (root, args, ctx) => {
+      console.log("Bunch of communities", { root });
       const communities = await ctx.DB.select().from(communitySchema).all();
       return communities.map((u) => selectCommunitySchema.parse(u));
     },
   }),
   community: t.field({
-    type: [CommunityRef],
+    type: CommunityRef,
+    nullable: true,
     args: {
       id: t.arg.string({ required: false }),
       name: t.arg.string({ required: false }),
@@ -60,8 +56,26 @@ builder.queryFields((t) => ({
       }),
     },
     resolve: async (root, args, ctx) => {
-      const communities = await ctx.DB.select().from(communitySchema).all();
-      return communities.map((u) => selectCommunitySchema.parse(u));
+      console.log("One single community fields", { root });
+      const { id, name, status } = args;
+      if (id || name || status) {
+        let query = ctx.DB.select().from(communitySchema);
+        if (id) {
+          query = query.where(eq(communitySchema.id, id));
+        }
+        if (name) {
+          query = query.where(like(communitySchema.name, name));
+        }
+        if (status) {
+          query = query.where(eq(communitySchema.status, status));
+        }
+        const community = await query.get();
+        if (!community) {
+          return null;
+        }
+        return selectCommunitySchema.parse(community);
+      }
+      return null;
     },
   }),
 }));

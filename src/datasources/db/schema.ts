@@ -1,7 +1,13 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import {
+  sqliteTable,
+  text,
+  integer,
+  primaryKey,
+} from "drizzle-orm/sqlite-core";
 import { relations, sql } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
+// USERS
 export const usersSchema = sqliteTable("users", {
   id: text("id").unique().notNull(),
   name: text("name"),
@@ -16,11 +22,11 @@ export const usersSchema = sqliteTable("users", {
 });
 export const selectUsersSchema = createSelectSchema(usersSchema);
 export const insertUsersSchema = createInsertSchema(usersSchema);
-
 export const userRelations = relations(usersSchema, ({ many }) => ({
-  communities: many(communitySchema),
+  usersToCommunities: many(communitySchema),
 }));
 
+// COMMUNITY
 export const communitySchema = sqliteTable("communities", {
   id: text("id").unique().notNull(),
   name: text("name").notNull(),
@@ -36,5 +42,38 @@ export const communitySchema = sqliteTable("communities", {
 export const selectCommunitySchema = createSelectSchema(communitySchema);
 export const insertCommunitySchema = createInsertSchema(communitySchema);
 export const communityRelations = relations(usersSchema, ({ many }) => ({
-  users: many(usersSchema),
+  usersToCommunities: many(usersSchema),
 }));
+
+// USER—COMMUNITY—ROLES
+export const usersToCommunities = sqliteTable(
+  "users_to_groups",
+  {
+    userId: integer("user_id")
+      .notNull()
+      .references(() => usersSchema.id),
+    communityId: integer("community_id")
+      .notNull()
+      .references(() => communitySchema.id),
+    role: text("role", { enum: ["admin", "member"] })
+      .default("member")
+      .notNull(),
+  },
+  (t) => ({
+    pk: primaryKey(t.userId, t.communityId),
+  }),
+);
+
+export const usersToCommunitiesRelations = relations(
+  usersToCommunities,
+  ({ one }) => ({
+    community: one(communitySchema, {
+      fields: [usersToCommunities.communityId],
+      references: [communitySchema.id],
+    }),
+    user: one(usersSchema, {
+      fields: [usersToCommunities.userId],
+      references: [usersSchema.id],
+    }),
+  }),
+);
