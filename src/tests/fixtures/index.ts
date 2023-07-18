@@ -3,6 +3,9 @@ import {
   usersSchema,
   insertUsersSchema,
   selectUsersSchema,
+  insertCommunitySchema,
+  communitySchema,
+  selectCommunitySchema,
 } from "~/datasources/db/schema";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 import { z } from "zod";
@@ -31,7 +34,7 @@ export const executeGraphqlOperation = buildHTTPExecutor({
 });
 
 export const insertUser = async (
-  partialNewUser?: z.infer<typeof insertUserRequest>,
+  partialNewUser?: Partial<z.infer<typeof insertUserRequest>>,
 ) => {
   // TODO: (felipe) Mejorar esto, crear una abstraccion mas simple de usar, que
   // sea cosa de pasarle un modelo y listo.
@@ -52,4 +55,25 @@ export const insertUser = async (
     .returning()
     .get();
   return selectUsersSchema.parse(data);
+};
+
+export const insertCommunity = async (
+  partialNewCommunity?: Partial<z.infer<typeof insertCommunitySchema>>,
+) => {
+  const possibleCommunity = {
+    id: partialNewCommunity?.id ?? faker.string.uuid(),
+    name: partialNewCommunity?.name ?? faker.company.name(),
+    status: partialNewCommunity?.status ?? "active",
+    createdAt: partialNewCommunity?.createdAt,
+    updatedAt: partialNewCommunity?.updatedAt,
+    description: partialNewCommunity?.description ?? faker.lorem.paragraph(),
+  } satisfies z.infer<typeof insertCommunitySchema>;
+  const newCommunity = insertCommunitySchema.parse(possibleCommunity);
+  const testDB = await getTestDB();
+  const data = await testDB
+    .insert(communitySchema)
+    .values(newCommunity)
+    .returning()
+    .get();
+  return selectCommunitySchema.parse(data);
 };
