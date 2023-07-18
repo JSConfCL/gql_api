@@ -49,10 +49,10 @@ export const communityRelations = relations(usersSchema, ({ many }) => ({
 export const usersToCommunities = sqliteTable(
   "users_communities",
   {
-    userId: integer("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => usersSchema.id),
-    communityId: integer("community_id")
+    communityId: text("community_id")
       .notNull()
       .references(() => communitySchema.id),
     role: text("role", { enum: ["admin", "member"] })
@@ -60,7 +60,7 @@ export const usersToCommunities = sqliteTable(
       .notNull(),
   },
   (t) => ({
-    pk: primaryKey(t.userId, t.communityId),
+    primary_key: primaryKey(t.userId, t.communityId),
   }),
 );
 
