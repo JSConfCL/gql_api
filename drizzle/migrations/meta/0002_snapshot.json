@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "cc37a21e-9ab2-436d-9465-0c85c6a306f0",
+  "id": "5d41511b-a1ce-4a01-abe8-fd75bc42cf5a",
   "prevId": "2d10d63d-58d1-42fa-8318-0bea1b47c400",
   "tables": {
     "communities": {
@@ -146,8 +146,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "users_to_groups": {
-      "name": "users_to_groups",
+    "users_communities": {
+      "name": "users_communities",
       "columns": {
         "user_id": {
           "name": "user_id",
@@ -174,9 +174,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "users_to_groups_user_id_users_id_fk": {
-          "name": "users_to_groups_user_id_users_id_fk",
-          "tableFrom": "users_to_groups",
+        "users_communities_user_id_users_id_fk": {
+          "name": "users_communities_user_id_users_id_fk",
+          "tableFrom": "users_communities",
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
@@ -187,9 +187,9 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "users_to_groups_community_id_communities_id_fk": {
-          "name": "users_to_groups_community_id_communities_id_fk",
-          "tableFrom": "users_to_groups",
+        "users_communities_community_id_communities_id_fk": {
+          "name": "users_communities_community_id_communities_id_fk",
+          "tableFrom": "users_communities",
           "tableTo": "communities",
           "columnsFrom": [
             "community_id"
@@ -202,7 +202,7 @@
         }
       },
       "compositePrimaryKeys": {
-        "users_to_groups_user_id_community_id_pk": {
+        "users_communities_user_id_community_id_pk": {
           "columns": [
             "community_id",
             "user_id"
@@ -216,6 +216,8 @@
   "_meta": {
     "schemas": {},
     "tables": {},
-    "columns": {}
+    "columns": {
+      "\"communities\".\"descrtiption\"": "\"communities\".\"description\""
+    }
   }
 }

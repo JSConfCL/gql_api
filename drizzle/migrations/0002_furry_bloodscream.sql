@@ -1,4 +1,4 @@
-CREATE TABLE `users_to_groups` (
+CREATE TABLE `users_communities` (
 	`user_id` integer NOT NULL,
 	`community_id` integer NOT NULL,
 	`role` text DEFAULT 'member' NOT NULL,
@@ -7,6 +7,5 @@ CREATE TABLE `users_to_groups` (
 	FOREIGN KEY (`community_id`) REFERENCES `communities`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-ALTER TABLE communities ADD `description` text(1024);--> statement-breakpoint
-ALTER TABLE communities ADD `status` text DEFAULT 'inactive' NOT NULL;--> statement-breakpoint
-ALTER TABLE `communities` DROP COLUMN `descrtiption`;
+ALTER TABLE `communities` RENAME COLUMN `descrtiption` TO `description`;--> statement-breakpoint
+ALTER TABLE communities ADD `status` text DEFAULT 'inactive' NOT NULL;

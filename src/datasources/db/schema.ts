@@ -23,7 +23,7 @@ export const usersSchema = sqliteTable("users", {
 export const selectUsersSchema = createSelectSchema(usersSchema);
 export const insertUsersSchema = createInsertSchema(usersSchema);
 export const userRelations = relations(usersSchema, ({ many }) => ({
-  usersToCommunities: many(communitySchema),
+  usersToCommunities: many(usersToCommunities),
 }));
 
 // COMMUNITY
@@ -42,12 +42,12 @@ export const communitySchema = sqliteTable("communities", {
 export const selectCommunitySchema = createSelectSchema(communitySchema);
 export const insertCommunitySchema = createInsertSchema(communitySchema);
 export const communityRelations = relations(usersSchema, ({ many }) => ({
-  usersToCommunities: many(usersSchema),
+  usersToCommunities: many(usersToCommunities),
 }));
 
 // USER—COMMUNITY—ROLES
 export const usersToCommunities = sqliteTable(
-  "users_to_groups",
+  "users_communities",
   {
     userId: integer("user_id")
       .notNull()
