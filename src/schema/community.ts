@@ -3,7 +3,7 @@ import {
   selectCommunitySchema,
   selectUsersSchema,
 } from "~/datasources/db/schema";
-import { SQL, eq, like, and } from "drizzle-orm";
+import { SQL, eq, like } from "drizzle-orm";
 import { CommunityRef, UserRef } from "~/schema/refs";
 import { builder } from "~/builder";
 
@@ -68,10 +68,9 @@ builder.queryFields((t) => ({
       if (status) {
         wheres.push(eq(communitySchema.status, status));
       }
-      const communities = await ctx.DB.select()
-        .from(communitySchema)
-        .where(and(...wheres))
-        .all();
+      const communities = await ctx.DB.query.communitySchema.findMany({
+        where: (c, { and }) => and(...wheres),
+      });
       return communities.map((u) => selectCommunitySchema.parse(u));
     },
   }),
@@ -87,10 +86,9 @@ builder.queryFields((t) => ({
       if (!id) {
         return null;
       }
-      const community = await ctx.DB.select()
-        .from(communitySchema)
-        .where(eq(communitySchema.id, id))
-        .get();
+      const community = await ctx.DB.query.communitySchema.findFirst({
+        where: (c, { eq }) => eq(c.id, id),
+      });
       if (!community) {
         return null;
       }

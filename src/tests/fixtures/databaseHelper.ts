@@ -1,11 +1,11 @@
 import { faker } from "@faker-js/faker";
-import { LibSQLDatabase } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
 import { exec } from "node:child_process";
 import { existsSync, mkdirSync } from "node:fs";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
-import { Logger } from "drizzle-orm";
+import * as schema from "~/datasources/db/schema";
+import { ORM_TYPE } from "~/datasources/db";
 
 const testDabasesFolder = `.test_dbs`;
 const migrationsFolder = `${process.cwd()}/drizzle/migrations`;
@@ -33,20 +33,12 @@ const createDatabase = () => {
   });
 };
 
-class MyLogger implements Logger {
-  logQuery(query: string, params: string[]): void {
-    // console.log("".padEnd(80, "-"));
-    // console.log(query);
-    if (params.length > 0) params.map((p, i) => `$${i + 1}: ${p}`);
-  }
-}
-
-let drizzleCache: LibSQLDatabase<Record<string, never>> | null = null;
+let db: ORM_TYPE | null = null;
 export const getTestDB = async () => {
-  if (drizzleCache) {
+  if (db) {
     console.info("👌 Retornando BDD previa");
     console.info("Si quieres una nueva BDD, llama a clearDatabase()");
-    return drizzleCache;
+    return db;
   } else {
     console.info("🆕 Creando una nueva BDD");
   }
@@ -57,17 +49,15 @@ export const getTestDB = async () => {
     url,
   });
   console.info("CREATING CLIENT DRIZZLE");
-  drizzleCache = drizzle(client, {
-    logger: new MyLogger(),
-  });
+  db = drizzle(client, { schema: { ...schema } });
   console.info("MIGRATING");
-  await migrate(drizzleCache, {
+  await migrate(db, {
     migrationsFolder,
     migrationsTable: "migrations",
   });
-  return drizzleCache;
+  return db;
 };
 
 export const clearDatabase = () => {
-  drizzleCache = null;
+  db = null;
 };
