@@ -1,16 +1,11 @@
-import { builder } from "../builder";
 import {
   communitySchema,
   selectCommunitySchema,
   selectUsersSchema,
-  usersSchema,
-} from "~/datasources/db/dbSchema";
-import { z } from "zod";
-import { UserRef } from "~/schema/user";
+} from "~/datasources/db/schema";
 import { SQL, eq, like, and } from "drizzle-orm";
-
-type CommunityGraphqlSchema = z.infer<typeof selectCommunitySchema>;
-const CommunityRef = builder.objectRef<CommunityGraphqlSchema>("Community");
+import { CommunityRef, UserRef } from "~/schema/refs";
+import { builder } from "~/builder";
 
 builder.objectType(CommunityRef, {
   description: "Representation of a Community",
@@ -22,8 +17,22 @@ builder.objectType(CommunityRef, {
     users: t.field({
       type: [UserRef],
       resolve: async (root, args, ctx) => {
-        const communities = await ctx.DB.select().from(usersSchema).all();
-        return communities.map((u) => selectUsersSchema.parse(u));
+        const communities = await ctx.DB.query.communitySchema.findFirst({
+          where: (c, { eq }) => eq(c.id, root.id),
+          with: {
+            usersToCommunities: {
+              with: {
+                user: true,
+              },
+            },
+          },
+        });
+        if (!communities?.usersToCommunities) {
+          return [];
+        }
+        return communities?.usersToCommunities?.map(({ user }) =>
+          selectUsersSchema.parse(user),
+        );
       },
     }),
   }),

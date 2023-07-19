@@ -23,7 +23,7 @@ export const usersSchema = sqliteTable("users", {
 export const selectUsersSchema = createSelectSchema(usersSchema);
 export const insertUsersSchema = createInsertSchema(usersSchema);
 export const userRelations = relations(usersSchema, ({ many }) => ({
-  usersToCommunities: many(usersToCommunities),
+  usersToCommunities: many(usersToCommunitiesSchema),
 }));
 
 // COMMUNITY
@@ -41,12 +41,12 @@ export const communitySchema = sqliteTable("communities", {
 });
 export const selectCommunitySchema = createSelectSchema(communitySchema);
 export const insertCommunitySchema = createInsertSchema(communitySchema);
-export const communityRelations = relations(usersSchema, ({ many }) => ({
-  usersToCommunities: many(usersToCommunities),
+export const communityRelations = relations(communitySchema, ({ many }) => ({
+  usersToCommunities: many(usersToCommunitiesSchema),
 }));
 
 // USER—COMMUNITY—ROLES
-export const usersToCommunities = sqliteTable(
+export const usersToCommunitiesSchema = sqliteTable(
   "users_communities",
   {
     userId: text("user_id")
@@ -63,16 +63,21 @@ export const usersToCommunities = sqliteTable(
     primary_key: primaryKey(t.userId, t.communityId),
   }),
 );
-
+export const selectUsersToCommunitiesSchema = createSelectSchema(
+  usersToCommunitiesSchema,
+);
+export const insertUsersToCommunitiesSchema = createInsertSchema(
+  usersToCommunitiesSchema,
+);
 export const usersToCommunitiesRelations = relations(
-  usersToCommunities,
+  usersToCommunitiesSchema,
   ({ one }) => ({
     community: one(communitySchema, {
-      fields: [usersToCommunities.communityId],
+      fields: [usersToCommunitiesSchema.communityId],
       references: [communitySchema.id],
     }),
     user: one(usersSchema, {
-      fields: [usersToCommunities.userId],
+      fields: [usersToCommunitiesSchema.userId],
       references: [usersSchema.id],
     }),
   }),

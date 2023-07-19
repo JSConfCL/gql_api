@@ -1,8 +1,13 @@
 import { createClient } from "@libsql/client/web";
 import { LibSQLDatabase, drizzle } from "drizzle-orm/libsql";
-import * as schema from "./dbSchema";
+import * as schema from "./schema";
 
-let db: LibSQLDatabase<typeof import("./dbSchema")> | null = null;
+// export const usersSchema =
+// export const communitySchema =
+// export const usersToCommunitiesSchema =
+
+export type ORM_TYPE = LibSQLDatabase<typeof schema>;
+let db: ORM_TYPE | null = null;
 export const getDb = ({
   url,
   authToken,
@@ -12,7 +17,7 @@ export const getDb = ({
 }) => {
   if (!db) {
     const pool = createClient({ url, authToken });
-    db = drizzle(pool, { schema });
+    db = drizzle(pool, { schema: { ...schema } });
   }
   return db;
 };

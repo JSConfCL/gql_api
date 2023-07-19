@@ -6,7 +6,10 @@ import {
   insertCommunitySchema,
   communitySchema,
   selectCommunitySchema,
-} from "~/datasources/db/dbSchema";
+  insertUsersToCommunitiesSchema,
+  usersToCommunitiesSchema,
+  selectUsersToCommunitiesSchema,
+} from "~/datasources/db/schema";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 import { z } from "zod";
 import { schema } from "~/schema";
@@ -76,4 +79,24 @@ export const insertCommunity = async (
     .returning()
     .get();
   return selectCommunitySchema.parse(data);
+};
+
+export const insertUserToCommunity = async (
+  partialNewUserToCommunity: z.infer<typeof insertUsersToCommunitiesSchema>,
+) => {
+  const possibleUserToCommunity = {
+    userId: partialNewUserToCommunity?.userId,
+    communityId: partialNewUserToCommunity?.communityId,
+    role: partialNewUserToCommunity?.role ?? "admin",
+  } satisfies z.infer<typeof insertUsersToCommunitiesSchema>;
+  const newUserToCommunity = insertUsersToCommunitiesSchema.parse(
+    possibleUserToCommunity,
+  );
+  const testDB = await getTestDB();
+  const data = await testDB
+    .insert(usersToCommunitiesSchema)
+    .values(newUserToCommunity)
+    .returning()
+    .get();
+  return selectUsersToCommunitiesSchema.parse(data);
 };
