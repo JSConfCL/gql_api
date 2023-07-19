@@ -1,9 +1,9 @@
 import SchemaBuilder from "@pothos/core";
-import { LibSQLDatabase } from "drizzle-orm/libsql";
+import { ORM_TYPE } from "~/datasources/db";
 
 export const builder = new SchemaBuilder<{
   Context: {
-    DB: LibSQLDatabase<Record<string, never>>;
+    DB: ORM_TYPE;
   };
 }>({});
 

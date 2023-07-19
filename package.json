@@ -11,6 +11,7 @@
     "migrate": "tsx migrate.ts",
     "test": "vitest",
     "lint": "eslint ./src --cache",
+    "prettier": "prettier ./src --cache",
     "typecheck": "tsc",
     "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info"
   },
@@ -23,7 +24,7 @@
     "@types/cookie": "^0.5.1",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.61.0",
-    "drizzle-kit": "^0.19.5",
+    "drizzle-kit": "^0.19.8",
     "eslint": "^8.44.0",
     "eslint-config-prettier": "^8.8.0",
     "graphql-tag": "^2.12.6",

@@ -1,7 +1,13 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import {
+  sqliteTable,
+  text,
+  integer,
+  primaryKey,
+} from "drizzle-orm/sqlite-core";
 import { relations, sql } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
+// USERS
 export const usersSchema = sqliteTable("users", {
   id: text("id").unique().notNull(),
   name: text("name"),
@@ -16,15 +22,18 @@ export const usersSchema = sqliteTable("users", {
 });
 export const selectUsersSchema = createSelectSchema(usersSchema);
 export const insertUsersSchema = createInsertSchema(usersSchema);
-
 export const userRelations = relations(usersSchema, ({ many }) => ({
-  communities: many(communitySchema),
+  usersToCommunities: many(usersToCommunitiesSchema),
 }));
 
+// COMMUNITY
 export const communitySchema = sqliteTable("communities", {
   id: text("id").unique().notNull(),
   name: text("name").notNull(),
-  description: text("descrtiption", { length: 1024 }),
+  description: text("description", { length: 1024 }),
+  status: text("status", { enum: ["active", "inactive"] })
+    .default("inactive")
+    .notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).default(
     sql`current_timestamp`,
   ),
@@ -32,6 +41,44 @@ export const communitySchema = sqliteTable("communities", {
 });
 export const selectCommunitySchema = createSelectSchema(communitySchema);
 export const insertCommunitySchema = createInsertSchema(communitySchema);
-export const communityRelations = relations(usersSchema, ({ many }) => ({
-  users: many(usersSchema),
+export const communityRelations = relations(communitySchema, ({ many }) => ({
+  usersToCommunities: many(usersToCommunitiesSchema),
 }));
+
+// USER—COMMUNITY—ROLES
+export const usersToCommunitiesSchema = sqliteTable(
+  "users_communities",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => usersSchema.id),
+    communityId: text("community_id")
+      .notNull()
+      .references(() => communitySchema.id),
+    role: text("role", { enum: ["admin", "member"] })
+      .default("member")
+      .notNull(),
+  },
+  (t) => ({
+    primary_key: primaryKey(t.userId, t.communityId),
+  }),
+);
+export const selectUsersToCommunitiesSchema = createSelectSchema(
+  usersToCommunitiesSchema,
+);
+export const insertUsersToCommunitiesSchema = createInsertSchema(
+  usersToCommunitiesSchema,
+);
+export const usersToCommunitiesRelations = relations(
+  usersToCommunitiesSchema,
+  ({ one }) => ({
+    community: one(communitySchema, {
+      fields: [usersToCommunitiesSchema.communityId],
+      references: [communitySchema.id],
+    }),
+    user: one(usersSchema, {
+      fields: [usersToCommunitiesSchema.userId],
+      references: [usersSchema.id],
+    }),
+  }),
+);

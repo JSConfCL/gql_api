@@ -58,7 +58,6 @@ class OTLPExporter implements SpanExporter {
   ): void {
     const exportMessage = createExportTraceServiceRequest(items, true);
     const body = JSON.stringify(exportMessage);
-    console.log(this.headers);
     const params: RequestInit = {
       method: "POST",
       headers: this.headers,
@@ -91,12 +90,6 @@ class OTLPExporter implements SpanExporter {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   async shutdown(): Promise<void> {}
 }
-
-console.log(
-  "HONEYCOMB_TOKEN='",
-  typeof HONEYCOMB_TOKEN !== "undefined" ? HONEYCOMB_TOKEN : "",
-  "'",
-);
 
 const exporter = new OTLPExporter({
   url: "https://api.honeycomb.io/v1/traces",
