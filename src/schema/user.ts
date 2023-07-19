@@ -24,6 +24,9 @@ builder.objectType(UserRef, {
               },
             },
           },
+          orderBy(fields, operators) {
+            return operators.desc(fields.createdAt);
+          },
         });
         if (!communities?.usersToCommunities) {
           return [];
@@ -41,7 +44,11 @@ builder.queryFields((t) => ({
     description: "Get a list of users",
     type: [UserRef],
     resolve: async (root, args, ctx) => {
-      const users = await ctx.DB.query.usersSchema.findMany();
+      const users = await ctx.DB.query.usersSchema.findMany({
+        orderBy(fields, operators) {
+          return operators.desc(fields.createdAt);
+        },
+      });
       return users.map((u) => selectUsersSchema.parse(u));
     },
   }),

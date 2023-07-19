@@ -158,7 +158,7 @@ Puedes hacer esto corriendo todos los tests. Estos geeneran una BDD desde 0, y c
 
 ### 4. Ejecuta las migraciones:
 
-Finalmente, ejecuta las migraciones con `npm run db:push`.
+Finalmente, ejecuta las migraciones con `npm run db:migrate`.
 Estos comandos utilizan las variables de entorno definidas en el archivo .dev.vars para conectarse a las BDD de desarrollo.
 
 # Requisitos

@@ -26,6 +26,9 @@ builder.objectType(CommunityRef, {
               },
             },
           },
+          orderBy(fields, operators) {
+            return operators.desc(fields.createdAt);
+          },
         });
         if (!communities?.usersToCommunities) {
           return [];
@@ -70,6 +73,9 @@ builder.queryFields((t) => ({
       }
       const communities = await ctx.DB.query.communitySchema.findMany({
         where: (c, { and }) => and(...wheres),
+        orderBy(fields, operators) {
+          return operators.desc(fields.createdAt);
+        },
       });
       return communities.map((u) => selectCommunitySchema.parse(u));
     },
@@ -88,6 +94,9 @@ builder.queryFields((t) => ({
       }
       const community = await ctx.DB.query.communitySchema.findFirst({
         where: (c, { eq }) => eq(c.id, id),
+        orderBy(fields, operators) {
+          return operators.desc(fields.createdAt);
+        },
       });
       if (!community) {
         return null;
