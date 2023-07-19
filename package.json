@@ -11,6 +11,7 @@
     "migrate": "tsx migrate.ts",
     "test": "vitest",
     "lint": "eslint ./src --cache",
+    "prettier": "pretier ./src --cache",
     "typecheck": "tsc",
     "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info"
   },
