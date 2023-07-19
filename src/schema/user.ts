@@ -15,7 +15,6 @@ builder.objectType(UserRef, {
     communities: t.field({
       type: [CommunityRef],
       resolve: async (root, args, ctx) => {
-        console.log(root, args, ctx);
         const communities = await ctx.DB.query.usersSchema.findFirst({
           where: (u, { eq }) => eq(u.id, root.id),
           with: {
