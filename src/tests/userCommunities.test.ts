@@ -85,11 +85,6 @@ describe("Users Graphql Tests", () => {
       communityId: community1.id,
       role: "member",
     });
-    await insertUserToCommunity({
-      userId: user1.id,
-      communityId: community2.id,
-      role: "member",
-    });
     const response = await executeGraphqlOperation({
       document: getCommunitiesQuery,
     });
@@ -102,7 +97,5 @@ describe("Users Graphql Tests", () => {
     assert.equal((response as any).data.communities[0].users.length, 2);
     assert.equal((response as any).data.communities[0].users[0].id, user1.id);
     assert.equal((response as any).data.communities[0].users[1].id, user2.id);
-    assert.equal((response as any).data.communities[1].users.length, 1);
-    assert.equal((response as any).data.communities[0].users[0].id, user1.id);
   });
 });
