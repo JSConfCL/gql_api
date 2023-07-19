@@ -4,7 +4,7 @@ import {
   selectCommunitySchema,
   selectUsersSchema,
   usersSchema,
-} from "~/datasources/db/schema";
+} from "~/datasources/db/dbSchema";
 import { z } from "zod";
 import { UserRef } from "~/schema/user";
 import { SQL, eq, like, and } from "drizzle-orm";

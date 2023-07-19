@@ -6,7 +6,7 @@ import {
   insertCommunitySchema,
   communitySchema,
   selectCommunitySchema,
-} from "~/datasources/db/schema";
+} from "~/datasources/db/dbSchema";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 import { z } from "zod";
 import { schema } from "~/schema";

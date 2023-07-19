@@ -1,5 +1,5 @@
 import { builder } from "../builder";
-import { selectUsersSchema, usersSchema } from "~/datasources/db/schema";
+import { selectUsersSchema, usersSchema } from "~/datasources/db/dbSchema";
 import { z } from "zod";
 
 type UserGraphqlSchema = z.infer<typeof selectUsersSchema>;

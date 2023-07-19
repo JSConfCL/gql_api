@@ -1,10 +1,8 @@
 import { createClient } from "@libsql/client/web";
 import { LibSQLDatabase, drizzle } from "drizzle-orm/libsql";
-import * as schema from "./schema";
+import * as schema from "./dbSchema";
 
-let db: LibSQLDatabase<
-  typeof import("/Users/ftorres/Github/jsconf/gql_api/src/datasources/db/schema")
-> | null = null;
+let db: LibSQLDatabase<typeof import("./dbSchema")> | null = null;
 export const getDb = ({
   url,
   authToken,
