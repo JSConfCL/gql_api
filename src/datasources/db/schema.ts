@@ -7,6 +7,13 @@ import {
 import { relations, sql } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
+const createdAndUpdatedAtFields = {
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).default(
+    sql`current_timestamp`,
+  ),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }),
+};
+
 // USERS
 export const usersSchema = sqliteTable(
   "users",
@@ -17,10 +24,7 @@ export const usersSchema = sqliteTable(
     email: text("email"),
     username: text("username", { length: 64 }).unique().notNull(),
     externalId: text("external_id").notNull(),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).default(
-      sql`current_timestamp`,
-    ),
-    updatedAt: integer("updated_at", { mode: "timestamp_ms" }),
+    ...createdAndUpdatedAtFields,
   },
   (t) => ({
     primary_key: primaryKey(t.id),
@@ -43,10 +47,7 @@ export const communitySchema = sqliteTable(
     status: text("status", { enum: ["active", "inactive"] })
       .default("inactive")
       .notNull(),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).default(
-      sql`current_timestamp`,
-    ),
-    updatedAt: integer("updated_at", { mode: "timestamp_ms" }),
+    ...createdAndUpdatedAtFields,
   },
   (t) => ({
     primary_key: primaryKey(t.id),
@@ -72,6 +73,7 @@ export const usersToCommunitiesSchema = sqliteTable(
     role: text("role", { enum: ["admin", "member"] })
       .default("member")
       .notNull(),
+    ...createdAndUpdatedAtFields,
   },
   (t) => ({
     primary_key: primaryKey(t.userId, t.communityId),
@@ -102,6 +104,7 @@ export const tagsSchema = sqliteTable("tags", {
   id: text("id").unique().notNull(),
   name: text("name").notNull().unique(),
   description: text("description", { length: 1024 }),
+  ...createdAndUpdatedAtFields,
 });
 export const selectTagsSchema = createSelectSchema(tagsSchema);
 export const insertTagsSchema = createInsertSchema(tagsSchema);
@@ -119,6 +122,7 @@ export const tagsToCommunitiesSchema = sqliteTable(
     communityId: text("community_id")
       .notNull()
       .references(() => communitySchema.id),
+    ...createdAndUpdatedAtFields,
   },
   (t) => ({
     primary_key: primaryKey(t.tagId, t.communityId),
