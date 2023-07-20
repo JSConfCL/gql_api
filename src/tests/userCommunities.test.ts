@@ -89,15 +89,6 @@ describe("Users Graphql Tests", () => {
     const response = await executeGraphqlOperation({
       document: getCommunitiesQuery,
     });
-
-    console.log(
-      "(response as any).data.communities[0].users[0]",
-      (response as any).data.communities[0].users[0],
-    );
-    console.log(
-      "(response as any).data.communities[0].users[0]",
-      (response as any).data.communities[0].users[1],
-    );
     // Odio estos ANY. Pero por ahora nos desbloquea. hasta que hagamos
     // code-generation y podemos tener typed documents... es lo que hay 😅
     const userIds = (
