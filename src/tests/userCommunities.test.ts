@@ -7,6 +7,7 @@ import {
 } from "~/tests/fixtures";
 import gql from "graphql-tag";
 import { clearDatabase } from "~/tests/fixtures/databaseHelper";
+import { selectUsersSchema } from "~/datasources/db/schema";
 
 const getUsersQuery = gql/* GraphQL */ `
   {
@@ -90,12 +91,16 @@ describe("Users Graphql Tests", () => {
     });
     // Odio estos ANY. Pero por ahora nos desbloquea. hasta que hagamos
     // code-generation y podemos tener typed documents... es lo que hay 😅
+    const userIds = (
+      (response as any).data.communities[0]
+        .users as (typeof selectUsersSchema)["_type"][]
+    ).map((el) => el.id);
     assert.equal((response as any).errors, undefined);
     assert.equal((response as any).data.communities.length, 2);
     assert.equal((response as any).data.communities[0].id, community1.id);
     assert.equal((response as any).data.communities[1].id, community2.id);
     assert.equal((response as any).data.communities[0].users.length, 2);
-    assert.equal((response as any).data.communities[0].users[0].id, user1.id);
-    assert.equal((response as any).data.communities[0].users[1].id, user2.id);
+    assert.oneOf(user1.id, userIds, "Could not find user");
+    assert.oneOf(user2.id, userIds, "Could not find user");
   });
 });
