@@ -30,6 +30,4 @@ jobs:
       - name: 📥 Install dependencies
         run: npm ci --prefer-offline --no-audit --cache ~/.npm
       - name: 🛳️ DEPLOY Cloudflare Workers
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }}
-        run: npx wrangler deploy --env=staging --define HONEYCOMB_TOKEN:"${{ secrets.HONEYCOMB_TOKEN_STAGING }}"
+        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy
