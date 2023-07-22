@@ -38,7 +38,7 @@ describe("Communities", () => {
   });
   it("Should return a filtered list by id", async () => {
     const community1 = await insertCommunity();
-    const community2 = await insertCommunity();
+    await insertCommunity();
     const response = await executeGraphqlOperation<
       GetCommunitiesQuery,
       GetCommunitiesQueryVariables
@@ -62,7 +62,7 @@ describe("Communities", () => {
     const community2 = await insertCommunity({
       name: "Community 2",
     });
-    const community3 = await insertCommunity({
+    await insertCommunity({
       name: "COMPLETELY_NON_RELATED_NAME",
     });
     const response = await executeGraphqlOperation<
@@ -120,11 +120,11 @@ describe("Communities", () => {
     assert.equal(response2.data?.communities[1].id, community2.id);
   });
   it("Should do multiple filters", async () => {
-    const community1 = await insertCommunity({
+    await insertCommunity({
       name: "Community 1",
       status: "active",
     });
-    const community2 = await insertCommunity({
+    await insertCommunity({
       name: "Community 2",
       status: "inactive",
     });

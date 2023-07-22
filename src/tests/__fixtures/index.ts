@@ -1,5 +1,5 @@
-import type { TypedDocumentNode } from "@graphql-typed-document-node/core";
-import { type ExecutionResult, print } from "graphql";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { type ExecutionResult } from "graphql";
 import { faker } from "@faker-js/faker";
 import {
   usersSchema,
@@ -24,7 +24,7 @@ import { buildHTTPExecutor } from "@graphql-tools/executor-http";
 import { initContextCache } from "@pothos/core";
 import { parse } from "cookie";
 import { SQLiteTableWithColumns } from "drizzle-orm/sqlite-core";
-import { AsyncExecutor, ExecutionRequest } from "@graphql-tools/utils";
+import { ExecutionRequest } from "@graphql-tools/utils";
 
 const insertUserRequest = insertUsersSchema.deepPartial();
 
