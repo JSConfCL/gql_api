@@ -1,0 +1,13 @@
+query getUsersAndCommunities {
+  users {
+    id
+    name
+    email
+    communities {
+      description
+      id
+      name
+      status
+    }
+  }
+}

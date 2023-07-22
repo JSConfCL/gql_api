@@ -1,0 +1,16 @@
+query getCommunities(
+  $communityID: String
+  $communityName: String
+  $communityStatus: CommnunityStatus
+) {
+  communities(
+    id: $communityID
+    name: $communityName
+    status: $communityStatus
+  ) {
+    description
+    id
+    name
+    status
+  }
+}

@@ -1,0 +1,12 @@
+query getCommunitiesUsers {
+  communities {
+    description
+    id
+    users {
+      id
+      communities {
+        id
+      }
+    }
+  }
+}

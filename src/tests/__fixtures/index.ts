@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { type ExecutionResult } from "graphql";
 import { faker } from "@faker-js/faker";
 import {
   usersSchema,
@@ -13,7 +15,7 @@ import {
   tagsSchema,
   selectTagsSchema,
 } from "~/datasources/db/schema";
-import { getTestDB } from "~/tests/fixtures/databaseHelper";
+import { getTestDB } from "~/tests/__fixtures/databaseHelper";
 import { ZodType, z } from "zod";
 import { schema } from "~/schema";
 import { Env } from "worker-configuration";
@@ -22,10 +24,11 @@ import { buildHTTPExecutor } from "@graphql-tools/executor-http";
 import { initContextCache } from "@pothos/core";
 import { parse } from "cookie";
 import { SQLiteTableWithColumns } from "drizzle-orm/sqlite-core";
+import { ExecutionRequest } from "@graphql-tools/utils";
 
 const insertUserRequest = insertUsersSchema.deepPartial();
 
-export const executeGraphqlOperation = buildHTTPExecutor({
+const executor = buildHTTPExecutor({
   fetch: createYoga<Env>({
     schema,
     context: async ({ request }) => {
@@ -39,6 +42,16 @@ export const executeGraphqlOperation = buildHTTPExecutor({
     },
   }).fetch,
 });
+export const executeGraphqlOperation = <
+  TResult,
+  TVariables extends Record<string, any> = Record<string, any>,
+>(
+  params: ExecutionRequest<TVariables, unknown, unknown, undefined, unknown>,
+): Promise<ExecutionResult<TResult>> => {
+  // @ts-expect-error This is ok. Executor returns a promise with they types passed
+  return executor(params);
+};
+
 async function insertOne<
   I extends ZodType<any, any, any>,
   S extends ZodType<any, any, any>,
