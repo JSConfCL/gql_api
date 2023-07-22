@@ -1,6 +1,5 @@
 import { it, describe, assert, afterEach } from "vitest";
 import { executeGraphqlOperation, insertCommunity } from "~/tests/__fixtures";
-import gql from "graphql-tag";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   GetCommunities,
