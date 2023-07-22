@@ -4,9 +4,9 @@ import {
   insertCommunity,
   insertUser,
   insertUserToCommunity,
-} from "~/tests/fixtures";
+} from "~/tests/__fixtures";
 import gql from "graphql-tag";
-import { clearDatabase } from "~/tests/fixtures/databaseHelper";
+import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { selectUsersSchema } from "~/datasources/db/schema";
 
 const getUsersQuery = gql/* GraphQL */ `

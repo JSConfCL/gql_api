@@ -1,18 +1,15 @@
-import { it, describe, assert, afterEach, afterAll } from "vitest";
-import { executeGraphqlOperation, insertTag } from "~/tests/fixtures";
-import gql from "graphql-tag";
-import { clearDatabase } from "~/tests/fixtures/databaseHelper";
-
-const getTags = gql/* GraphQL */ `
-  query ASD($tagDescription: String, $tagId: String, $tagName: String) {
-    tags(input: { description: $tagDescription, id: $tagId, name: $tagName }) {
-      description
-      id
-      name
-      slug
-    }
-  }
-`;
+import { it, describe, assert, afterAll } from "vitest";
+import {
+  executeGraphqlOperation,
+  executeGraphqlOperation,
+  insertTag,
+} from "~/tests/__fixtures";
+import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
+import {
+  GetTags,
+  GetTagsQuery,
+  GetTagsQueryVariables,
+} from "./getTags.generated";
 
 afterAll(() => {
   clearDatabase();
@@ -29,9 +26,12 @@ describe("Tags", async () => {
     description: "description tag3 with some text",
   });
   it("Should return an unfiltered list", async () => {
-    const response = await executeGraphqlOperation({
-      document: getTags,
+    const response = await executeGraphqlOperation<GetTagsQuery>({
+      document: GetTags,
     });
+    console.log(response.data);
+    console.log(response.errors);
+
     assert.equal((response as any).errors, undefined);
     assert.equal((response as any).data.tags.length, 3);
     assert.equal((response as any).data.tags[0].id, tag1.id);
@@ -40,9 +40,14 @@ describe("Tags", async () => {
   });
 
   it("Should filter by ID", async () => {
-    const response = await executeGraphqlOperation({
-      document: getTags,
+    const response = await executeGraphqlOperation<
+      GetTagsQuery,
+      GetTagsQueryVariables
+    >({
+      document: GetTags,
       variables: {
+        tagDescription: null,
+        tagName: null,
         tagId: tag2.id,
       },
     });
@@ -51,9 +56,14 @@ describe("Tags", async () => {
     assert.equal((response as any).data.tags[0].id, tag2.id);
   });
   it("Should filter by name", async () => {
-    const response = await executeGraphqlOperation({
-      document: getTags,
+    const response = await executeGraphqlOperation<
+      GetTagsQuery,
+      GetTagsQueryVariables
+    >({
+      document: GetTags,
       variables: {
+        tagDescription: null,
+        tagId: null,
         tagName: tag2.name,
       },
     });
@@ -62,9 +72,14 @@ describe("Tags", async () => {
     assert.equal((response as any).data.tags[0].id, tag2.id);
   });
   it("Should filter by description", async () => {
-    const response = await executeGraphqlOperation({
-      document: getTags,
+    const response = await executeGraphqlOperation<
+      GetTagsQuery,
+      GetTagsQueryVariables
+    >({
+      document: GetTags,
       variables: {
+        tagName: null,
+        tagId: null,
         tagDescription: "tag2",
       },
     });

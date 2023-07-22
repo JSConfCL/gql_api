@@ -1,5 +1,5 @@
 import { it, describe, assert } from "vitest";
-import { executeGraphqlOperation } from "~/tests/fixtures";
+import { executeGraphqlOperation } from "~/tests/__fixtures";
 import gql from "graphql-tag";
 
 const statusQuery = gql/* GraphQL */ `

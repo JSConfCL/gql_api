@@ -1,7 +1,7 @@
 import { it, describe, assert, afterEach } from "vitest";
-import { executeGraphqlOperation, insertUser } from "~/tests/fixtures";
+import { executeGraphqlOperation, insertUser } from "~/tests/__fixtures";
 import gql from "graphql-tag";
-import { clearDatabase } from "~/tests/fixtures/databaseHelper";
+import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 
 const getUsersQuery = gql/* GraphQL */ `
   {
