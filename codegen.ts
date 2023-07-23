@@ -21,7 +21,7 @@ const config: CodegenConfig = {
 
   generates: {
     "src/generated/types.ts": {
-      plugins: ["typescript"],
+      plugins: ["typescript", codeInjection],
     },
     "src/generated/": {
       preset: "near-operation-file",

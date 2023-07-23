@@ -1,9 +1,5 @@
-import { it, describe, assert, afterAll, afterEach } from "vitest";
-import {
-  executeGraphqlOperation,
-  insertEvent,
-  insertTag,
-} from "~/tests/__fixtures";
+import { it, describe, assert, afterEach } from "vitest";
+import { executeGraphqlOperation, insertEvent } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { Event, EventQuery, EventQueryVariables } from "./event.generated";
 import {
@@ -17,7 +13,7 @@ afterEach(() => {
   clearDatabase();
 });
 
-describe("Event", async () => {
+describe("Event", () => {
   it("Should find an event by ID", async () => {
     const event1 = await insertEvent();
     const response = await executeGraphqlOperation<
@@ -111,10 +107,10 @@ describe("Events", () => {
     const event1 = await insertEvent({
       name: "MY CONFERENCE 1",
     });
-    const event2 = await insertEvent({
+    await insertEvent({
       name: "MY MEETUP 2",
     });
-    const event3 = await insertEvent({
+    await insertEvent({
       name: "MY MEETTUP 3",
     });
     const response = await executeGraphqlOperation<
@@ -147,10 +143,10 @@ describe("Events", () => {
     const event1 = await insertEvent({
       visibility: "private",
     });
-    const event2 = await insertEvent({
+    await insertEvent({
       visibility: "unlisted",
     });
-    const event3 = await insertEvent({
+    await insertEvent({
       visibility: "public",
     });
     const response = await executeGraphqlOperation<
@@ -183,7 +179,7 @@ describe("Events", () => {
     const event1 = await insertEvent({
       status: EventStatus.Active,
     });
-    const event2 = await insertEvent({
+    await insertEvent({
       status: EventStatus.Inactive,
     });
     const response = await executeGraphqlOperation<
@@ -217,7 +213,7 @@ describe("Events", () => {
       startDateTime: new Date("2021-02-02"),
       endDateTime: new Date("2021-02-03"),
     });
-    const event2 = await insertEvent({
+    await insertEvent({
       startDateTime: new Date("2021-02-04"),
       endDateTime: new Date("2021-02-05"),
     });
