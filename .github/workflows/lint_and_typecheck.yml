@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  linting-and-typechecking:
     runs-on: ubuntu-latest
     name: Linting and Typechecking
 
