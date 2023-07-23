@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to Cloudflare Workers
+    name: Deploy to Cloudflare Workers — DEV
     runs-on: ubuntu-latest
     steps:
       - name: ⏳ Cloning repo

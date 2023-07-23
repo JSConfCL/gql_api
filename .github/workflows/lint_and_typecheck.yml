@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    name: Linting and Typechecking
 
     # Considerar Mover clone/setup/caches a un composite action 🙏
     steps:
