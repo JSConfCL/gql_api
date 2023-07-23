@@ -180,7 +180,7 @@ describe("Community search", () => {
       description: community1.description,
       id: community1.id,
       name: community1.name,
-      status: community1.status,
+      status: community1.status as CommnunityStatus,
     });
   });
   it("Should return null on a non-existing id", async () => {
