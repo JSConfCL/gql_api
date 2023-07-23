@@ -5,7 +5,7 @@ import {
   selectTagsSchema,
   selectUsersSchema,
 } from "~/datasources/db/schema";
-import { SQL, eq, like } from "drizzle-orm";
+import { SQL, eq, gte, like, lte } from "drizzle-orm";
 import { CommunityRef, EventRef, TagRef, UserRef } from "~/schema/refs";
 import { builder } from "~/builder";
 
@@ -19,7 +19,7 @@ export const EventVisibility = builder.enumType("EventVisibility", {
 
 builder.objectType(EventRef, {
   description:
-    "Representation of an Event (This is what tickets will be assigned to)",
+    "Representation of an Event (Events and Users, is what tickets are linked to)",
   fields: (t) => ({
     id: t.exposeString("id", { nullable: false }),
     name: t.exposeString("name", { nullable: false }),
@@ -37,16 +37,15 @@ builder.objectType(EventRef, {
       resolve: (root) => root.visibility,
     }),
     startDateTime: t.field({
-      type: "Int",
+      type: "DateTime",
       nullable: false,
-      resolve: (root) => root.startDateTime.getTime(),
+      resolve: (root) => root.startDateTime,
     }),
     endDateTime: t.field({
-      type: "Int",
+      type: "DateTime",
       nullable: true,
-      resolve: (root) => root.endDateTime?.getTime() ?? null,
+      resolve: (root) => root.endDateTime,
     }),
-
     community: t.field({
       type: CommunityRef,
       nullable: true,
@@ -111,12 +110,12 @@ const EventsSearchInput = builder.inputType("EventsSearchInput", {
       type: EventVisibility,
       required: false,
     }),
-    startDateTime: t.field({
-      type: "Int",
+    startDateTimeFrom: t.field({
+      type: "DateTime",
       required: false,
     }),
-    endDateTime: t.field({
-      type: "Int",
+    startDateTimeTo: t.field({
+      type: "DateTime",
       required: false,
     }),
   }),
@@ -124,7 +123,7 @@ const EventsSearchInput = builder.inputType("EventsSearchInput", {
 
 builder.queryFields((t) => ({
   events: t.field({
-    description: "Get a list of events. Filter by name, id, status or tags",
+    description: "Get a list of events. Filter by name, id, status or date",
     type: [EventRef],
     args: {
       input: t.arg({ type: EventsSearchInput, required: false }),
@@ -133,7 +132,14 @@ builder.queryFields((t) => ({
       if (!input) {
         return [];
       }
-      const { id, name, status, visibility } = input;
+      const {
+        id,
+        name,
+        status,
+        visibility,
+        startDateTimeFrom,
+        startDateTimeTo,
+      } = input;
       const wheres: SQL[] = [];
       if (id) {
         wheres.push(eq(eventsSchema.id, id));
@@ -149,6 +155,13 @@ builder.queryFields((t) => ({
       if (visibility) {
         wheres.push(eq(eventsSchema.visibility, visibility));
       }
+      if (startDateTimeFrom) {
+        wheres.push(gte(eventsSchema.startDateTime, startDateTimeFrom));
+      }
+      if (startDateTimeTo) {
+        wheres.push(lte(eventsSchema.startDateTime, startDateTimeTo));
+      }
+
       const events = await ctx.DB.query.eventsSchema.findMany({
         where: (c, { and }) => and(...wheres),
         orderBy(fields, operators) {

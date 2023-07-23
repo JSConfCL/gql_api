@@ -12,6 +12,8 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  Date: { input: any; output: any; }
+  DateTime: { input: any; output: any; }
 };
 
 export enum CommnunityStatus {
@@ -29,15 +31,15 @@ export type Community = {
   users: Array<User>;
 };
 
-/** Representation of an Event (This is what tickets will be assigned to) */
+/** Representation of an Event (Events and Users, is what tickets are linked to) */
 export type Event = {
   __typename?: 'Event';
   community?: Maybe<Community>;
   description?: Maybe<Scalars['String']['output']>;
-  endDateTime?: Maybe<Scalars['Int']['output']>;
+  endDateTime?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['String']['output'];
   name: Scalars['String']['output'];
-  startDateTime: Scalars['Int']['output'];
+  startDateTime: Scalars['DateTime']['output'];
   status: EventStatus;
   tags: Array<Tag>;
   users: Array<User>;
@@ -56,10 +58,10 @@ export enum EventVisibility {
 }
 
 export type EventsSearchInput = {
-  endDateTime?: InputMaybe<Scalars['Int']['input']>;
   id?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
-  startDateTime?: InputMaybe<Scalars['Int']['input']>;
+  startDateTimeFrom?: InputMaybe<Scalars['DateTime']['input']>;
+  startDateTimeTo?: InputMaybe<Scalars['DateTime']['input']>;
   status?: InputMaybe<EventStatus>;
   visibility?: InputMaybe<EventVisibility>;
 };

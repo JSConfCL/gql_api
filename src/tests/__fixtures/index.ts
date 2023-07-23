@@ -152,7 +152,7 @@ export const insertTag = async (
   );
 };
 
-export const insertEvents = async (
+export const insertEvent = async (
   partialInput?: Partial<z.infer<typeof insertEventsSchema>>,
 ) => {
   const possibleInput = {
@@ -172,7 +172,7 @@ export const insertEvents = async (
   );
 };
 
-export const insertEventsToTags = async (
+export const insertEventTag = async (
   partialInput: z.infer<typeof insertEventsToTagsSchema>,
 ) => {
   const possibleInput = {

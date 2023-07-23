@@ -11,7 +11,7 @@ export type EventQueryVariables = Types.Exact<{
 }>;
 
 
-export type EventQuery = { __typename?: 'Query', event: { __typename?: 'Event', id: string, name: string, description: string | null, visibility: Types.EventVisibility, status: Types.EventStatus, startDateTime: number, endDateTime: number | null } | null };
+export type EventQuery = { __typename?: 'Query', event: { __typename?: 'Event', id: string, name: string, description: string | null, visibility: Types.EventVisibility, status: Types.EventStatus, startDateTime: string, endDateTime: string | null } | null };
 
 
 export const Event = gql`

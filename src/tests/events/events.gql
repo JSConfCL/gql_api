@@ -1,17 +1,17 @@
 query getEvents(
-  $eventId: String!
+  $eventId: String
   $visibility: EventVisibility
   $status: EventStatus
-  $startDateTime: Int
-  $endDateTime: Int
+  $startDateTimeFrom: DateTime
+  $startDateTimeTo: DateTime
 ) {
   events(
     input: {
       id: $eventId
       visibility: $visibility
       status: $status
-      startDateTime: $startDateTime
-      endDateTime: $endDateTime
+      startDateTimeFrom: $startDateTimeFrom
+      startDateTimeTo: $startDateTimeTo
     }
   ) {
     id
