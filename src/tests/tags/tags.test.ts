@@ -28,9 +28,6 @@ describe("Tags", async () => {
     >({
       document: GetTags,
     });
-    console.log(response.data);
-    console.log(response.errors);
-
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.tags.length, 3);
     assert.equal(response.data?.tags[0].id, tag1.id);

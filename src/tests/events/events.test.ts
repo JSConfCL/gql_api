@@ -25,9 +25,6 @@ describe("Event", () => {
         eventId: event1.id,
       },
     });
-    console.log(response.data);
-    console.log(response.errors);
-
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.event, {
       id: event1.id,
