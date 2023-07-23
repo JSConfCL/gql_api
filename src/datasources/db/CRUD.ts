@@ -2,6 +2,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import {
   communitySchema,
   eventsSchema,
+  eventsToCommunitiesSchema,
   eventsToTagsSchema,
   tagsSchema,
   usersSchema,
@@ -22,4 +23,10 @@ export const selectUsersToCommunitiesSchema = createSelectSchema(
 );
 export const insertUsersToCommunitiesSchema = createInsertSchema(
   usersToCommunitiesSchema,
+);
+export const selectEventsToCommunitiesSchema = createSelectSchema(
+  eventsToCommunitiesSchema,
+);
+export const insertEventsToCommunitiesSchema = createInsertSchema(
+  eventsToCommunitiesSchema,
 );

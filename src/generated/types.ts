@@ -30,6 +30,7 @@ export enum CommnunityStatus {
 export type Community = {
   __typename?: 'Community';
   description?: Maybe<Scalars['String']['output']>;
+  events: Array<Event>;
   id: Scalars['String']['output'];
   name?: Maybe<Scalars['String']['output']>;
   status: CommnunityStatus;
@@ -51,6 +52,15 @@ export type Event = {
   visibility: EventVisibility;
 };
 
+export type EventCreateInput = {
+  communityId: Scalars['String']['input'];
+  description?: InputMaybe<Scalars['String']['input']>;
+  endDateTime?: InputMaybe<Scalars['DateTime']['input']>;
+  name: Scalars['String']['input'];
+  startDateTime: Scalars['DateTime']['input'];
+  visibility?: InputMaybe<EventVisibility>;
+};
+
 export enum EventStatus {
   Active = 'active',
   Inactive = 'inactive'
@@ -69,6 +79,17 @@ export type EventsSearchInput = {
   startDateTimeTo?: InputMaybe<Scalars['DateTime']['input']>;
   status?: InputMaybe<EventStatus>;
   visibility?: InputMaybe<EventVisibility>;
+};
+
+export type Mutation = {
+  __typename?: 'Mutation';
+  /** Create an event */
+  createEvent: Event;
+};
+
+
+export type MutationCreateEventArgs = {
+  input: EventCreateInput;
 };
 
 export type Query = {

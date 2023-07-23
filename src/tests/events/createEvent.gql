@@ -1,0 +1,39 @@
+mutation CreateEvent(
+  $eventName: String!
+  $eventDescription: String
+  $visibility: EventVisibility
+  $startDateTime: DateTime!
+  $endDateTime: DateTime
+  $communityId: String!
+) {
+  createEvent(
+    input: {
+      name: $eventName
+      description: $eventDescription
+      visibility: $visibility
+      startDateTime: $startDateTime
+      endDateTime: $endDateTime
+      communityId: $communityId
+    }
+  ) {
+    id
+    name
+    description
+    visibility
+    status
+    startDateTime
+    endDateTime
+  }
+}
+
+query GetCommunityEvents($communityId: String!) {
+  community(id: $communityId) {
+    id
+    events {
+      id
+      name
+      visibility
+      status
+    }
+  }
+}

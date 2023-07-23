@@ -1,10 +1,11 @@
 import {
   communitySchema,
   selectCommunitySchema,
+  selectEventsSchema,
   selectUsersSchema,
 } from "~/datasources/db/schema";
 import { SQL, eq, like } from "drizzle-orm";
-import { CommunityRef, UserRef } from "~/schema/refs";
+import { CommunityRef, EventRef, UserRef } from "~/schema/refs";
 import { builder } from "~/builder";
 
 export const CommnunityStatus = builder.enumType("CommnunityStatus", {
@@ -21,6 +22,22 @@ builder.objectType(CommunityRef, {
       type: CommnunityStatus,
       nullable: false,
       resolve: (root) => root.status,
+    }),
+    events: t.field({
+      type: [EventRef],
+      resolve: async (root, args, ctx) => {
+        const events = await ctx.DB.query.eventsSchema.findMany({
+          with: {
+            eventsToCommunities: {
+              where: (etc, { eq }) => eq(etc.communityId, root.id),
+            },
+          },
+          orderBy(fields, operators) {
+            return operators.desc(fields.createdAt);
+          },
+        });
+        return events.map((e) => selectEventsSchema.parse(e));
+      },
     }),
     users: t.field({
       type: [UserRef],
