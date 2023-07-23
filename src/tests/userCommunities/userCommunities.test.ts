@@ -37,8 +37,6 @@ describe("Users Graphql Tests", () => {
     >({
       document: GetUsersAndCommunities,
     });
-    // Odio estos ANY. Pero por ahora nos desbloquea. hasta que hagamos
-    // code-generation y podemos tener typed documents... es lo que hay 😅
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.users.length, 2);
     assert.equal(response.data?.users[0].id, user.id);
@@ -69,9 +67,6 @@ describe("Users Graphql Tests", () => {
     >({
       document: GetCommunitiesUsers,
     });
-    // Odio estos ANY. Pero por ahora nos desbloquea. hasta que hagamos
-    // code-generation y podemos tener typed documents... es lo que hay 😅
-
     const userIds =
       response?.data?.communities?.[0]?.users?.map((el) => el.id) ?? [];
     assert.equal(response.errors, undefined);
