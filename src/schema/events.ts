@@ -1,5 +1,7 @@
 import {
   eventsSchema,
+  eventsToCommunitiesSchema,
+  insertEventsSchema,
   selectCommunitySchema,
   selectEventsSchema,
   selectTagsSchema,
@@ -8,6 +10,7 @@ import {
 import { SQL, eq, gte, like, lte } from "drizzle-orm";
 import { CommunityRef, EventRef, TagRef, UserRef } from "~/schema/refs";
 import { builder } from "~/builder";
+import { v4 } from "uuid";
 
 export const EventStatus = builder.enumType("EventStatus", {
   values: ["active", "inactive"] as const,
@@ -24,8 +27,6 @@ builder.objectType(EventRef, {
     id: t.exposeString("id", { nullable: false }),
     name: t.exposeString("name", { nullable: false }),
     description: t.exposeString("description", { nullable: true }),
-    // visibility: t.exposeString("visibility", { nullable: false }),
-
     status: t.field({
       type: EventStatus,
       nullable: false,
@@ -193,6 +194,74 @@ builder.queryFields((t) => ({
         return null;
       }
       return selectEventsSchema.parse(event);
+    },
+  }),
+}));
+
+const eventCreateInput = builder.inputType("EventCreateInput", {
+  fields: (t) => ({
+    name: t.string({ required: true }),
+    description: t.string({ required: false }),
+    visibility: t.field({
+      type: EventVisibility,
+      required: false,
+    }),
+    startDateTime: t.field({
+      type: "DateTime",
+      required: true,
+    }),
+    endDateTime: t.field({
+      type: "DateTime",
+      required: false,
+    }),
+    communityId: t.string({ required: true }),
+  }),
+});
+
+builder.mutationFields((t) => ({
+  createEvent: t.field({
+    description: "Create an event",
+    type: EventRef,
+    nullable: false,
+    args: {
+      input: t.arg({ type: eventCreateInput, required: true }),
+    },
+    resolve: async (root, { input }, ctx) => {
+      const { name, description, visibility, startDateTime, endDateTime } =
+        input;
+      const result = await ctx.DB.transaction(async (trx) => {
+        try {
+          const id = v4();
+          const newEvent = insertEventsSchema.parse({
+            id,
+            name,
+            description,
+            status: "inactive",
+            visibility,
+            startDateTime,
+            endDateTime,
+          });
+
+          const events = await trx
+            .insert(eventsSchema)
+            .values(newEvent)
+            .returning()
+            .get();
+          await trx
+            .insert(eventsToCommunitiesSchema)
+            .values({
+              eventId: id,
+              communityId: input.communityId,
+            })
+            .returning()
+            .get();
+
+          return events;
+        } catch (e) {
+          // trx.rollback();
+        }
+      });
+      return selectEventsSchema.parse(result);
     },
   }),
 }));

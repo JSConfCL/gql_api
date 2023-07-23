@@ -4,7 +4,9 @@ import { buildHTTPExecutor } from "@graphql-tools/executor-http";
 import { ExecutionRequest } from "@graphql-tools/utils";
 import { initContextCache } from "@pothos/core";
 import { parse } from "cookie";
+import { eq } from "drizzle-orm";
 import { SQLiteTableWithColumns } from "drizzle-orm/sqlite-core";
+import { createSelectSchema } from "drizzle-zod";
 import { type ExecutionResult } from "graphql";
 import { createYoga } from "graphql-yoga";
 import { Env } from "worker-configuration";
@@ -22,10 +24,13 @@ import {
   selectTagsSchema,
   selectUsersSchema,
   selectUsersToCommunitiesSchema,
+  selectEventsToCommunitiesSchema,
+  insertEventsToCommunitiesSchema,
 } from "~/datasources/db/schema";
 import {
   communitySchema,
   eventsSchema,
+  eventsToCommunitiesSchema,
   eventsToTagsSchema,
   tagsSchema,
   usersSchema,
@@ -83,6 +88,22 @@ async function insertOne<
   return selectZod.parse(data);
 }
 
+async function findById<D extends SQLiteTableWithColumns<any>>(
+  dbSchema: D,
+  id: string | undefined,
+) {
+  const testDB = await getTestDB();
+  if (!id) {
+    throw new Error(`FindById cannot be called without an id`);
+  }
+  const data = await testDB
+    .select()
+    .from(dbSchema)
+    .where((t) => eq(t.id, id))
+    .get();
+  return createSelectSchema(dbSchema).parse(data);
+}
+
 export const insertUser = async (
   partialInput?: Partial<z.infer<typeof insertUserRequest>>,
 ) => {
@@ -102,6 +123,7 @@ export const insertUser = async (
     possibleInput,
   );
 };
+export const findUserById = async (id?: string) => findById(usersSchema, id);
 
 export const insertCommunity = async (
   partialInput?: Partial<z.infer<typeof insertCommunitySchema>>,
@@ -121,6 +143,8 @@ export const insertCommunity = async (
     possibleInput,
   );
 };
+export const findCommunityById = async (id?: string) =>
+  findById(communitySchema, id);
 
 export const insertUserToCommunity = async (
   partialInput: z.infer<typeof insertUsersToCommunitiesSchema>,
@@ -134,6 +158,17 @@ export const insertUserToCommunity = async (
     insertUsersToCommunitiesSchema,
     selectUsersToCommunitiesSchema,
     usersToCommunitiesSchema,
+    possibleInput,
+  );
+};
+
+export const insertEventToCommunity = async (
+  possibleInput: z.infer<typeof insertEventsToCommunitiesSchema>,
+) => {
+  return insertOne(
+    insertEventsToCommunitiesSchema,
+    selectEventsToCommunitiesSchema,
+    eventsToCommunitiesSchema,
     possibleInput,
   );
 };
@@ -173,6 +208,7 @@ export const insertEvent = async (
     possibleInput,
   );
 };
+export const findEventById = async (id?: string) => findById(eventsSchema, id);
 
 export const insertEventTag = async (
   partialInput: z.infer<typeof insertEventsToTagsSchema>,
