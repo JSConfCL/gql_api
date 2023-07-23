@@ -7,8 +7,9 @@ on:
   pull_request:
 
 jobs:
-  build:
+  integration-test:
     runs-on: ubuntu-latest
+    name: Integration Tests
 
     steps:
       - name: Setup SQLite environment

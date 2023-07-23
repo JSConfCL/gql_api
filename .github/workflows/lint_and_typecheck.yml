@@ -7,8 +7,9 @@ on:
   pull_request:
 
 jobs:
-  build:
+  linting-and-typechecking:
     runs-on: ubuntu-latest
+    name: Linting and Typechecking
 
     # Considerar Mover clone/setup/caches a un composite action 🙏
     steps:

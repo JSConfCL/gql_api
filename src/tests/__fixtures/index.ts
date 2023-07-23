@@ -1,36 +1,38 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { type ExecutionResult } from "graphql";
 import { faker } from "@faker-js/faker";
-import {
-  usersSchema,
-  insertUsersSchema,
-  selectUsersSchema,
-  insertCommunitySchema,
-  communitySchema,
-  selectCommunitySchema,
-  insertUsersToCommunitiesSchema,
-  usersToCommunitiesSchema,
-  selectUsersToCommunitiesSchema,
-  insertTagsSchema,
-  tagsSchema,
-  selectTagsSchema,
-  insertEventsSchema,
-  selectEventsSchema,
-  eventsSchema,
-  insertEventsToTagsSchema,
-  selectEventsToTagsSchema,
-  eventsToTagsSchema,
-} from "~/datasources/db/schema";
-import { getTestDB } from "~/tests/__fixtures/databaseHelper";
-import { ZodType, z } from "zod";
-import { schema } from "~/schema";
-import { Env } from "worker-configuration";
-import { createYoga } from "graphql-yoga";
 import { buildHTTPExecutor } from "@graphql-tools/executor-http";
+import { ExecutionRequest } from "@graphql-tools/utils";
 import { initContextCache } from "@pothos/core";
 import { parse } from "cookie";
 import { SQLiteTableWithColumns } from "drizzle-orm/sqlite-core";
-import { ExecutionRequest } from "@graphql-tools/utils";
+import { type ExecutionResult } from "graphql";
+import { createYoga } from "graphql-yoga";
+import { Env } from "worker-configuration";
+import { ZodType, z } from "zod";
+import {
+  insertCommunitySchema,
+  insertEventsSchema,
+  insertEventsToTagsSchema,
+  insertTagsSchema,
+  insertUsersSchema,
+  insertUsersToCommunitiesSchema,
+  selectCommunitySchema,
+  selectEventsSchema,
+  selectEventsToTagsSchema,
+  selectTagsSchema,
+  selectUsersSchema,
+  selectUsersToCommunitiesSchema,
+} from "~/datasources/db/schema";
+import {
+  communitySchema,
+  eventsSchema,
+  eventsToTagsSchema,
+  tagsSchema,
+  usersSchema,
+  usersToCommunitiesSchema,
+} from "~/datasources/db/tables";
+import { schema } from "~/schema";
+import { getTestDB } from "~/tests/__fixtures/databaseHelper";
 
 const insertUserRequest = insertUsersSchema.deepPartial();
 

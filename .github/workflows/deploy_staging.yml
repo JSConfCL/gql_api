@@ -11,7 +11,7 @@ on:
 jobs:
   deploy:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    name: Deploy to Cloudflare Workers
+    name: Deploy to Cloudflare Workers — STAGING
     runs-on: ubuntu-latest
     steps:
       - name: ⏳ Cloning repo
