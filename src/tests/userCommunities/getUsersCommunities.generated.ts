@@ -9,7 +9,7 @@ import gql from 'graphql-tag';
 export type GetUsersAndCommunitiesQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type GetUsersAndCommunitiesQuery = { __typename?: 'Query', users: Array<{ __typename?: 'User', id: string, name: string | null, email: string | null, communities: Array<{ __typename?: 'Community', description: string | null, id: string, name: string | null, status: string }> }> };
+export type GetUsersAndCommunitiesQuery = { __typename?: 'Query', users: Array<{ __typename?: 'User', id: string, name: string | null, email: string | null, communities: Array<{ __typename?: 'Community', description: string | null, id: string, name: string | null, status: Types.CommnunityStatus }> }> };
 
 
 export const GetUsersAndCommunities = gql`

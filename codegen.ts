@@ -18,8 +18,11 @@ const config: CodegenConfig = {
   ignoreNoDocuments: true,
   schema: "http://127.0.0.1:8787/graphql",
   documents: ["./src/**/*.gql"],
+
   generates: {
-    "src/generated/types.ts": { plugins: ["typescript"] },
+    "src/generated/types.ts": {
+      plugins: ["typescript", codeInjection],
+    },
     "src/generated/": {
       preset: "near-operation-file",
       plugins: [
@@ -34,6 +37,10 @@ const config: CodegenConfig = {
         extension: ".generated.ts",
       },
       config: {
+        scalars: {
+          Date: "string",
+          DateTime: "string",
+        },
         avoidOptionals: true,
         enumsAsTypes: false,
         useTypeImports: true,
