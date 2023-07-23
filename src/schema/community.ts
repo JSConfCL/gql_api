@@ -7,13 +7,21 @@ import { SQL, eq, like } from "drizzle-orm";
 import { CommunityRef, UserRef } from "~/schema/refs";
 import { builder } from "~/builder";
 
+export const CommnunityStatus = builder.enumType("CommnunityStatus", {
+  values: ["active", "inactive"] as const,
+});
+
 builder.objectType(CommunityRef, {
   description: "Representation of a Community",
   fields: (t) => ({
     id: t.exposeString("id", { nullable: false }),
     name: t.exposeString("name", { nullable: true }),
     description: t.exposeString("description", { nullable: true }),
-    status: t.exposeString("status", { nullable: false }),
+    status: t.field({
+      type: CommnunityStatus,
+      nullable: false,
+      resolve: (root) => root.status,
+    }),
     users: t.field({
       type: [UserRef],
       resolve: async (root, args, ctx) => {
@@ -39,10 +47,6 @@ builder.objectType(CommunityRef, {
       },
     }),
   }),
-});
-
-const CommnunityStatus = builder.enumType("CommnunityStatus", {
-  values: ["active", "inactive"] as const,
 });
 
 builder.queryFields((t) => ({

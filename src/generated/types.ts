@@ -25,8 +25,43 @@ export type Community = {
   description?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   name?: Maybe<Scalars['String']['output']>;
-  status: Scalars['String']['output'];
+  status: CommnunityStatus;
   users: Array<User>;
+};
+
+/** Representation of an Event (This is what tickets will be assigned to) */
+export type Event = {
+  __typename?: 'Event';
+  community?: Maybe<Community>;
+  description?: Maybe<Scalars['String']['output']>;
+  endDateTime?: Maybe<Scalars['Int']['output']>;
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  startDateTime: Scalars['Int']['output'];
+  status: EventStatus;
+  tags: Array<Tag>;
+  users: Array<User>;
+  visibility: EventVisibility;
+};
+
+export enum EventStatus {
+  Active = 'active',
+  Inactive = 'inactive'
+}
+
+export enum EventVisibility {
+  Private = 'private',
+  Public = 'public',
+  Unlisted = 'unlisted'
+}
+
+export type EventsSearchInput = {
+  endDateTime?: InputMaybe<Scalars['Int']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  startDateTime?: InputMaybe<Scalars['Int']['input']>;
+  status?: InputMaybe<EventStatus>;
+  visibility?: InputMaybe<EventVisibility>;
 };
 
 export type Query = {
@@ -35,6 +70,10 @@ export type Query = {
   communities: Array<Community>;
   /** Get a community by id */
   community?: Maybe<Community>;
+  /** Get an event by id */
+  event?: Maybe<Event>;
+  /** Get a list of events. Filter by name, id, status or tags */
+  events: Array<Event>;
   status: Scalars['String']['output'];
   /** Get a list of users */
   tags: Array<Tag>;
@@ -52,6 +91,16 @@ export type QueryCommunitiesArgs = {
 
 export type QueryCommunityArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QueryEventArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryEventsArgs = {
+  input?: InputMaybe<EventsSearchInput>;
 };
 
 

@@ -14,6 +14,12 @@ import {
   insertTagsSchema,
   tagsSchema,
   selectTagsSchema,
+  insertEventsSchema,
+  selectEventsSchema,
+  eventsSchema,
+  insertEventsToTagsSchema,
+  selectEventsToTagsSchema,
+  eventsToTagsSchema,
 } from "~/datasources/db/schema";
 import { getTestDB } from "~/tests/__fixtures/databaseHelper";
 import { ZodType, z } from "zod";
@@ -142,6 +148,41 @@ export const insertTag = async (
     insertTagsSchema,
     selectTagsSchema,
     tagsSchema,
+    possibleInput,
+  );
+};
+
+export const insertEvents = async (
+  partialInput?: Partial<z.infer<typeof insertEventsSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    name: partialInput?.name ?? faker.company.name(),
+    description: partialInput?.description ?? faker.lorem.paragraph(),
+    visibility: partialInput?.visibility ?? "public",
+    status: partialInput?.status ?? "active",
+    startDateTime: partialInput?.startDateTime ?? faker.date.future(),
+    endDateTime: partialInput?.endDateTime ?? faker.date.future(),
+  } satisfies z.infer<typeof insertEventsSchema>;
+  return insertOne(
+    insertEventsSchema,
+    selectEventsSchema,
+    eventsSchema,
+    possibleInput,
+  );
+};
+
+export const insertEventsToTags = async (
+  partialInput: z.infer<typeof insertEventsToTagsSchema>,
+) => {
+  const possibleInput = {
+    eventId: partialInput?.eventId,
+    tagId: partialInput?.tagId,
+  } satisfies z.infer<typeof insertEventsToTagsSchema>;
+  return insertOne(
+    insertEventsToTagsSchema,
+    selectEventsToTagsSchema,
+    eventsToTagsSchema,
     possibleInput,
   );
 };

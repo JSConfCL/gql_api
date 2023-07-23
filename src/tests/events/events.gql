@@ -1,0 +1,25 @@
+query getEvents(
+  $eventId: String!
+  $visibility: EventVisibility
+  $status: EventStatus
+  $startDateTime: Int
+  $endDateTime: Int
+) {
+  events(
+    input: {
+      id: $eventId
+      visibility: $visibility
+      status: $status
+      startDateTime: $startDateTime
+      endDateTime: $endDateTime
+    }
+  ) {
+    id
+    name
+    description
+    visibility
+    status
+    startDateTime
+    endDateTime
+  }
+}

@@ -11,7 +11,7 @@ export type GetCommunityQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetCommunityQuery = { __typename?: 'Query', community: { __typename?: 'Community', description: string | null, id: string, name: string | null, status: string } | null };
+export type GetCommunityQuery = { __typename?: 'Query', community: { __typename?: 'Community', description: string | null, id: string, name: string | null, status: Types.CommnunityStatus } | null };
 
 
 export const GetCommunity = gql`

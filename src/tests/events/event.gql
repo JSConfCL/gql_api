@@ -1,0 +1,11 @@
+query Event($eventId: String!) {
+  event(id: $eventId) {
+    id
+    name
+    description
+    visibility
+    status
+    startDateTime
+    endDateTime
+  }
+}
