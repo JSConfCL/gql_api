@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1689663332771,
-      "tag": "0000_loud_ted_forrester",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1689781703510,
-      "tag": "0001_lethal_captain_midlands",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1689862687447,
-      "tag": "0002_whole_terrax",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1690083192498,
-      "tag": "0003_useful_shaman",
+      "when": 1690167602118,
+      "tag": "0000_tricky_captain_cross",
       "breakpoints": true
     }
   ]

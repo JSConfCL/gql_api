@@ -3,11 +3,9 @@
 - Asegurate de tener el archivo .dev.vars (Pídele al equipo los valores correspondientes.)
   - Puedes correr una BDD local si te parece.
   - Para correr el proyecto con las BDD de desarrollo, tienes que agregar un archivo `.dev.vars` con los valores de las mismas.
-  - Preguntale al equipo por esto, o crea tu propia BDD en [turso.tech](https://turso.tech/) para obtener los valores
-  - ```
-    DATABASE_URL="XXXXXXXXXXXX"
-    DATABASE_TOKEN="XXXXXX"
-    ```
+  - Preguntale al equipo por los valores de la BDD, (o crea tu propia BDD en [turso.tech](https://turso.tech/))
+- Pide las llaves de autenticacion para clerk
+  - Agregala a .dev.vars bajo `CLERK_PEM_PUBLIC_KEY` y `CLERK_ISSUER_ID`
 - Finalmente, `npm i` & `num run dev`
 
 # Cómo contribuir al proyecto
@@ -219,6 +217,8 @@ Estos comandos utilizan las variables de entorno definidas en el archivo .dev.va
 ```txt
 DATABASE_URL="PREGUNTALE AL EQUIPO POR ESTO"
 DATABASE_TOKEN="PREGUNTALE AL EQUIPO POR ESTO"
+CLERK_PEM_PUBLIC_KEY="PREGUNTALE AL EQUIPO POR ESTO"
+CLERK_ISSUER_ID="PREGUNTALE AL EQUIPO POR ESTO"
 ```
 
 ## Como correr tests
