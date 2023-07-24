@@ -6,7 +6,6 @@ main = "src/index.ts"
 [vars]
 GRAPHQL_BASE_ENDPOINT = "/"
 GRAPHQL_KV_CACHE = ""
-AUTH_COOKIE_NAME = "'JSCHILE_ORG_AUTH_COOKIE'"
 OTEL_SERVICE_NAME="graphql-api"
 
 [define]
@@ -25,7 +24,6 @@ route = "api.jschile.org/*"
 GRAPHQL_BASE_ENDPOINT = "/"
 GRAPHQL_KV_CACHE = ""
 OTEL_SERVICE_NAME="graphql-api"
-AUTH_COOKIE_NAME = "'JSCHILE_ORG_AUTH_COOKIE'"
 
 [env.production.define]
 _APP_ENV = "'production'"
@@ -42,7 +40,6 @@ route = "api.jsconf.dev/*"
 GRAPHQL_BASE_ENDPOINT = "/"
 GRAPHQL_KV_CACHE = ""
 OTEL_SERVICE_NAME="graphql-api"
-AUTH_COOKIE_NAME = "'JSCHILE_ORG_AUTH_COOKIE'"
 
 [env.staging.define]
 _APP_ENV = "'staging'"

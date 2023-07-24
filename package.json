@@ -16,6 +16,7 @@
     "generate": "graphql-codegen --config codegen.ts"
   },
   "devDependencies": {
+    "@clerk/types": "^3.48.1",
     "@cloudflare/workers-types": "^4.20230628.0",
     "@graphql-codegen/add": "^5.0.0",
     "@graphql-codegen/cli": "4.0.1",
@@ -51,6 +52,7 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@clerk/backend": "^0.26.0",
     "@clerk/edge": "^1.13.2",
     "@cloudflare/workers-honeycomb-logger": "^2.3.3",
     "@envelop/core": "^4.0.0",

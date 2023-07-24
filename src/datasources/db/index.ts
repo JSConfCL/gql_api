@@ -13,7 +13,7 @@ export const getDb = ({
 }) => {
   if (!db) {
     const client = createClient({ url, authToken });
-    db = drizzle(client, { schema: { ...schema } });
+    db = drizzle(client, { schema: { ...schema }, logger: true });
   }
   return db;
 };

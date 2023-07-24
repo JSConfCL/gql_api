@@ -4,8 +4,10 @@ export interface Env {
   GRAPHQL_KV_CACHE: "";
   DATABASE_URL: string | undefined;
   DATABASE_TOKEN: string | undefined;
-  AUTH_COOKIE_NAME: string | undefined;
   OTEL_SERVICE_NAME: string;
+  CLERK_PEM_PUBLIC_KEY: string | undefined;
+  CLERK_ISSUER_ID: string | undefined;
+  ENFORCED_JWT_TOKEN: string | undefined;
 }
 
 declare global {

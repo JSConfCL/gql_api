@@ -3,11 +3,9 @@
 - Asegurate de tener el archivo .dev.vars (Pídele al equipo los valores correspondientes.)
   - Puedes correr una BDD local si te parece.
   - Para correr el proyecto con las BDD de desarrollo, tienes que agregar un archivo `.dev.vars` con los valores de las mismas.
-  - Preguntale al equipo por esto, o crea tu propia BDD en [turso.tech](https://turso.tech/) para obtener los valores
-  - ```
-    DATABASE_URL="XXXXXXXXXXXX"
-    DATABASE_TOKEN="XXXXXX"
-    ```
+  - Preguntale al equipo por los valores de la BDD, (o crea tu propia BDD en [turso.tech](https://turso.tech/))
+- Pide las llaves de autenticacion para clerk
+  - Agregala a .dev.vars bajo `CLERK_PEM_PUBLIC_KEY` y `CLERK_ISSUER_ID`
 - Finalmente, `npm i` & `num run dev`
 
 # Cómo contribuir al proyecto
@@ -174,7 +172,8 @@ Además de verificar que tu resolver devuelve los datos correctos, verifica cóm
 
 # Migraciones
 
-Nuestra BDD es turso, usando `libsql` en local. Usamos `drizzle` y `drizzle-kit` para manejar conexiones a la BDD, que genera automaticamente archivos de migraciones cuando cambias tus modelos, lo que hace muchisimo más facil es escribrlas.
+Nuestra BDD es `turso` en produccion/qa y development, usando `libsql` en local.
+Usamos `drizzle` y `drizzle-kit` para manejar conexiones a la BDD, que genera automaticamente archivos de migraciones cuando cambias tus modelos, lo que hace muchisimo más facil es escribrlas.
 
 ## Cómo escribir migraciones?
 
@@ -219,7 +218,13 @@ Estos comandos utilizan las variables de entorno definidas en el archivo .dev.va
 ```txt
 DATABASE_URL="PREGUNTALE AL EQUIPO POR ESTO"
 DATABASE_TOKEN="PREGUNTALE AL EQUIPO POR ESTO"
+CLERK_PEM_PUBLIC_KEY="PREGUNTALE AL EQUIPO POR ESTO"
+CLERK_ISSUER_ID="PREGUNTALE AL EQUIPO POR ESTO"
 ```
+
+> BRO-TIP 🔥
+
+Agrega una variable `ENFORCED_JWT_TOKEN` a tu archivo `.dev.vars`, para utilizarla por defecto en graphiql.
 
 ## Como correr tests
 
@@ -228,7 +233,7 @@ DATABASE_TOKEN="PREGUNTALE AL EQUIPO POR ESTO"
 # STACK
 
 - Turso:
-  Una herramienta para generar código TypeScript a partir de archivos de especificación. Es útil para crear una API de tipo fuerte y garantizar la coherencia entre los diferentes componentes de un sistema.
+  Una BDD on-edge, que usa libsql (un fork de sqlite) lo que nos entrega velocidad en producción, y nos permite correr tests en paralelo facilmente.
 
 - GraphQL Yoga:
   Un servidor GraphQL fácil de configurar que se apoya en Express.js. Proporciona una forma sencilla de crear servidores GraphQL que se pueden conectar a cualquier fuente de datos.
@@ -237,7 +242,7 @@ DATABASE_TOKEN="PREGUNTALE AL EQUIPO POR ESTO"
   Una biblioteca de validación y análisis de datos para JavaScript y TypeScript. Se utiliza para definir y validar esquemas de datos.
 
 - Drizzle:
-  ORM (Object-Relational Mapping) para SQLite en TypeScript. Ayuda a interactuar con bases de datos SQLite de una manera más estructurada y segura.
+  Un query builder para TypeScript. Ayuda a interactuar con bases de datos SQLite de una manera más estructurada y segura. Además de ayudarnos a crear migraciones incrementales facilmente.
 
 - Cloudflare Workers:
-  Una plataforma de servidor sin servidor que permite ejecutar código en la red de distribución de contenido (CDN) de Cloudflare, lo que permite respuestas más rápidas y menor latencia al ejecutar código cerca del usuario final​1​.
+  Una plataforma de servidor ...sin servidor 😊 Que permite ejecutar código en la red de distribución de contenido (CDN) de Cloudflare, lo que permite respuestas más rápidas y menor latencia al ejecutar código cerca del usuario final​1.
