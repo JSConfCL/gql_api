@@ -1,8 +1,6 @@
 import SchemaBuilder from "@pothos/core";
 import { DateResolver, DateTimeResolver } from "graphql-scalars";
 import { ORM_TYPE } from "~/datasources/db";
-import AuthzPlugin from "@pothos/plugin-authz";
-import { rules } from "./authz";
 
 export const builder = new SchemaBuilder<{
   Context: {
@@ -18,10 +16,7 @@ export const builder = new SchemaBuilder<{
       Output: Date;
     };
   };
-  AuthZRule: keyof typeof rules;
-}>({
-  plugins: [AuthzPlugin],
-});
+}>({});
 
 builder.queryType({});
 builder.mutationType({});
