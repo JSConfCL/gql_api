@@ -172,7 +172,8 @@ Además de verificar que tu resolver devuelve los datos correctos, verifica cóm
 
 # Migraciones
 
-Nuestra BDD es turso, usando `libsql` en local. Usamos `drizzle` y `drizzle-kit` para manejar conexiones a la BDD, que genera automaticamente archivos de migraciones cuando cambias tus modelos, lo que hace muchisimo más facil es escribrlas.
+Nuestra BDD es `turso` en produccion/qa y development, usando `libsql` en local.
+Usamos `drizzle` y `drizzle-kit` para manejar conexiones a la BDD, que genera automaticamente archivos de migraciones cuando cambias tus modelos, lo que hace muchisimo más facil es escribrlas.
 
 ## Cómo escribir migraciones?
 
@@ -221,6 +222,10 @@ CLERK_PEM_PUBLIC_KEY="PREGUNTALE AL EQUIPO POR ESTO"
 CLERK_ISSUER_ID="PREGUNTALE AL EQUIPO POR ESTO"
 ```
 
+> BRO-TIP 🔥
+
+Agrega una variable `ENFORCED_JWT_TOKEN` a tu archivo `.dev.vars`, para utilizarla por defecto en graphiql.
+
 ## Como correr tests
 
 - `npm run test`
@@ -228,7 +233,7 @@ CLERK_ISSUER_ID="PREGUNTALE AL EQUIPO POR ESTO"
 # STACK
 
 - Turso:
-  Una herramienta para generar código TypeScript a partir de archivos de especificación. Es útil para crear una API de tipo fuerte y garantizar la coherencia entre los diferentes componentes de un sistema.
+  Una BDD on-edge, que usa libsql (un fork de sqlite) lo que nos entrega velocidad en producción, y nos permite correr tests en paralelo facilmente.
 
 - GraphQL Yoga:
   Un servidor GraphQL fácil de configurar que se apoya en Express.js. Proporciona una forma sencilla de crear servidores GraphQL que se pueden conectar a cualquier fuente de datos.
@@ -237,7 +242,7 @@ CLERK_ISSUER_ID="PREGUNTALE AL EQUIPO POR ESTO"
   Una biblioteca de validación y análisis de datos para JavaScript y TypeScript. Se utiliza para definir y validar esquemas de datos.
 
 - Drizzle:
-  ORM (Object-Relational Mapping) para SQLite en TypeScript. Ayuda a interactuar con bases de datos SQLite de una manera más estructurada y segura.
+  Un query builder para TypeScript. Ayuda a interactuar con bases de datos SQLite de una manera más estructurada y segura. Además de ayudarnos a crear migraciones incrementales facilmente.
 
 - Cloudflare Workers:
-  Una plataforma de servidor sin servidor que permite ejecutar código en la red de distribución de contenido (CDN) de Cloudflare, lo que permite respuestas más rápidas y menor latencia al ejecutar código cerca del usuario final​1​.
+  Una plataforma de servidor ...sin servidor 😊 Que permite ejecutar código en la red de distribución de contenido (CDN) de Cloudflare, lo que permite respuestas más rápidas y menor latencia al ejecutar código cerca del usuario final​1.

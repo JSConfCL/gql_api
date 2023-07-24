@@ -7,6 +7,7 @@ export interface Env {
   OTEL_SERVICE_NAME: string;
   CLERK_PEM_PUBLIC_KEY: string | undefined;
   CLERK_ISSUER_ID: string | undefined;
+  ENFORCED_JWT_TOKEN: string | undefined;
 }
 
 declare global {
