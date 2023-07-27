@@ -9,7 +9,7 @@ import gql from 'graphql-tag';
 export type GetUsersQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type GetUsersQuery = { __typename?: 'Query', users: Array<{ __typename?: 'User', id: string, name: string | null, email: string | null }> };
+export type GetUsersQuery = { __typename?: 'Query', users: Array<{ __typename?: 'User', id: string, name: string | null }> };
 
 
 export const GetUsers = gql`
@@ -17,7 +17,6 @@ export const GetUsers = gql`
   users {
     id
     name
-    email
   }
 }
     `;

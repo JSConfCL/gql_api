@@ -160,7 +160,6 @@ export type TagSearchInput = {
 export type User = {
   __typename?: 'User';
   communities: Array<Community>;
-  email?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   name?: Maybe<Scalars['String']['output']>;
   username: Scalars['String']['output'];
