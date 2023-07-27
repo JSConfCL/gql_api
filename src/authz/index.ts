@@ -1,28 +1,45 @@
-import { preExecRule } from "@graphql-authz/core";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { PreExecutionRule, UnauthorizedError } from "@graphql-authz/core";
 import { GraphqlContext } from "~/builder";
 
-export const IsAuthenticated = preExecRule({
-  error: "User is not authenticated",
-})((context: GraphqlContext, fieldArgs: unknown) => {
-  return !!context.USER;
-});
+export class IsAuthenticated extends PreExecutionRule {
+  error = new UnauthorizedError("User is not authenticated");
 
-export const CanEditCommunity = preExecRule({
-  error: "User is not authenticated",
-})(async ({ USER, DB }: GraphqlContext, fieldArgs: { id?: string }) => {
-  if (!fieldArgs.id) {
-    return false;
+  public execute({ USER, DB }: GraphqlContext, fieldArgs: { id?: string }) {
+    return !!USER;
   }
-  if (!USER) {
-    return false;
-  }
-  const user = await DB.query.communitySchema.findFirst({
-    with: {
-      usersToCommunities: {
-        where: (utc, { eq, and }) =>
-          and(eq(utc.userId, USER.id), eq(utc.role, "admin")),
+}
+
+export class CanEditCommunity extends PreExecutionRule {
+  error = new UnauthorizedError("User cannot edit community");
+
+  public async execute(
+    { USER, DB }: GraphqlContext,
+    fieldArgs: { id?: string },
+  ) {
+    if (!fieldArgs.id) {
+      return false;
+    }
+    if (!USER) {
+      return false;
+    }
+    const user = await DB.query.communitySchema.findFirst({
+      with: {
+        usersToCommunities: {
+          where: (utc, { eq, and }) =>
+            and(eq(utc.userId, USER.id), eq(utc.role, "admin")),
+        },
       },
-    },
-  });
-  return Boolean(user);
-});
+    });
+    return Boolean(user);
+  }
+}
+
+export class IsSuperAdmin extends PreExecutionRule {
+  public execute({ USER }: GraphqlContext, fieldArgs: { id?: string }) {
+    if (!USER) {
+      return false;
+    }
+    return Boolean(USER.isSuperAdmin);
+  }
+}

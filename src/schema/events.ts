@@ -223,6 +223,13 @@ builder.mutationFields((t) => ({
     description: "Create an event",
     type: EventRef,
     nullable: false,
+    authz: {
+      compositeRules: [
+        {
+          or: ["CanEditCommunity", "IsSuperAdmin"],
+        },
+      ],
+    },
     args: {
       input: t.arg({ type: eventCreateInput, required: true }),
     },
