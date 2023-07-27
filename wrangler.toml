@@ -5,7 +5,6 @@ main = "src/index.ts"
 
 [vars]
 GRAPHQL_BASE_ENDPOINT = "/"
-GRAPHQL_KV_CACHE = ""
 OTEL_SERVICE_NAME="graphql-api"
 
 [define]
@@ -22,7 +21,6 @@ route = "api.jschile.org/*"
 
 [env.production.vars]
 GRAPHQL_BASE_ENDPOINT = "/"
-GRAPHQL_KV_CACHE = ""
 OTEL_SERVICE_NAME="graphql-api"
 
 [env.production.define]
@@ -38,7 +36,6 @@ route = "api.jsconf.dev/*"
 
 [env.staging.vars]
 GRAPHQL_BASE_ENDPOINT = "/"
-GRAPHQL_KV_CACHE = ""
 OTEL_SERVICE_NAME="graphql-api"
 
 [env.staging.define]

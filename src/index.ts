@@ -14,6 +14,8 @@ import {
   ProfileInfoSchema,
   updateUserProfileInfo,
 } from "~/datasources/queries/users";
+import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
+import * as rules from "~/authz";
 
 const getUser = async ({
   request,
@@ -33,6 +35,9 @@ const getUser = async ({
     url: DATABASE_URL,
   });
   const JWT_TOKEN = (request.headers.get("Authorization") ?? "").split(" ")[1];
+  if (!JWT_TOKEN) {
+    return null;
+  }
   const verified = await verifyToken(JWT_TOKEN, {
     issuer: CLERK_ISSUER_ID,
     jwtKey: CLERK_PEM_PUBLIC_KEY,
@@ -114,6 +119,7 @@ export const yoga = createYoga<Env>({
         {},
         "graphql-jschile",
       ),
+    authZEnvelopPlugin({ rules }),
   ].filter(Boolean),
   context: async ({
     request,

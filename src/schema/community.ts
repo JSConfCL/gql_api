@@ -70,6 +70,9 @@ builder.queryFields((t) => ({
   communities: t.field({
     description: "Get a list of communities. Filter by name, id, or status",
     type: [CommunityRef],
+    // authz: {
+    //   rules: ["IsAuthenticated"],
+    // },
     args: {
       id: t.arg.string({ required: false }),
       name: t.arg.string({ required: false }),
