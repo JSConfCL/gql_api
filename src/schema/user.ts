@@ -10,7 +10,6 @@ builder.objectType(UserRef, {
   fields: (t) => ({
     id: t.exposeString("id", { nullable: false }),
     name: t.exposeString("name", { nullable: true }),
-    email: t.exposeString("email", { nullable: true }),
     username: t.exposeString("username", { nullable: false }),
     communities: t.field({
       type: [CommunityRef],
