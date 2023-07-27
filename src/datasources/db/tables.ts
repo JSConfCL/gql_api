@@ -22,6 +22,7 @@ export const usersSchema = sqliteTable("users", {
   lastName: text("lastName"),
   bio: text("bio", { length: 1024 }).default(""),
   email: text("email"),
+  isSuperAdmin: int("isSuperAdmin", { mode: "boolean" }).default(false),
   emailVerified: int("emailVerified", { mode: "boolean" }),
   imageUrl: text("imageUrl"),
   username: text("username", { length: 64 }).unique().notNull(),
