@@ -1,4 +1,4 @@
-import { CommunityRef, UserRef } from "~/schema/refs";
+import { CommunityRef, UserRef } from "~/schema/shared/refs";
 import {
   selectCommunitySchema,
   selectUsersSchema,

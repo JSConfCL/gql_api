@@ -4,7 +4,6 @@ import { GraphqlContext } from "~/builder";
 
 export class IsAuthenticated extends PreExecutionRule {
   error = new UnauthorizedError("User is not authenticated");
-
   public execute({ USER, DB }: GraphqlContext, fieldArgs: { id?: string }) {
     return !!USER;
   }
@@ -41,5 +40,22 @@ export class IsSuperAdmin extends PreExecutionRule {
       return false;
     }
     return Boolean(USER.isSuperAdmin);
+  }
+}
+
+export class CanCreateEvent extends PreExecutionRule {
+  public async execute(
+    { USER, DB }: GraphqlContext,
+    fieldArgs: { communityId?: string },
+  ) {
+    if (!USER || !fieldArgs.communityId) {
+      return false;
+    }
+    const user = await DB.query.usersToCommunitiesSchema.findFirst({
+      where: (utc, { eq, and }) =>
+        and(eq(utc.userId, USER.id), eq(utc.role, "admin")),
+    });
+
+    return Boolean(user);
   }
 }

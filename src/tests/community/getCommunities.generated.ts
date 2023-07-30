@@ -6,18 +6,18 @@ import type * as Types from '../../generated/types';
 
 import type { JsonObject } from "type-fest";
 import gql from 'graphql-tag';
-export type GetCommunitiesQueryVariables = Types.Exact<{
+export type CommunitiesQueryVariables = Types.Exact<{
   communityID: Types.InputMaybe<Types.Scalars['String']['input']>;
   communityName: Types.InputMaybe<Types.Scalars['String']['input']>;
   communityStatus: Types.InputMaybe<Types.CommnunityStatus>;
 }>;
 
 
-export type GetCommunitiesQuery = { __typename?: 'Query', communities: Array<{ __typename?: 'Community', description: string | null, id: string, name: string | null, status: Types.CommnunityStatus }> };
+export type CommunitiesQuery = { __typename?: 'Query', communities: Array<{ __typename?: 'Community', description: string | null, id: string, name: string | null, status: Types.CommnunityStatus }> };
 
 
-export const GetCommunities = gql`
-    query getCommunities($communityID: String, $communityName: String, $communityStatus: CommnunityStatus) {
+export const Communities = gql`
+    query Communities($communityID: String, $communityName: String, $communityStatus: CommnunityStatus) {
   communities(id: $communityID, name: $communityName, status: $communityStatus) {
     description
     id

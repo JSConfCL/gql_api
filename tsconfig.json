@@ -1,5 +1,12 @@
 {
-  "include": ["**/*.ts", "**/*.d.ts", "**/*.json", "src/**/*"],
+  "include": [
+    "**/*.ts",
+    "**/*.d.ts",
+    "**/*.json",
+    "src/**/*",
+    "./.*.cjs",
+    "./*.json"
+  ],
   "compilerOptions": {
     "target": "ESNext",
     "module": "CommonJS",

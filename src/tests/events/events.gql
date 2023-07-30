@@ -1,4 +1,4 @@
-query getEvents(
+query Events(
   $eventId: String
   $visibility: EventVisibility
   $status: EventStatus

@@ -8,7 +8,7 @@ import {
   selectUsersSchema,
 } from "~/datasources/db/schema";
 import { SQL, eq, gte, like, lte } from "drizzle-orm";
-import { CommunityRef, EventRef, TagRef, UserRef } from "~/schema/refs";
+import { CommunityRef, EventRef, TagRef, UserRef } from "~/schema/shared/refs";
 import { builder } from "~/builder";
 import { v4 } from "uuid";
 
@@ -47,6 +47,11 @@ builder.objectType(EventRef, {
       nullable: true,
       resolve: (root) => root.endDateTime,
     }),
+    meetingURL: t.exposeString("meetingURL", { nullable: true }),
+    maxAttendees: t.exposeInt("maxAttendees", { nullable: true }),
+    latitude: t.exposeString("geoLatitude", { nullable: true }),
+    longitude: t.exposeString("geoLongitude", { nullable: true }),
+    address: t.exposeString("geoAddressJSON", { nullable: true }),
     community: t.field({
       type: CommunityRef,
       nullable: true,
@@ -201,7 +206,12 @@ builder.queryFields((t) => ({
 const eventCreateInput = builder.inputType("EventCreateInput", {
   fields: (t) => ({
     name: t.string({ required: true }),
-    description: t.string({ required: false }),
+    description: t.string({ required: true }),
+    communityId: t.string({ required: true }),
+    status: t.field({
+      type: EventStatus,
+      required: false,
+    }),
     visibility: t.field({
       type: EventVisibility,
       required: false,
@@ -214,7 +224,15 @@ const eventCreateInput = builder.inputType("EventCreateInput", {
       type: "DateTime",
       required: false,
     }),
-    communityId: t.string({ required: true }),
+    timeZone: t.string({ required: false }),
+    latitude: t.string({ required: false }),
+    longitude: t.string({ required: false }),
+    address: t.string({ required: false }),
+    meetingURL: t.string({ required: false }),
+    maxAttendees: t.field({
+      type: "Int",
+      required: true,
+    }),
   }),
 });
 
@@ -226,7 +244,7 @@ builder.mutationFields((t) => ({
     authz: {
       compositeRules: [
         {
-          or: ["CanEditCommunity", "IsSuperAdmin"],
+          or: ["CanCreateEvent", "IsSuperAdmin"],
         },
       ],
     },
@@ -234,8 +252,21 @@ builder.mutationFields((t) => ({
       input: t.arg({ type: eventCreateInput, required: true }),
     },
     resolve: async (root, { input }, ctx) => {
-      const { name, description, visibility, startDateTime, endDateTime } =
-        input;
+      const {
+        name,
+        description,
+        visibility,
+        startDateTime,
+        endDateTime,
+        communityId,
+        maxAttendees,
+        address,
+        latitude,
+        longitude,
+        meetingURL,
+        status,
+        timeZone,
+      } = input;
       const result = await ctx.DB.transaction(async (trx) => {
         try {
           const id = v4();
@@ -243,10 +274,16 @@ builder.mutationFields((t) => ({
             id,
             name,
             description,
-            status: "inactive",
             visibility,
             startDateTime,
             endDateTime,
+            maxAttendees,
+            geoAddressJSON: address,
+            geoLongitude: longitude,
+            getLatitude: latitude,
+            meetingURL,
+            status: status ?? "inactive",
+            timeZone,
           });
 
           const events = await trx
@@ -258,7 +295,7 @@ builder.mutationFields((t) => ({
             .insert(eventsToCommunitiesSchema)
             .values({
               eventId: id,
-              communityId: input.communityId,
+              communityId: communityId,
             })
             .returning()
             .get();

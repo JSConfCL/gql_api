@@ -1,9 +1,9 @@
-import { TagRef } from "~/schema/refs";
+import { TagRef } from "~/schema/shared/refs";
 import { selectTagsSchema, tagsSchema } from "~/datasources/db/schema";
 import { builder } from "~/builder";
 import slugify from "slugify";
 import { SQL, eq, like } from "drizzle-orm";
-import { sanitizeForLikeSearch } from "~/schema/helpers";
+import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 
 builder.objectType(TagRef, {
   description:

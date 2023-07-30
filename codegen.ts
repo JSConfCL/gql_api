@@ -20,6 +20,9 @@ const config: CodegenConfig = {
   documents: ["./src/**/*.gql"],
 
   generates: {
+    "src/generated/schema.json": {
+      plugins: ["introspection"],
+    },
     "src/generated/types.ts": {
       plugins: ["typescript", codeInjection],
     },

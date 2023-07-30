@@ -5,6 +5,8 @@ import {
   selectCommunitySchema,
   selectEventsSchema,
   selectTagsSchema,
+  selectUserTicketsSchema,
+  selectTicketSchema,
 } from "~/datasources/db/schema";
 
 type UserGraphqlSchema = z.infer<typeof selectUsersSchema>;
@@ -19,3 +21,10 @@ export const TagRef = builder.objectRef<TagGraphqllSchema>("Tag");
 
 type EventGraphqlSchema = z.infer<typeof selectEventsSchema>;
 export const EventRef = builder.objectRef<EventGraphqlSchema>("Event");
+
+type UserTicketGraphqlSchema = z.infer<typeof selectUserTicketsSchema>;
+export const UserTicketRef =
+  builder.objectRef<UserTicketGraphqlSchema>("UserTicket");
+
+type TicketGraphqlSchema = z.infer<typeof selectTicketSchema>;
+export const TicketRef = builder.objectRef<TicketGraphqlSchema>("Ticket");

@@ -40,10 +40,15 @@ export type Community = {
 /** Representation of an Event (Events and Users, is what tickets are linked to) */
 export type Event = {
   __typename?: 'Event';
+  address?: Maybe<Scalars['String']['output']>;
   community?: Maybe<Community>;
   description?: Maybe<Scalars['String']['output']>;
   endDateTime?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['String']['output'];
+  latitude?: Maybe<Scalars['String']['output']>;
+  longitude?: Maybe<Scalars['String']['output']>;
+  maxAttendees?: Maybe<Scalars['Int']['output']>;
+  meetingURL?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   startDateTime: Scalars['DateTime']['output'];
   status: EventStatus;
@@ -53,11 +58,18 @@ export type Event = {
 };
 
 export type EventCreateInput = {
+  address?: InputMaybe<Scalars['String']['input']>;
   communityId: Scalars['String']['input'];
-  description?: InputMaybe<Scalars['String']['input']>;
+  description: Scalars['String']['input'];
   endDateTime?: InputMaybe<Scalars['DateTime']['input']>;
+  latitude?: InputMaybe<Scalars['String']['input']>;
+  longitude?: InputMaybe<Scalars['String']['input']>;
+  maxAttendees: Scalars['Int']['input'];
+  meetingURL?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   startDateTime: Scalars['DateTime']['input'];
+  status?: InputMaybe<EventStatus>;
+  timeZone?: InputMaybe<Scalars['String']['input']>;
   visibility?: InputMaybe<EventVisibility>;
 };
 

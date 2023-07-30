@@ -1,4 +1,4 @@
-query getCommunities(
+query Communities(
   $communityID: String
   $communityName: String
   $communityStatus: CommnunityStatus

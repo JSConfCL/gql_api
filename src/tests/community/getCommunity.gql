@@ -1,4 +1,4 @@
-query getCommunity($communityID: String!) {
+query Community($communityID: String!) {
   community(id: $communityID) {
     description
     id

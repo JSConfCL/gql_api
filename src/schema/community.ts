@@ -5,7 +5,7 @@ import {
   selectUsersSchema,
 } from "~/datasources/db/schema";
 import { SQL, eq, like } from "drizzle-orm";
-import { CommunityRef, EventRef, UserRef } from "~/schema/refs";
+import { CommunityRef, EventRef, UserRef } from "~/schema/shared/refs";
 import { builder } from "~/builder";
 
 export const CommnunityStatus = builder.enumType("CommnunityStatus", {

@@ -10,10 +10,14 @@ import {
   tagsSchema,
   tagsToCommunitiesSchema,
   usersToCommunitiesSchema,
+  allowedCurrencySchema,
+  ticketsSchema,
+  userTicketsSchema,
 } from "~/datasources/db/tables";
 
 export const userRelations = relations(usersSchema, ({ many }) => ({
   usersToCommunities: many(usersToCommunitiesSchema),
+  usersToTickets: many(userTicketsSchema),
 }));
 
 export const communityRelations = relations(communitySchema, ({ many }) => ({
@@ -23,7 +27,7 @@ export const communityRelations = relations(communitySchema, ({ many }) => ({
 }));
 export const usersToCommunitiesRelations = relations(
   usersToCommunitiesSchema,
-  ({ one }) => ({
+  ({ one, many }) => ({
     community: one(communitySchema, {
       fields: [usersToCommunitiesSchema.communityId],
       references: [communitySchema.id],
@@ -32,6 +36,7 @@ export const usersToCommunitiesRelations = relations(
       fields: [usersToCommunitiesSchema.userId],
       references: [usersSchema.id],
     }),
+    tickets: many(userTicketsSchema),
   }),
 );
 
@@ -57,6 +62,7 @@ export const tagsRelations = relations(tagsSchema, ({ many }) => ({
 export const eventsRelations = relations(eventsSchema, ({ many }) => ({
   eventsToCommunities: many(eventsToCommunitiesSchema),
   eventsToTags: many(eventsToTagsSchema),
+  eventsToUserTickets: many(userTicketsSchema),
 }));
 
 export const eventsToCommunitiesRelations = relations(
@@ -72,6 +78,32 @@ export const eventsToCommunitiesRelations = relations(
     }),
   }),
 );
+
+export const ticketTemplatesRelations = relations(
+  ticketsSchema,
+  ({ one, many }) => ({
+    event: one(eventsSchema, {
+      fields: [ticketsSchema.eventId],
+      references: [eventsSchema.id],
+    }),
+    userTickets: many(userTicketsSchema),
+    allowedCurrencySchema: one(allowedCurrencySchema, {
+      fields: [ticketsSchema.currencyId],
+      references: [allowedCurrencySchema.id],
+    }),
+  }),
+);
+
+export const userTIcketsRelations = relations(userTicketsSchema, ({ one }) => ({
+  ticketTemplate: one(ticketsSchema, {
+    fields: [userTicketsSchema.ticketTemplateId],
+    references: [ticketsSchema.id],
+  }),
+  user: one(usersSchema, {
+    fields: [userTicketsSchema.userId],
+    references: [usersSchema.id],
+  }),
+}));
 
 export const eventsToTagsRelations = relations(
   eventsToTagsSchema,

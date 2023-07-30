@@ -2,14 +2,14 @@ import { it, describe, assert, afterEach } from "vitest";
 import { executeGraphqlOperation, insertCommunity } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
-  GetCommunities,
-  GetCommunitiesQuery,
-  GetCommunitiesQueryVariables,
+  Communities,
+  CommunitiesQuery,
+  CommunitiesQueryVariables,
 } from "~/tests/community/getCommunities.generated";
 import {
-  GetCommunity,
-  GetCommunityQuery,
-  GetCommunityQueryVariables,
+  Community,
+  CommunityQuery,
+  CommunityQueryVariables,
 } from "~/tests/community/getCommunity.generated";
 import { CommnunityStatus } from "~/generated/types";
 
@@ -23,10 +23,10 @@ describe("Communities", () => {
     const community2 = await insertCommunity();
     const community3 = await insertCommunity();
     const response = await executeGraphqlOperation<
-      GetCommunitiesQuery,
-      GetCommunitiesQueryVariables
+      CommunitiesQuery,
+      CommunitiesQueryVariables
     >({
-      document: GetCommunities,
+      document: Communities,
     });
     response;
 
@@ -40,10 +40,10 @@ describe("Communities", () => {
     const community1 = await insertCommunity();
     await insertCommunity();
     const response = await executeGraphqlOperation<
-      GetCommunitiesQuery,
-      GetCommunitiesQueryVariables
+      CommunitiesQuery,
+      CommunitiesQueryVariables
     >({
-      document: GetCommunities,
+      document: Communities,
       variables: {
         communityName: null,
         communityStatus: null,
@@ -66,10 +66,10 @@ describe("Communities", () => {
       name: "COMPLETELY_NON_RELATED_NAME",
     });
     const response = await executeGraphqlOperation<
-      GetCommunitiesQuery,
-      GetCommunitiesQueryVariables
+      CommunitiesQuery,
+      CommunitiesQueryVariables
     >({
-      document: GetCommunities,
+      document: Communities,
       variables: {
         communityID: null,
         communityStatus: null,
@@ -89,10 +89,10 @@ describe("Communities", () => {
       status: "inactive",
     });
     const response = await executeGraphqlOperation<
-      GetCommunitiesQuery,
-      GetCommunitiesQueryVariables
+      CommunitiesQuery,
+      CommunitiesQueryVariables
     >({
-      document: GetCommunities,
+      document: Communities,
       variables: {
         communityID: null,
         communityName: null,
@@ -103,10 +103,10 @@ describe("Communities", () => {
     assert.equal(response.data?.communities.length, 1);
     assert.equal(response.data?.communities[0].id, community3.id);
     const response2 = await executeGraphqlOperation<
-      GetCommunitiesQuery,
-      GetCommunitiesQueryVariables
+      CommunitiesQuery,
+      CommunitiesQueryVariables
     >({
-      document: GetCommunities,
+      document: Communities,
       variables: {
         communityID: null,
         communityName: null,
@@ -133,10 +133,10 @@ describe("Communities", () => {
       status: "inactive",
     });
     const response = await executeGraphqlOperation<
-      GetCommunitiesQuery,
-      GetCommunitiesQueryVariables
+      CommunitiesQuery,
+      CommunitiesQueryVariables
     >({
-      document: GetCommunities,
+      document: Communities,
       variables: {
         communityID: null,
         communityStatus: CommnunityStatus.Inactive,
@@ -154,10 +154,10 @@ describe("Community search", () => {
     await insertCommunity();
     await insertCommunity();
     const response = await executeGraphqlOperation<
-      GetCommunityQuery,
-      GetCommunityQueryVariables
+      CommunityQuery,
+      CommunityQueryVariables
     >({
-      document: GetCommunity,
+      document: Community,
     });
 
     assert.exists(response.errors);
@@ -167,10 +167,10 @@ describe("Community search", () => {
     const community1 = await insertCommunity();
     await insertCommunity();
     const response = await executeGraphqlOperation<
-      GetCommunityQuery,
-      GetCommunityQueryVariables
+      CommunityQuery,
+      CommunityQueryVariables
     >({
-      document: GetCommunity,
+      document: Community,
       variables: {
         communityID: community1.id,
       },
@@ -187,10 +187,10 @@ describe("Community search", () => {
     await insertCommunity();
     await insertCommunity();
     const response = await executeGraphqlOperation<
-      GetCommunityQuery,
-      GetCommunityQueryVariables
+      CommunityQuery,
+      CommunityQueryVariables
     >({
-      document: GetCommunity,
+      document: Community,
       variables: {
         communityID: "some-non-existing-id",
       },

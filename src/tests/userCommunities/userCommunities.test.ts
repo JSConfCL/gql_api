@@ -7,14 +7,14 @@ import {
 } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
-  GetUsersAndCommunities,
-  GetUsersAndCommunitiesQuery,
-  GetUsersAndCommunitiesQueryVariables,
+  UsersAndCommunities,
+  UsersAndCommunitiesQuery,
+  UsersAndCommunitiesQueryVariables,
 } from "~/tests/userCommunities/getUsersCommunities.generated";
 import {
-  GetCommunitiesUsers,
-  GetCommunitiesUsersQuery,
-  GetCommunitiesUsersQueryVariables,
+  CommunitiesUsers,
+  CommunitiesUsersQuery,
+  CommunitiesUsersQueryVariables,
 } from "~/tests/userCommunities/getCommunitiesUsers.generated";
 
 afterEach(() => {
@@ -32,10 +32,10 @@ describe("Users Graphql Tests", () => {
       role: "member",
     });
     const response = await executeGraphqlOperation<
-      GetUsersAndCommunitiesQuery,
-      GetUsersAndCommunitiesQueryVariables
+      UsersAndCommunitiesQuery,
+      UsersAndCommunitiesQueryVariables
     >({
-      document: GetUsersAndCommunities,
+      document: UsersAndCommunities,
     });
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.users.length, 2);
@@ -62,10 +62,10 @@ describe("Users Graphql Tests", () => {
       role: "member",
     });
     const response = await executeGraphqlOperation<
-      GetCommunitiesUsersQuery,
-      GetCommunitiesUsersQueryVariables
+      CommunitiesUsersQuery,
+      CommunitiesUsersQueryVariables
     >({
-      document: GetCommunitiesUsers,
+      document: CommunitiesUsers,
     });
     const userIds =
       response?.data?.communities?.[0]?.users?.map((el) => el.id) ?? [];

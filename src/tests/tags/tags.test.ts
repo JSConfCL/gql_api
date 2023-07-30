@@ -1,11 +1,7 @@
 import { it, describe, assert, afterAll } from "vitest";
 import { executeGraphqlOperation, insertTag } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
-import {
-  GetTags,
-  GetTagsQuery,
-  GetTagsQueryVariables,
-} from "./getTags.generated";
+import { Tags, TagsQuery, TagsQueryVariables } from "./getTags.generated";
 
 afterAll(() => {
   clearDatabase();
@@ -23,10 +19,10 @@ describe("Tags", async () => {
   });
   it("Should return an unfiltered list", async () => {
     const response = await executeGraphqlOperation<
-      GetTagsQuery,
-      GetTagsQueryVariables
+      TagsQuery,
+      TagsQueryVariables
     >({
-      document: GetTags,
+      document: Tags,
     });
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.tags.length, 3);
@@ -37,10 +33,10 @@ describe("Tags", async () => {
 
   it("Should filter by ID", async () => {
     const response = await executeGraphqlOperation<
-      GetTagsQuery,
-      GetTagsQueryVariables
+      TagsQuery,
+      TagsQueryVariables
     >({
-      document: GetTags,
+      document: Tags,
       variables: {
         tagDescription: null,
         tagName: null,
@@ -53,10 +49,10 @@ describe("Tags", async () => {
   });
   it("Should filter by name", async () => {
     const response = await executeGraphqlOperation<
-      GetTagsQuery,
-      GetTagsQueryVariables
+      TagsQuery,
+      TagsQueryVariables
     >({
-      document: GetTags,
+      document: Tags,
       variables: {
         tagDescription: null,
         tagId: null,
@@ -69,10 +65,10 @@ describe("Tags", async () => {
   });
   it("Should filter by description", async () => {
     const response = await executeGraphqlOperation<
-      GetTagsQuery,
-      GetTagsQueryVariables
+      TagsQuery,
+      TagsQueryVariables
     >({
-      document: GetTags,
+      document: Tags,
       variables: {
         tagName: null,
         tagId: null,

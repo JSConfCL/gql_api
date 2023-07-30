@@ -6,14 +6,14 @@ import type * as Types from '../../generated/types';
 
 import type { JsonObject } from "type-fest";
 import gql from 'graphql-tag';
-export type GetUsersQueryVariables = Types.Exact<{ [key: string]: never; }>;
+export type UsersQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type GetUsersQuery = { __typename?: 'Query', users: Array<{ __typename?: 'User', id: string, name: string | null }> };
+export type UsersQuery = { __typename?: 'Query', users: Array<{ __typename?: 'User', id: string, name: string | null }> };
 
 
-export const GetUsers = gql`
-    query getUsers {
+export const Users = gql`
+    query Users {
   users {
     id
     name

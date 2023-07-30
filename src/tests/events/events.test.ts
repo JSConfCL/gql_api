@@ -2,11 +2,7 @@ import { it, describe, assert, afterEach } from "vitest";
 import { executeGraphqlOperation, insertEvent } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { Event, EventQuery, EventQueryVariables } from "./event.generated";
-import {
-  GetEvents,
-  GetEventsQuery,
-  GetEventsQueryVariables,
-} from "./events.generated";
+import { Events, EventsQuery, EventsQueryVariables } from "./events.generated";
 import { EventStatus, EventVisibility } from "~/generated/types";
 
 afterEach(() => {
@@ -64,10 +60,10 @@ describe("Events", () => {
       name: "MY MEETTUP 3",
     });
     const response = await executeGraphqlOperation<
-      GetEventsQuery,
-      GetEventsQueryVariables
+      EventsQuery,
+      EventsQueryVariables
     >({
-      document: GetEvents,
+      document: Events,
     });
 
     assert.equal(response.errors, undefined);
@@ -80,7 +76,7 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: event1.startDateTime.toISOString(),
       endDateTime: event1.endDateTime?.toISOString(),
-    } as GetEventsQuery["events"][0]);
+    } as EventsQuery["events"][0]);
     assert.deepEqual(response.data?.events?.at(1), {
       id: event2.id,
       name: event2.name,
@@ -89,7 +85,7 @@ describe("Events", () => {
       visibility: event2.visibility,
       startDateTime: event2.startDateTime.toISOString(),
       endDateTime: event2.endDateTime?.toISOString(),
-    } as GetEventsQuery["events"][0]);
+    } as EventsQuery["events"][0]);
     assert.deepEqual(response.data?.events?.at(2), {
       id: event3.id,
       name: event3.name,
@@ -98,7 +94,7 @@ describe("Events", () => {
       visibility: event3.visibility,
       startDateTime: event3.startDateTime.toISOString(),
       endDateTime: event3.endDateTime?.toISOString(),
-    } as GetEventsQuery["events"][0]);
+    } as EventsQuery["events"][0]);
   });
   it("Should Filter by ID", async () => {
     const event1 = await insertEvent({
@@ -111,10 +107,10 @@ describe("Events", () => {
       name: "MY MEETTUP 3",
     });
     const response = await executeGraphqlOperation<
-      GetEventsQuery,
-      GetEventsQueryVariables
+      EventsQuery,
+      EventsQueryVariables
     >({
-      document: GetEvents,
+      document: Events,
       variables: {
         eventId: event1.id,
         visibility: null,
@@ -134,7 +130,7 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: event1.startDateTime.toISOString(),
       endDateTime: event1.endDateTime?.toISOString(),
-    } as GetEventsQuery["events"][0]);
+    } as EventsQuery["events"][0]);
   });
   it("Should Filter by Visibility", async () => {
     const event1 = await insertEvent({
@@ -147,10 +143,10 @@ describe("Events", () => {
       visibility: "public",
     });
     const response = await executeGraphqlOperation<
-      GetEventsQuery,
-      GetEventsQueryVariables
+      EventsQuery,
+      EventsQueryVariables
     >({
-      document: GetEvents,
+      document: Events,
       variables: {
         eventId: null,
         visibility: EventVisibility.Private,
@@ -170,7 +166,7 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: event1.startDateTime.toISOString(),
       endDateTime: event1.endDateTime?.toISOString(),
-    } as GetEventsQuery["events"][0]);
+    } as EventsQuery["events"][0]);
   });
   it("Should Filter by Status", async () => {
     const event1 = await insertEvent({
@@ -180,10 +176,10 @@ describe("Events", () => {
       status: EventStatus.Inactive,
     });
     const response = await executeGraphqlOperation<
-      GetEventsQuery,
-      GetEventsQueryVariables
+      EventsQuery,
+      EventsQueryVariables
     >({
-      document: GetEvents,
+      document: Events,
       variables: {
         eventId: null,
         visibility: null,
@@ -203,7 +199,7 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: event1.startDateTime.toISOString(),
       endDateTime: event1.endDateTime?.toISOString(),
-    } as GetEventsQuery["events"][0]);
+    } as EventsQuery["events"][0]);
   });
   it("Should Filter by Date", async () => {
     const event1 = await insertEvent({
@@ -215,10 +211,10 @@ describe("Events", () => {
       endDateTime: new Date("2021-02-05"),
     });
     const response = await executeGraphqlOperation<
-      GetEventsQuery,
-      GetEventsQueryVariables
+      EventsQuery,
+      EventsQueryVariables
     >({
-      document: GetEvents,
+      document: Events,
       variables: {
         eventId: null,
         visibility: null,
@@ -238,6 +234,6 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: event1.startDateTime.toISOString(),
       endDateTime: event1.endDateTime?.toISOString(),
-    } as GetEventsQuery["events"][0]);
+    } as EventsQuery["events"][0]);
   });
 });
