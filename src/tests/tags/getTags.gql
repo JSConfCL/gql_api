@@ -1,4 +1,4 @@
-query GetTags($tagDescription: String, $tagId: String, $tagName: String) {
+query Tags($tagDescription: String, $tagId: String, $tagName: String) {
   tags(input: { description: $tagDescription, id: $tagId, name: $tagName }) {
     description
     id

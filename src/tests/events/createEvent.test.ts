@@ -9,9 +9,9 @@ import {
   CreateEvent,
   CreateEventMutation,
   CreateEventMutationVariables,
-  GetCommunityEvents,
-  GetCommunityEventsQuery,
-  GetCommunityEventsQueryVariables,
+  CommunityEvents,
+  CommunityEventsQuery,
+  CommunityEventsQueryVariables,
 } from "./createEvent.generated";
 import { EventStatus, EventVisibility } from "~/generated/types";
 import { faker } from "@faker-js/faker";
@@ -34,16 +34,19 @@ describe("Event", () => {
     >({
       document: CreateEvent,
       variables: {
-        eventDescription: faker.lorem.paragraph(3),
-        eventName: faker.lorem.words(3),
-        startDateTime: startDate,
-        communityId: community.id,
-        visibility: EventVisibility.Public,
-        endDateTime: faker.date
-          .future({
-            refDate: startDate,
-          })
-          .toISOString(),
+        input: {
+          description: faker.lorem.paragraph(3),
+          name: faker.lorem.words(3),
+          startDateTime: startDate,
+          communityId: community.id,
+          visibility: EventVisibility.Public,
+          maxAttendees: 10,
+          endDateTime: faker.date
+            .future({
+              refDate: startDate,
+            })
+            .toISOString(),
+        },
       },
     });
 
@@ -65,23 +68,26 @@ describe("Event", () => {
     >({
       document: CreateEvent,
       variables: {
-        eventDescription: faker.lorem.paragraph(3),
-        eventName: faker.lorem.words(3),
-        startDateTime: startDate,
-        communityId: community.id,
-        visibility: EventVisibility.Public,
-        endDateTime: faker.date
-          .future({
-            refDate: startDate,
-          })
-          .toISOString(),
+        input: {
+          description: faker.lorem.paragraph(3),
+          name: faker.lorem.words(3),
+          startDateTime: startDate,
+          communityId: community.id,
+          visibility: EventVisibility.Public,
+          maxAttendees: 10,
+          endDateTime: faker.date
+            .future({
+              refDate: startDate,
+            })
+            .toISOString(),
+        },
       },
     });
     const communityResponse = await executeGraphqlOperation<
-      GetCommunityEventsQuery,
-      GetCommunityEventsQueryVariables
+      CommunityEventsQuery,
+      CommunityEventsQueryVariables
     >({
-      document: GetCommunityEvents,
+      document: CommunityEvents,
       variables: {
         communityId: community.id,
       },
@@ -114,16 +120,19 @@ describe("Event", () => {
     >({
       document: CreateEvent,
       variables: {
-        eventDescription: faker.lorem.paragraph(3),
-        eventName: faker.lorem.words(3),
-        startDateTime: startDate,
-        communityId: "NON ID",
-        visibility: EventVisibility.Public,
-        endDateTime: faker.date
-          .future({
-            refDate: startDate,
-          })
-          .toISOString(),
+        input: {
+          description: faker.lorem.paragraph(3),
+          name: faker.lorem.words(3),
+          startDateTime: startDate,
+          communityId: "NON ID",
+          visibility: EventVisibility.Public,
+          maxAttendees: 10,
+          endDateTime: faker.date
+            .future({
+              refDate: startDate,
+            })
+            .toISOString(),
+        },
       },
     });
 

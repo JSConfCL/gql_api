@@ -7,30 +7,23 @@ import type * as Types from '../../generated/types';
 import type { JsonObject } from "type-fest";
 import gql from 'graphql-tag';
 export type CreateEventMutationVariables = Types.Exact<{
-  eventName: Types.Scalars['String']['input'];
-  eventDescription: Types.InputMaybe<Types.Scalars['String']['input']>;
-  visibility: Types.InputMaybe<Types.EventVisibility>;
-  startDateTime: Types.Scalars['DateTime']['input'];
-  endDateTime: Types.InputMaybe<Types.Scalars['DateTime']['input']>;
-  communityId: Types.Scalars['String']['input'];
+  input: Types.EventCreateInput;
 }>;
 
 
 export type CreateEventMutation = { __typename?: 'Mutation', createEvent: { __typename?: 'Event', id: string, name: string, description: string | null, visibility: Types.EventVisibility, status: Types.EventStatus, startDateTime: string, endDateTime: string | null } };
 
-export type GetCommunityEventsQueryVariables = Types.Exact<{
+export type CommunityEventsQueryVariables = Types.Exact<{
   communityId: Types.Scalars['String']['input'];
 }>;
 
 
-export type GetCommunityEventsQuery = { __typename?: 'Query', community: { __typename?: 'Community', id: string, events: Array<{ __typename?: 'Event', id: string, name: string, visibility: Types.EventVisibility, status: Types.EventStatus }> } | null };
+export type CommunityEventsQuery = { __typename?: 'Query', community: { __typename?: 'Community', id: string, events: Array<{ __typename?: 'Event', id: string, name: string, visibility: Types.EventVisibility, status: Types.EventStatus }> } | null };
 
 
 export const CreateEvent = gql`
-    mutation CreateEvent($eventName: String!, $eventDescription: String, $visibility: EventVisibility, $startDateTime: DateTime!, $endDateTime: DateTime, $communityId: String!) {
-  createEvent(
-    input: {name: $eventName, description: $eventDescription, visibility: $visibility, startDateTime: $startDateTime, endDateTime: $endDateTime, communityId: $communityId}
-  ) {
+    mutation CreateEvent($input: EventCreateInput!) {
+  createEvent(input: $input) {
     id
     name
     description
@@ -41,8 +34,8 @@ export const CreateEvent = gql`
   }
 }
     `;
-export const GetCommunityEvents = gql`
-    query GetCommunityEvents($communityId: String!) {
+export const CommunityEvents = gql`
+    query CommunityEvents($communityId: String!) {
   community(id: $communityId) {
     id
     events {

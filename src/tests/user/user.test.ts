@@ -2,9 +2,9 @@ import { it, describe, assert, afterEach } from "vitest";
 import { executeGraphqlOperation, insertUser } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
-  GetUsers,
-  GetUsersQuery,
-  GetUsersQueryVariables,
+  Users,
+  UsersQuery,
+  UsersQueryVariables,
 } from "~/tests/user/getUsers.generated";
 
 afterEach(() => {
@@ -16,10 +16,10 @@ describe("Users Graphql Tests", () => {
     const user = await insertUser();
     const user2 = await insertUser();
     const response = await executeGraphqlOperation<
-      GetUsersQuery,
-      GetUsersQueryVariables
+      UsersQuery,
+      UsersQueryVariables
     >({
-      document: GetUsers,
+      document: Users,
     });
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.users.length, 2);
@@ -30,10 +30,10 @@ describe("Users Graphql Tests", () => {
     const user = await insertUser();
     const user2 = await insertUser();
     const response = await executeGraphqlOperation<
-      GetUsersQuery,
-      GetUsersQueryVariables
+      UsersQuery,
+      UsersQueryVariables
     >({
-      document: GetUsers,
+      document: Users,
     });
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.users.length, 2);
