@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@clerk/types": "^3.48.1",
-    "@cloudflare/workers-types": "^4.20230628.0",
+    "@cloudflare/workers-types": "^4.20230724.0",
     "@graphql-codegen/add": "^5.0.0",
     "@graphql-codegen/cli": "4.0.1",
     "@graphql-codegen/import-types-preset": "^2.2.6",

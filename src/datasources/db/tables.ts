@@ -75,6 +75,75 @@ export const eventsSchema = sqliteTable("events", {
     mode: "timestamp_ms",
   }).notNull(),
   endDateTime: integer("end_date_time", { mode: "timestamp_ms" }),
+  timeZone: text("timezone", { length: 64 }),
+  geoLatitude: text("geo_latitude"),
+  geoLongitude: text("geo_longitude"),
+  geoAddressJSON: text("geo_address_json"),
+  meetingURL: text("meeting_url"),
+  maxAttendees: integer("max_attendees"),
+  ...createdAndUpdatedAtFields,
+});
+
+// TICKET_TEMPLATES-TABLE
+export const ticketsSchema = sqliteTable("tickets", {
+  id: text("id").primaryKey().notNull(),
+  name: text("name", { length: 1024 }).notNull().unique(),
+  description: text("description", { length: 4096 }),
+  status: text("status", { enum: ["active", "inactive"] })
+    .notNull()
+    .default("inactive"),
+  visibility: text("visibility", {
+    enum: ["public", "private", "unlisted"],
+  })
+    .notNull()
+    .default("unlisted"),
+  startDateTime: integer("start_date_time", {
+    mode: "timestamp_ms",
+  }).notNull(),
+  endDateTime: integer("end_date_time", { mode: "timestamp_ms" }),
+  requiresApproval: int("requires_approval", { mode: "boolean" }).default(
+    false,
+  ),
+  price: integer("price"),
+  quantity: integer("quantity"),
+  eventId: text("event_id").references(() => eventsSchema.id),
+  currencyId: text("currency").references(() => allowedCurrencySchema.id),
+  ...createdAndUpdatedAtFields,
+});
+
+// TICKETS-TABLE
+export const userTicketsSchema = sqliteTable("userTickets", {
+  id: text("id").primaryKey().notNull(),
+  userId: text("user_id").references(() => usersSchema.id),
+  ticketTemplateId: text("ticket_template_id").references(
+    () => ticketsSchema.id,
+  ),
+  status: text("status", { enum: ["active", "cancelled"] })
+    .default("cancelled")
+    .notNull(),
+  paymentStatus: text("payment_status", { enum: ["paid", "unpaid"] })
+    .default("unpaid")
+    .notNull(),
+  approvalStatus: text("approval_status", {
+    enum: ["approved", "pending"],
+  })
+    .default("pending")
+    .notNull(),
+  redemptionStatus: text("redemption_status", {
+    enum: ["redeemed", "pending"],
+  })
+    .default("pending")
+    .notNull(),
+  ...createdAndUpdatedAtFields,
+});
+
+// ALLOWED_CURRENCIES-TABLE
+export const allowedCurrencySchema = sqliteTable("allowed_currencies", {
+  id: text("id").primaryKey().notNull(),
+  currency: text("currency", { length: 3 }).notNull().unique(),
+  validPaymentMethods: text("payment_methods", {
+    enum: ["stripe", "paypal", "mercado_pago", "bank_transfer"],
+  }),
   ...createdAndUpdatedAtFields,
 });
 
@@ -82,7 +151,9 @@ export const eventsSchema = sqliteTable("events", {
 export const usersToCommunitiesSchema = sqliteTable("users_communities", {
   userId: text("user_id").references(() => usersSchema.id),
   communityId: text("community_id").references(() => communitySchema.id),
-  role: text("role", { enum: ["admin", "member"] }).default("member"),
+  role: text("role", { enum: ["admin", "member", "contributor"] }).default(
+    "member",
+  ),
   ...createdAndUpdatedAtFields,
 });
 
