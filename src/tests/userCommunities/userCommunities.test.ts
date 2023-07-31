@@ -15,6 +15,9 @@ import {
   CommunitiesUsers,
   CommunitiesUsersQuery,
   CommunitiesUsersQueryVariables,
+  SingleCommunityUsers,
+  SingleCommunityUsersQuery,
+  SingleCommunityUsersQueryVariables,
 } from "~/tests/userCommunities/getCommunitiesUsers.generated";
 
 afterEach(() => {
@@ -76,5 +79,20 @@ describe("Users Graphql Tests", () => {
     assert.equal(response.data?.communities[0].users.length, 2);
     assert.oneOf(user1.id, userIds, "Could not find user");
     assert.oneOf(user2.id, userIds, "Could not find user");
+  });
+
+  it("Should return an empty list of users for a community if no users are in that community", async () => {
+    const community2 = await insertCommunity();
+    const response = await executeGraphqlOperation<
+      SingleCommunityUsersQuery,
+      SingleCommunityUsersQueryVariables
+    >({
+      document: SingleCommunityUsers,
+      variables: {
+        id: community2.id,
+      },
+    });
+    assert.equal(response.errors, undefined);
+    assert.equal(response?.data?.community?.users.length, 0);
   });
 });

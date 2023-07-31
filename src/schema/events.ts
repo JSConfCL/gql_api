@@ -78,10 +78,10 @@ builder.objectType(EventRef, {
               where: (utc, { eq }) => eq(utc.userId, root.id),
             },
           },
+          orderBy(fields, operators) {
+            return operators.desc(fields.username);
+          },
         });
-        if (!users) {
-          return [];
-        }
         return users.map((u) => selectUsersSchema.parse(u));
       },
     }),
@@ -94,10 +94,10 @@ builder.objectType(EventRef, {
               where: (tte, { eq }) => eq(tte.eventId, root.id),
             },
           },
+          orderBy(fields, operators) {
+            return operators.desc(fields.name);
+          },
         });
-        if (!tags) {
-          return [];
-        }
         return tags.map((t) => selectTagsSchema.parse(t));
       },
     }),
@@ -135,9 +135,6 @@ builder.queryFields((t) => ({
       input: t.arg({ type: EventsSearchInput, required: false }),
     },
     resolve: async (root, { input }, ctx) => {
-      if (!input) {
-        return [];
-      }
       const {
         id,
         name,
@@ -145,7 +142,7 @@ builder.queryFields((t) => ({
         visibility,
         startDateTimeFrom,
         startDateTimeTo,
-      } = input;
+      } = input ?? {};
       const wheres: SQL[] = [];
       if (id) {
         wheres.push(eq(eventsSchema.id, id));
@@ -186,9 +183,6 @@ builder.queryFields((t) => ({
     },
     resolve: async (root, args, ctx) => {
       const { id } = args;
-      if (!id) {
-        return null;
-      }
       const event = await ctx.DB.query.eventsSchema.findFirst({
         where: (c, { eq }) => eq(c.id, id),
         orderBy(fields, operators) {

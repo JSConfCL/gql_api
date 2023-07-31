@@ -122,7 +122,6 @@ export const insertUser = async (
     possibleInput,
   );
 };
-export const findUserById = async (id?: string) => findById(usersSchema, id);
 
 export const insertCommunity = async (
   partialInput?: Partial<z.infer<typeof insertCommunitySchema>>,
@@ -142,8 +141,6 @@ export const insertCommunity = async (
     possibleInput,
   );
 };
-export const findCommunityById = async (id?: string) =>
-  findById(communitySchema, id);
 
 export const insertUserToCommunity = async (
   partialInput: z.infer<typeof insertUsersToCommunitiesSchema>,

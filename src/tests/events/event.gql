@@ -7,5 +7,14 @@ query Event($eventId: String!) {
     status
     startDateTime
     endDateTime
+    tags {
+      id
+    }
+    community {
+      id
+    }
+    users {
+      id
+    }
   }
 }

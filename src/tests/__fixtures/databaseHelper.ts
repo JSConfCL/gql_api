@@ -9,6 +9,7 @@ import { ORM_TYPE } from "~/datasources/db";
 
 const testDabasesFolder = `.test_dbs`;
 const migrationsFolder = `${process.cwd()}/drizzle/migrations`;
+/* c8 ignore next 3 */
 if (!existsSync(`./${testDabasesFolder}`)) {
   mkdirSync(`./${testDabasesFolder}`);
 }
@@ -19,10 +20,12 @@ const createDatabase = () => {
   // console.info("Creating Database", databaseName);
   return new Promise<string>((resolve, reject) => {
     exec(command, (err, stdout, stderr) => {
+      /* c8 ignore next 4 */
       if (err) {
         console.error("ERROR CREATING DB", err);
         return reject(err);
       }
+      /* c8 ignore next 4 */
       if (stderr) {
         console.error("STDERR", stderr);
         return reject(stderr);

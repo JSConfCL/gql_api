@@ -10,3 +10,16 @@ query CommunitiesUsers {
     }
   }
 }
+
+query SingleCommunityUsers($id: String!) {
+  community(id: $id) {
+    description
+    id
+    users {
+      id
+      communities {
+        id
+      }
+    }
+  }
+}
