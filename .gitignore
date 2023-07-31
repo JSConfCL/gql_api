@@ -13,6 +13,7 @@ yarn-error.log
 .test_dbs
 
 .eslintcache
+coverage
 tsconfig.tsbuildinfo
 
 .DS_STORE

@@ -40,7 +40,13 @@ jobs:
         run: npm ci --prefer-offline --no-audit --legacy-peer-deps --cache ~/.npm
 
       - name: Run tests
-        run: npm test
+        run: npm test:ci
+
+      - name: "Report Coverage"
+        if: always() # Also generate the report if tests are failing
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          file-coverage-mode: "changes"
 
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
