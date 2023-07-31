@@ -40,7 +40,7 @@ jobs:
         run: npm ci --prefer-offline --no-audit --legacy-peer-deps --cache ~/.npm
 
       - name: Run tests
-        run: npm test:ci
+        run: npm run test:ci
 
       - name: "Report Coverage"
         if: always() # Also generate the report if tests are failing
