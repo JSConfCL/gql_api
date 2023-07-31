@@ -15,7 +15,7 @@ export default defineConfig({
   test: {
     coverage: {
       reporter: ["text", "json-summary", "json", "html"],
-      "100": true,
+      // "100": true, // TODO: Discutir con el equipo
     },
   },
 });

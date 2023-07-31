@@ -16,9 +16,7 @@ const sql = createClient({
   url: process.env.DATABASE_URL,
   authToken: process.env.DATABASE_TOKEN,
 });
-runMigration(sql)
-  .then(() => console.log("Done!"))
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  });
+runMigration(sql).catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

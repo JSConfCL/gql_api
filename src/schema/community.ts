@@ -55,11 +55,6 @@ builder.objectType(CommunityRef, {
             return operators.desc(fields.createdAt);
           },
         });
-        console.log(
-          "communities!!!!!!!!!!!!!!!!!!!!",
-          communities,
-          communities?.usersToCommunities,
-        );
         if (
           !communities?.usersToCommunities ||
           communities?.usersToCommunities?.length === 0

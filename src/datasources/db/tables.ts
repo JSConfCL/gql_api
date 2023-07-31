@@ -13,6 +13,7 @@ const createdAndUpdatedAtFields = {
     .default(sql`current_timestamp`)
     .notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }),
+  deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
 };
 
 // USERS
@@ -151,7 +152,7 @@ export const allowedCurrencySchema = sqliteTable("allowed_currencies", {
 export const usersToCommunitiesSchema = sqliteTable("users_communities", {
   userId: text("user_id").references(() => usersSchema.id),
   communityId: text("community_id").references(() => communitySchema.id),
-  role: text("role", { enum: ["admin", "member", "contributor"] }).default(
+  role: text("role", { enum: ["admin", "member", "volunteer"] }).default(
     "member",
   ),
   ...createdAndUpdatedAtFields,

@@ -6,8 +6,6 @@ import {
   insertEventTag,
   insertCommunity,
   insertEventToCommunity,
-  insertUser,
-  insertUserToCommunity,
 } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { Event, EventQuery, EventQueryVariables } from "./event.generated";
@@ -183,8 +181,6 @@ describe("Events", () => {
     >({
       document: Events,
     });
-
-    console.log("RESPONSE", response.data);
 
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.events?.length, 3);
