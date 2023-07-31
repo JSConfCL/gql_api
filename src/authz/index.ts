@@ -39,7 +39,6 @@ export class IsSuperAdmin extends PreExecutionRule {
     if (!USER) {
       return false;
     }
-    console.log("USER.isSuperAdmin", USER.isSuperAdmin);
     return Boolean(USER.isSuperAdmin);
   }
 }

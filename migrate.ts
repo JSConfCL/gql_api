@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { config } from "dotenv";
 import { createClient } from "@libsql/client";
 import { runMigration } from "~/datasources/db/runMigrations";

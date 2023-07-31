@@ -226,7 +226,6 @@ describe("Event", () => {
         communityId: community.id,
       },
     });
-    console.log("response.data", response);
     if (!response.data) {
       throw new Error("No data");
     }
