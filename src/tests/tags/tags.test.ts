@@ -38,9 +38,9 @@ describe("Tags", async () => {
     >({
       document: Tags,
       variables: {
-        tagDescription: null,
-        tagName: null,
-        tagId: tag2.id,
+        input: {
+          id: tag2.id,
+        },
       },
     });
     assert.equal(response.errors, undefined);
@@ -54,9 +54,9 @@ describe("Tags", async () => {
     >({
       document: Tags,
       variables: {
-        tagDescription: null,
-        tagId: null,
-        tagName: tag2.name,
+        input: {
+          name: tag2.name,
+        },
       },
     });
     assert.equal(response.errors, undefined);
@@ -70,9 +70,9 @@ describe("Tags", async () => {
     >({
       document: Tags,
       variables: {
-        tagName: null,
-        tagId: null,
-        tagDescription: "tag2",
+        input: {
+          description: "tag2",
+        },
       },
     });
     assert.equal(response.errors, undefined);

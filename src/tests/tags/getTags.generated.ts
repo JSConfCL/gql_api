@@ -7,9 +7,7 @@ import type * as Types from '../../generated/types';
 import type { JsonObject } from "type-fest";
 import gql from 'graphql-tag';
 export type TagsQueryVariables = Types.Exact<{
-  tagDescription: Types.InputMaybe<Types.Scalars['String']['input']>;
-  tagId: Types.InputMaybe<Types.Scalars['String']['input']>;
-  tagName: Types.InputMaybe<Types.Scalars['String']['input']>;
+  input: Types.InputMaybe<Types.TagSearchInput>;
 }>;
 
 
@@ -17,8 +15,8 @@ export type TagsQuery = { __typename?: 'Query', tags: Array<{ __typename?: 'Tag'
 
 
 export const Tags = gql`
-    query Tags($tagDescription: String, $tagId: String, $tagName: String) {
-  tags(input: {description: $tagDescription, id: $tagId, name: $tagName}) {
+    query Tags($input: TagSearchInput) {
+  tags(input: $input) {
     description
     id
     name

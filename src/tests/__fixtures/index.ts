@@ -107,6 +107,7 @@ async function findById<D extends SQLiteTableWithColumns<any>>(
 export const insertUser = async (
   partialInput?: Partial<z.infer<typeof insertUserRequest>>,
 ) => {
+  // ads
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     email: partialInput?.email,

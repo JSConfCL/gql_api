@@ -32,7 +32,7 @@ const TagSearchInput = builder.inputType("TagSearchInput", {
 
 builder.queryFields((t) => ({
   tags: t.field({
-    description: "Get a list of users",
+    description: "Get a list of tags",
     type: [TagRef],
     args: {
       input: t.arg({ type: TagSearchInput, required: false }),

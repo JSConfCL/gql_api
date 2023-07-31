@@ -999,7 +999,7 @@
           },
           {
             "name": "tags",
-            "description": "Get a list of users",
+            "description": "Get a list of tags",
             "args": [
               {
                 "name": "input",

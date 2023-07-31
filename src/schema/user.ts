@@ -27,7 +27,10 @@ builder.objectType(UserRef, {
             return operators.desc(fields.createdAt);
           },
         });
-        if (!communities?.usersToCommunities) {
+        if (
+          !communities?.usersToCommunities ||
+          communities?.usersToCommunities.length === 0
+        ) {
           return [];
         }
         return communities.usersToCommunities.map(({ community }) =>

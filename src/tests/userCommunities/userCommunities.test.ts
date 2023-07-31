@@ -62,7 +62,6 @@ describe("Users Graphql Tests", () => {
     await insertUserToCommunity({
       userId: user2.id,
       communityId: community1.id,
-      role: "member",
     });
     const response = await executeGraphqlOperation<
       CommunitiesUsersQuery,
