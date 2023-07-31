@@ -46,9 +46,9 @@ export class IsSuperAdmin extends PreExecutionRule {
 export class CanCreateEvent extends PreExecutionRule {
   public async execute(
     { USER, DB }: GraphqlContext,
-    fieldArgs: { communityId?: string },
+    fieldArgs: { input: { communityId: string } },
   ) {
-    if (!USER || !fieldArgs.communityId) {
+    if (!USER || !fieldArgs?.input?.communityId) {
       return false;
     }
     const user = await DB.query.usersToCommunitiesSchema.findFirst({

@@ -7,11 +7,7 @@ import type * as Types from '../../generated/types';
 import type { JsonObject } from "type-fest";
 import gql from 'graphql-tag';
 export type EventsQueryVariables = Types.Exact<{
-  eventId: Types.InputMaybe<Types.Scalars['String']['input']>;
-  visibility: Types.InputMaybe<Types.EventVisibility>;
-  status: Types.InputMaybe<Types.EventStatus>;
-  startDateTimeFrom: Types.InputMaybe<Types.Scalars['DateTime']['input']>;
-  startDateTimeTo: Types.InputMaybe<Types.Scalars['DateTime']['input']>;
+  input: Types.InputMaybe<Types.EventsSearchInput>;
 }>;
 
 
@@ -19,10 +15,8 @@ export type EventsQuery = { __typename?: 'Query', events: Array<{ __typename?: '
 
 
 export const Events = gql`
-    query Events($eventId: String, $visibility: EventVisibility, $status: EventStatus, $startDateTimeFrom: DateTime, $startDateTimeTo: DateTime) {
-  events(
-    input: {id: $eventId, visibility: $visibility, status: $status, startDateTimeFrom: $startDateTimeFrom, startDateTimeTo: $startDateTimeTo}
-  ) {
+    query Events($input: EventsSearchInput) {
+  events(input: $input) {
     id
     name
     description

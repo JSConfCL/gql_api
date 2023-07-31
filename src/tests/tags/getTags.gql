@@ -1,5 +1,5 @@
-query Tags($tagDescription: String, $tagId: String, $tagName: String) {
-  tags(input: { description: $tagDescription, id: $tagId, name: $tagName }) {
+query Tags($input: TagSearchInput) {
+  tags(input: $input) {
     description
     id
     name

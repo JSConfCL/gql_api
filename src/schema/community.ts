@@ -55,7 +55,10 @@ builder.objectType(CommunityRef, {
             return operators.desc(fields.createdAt);
           },
         });
-        if (!communities?.usersToCommunities) {
+        if (
+          !communities?.usersToCommunities ||
+          communities?.usersToCommunities?.length === 0
+        ) {
           return [];
         }
         return communities?.usersToCommunities?.map(({ user }) =>
@@ -113,9 +116,6 @@ builder.queryFields((t) => ({
     },
     resolve: async (root, args, ctx) => {
       const { id } = args;
-      if (!id) {
-        return null;
-      }
       const community = await ctx.DB.query.communitySchema.findFirst({
         where: (c, { eq }) => eq(c.id, id),
         orderBy(fields, operators) {

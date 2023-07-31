@@ -13,8 +13,12 @@ afterEach(() => {
 
 describe("Users Graphql Tests", () => {
   it("Should return a list of users", async () => {
-    const user = await insertUser();
-    const user2 = await insertUser();
+    const user = await insertUser({
+      id: "1",
+    });
+    const user2 = await insertUser({
+      id: "2",
+    });
     const response = await executeGraphqlOperation<
       UsersQuery,
       UsersQueryVariables

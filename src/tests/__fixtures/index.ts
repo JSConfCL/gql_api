@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { faker } from "@faker-js/faker";
+import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import { buildHTTPExecutor } from "@graphql-tools/executor-http";
 import { ExecutionRequest } from "@graphql-tools/utils";
 import { initContextCache } from "@pothos/core";
@@ -38,30 +39,58 @@ import {
 } from "~/datasources/db/tables";
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/__fixtures/databaseHelper";
+import * as rules from "~/authz";
 
 const insertUserRequest = insertUsersSchema.deepPartial();
 
-const executor = buildHTTPExecutor({
-  fetch: createYoga<Env>({
-    schema,
-    context: async ({ request }) => {
-      const JWT = parse(request.headers.get("cookie") ?? "")["TEST"];
-      const DB = await getTestDB();
-      return {
-        ...initContextCache(),
-        JWT,
-        DB,
-      };
-    },
-  }).fetch,
-});
+const createExecutor = (user?: Awaited<ReturnType<typeof insertUser>>) =>
+  buildHTTPExecutor({
+    fetch: createYoga<Env>({
+      schema,
+      context: async () => {
+        const DB = await getTestDB();
+        return {
+          ...initContextCache(),
+          DB,
+          USER: user ? user : undefined,
+        };
+      },
+      plugins: [authZEnvelopPlugin({ rules })],
+    }).fetch,
+  });
+
 export const executeGraphqlOperation = <
   TResult,
   TVariables extends Record<string, any> = Record<string, any>,
 >(
   params: ExecutionRequest<TVariables, unknown, unknown, undefined, unknown>,
 ): Promise<ExecutionResult<TResult>> => {
+  const executor = createExecutor();
   // @ts-expect-error This is ok. Executor returns a promise with they types passed
+  return executor(params);
+};
+
+export const executeGraphqlOperationAsUser = <
+  TResult,
+  TVariables extends Record<string, any> = Record<string, any>,
+>(
+  params: ExecutionRequest<TVariables, unknown, unknown, undefined, unknown>,
+  user: Awaited<ReturnType<typeof insertUser>>,
+): Promise<ExecutionResult<TResult>> => {
+  const executor = createExecutor(user);
+  // @ts-expect-error This error is ok. Executor returns a promise with they types passed
+  return executor(params);
+};
+
+export const executeGraphqlOperationAsSuperAdmin = async <
+  TResult,
+  TVariables extends Record<string, any> = Record<string, any>,
+>(
+  params: ExecutionRequest<TVariables, unknown, unknown, undefined, unknown>,
+): Promise<ExecutionResult<TResult>> => {
+  const user = await insertUser({ isSuperAdmin: true });
+  const executor = createExecutor(user);
+  // @ts-expect-error This error is ok. Executor returns a promise with they types passed
   return executor(params);
 };
 
@@ -107,6 +136,7 @@ async function findById<D extends SQLiteTableWithColumns<any>>(
 export const insertUser = async (
   partialInput?: Partial<z.infer<typeof insertUserRequest>>,
 ) => {
+  // ads
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     email: partialInput?.email,
@@ -114,6 +144,15 @@ export const insertUser = async (
     name: partialInput?.name,
     updatedAt: partialInput?.updatedAt,
     username: partialInput?.username ?? faker.internet.userName(),
+    isSuperAdmin: partialInput?.isSuperAdmin ?? false,
+    bio: partialInput?.bio ?? faker.lorem.paragraph(),
+    deletedAt: partialInput?.deletedAt,
+    emailVerified: partialInput?.emailVerified ?? false,
+    lastName: partialInput?.lastName ?? faker.name.lastName(),
+    publicMetadata: partialInput?.publicMetadata ?? JSON.stringify({}),
+    twoFactorEnabled: partialInput?.twoFactorEnabled ?? false,
+    unsafeMetadata: partialInput?.unsafeMetadata ?? JSON.stringify({}),
+    imageUrl: partialInput?.imageUrl,
   } satisfies z.infer<typeof insertUsersSchema>;
   return insertOne(
     insertUsersSchema,
@@ -122,7 +161,6 @@ export const insertUser = async (
     possibleInput,
   );
 };
-export const findUserById = async (id?: string) => findById(usersSchema, id);
 
 export const insertCommunity = async (
   partialInput?: Partial<z.infer<typeof insertCommunitySchema>>,
@@ -142,8 +180,6 @@ export const insertCommunity = async (
     possibleInput,
   );
 };
-export const findCommunityById = async (id?: string) =>
-  findById(communitySchema, id);
 
 export const insertUserToCommunity = async (
   partialInput: z.infer<typeof insertUsersToCommunitiesSchema>,

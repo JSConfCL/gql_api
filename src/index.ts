@@ -3,7 +3,7 @@ import { useCSRFPrevention } from "@graphql-yoga/plugin-csrf-prevention";
 import { useMaskedErrors } from "@envelop/core";
 import { APP_ENV } from "~/env";
 import { useImmediateIntrospection } from "@envelop/immediate-introspection";
-import { getDb } from "~/datasources/db";
+import { ORM_TYPE, getDb } from "~/datasources/db";
 import { Env } from "worker-configuration";
 import { schema } from "~/schema";
 import { initContextCache } from "@pothos/core";
@@ -21,19 +21,13 @@ const getUser = async ({
   request,
   CLERK_ISSUER_ID,
   CLERK_PEM_PUBLIC_KEY,
-  DATABASE_TOKEN,
-  DATABASE_URL,
+  DB,
 }: {
   request: Request;
   CLERK_ISSUER_ID: string;
   CLERK_PEM_PUBLIC_KEY: string;
-  DATABASE_TOKEN: string;
-  DATABASE_URL: string;
+  DB: ORM_TYPE;
 }) => {
-  const DB = getDb({
-    authToken: DATABASE_TOKEN,
-    url: DATABASE_URL,
-  });
   const JWT_TOKEN = (request.headers.get("Authorization") ?? "").split(" ")[1];
   if (!JWT_TOKEN) {
     return null;
@@ -148,8 +142,7 @@ export const yoga = createYoga<Env>({
       request,
       CLERK_ISSUER_ID,
       CLERK_PEM_PUBLIC_KEY,
-      DATABASE_TOKEN,
-      DATABASE_URL,
+      DB,
     });
     return {
       ...initContextCache(),

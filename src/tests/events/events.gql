@@ -1,19 +1,5 @@
-query Events(
-  $eventId: String
-  $visibility: EventVisibility
-  $status: EventStatus
-  $startDateTimeFrom: DateTime
-  $startDateTimeTo: DateTime
-) {
-  events(
-    input: {
-      id: $eventId
-      visibility: $visibility
-      status: $status
-      startDateTimeFrom: $startDateTimeFrom
-      startDateTimeTo: $startDateTimeTo
-    }
-  ) {
+query Events($input: EventsSearchInput) {
+  events(input: $input) {
     id
     name
     description

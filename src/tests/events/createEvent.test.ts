@@ -1,8 +1,12 @@
 import { it, describe, afterEach, assert, expect } from "vitest";
 import {
   executeGraphqlOperation,
+  executeGraphqlOperationAsSuperAdmin,
+  executeGraphqlOperationAsUser,
   findEventById,
   insertCommunity,
+  insertUser,
+  insertUserToCommunity,
 } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
@@ -21,40 +25,170 @@ afterEach(() => {
 });
 
 describe("Event", () => {
-  it("Should Create an event", async () => {
-    const startDate = faker.date
-      .future({
-        years: 1,
-      })
-      .toISOString();
-    const community = await insertCommunity();
-    const response = await executeGraphqlOperation<
-      CreateEventMutation,
-      CreateEventMutationVariables
-    >({
-      document: CreateEvent,
-      variables: {
-        input: {
-          description: faker.lorem.paragraph(3),
-          name: faker.lorem.words(3),
-          startDateTime: startDate,
-          communityId: community.id,
-          visibility: EventVisibility.Public,
-          maxAttendees: 10,
-          endDateTime: faker.date
-            .future({
-              refDate: startDate,
-            })
-            .toISOString(),
+  describe("Should create an event", () => {
+    it("As an admin", async () => {
+      const startDate = faker.date
+        .future({
+          years: 1,
+        })
+        .toISOString();
+      const user1 = await insertUser();
+      const community = await insertCommunity();
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user1.id,
+        role: "admin",
+      });
+      const response = await executeGraphqlOperationAsUser<
+        CreateEventMutation,
+        CreateEventMutationVariables
+      >(
+        {
+          document: CreateEvent,
+          variables: {
+            input: {
+              description: faker.lorem.paragraph(3),
+              name: faker.lorem.words(3),
+              startDateTime: startDate,
+              communityId: community.id,
+              visibility: EventVisibility.Public,
+              maxAttendees: 10,
+              endDateTime: faker.date
+                .future({
+                  refDate: startDate,
+                })
+                .toISOString(),
+            },
+          },
         },
-      },
-    });
+        user1,
+      );
 
-    assert.equal(response.errors, undefined);
-    const event = await findEventById(response?.data?.createEvent?.id);
-    assert.equal(response.data?.createEvent.id, event.id);
-    assert.equal(response.data?.createEvent.description, event.description);
+      assert.equal(response.errors, undefined);
+      const event = await findEventById(response?.data?.createEvent?.id);
+      assert.equal(response.data?.createEvent.id, event.id);
+      assert.equal(response.data?.createEvent.description, event.description);
+    });
+    it("As a super-admin", async () => {
+      const startDate = faker.date
+        .future({
+          years: 1,
+        })
+        .toISOString();
+      const community = await insertCommunity();
+      const response = await executeGraphqlOperationAsSuperAdmin<
+        CreateEventMutation,
+        CreateEventMutationVariables
+      >({
+        document: CreateEvent,
+        variables: {
+          input: {
+            description: faker.lorem.paragraph(3),
+            name: faker.lorem.words(3),
+            startDateTime: startDate,
+            communityId: community.id,
+            visibility: EventVisibility.Public,
+            maxAttendees: 10,
+            endDateTime: faker.date
+              .future({
+                refDate: startDate,
+              })
+              .toISOString(),
+          },
+        },
+      });
+
+      assert.equal(response.errors, undefined);
+      const event = await findEventById(response?.data?.createEvent?.id);
+      assert.equal(response.data?.createEvent.id, event.id);
+      assert.equal(response.data?.createEvent.description, event.description);
+    });
   });
+  describe("Should fail to create an event", () => {
+    it("As normal user", async () => {
+      const startDate = faker.date
+        .future({
+          years: 1,
+        })
+        .toISOString();
+      const user1 = await insertUser();
+      const community = await insertCommunity();
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user1.id,
+        role: "member",
+      });
+      const response = await executeGraphqlOperationAsUser<
+        CreateEventMutation,
+        CreateEventMutationVariables
+      >(
+        {
+          document: CreateEvent,
+          variables: {
+            input: {
+              description: faker.lorem.paragraph(3),
+              name: faker.lorem.words(3),
+              startDateTime: startDate,
+              communityId: community.id,
+              visibility: EventVisibility.Public,
+              maxAttendees: 10,
+              endDateTime: faker.date
+                .future({
+                  refDate: startDate,
+                })
+                .toISOString(),
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(response.errors?.length, 1);
+      assert.equal(response.errors?.[0]?.extensions?.code, "FORBIDDEN");
+    });
+    it("As volunteer", async () => {
+      const startDate = faker.date
+        .future({
+          years: 1,
+        })
+        .toISOString();
+      const user1 = await insertUser();
+      const community = await insertCommunity();
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user1.id,
+        role: "volunteer",
+      });
+      const response = await executeGraphqlOperationAsUser<
+        CreateEventMutation,
+        CreateEventMutationVariables
+      >(
+        {
+          document: CreateEvent,
+          variables: {
+            input: {
+              description: faker.lorem.paragraph(3),
+              name: faker.lorem.words(3),
+              startDateTime: startDate,
+              communityId: community.id,
+              visibility: EventVisibility.Public,
+              maxAttendees: 10,
+              endDateTime: faker.date
+                .future({
+                  refDate: startDate,
+                })
+                .toISOString(),
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(response.errors?.length, 1);
+      assert.equal(response.errors?.[0]?.extensions?.code, "FORBIDDEN");
+    });
+  });
+
   it("Should associate an event to a community", async () => {
     const startDate = faker.date
       .future({
@@ -62,7 +196,7 @@ describe("Event", () => {
       })
       .toISOString();
     const community = await insertCommunity();
-    const response = await executeGraphqlOperation<
+    const response = await executeGraphqlOperationAsSuperAdmin<
       CreateEventMutation,
       CreateEventMutationVariables
     >({

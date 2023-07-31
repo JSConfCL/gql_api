@@ -115,7 +115,7 @@ export type Query = {
   /** Get a list of events. Filter by name, id, status or date */
   events: Array<Event>;
   status: Scalars['String']['output'];
-  /** Get a list of users */
+  /** Get a list of tags */
   tags: Array<Tag>;
   /** Get a list of users */
   users: Array<User>;
