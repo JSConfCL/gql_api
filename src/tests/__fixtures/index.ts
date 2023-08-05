@@ -4,7 +4,6 @@ import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import { buildHTTPExecutor } from "@graphql-tools/executor-http";
 import { ExecutionRequest } from "@graphql-tools/utils";
 import { initContextCache } from "@pothos/core";
-import { parse } from "cookie";
 import { eq } from "drizzle-orm";
 import { SQLiteTableWithColumns } from "drizzle-orm/sqlite-core";
 import { createSelectSchema } from "drizzle-zod";
