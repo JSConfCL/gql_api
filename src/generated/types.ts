@@ -35,6 +35,7 @@ export type Community = {
   name?: Maybe<Scalars['String']['output']>;
   status: CommnunityStatus;
   users: Array<User>;
+  news: Array<New>;
 };
 
 /** Representation of an Event (Events and Users, is what tickets are linked to) */
@@ -56,7 +57,30 @@ export type Event = {
   users: Array<User>;
   visibility: EventVisibility;
 };
+/** Representation of a New */
+export type New = {
+  __typename?: 'New';
+  title: Scalars['String']['output'];
+  description: Scalars['String']['output'];
+  status: Scalars['String']['output'];
+  community?: Maybe<Community>;
+};
 
+export type NewsSearchInput = {
+  id?: InputMaybe<Scalars['String']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type NewCreateInput = {
+  title: Scalars['String']['input'];
+  description: Scalars['String']['input'];
+  status: Scalars['String']['input'];
+  communityId?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** Representation of an Event (Events and Users, is what tickets are linked to) */
 export type EventCreateInput = {
   address?: InputMaybe<Scalars['String']['input']>;
   communityId: Scalars['String']['input'];
@@ -97,11 +121,16 @@ export type Mutation = {
   __typename?: 'Mutation';
   /** Create an event */
   createEvent: Event;
+  /** Create a new */
+  createNew: New;
 };
 
 
 export type MutationCreateEventArgs = {
   input: EventCreateInput;
+};
+export type MutationCreateNewArgs = {
+  input: NewCreateInput;
 };
 
 export type Query = {
@@ -119,6 +148,8 @@ export type Query = {
   tags: Array<Tag>;
   /** Get a list of users */
   users: Array<User>;
+  /** Get a list of news */
+  news: Array<New>;
 };
 
 
@@ -143,6 +174,9 @@ export type QueryEventsArgs = {
   input?: InputMaybe<EventsSearchInput>;
 };
 
+export type QueryNewsArgs = {
+  input?: InputMaybe<NewsSearchInput>;
+};
 
 export type QueryStatusArgs = {
   name?: InputMaybe<Scalars['String']['input']>;

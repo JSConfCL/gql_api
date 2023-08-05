@@ -32,6 +32,14 @@ export const usersSchema = sqliteTable("users", {
   publicMetadata: blob("publicMetadata"),
   ...createdAndUpdatedAtFields,
 });
+// News
+export const newsSchema = sqliteTable("news", {
+  id: text("id").primaryKey().notNull(),
+  title: text("title", { length: 64 }).notNull(),
+  description: text("description", { length: 1024 }),
+  status: text("status", { enum: ["active", "inactive"] }).default("inactive"),
+  ...createdAndUpdatedAtFields,
+})
 
 // COMMUNITY
 export const communitySchema = sqliteTable(
@@ -170,6 +178,19 @@ export const tagsToCommunitiesSchema = sqliteTable(
     primary_key: primaryKey(t.tagId, t.communityId),
   }),
 );
+// NEW-COMMUNITY
+export const newsToCommunitiesSchema = sqliteTable(
+  "news_communities",
+  {
+    newId: text("new_id").references(() => newsSchema.id),
+    communityId: text("community_id").references(() => communitySchema.id),
+    ...createdAndUpdatedAtFields,
+  },
+  (t) => ({
+    primary_key: primaryKey(t.newId, t.communityId),
+  }),
+);
+
 
 // EVENT—COMMUNITY
 export const eventsToCommunitiesSchema = sqliteTable(

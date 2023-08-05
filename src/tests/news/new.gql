@@ -1,0 +1,11 @@
+query New($newId: String!) {
+  new(id: $newId) {
+    id
+    title
+    description
+    status
+    community {
+      id
+    }
+  }
+}

@@ -13,6 +13,8 @@ import {
   allowedCurrencySchema,
   ticketsSchema,
   userTicketsSchema,
+  newsToCommunitiesSchema,
+  newsSchema,
 } from "~/datasources/db/tables";
 
 export const userRelations = relations(usersSchema, ({ many }) => ({
@@ -24,6 +26,7 @@ export const communityRelations = relations(communitySchema, ({ many }) => ({
   usersToCommunities: many(usersToCommunitiesSchema),
   tagsToCommunities: many(tagsToCommunitiesSchema),
   eventsToCommunities: many(eventsToCommunitiesSchema),
+  newsToCommunities: many(newsToCommunitiesSchema),
 }));
 export const usersToCommunitiesRelations = relations(
   usersToCommunitiesSchema,
@@ -75,6 +78,24 @@ export const eventsToCommunitiesRelations = relations(
     event: one(eventsSchema, {
       fields: [eventsToCommunitiesSchema.eventId],
       references: [eventsSchema.id],
+    }),
+  }),
+);
+
+export const newsRelations = relations(newsSchema, ({ one }) => ({
+  newsToCommunities: one(newsToCommunitiesSchema),
+}));
+
+export const newsToCommunitiesRelations = relations(
+  newsToCommunitiesSchema,
+  ({ one }) => ({
+    community: one(communitySchema, {
+      fields: [newsToCommunitiesSchema.communityId],
+      references: [communitySchema.id],
+    }),
+    new: one(newsSchema, {
+      fields: [newsToCommunitiesSchema.newId],
+      references: [newsSchema.id],
     }),
   }),
 );

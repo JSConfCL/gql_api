@@ -1,0 +1,8 @@
+query News($input: NewsSearchInput) {
+  news(input: $input) {
+    id
+    title
+    description
+    status
+  }
+}
