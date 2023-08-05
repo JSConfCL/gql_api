@@ -16,13 +16,9 @@ const codeInjection = {
 
 const config: CodegenConfig = {
   ignoreNoDocuments: true,
-  schema: "http://127.0.0.1:8787/graphql",
+  schema: "./src/generated/schema.gql",
   documents: ["./src/**/*.gql"],
-
   generates: {
-    "src/generated/schema.json": {
-      plugins: ["introspection"],
-    },
     "src/generated/types.ts": {
       plugins: ["typescript", codeInjection],
     },
