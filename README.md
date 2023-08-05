@@ -11,8 +11,11 @@
   - Obten la URL de tu DB con `turso db tokens list`
   - Guarda la URL de tu BDD y la token en el archivo .dev.vars bajo `DATABASE_URL` y `DATABASE_TOKEN`
 - Finalmente, `npm i` & `num run dev`
+- Listo! Tu servidor GraphQL está corriendo en http://127.0.0.1:8787
 
 # Cómo escribir tests
+
+> PSA: Los tests se corren con `npm run tests` (o `npm run test:interactive` si quieres explorar una UI con mas informacion)
 
 ## Preparación del entorno de prueba
 
@@ -210,11 +213,16 @@ Usamos `drizzle` y `drizzle-kit` para manejar conexiones a la BDD, que genera au
 
 ## Cómo escribir migraciones?
 
-### 1. Actualiza el esquema.
+### 1. Actualiza el esquema de la base de datos.
 
-Primero, necesitas actualizar el archivo del esquema en `./src/datasources/db/schema.ts`.
-Este archivo define la estructura de la base de datos.
-Por ejemplo, aquí es donde se definen las tablas y sus campos, así como las relaciones entre las tablas.
+> AKA. Crea o edita Tablas, Columnas, Indices, etc.
+
+Primero, necesitas actualizar el archivo del esquema en `./src/datasources/db/schema/tables.ts`. (o )
+Este archivo define la estructura de las tablas en la BDD.
+
+> Las relaciones entre tablas, se definen en `./src/datasources/db/schema/relations.ts`.
+> Los esquemas de query/update se definen en `./src/datasources/db/schema/CRUD.ts`.
+
 Para definir una tabla, utilizas la función `sqliteTable()`, donde el primer argumento es el nombre de la tabla y el segundo es un objeto que define los campos de la tabla.
 
 Por ejemplo:
@@ -228,11 +236,12 @@ export const usersSchema = sqliteTable("users", {
 });
 ```
 
-En este ejemplo, se define una tabla users con varios campos, incluyendo id, name, y bio. Los campos se definen utilizando funciones como text() e integer(), y se pueden agregar opciones adicionales, como unique(), notNull(), y default().
+Esto define una tabla users con varios campos, incluyendo id, name, y bio.
+Los campos se definen utilizando funciones como text() e integer(), y se pueden agregar opciones adicionales, como unique(), notNull(), y default().
 
 ### 2. Genera los archivos de migración.
 
-Una vez que hayas actualizado el esquema, debes generar los archivos de migración. Para hacerlo, ejecuta npx db:generate.
+Una vez que hayas actualizado el esquema, debes generar los archivos de migración. Para hacerlo, ejecuta `npx db:generate`.
 
 ### 3. Verifica las migraciones:
 
@@ -244,24 +253,34 @@ Puedes hacer esto corriendo todos los tests. Estos geeneran una BDD desde 0, y c
 Finalmente, ejecuta las migraciones con `npm run db:migrate`.
 Estos comandos utilizan las variables de entorno definidas en el archivo .dev.vars para conectarse a las BDD de desarrollo.
 
+### 5. Como limpiar tu base de datos:
+
+- conectate a tu bdd con `turso db shell NOMBRE_DE_TU_BDD`
+- ejecuta `select 'drop table ' || name || ';' from sqlite_master where type = 'table';` para obtener todas las tablas de tu bdd
+  - Esto te devolverá un resultado como el siguiente:
+    ```txt
+    drop table users;
+    drop table events;
+    drop table event_attendees;
+    drop table event_invitations;
+    drop table event_invitation_tokens;
+    ```
+- copia y pega el resultado en tu terminal para eliminar todas las tablas de tu bdd.
+- sal de la shell con `.quit`
+- Listo! Tu bdd está 100% limpia. 😊
+
 # Requisitos
 
 - Tener un archivo `.dev.vars` con el siguiente contenido
-
-```txt
-DATABASE_URL="PREGUNTALE AL EQUIPO POR ESTO"
-DATABASE_TOKEN="PREGUNTALE AL EQUIPO POR ESTO"
-CLERK_PEM_PUBLIC_KEY="PREGUNTALE AL EQUIPO POR ESTO"
-CLERK_ISSUER_ID="PREGUNTALE AL EQUIPO POR ESTO"
-```
+  ```txt
+  DATABASE_URL="PREGUNTALE AL EQUIPO POR ESTO"
+  DATABASE_TOKEN="PREGUNTALE AL EQUIPO POR ESTO"
+  CLERK_PEM_PUBLIC_KEY="PREGUNTALE AL EQUIPO POR ESTO"
+  CLERK_ISSUER_ID="PREGUNTALE AL EQUIPO POR ESTO"
+  ```
 
 > BRO-TIP 🔥
-
-Agrega una variable `ENFORCED_JWT_TOKEN` a tu archivo `.dev.vars`, para utilizarla por defecto en graphiql.
-
-## Como correr tests
-
-- `npm run test`
+> Agrega una variable `ENFORCED_JWT_TOKEN` a tu archivo `.dev.vars`, para utilizarla por defecto en graphiql.
 
 # STACK
 
