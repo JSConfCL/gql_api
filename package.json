@@ -16,7 +16,7 @@
     "prettier": "prettier ./src --cache",
     "typecheck": "tsc",
     "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info",
-    "generate": "graphql-codegen --config codegen.ts"
+    "generate": "tsx ./src/generated/generate.ts && graphql-codegen --config codegen.ts"
   },
   "devDependencies": {
     "@clerk/types": "^3.48.1",
@@ -24,7 +24,6 @@
     "@graphql-codegen/add": "^5.0.0",
     "@graphql-codegen/cli": "4.0.1",
     "@graphql-codegen/import-types-preset": "^2.2.6",
-    "@graphql-codegen/introspection": "^4.0.0",
     "@graphql-codegen/near-operation-file-preset": "^2.5.0",
     "@graphql-codegen/typed-document-node": "^5.0.1",
     "@graphql-codegen/typescript": "^4.0.1",

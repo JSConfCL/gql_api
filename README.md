@@ -3,23 +3,27 @@
 - Asegurate de tener el archivo .dev.vars (Pídele al equipo los valores correspondientes.)
   - Puedes correr una BDD local si te parece.
   - Para correr el proyecto con las BDD de desarrollo, tienes que agregar un archivo `.dev.vars` con los valores de las mismas.
-  - Preguntale al equipo por los valores de la BDD, (o crea tu propia BDD en [turso.tech](https://turso.tech/))
-- Pide las llaves de autenticacion para clerk
-  - Agregala a .dev.vars bajo `CLERK_PEM_PUBLIC_KEY` y `CLERK_ISSUER_ID`
+- Crear una base de datos en turso.tech
+  - Instala el CLI de turso [acá](https://github.com/tursodatabase/turso-cli)
+  - Authentícate con `turso auth login`
+  - Crea una base de datos con `turso db create NOMBRE_DE_TU_BDD`
+  - Obten la TOKEN de tu DB con `turso db tokens create NOMBRE_DE_TU_BDD`
+  - Obten la URL de tu DB con `turso db tokens list`
+  - Guarda la URL de tu BDD y la token en el archivo .dev.vars bajo `DATABASE_URL` y `DATABASE_TOKEN`
 - Finalmente, `npm i` & `num run dev`
-
-# Cómo contribuir al proyecto
-
-- Si buscas una feature nueva, sugiérela creando un issue [acá](https://github.com/JSConfCL/gql_api/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc).
-- Haz un fork del repositorio y crea una nueva rama para tu funcionalidad o corrección.
-- Realiza tus cambios, y escribe pruebas que cubran el nuevo código.
-- Envía una solicitud de pull.
+- Listo! Tu servidor GraphQL está corriendo en http://127.0.0.1:8787
 
 # Cómo escribir tests
 
+> PSA: Los tests se corren con `npm run tests` (o `npm run test:interactive` si quieres explorar una UI con mas informacion)
+
 ## Preparación del entorno de prueba
 
-Antes de empezar a escribir tus tests, asegúrate de tener un entorno de prueba adecuado. Puedes necesitar borrar y recrear la base de datos antes de cada test para asegurarte de que los datos de un test no afecten a los demás. En nuestros ejemplos, usamos la función clearDatabase() en el hook afterEach() para lograr esto.
+> La expectativa de nuestros tests, es que cada archivo de tests pueda correr en paralelo (y aislados) el uno del otro.
+> Por lo mismo, creamos una base de datos nueva antes de correr cada test.
+> Para asegurarte de que esto tambien ocurra entre tests del mismo archivo, recuerda poner en tu archivo de tests,
+> un hook `afterEach` que limpie la base de datos.
+> (En nuestros ejemplos, usamos la función clearDatabase() en el hook afterEach() para lograr esto.)
 
 ## Escribir la query o mutación
 
@@ -40,8 +44,13 @@ query getUsers {
 ## Generar código
 
 Para poder correr los test, necesitamos tener funciones y variables en JavaScript/Typescript, no en "graphql".
+Podríamos escribir la query o mutación, como un string, directamente en un archivo `.ts`. Pero eso es tedioso, propenso a errores, y no nos da autocompletado.
+
+Para evitar esto, usamos un generador de código, que nos permite escribir la query o mutación en un archivo `.gql`, y luego generar el código asociado a esta operación de graphql.
+
 Usaremos el archivo `.gql` que creamos recien, y correremos el comando `npm run generate`.
-Esto generará codigo y tipos asociados a esta operación de graphql, por ejemplo:
+
+Esto generará codigo y tipos asociados a esta operación de graphql, por ejemplo, la query que definimos arriba, generará el siguiente archivo:
 
 ```typescript
 /* eslint-disable */
@@ -105,7 +114,8 @@ describe("My Resolver Tests", () => {
 
 ## Ejecuta tu query o mutación.
 
-Tenemos un helper para realizar esto, llamado `executeGraphqlOperation`, donde puedes pasar la operación que definiste en el parametro `"document"`.
+Tenemos un helper para realizar esto, llamado `executeGraphqlOperation`.
+Donde puedes pasar la operación que definiste en el parametro `"document"`.
 La query y tipos los debes traer desde tu archivo generado.
 
 Por ejemplo:
@@ -134,6 +144,31 @@ describe("My Resolver Tests", () => {
   });
 });
 ```
+
+## Ejecuta tu query o mutación con otro usuario.
+
+`executeGraphqlOperation` executa la query o mutación de manera anónima.
+Para poder executar una query o mutación con un usuario específico, puedes usar el helper `executeGraphqlOperationAsUser`.
+Este helper requiere que ademas de un documento/variables, le pases un usuario. como segundo parámetro.
+
+Por ejemplo:
+
+```TSX
+const user1 = await insertUser();
+const response = await executeGraphqlOperationAsUser<
+  CreateEventMutation,
+  CreateEventMutationVariables
+>(
+  {
+    document: SOME_DOCUMENT,
+    variables: SOME_VARIABLES,
+  },
+  user1,
+);
+```
+
+> De igual manera, tenemos el helper `executeGraphqlOperationAsAdmin` para ejecutar queries o mutaciones como un admin.
+> Es un helper similar a `executeGraphqlOperationAsUser`, con la salvedad que no requiere que le pases un usuario como segundo parámetro, y lo crea por ti.
 
 ## Verifica tus respuestas:
 
@@ -166,9 +201,10 @@ describe("My Resolver Tests", () => {
 
 ```
 
-## Manejo de errores
+### Manejo de errores
 
-Además de verificar que tu resolver devuelve los datos correctos, verifica cómo maneja los errores. Por ejemplo, puedes escribir un test que pase datos incorrectos a tu mutación y luego verificar que la respuesta contiene el error correcto, o que falla donde debería fallar 😀.
+Además de verificar que tu resolver devuelve los datos correctos, verifica cómo maneja los errores.
+Por ejemplo, puedes escribir un test que pase datos incorrectos a tu mutación y luego verificar que la respuesta contiene el error correcto, o que falla donde debería fallar 😀.
 
 # Migraciones
 
@@ -177,11 +213,16 @@ Usamos `drizzle` y `drizzle-kit` para manejar conexiones a la BDD, que genera au
 
 ## Cómo escribir migraciones?
 
-### 1. Actualiza el esquema.
+### 1. Actualiza el esquema de la base de datos.
 
-Primero, necesitas actualizar el archivo del esquema en `./src/datasources/db/schema.ts`.
-Este archivo define la estructura de la base de datos.
-Por ejemplo, aquí es donde se definen las tablas y sus campos, así como las relaciones entre las tablas.
+> AKA. Crea o edita Tablas, Columnas, Indices, etc.
+
+Primero, necesitas actualizar el archivo del esquema en `./src/datasources/db/schema/tables.ts`. (o )
+Este archivo define la estructura de las tablas en la BDD.
+
+> Las relaciones entre tablas, se definen en `./src/datasources/db/schema/relations.ts`.
+> Los esquemas de query/update se definen en `./src/datasources/db/schema/CRUD.ts`.
+
 Para definir una tabla, utilizas la función `sqliteTable()`, donde el primer argumento es el nombre de la tabla y el segundo es un objeto que define los campos de la tabla.
 
 Por ejemplo:
@@ -195,11 +236,12 @@ export const usersSchema = sqliteTable("users", {
 });
 ```
 
-En este ejemplo, se define una tabla users con varios campos, incluyendo id, name, y bio. Los campos se definen utilizando funciones como text() e integer(), y se pueden agregar opciones adicionales, como unique(), notNull(), y default().
+Esto define una tabla users con varios campos, incluyendo id, name, y bio.
+Los campos se definen utilizando funciones como text() e integer(), y se pueden agregar opciones adicionales, como unique(), notNull(), y default().
 
 ### 2. Genera los archivos de migración.
 
-Una vez que hayas actualizado el esquema, debes generar los archivos de migración. Para hacerlo, ejecuta npx db:generate.
+Una vez que hayas actualizado el esquema, debes generar los archivos de migración. Para hacerlo, ejecuta `npx db:generate`.
 
 ### 3. Verifica las migraciones:
 
@@ -211,24 +253,34 @@ Puedes hacer esto corriendo todos los tests. Estos geeneran una BDD desde 0, y c
 Finalmente, ejecuta las migraciones con `npm run db:migrate`.
 Estos comandos utilizan las variables de entorno definidas en el archivo .dev.vars para conectarse a las BDD de desarrollo.
 
+### 5. Como limpiar tu base de datos:
+
+- conectate a tu bdd con `turso db shell NOMBRE_DE_TU_BDD`
+- ejecuta `select 'drop table ' || name || ';' from sqlite_master where type = 'table';` para obtener todas las tablas de tu bdd
+  - Esto te devolverá un resultado como el siguiente:
+    ```txt
+    drop table users;
+    drop table events;
+    drop table event_attendees;
+    drop table event_invitations;
+    drop table event_invitation_tokens;
+    ```
+- copia y pega el resultado en tu terminal para eliminar todas las tablas de tu bdd.
+- sal de la shell con `.quit`
+- Listo! Tu bdd está 100% limpia. 😊
+
 # Requisitos
 
 - Tener un archivo `.dev.vars` con el siguiente contenido
-
-```txt
-DATABASE_URL="PREGUNTALE AL EQUIPO POR ESTO"
-DATABASE_TOKEN="PREGUNTALE AL EQUIPO POR ESTO"
-CLERK_PEM_PUBLIC_KEY="PREGUNTALE AL EQUIPO POR ESTO"
-CLERK_ISSUER_ID="PREGUNTALE AL EQUIPO POR ESTO"
-```
+  ```txt
+  DATABASE_URL="PREGUNTALE AL EQUIPO POR ESTO"
+  DATABASE_TOKEN="PREGUNTALE AL EQUIPO POR ESTO"
+  CLERK_PEM_PUBLIC_KEY="PREGUNTALE AL EQUIPO POR ESTO"
+  CLERK_ISSUER_ID="PREGUNTALE AL EQUIPO POR ESTO"
+  ```
 
 > BRO-TIP 🔥
-
-Agrega una variable `ENFORCED_JWT_TOKEN` a tu archivo `.dev.vars`, para utilizarla por defecto en graphiql.
-
-## Como correr tests
-
-- `npm run test`
+> Agrega una variable `ENFORCED_JWT_TOKEN` a tu archivo `.dev.vars`, para utilizarla por defecto en graphiql.
 
 # STACK
 

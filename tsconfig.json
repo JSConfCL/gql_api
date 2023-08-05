@@ -5,7 +5,8 @@
     "**/*.json",
     "src/**/*",
     "./.*.cjs",
-    "./*.json"
+    "./*.json",
+    "generated"
   ],
   "compilerOptions": {
     "target": "ESNext",

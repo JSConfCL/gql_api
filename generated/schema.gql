@@ -1,0 +1,131 @@
+enum CommnunityStatus {
+  active
+  inactive
+}
+
+"""Representation of a Community"""
+type Community {
+  description: String
+  events: [Event!]!
+  id: String!
+  name: String
+  status: CommnunityStatus!
+  users: [User!]!
+}
+
+"""
+A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar Date
+
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar DateTime
+
+"""
+Representation of an Event (Events and Users, is what tickets are linked to)
+"""
+type Event {
+  address: String
+  community: Community
+  description: String
+  endDateTime: DateTime
+  id: String!
+  latitude: String
+  longitude: String
+  maxAttendees: Int
+  meetingURL: String
+  name: String!
+  startDateTime: DateTime!
+  status: EventStatus!
+  tags: [Tag!]!
+  users: [User!]!
+  visibility: EventVisibility!
+}
+
+input EventCreateInput {
+  address: String
+  communityId: String!
+  description: String!
+  endDateTime: DateTime
+  latitude: String
+  longitude: String
+  maxAttendees: Int!
+  meetingURL: String
+  name: String!
+  startDateTime: DateTime!
+  status: EventStatus
+  timeZone: String
+  visibility: EventVisibility
+}
+
+enum EventStatus {
+  active
+  inactive
+}
+
+enum EventVisibility {
+  private
+  public
+  unlisted
+}
+
+input EventsSearchInput {
+  id: String
+  name: String
+  startDateTimeFrom: DateTime
+  startDateTimeTo: DateTime
+  status: EventStatus
+  visibility: EventVisibility
+}
+
+type Mutation {
+  """Create an event"""
+  createEvent(input: EventCreateInput!): Event!
+}
+
+type Query {
+  """Get a list of communities. Filter by name, id, or status"""
+  communities(id: String, name: String, status: CommnunityStatus): [Community!]!
+
+  """Get a community by id"""
+  community(id: String!): Community
+
+  """Get an event by id"""
+  event(id: String!): Event
+
+  """Get a list of events. Filter by name, id, status or date"""
+  events(input: EventsSearchInput): [Event!]!
+  status(name: String): String!
+
+  """Get a list of tags"""
+  tags(input: TagSearchInput): [Tag!]!
+
+  """Get a list of users"""
+  users: [User!]!
+}
+
+"""
+Representation of a tag. Tags can be associated to many things. An event, a community, etc.
+"""
+type Tag {
+  description: String
+  id: String!
+  name: String
+  slug: String!
+}
+
+input TagSearchInput {
+  description: String
+  id: String
+  name: String
+}
+
+"""Representation of a user"""
+type User {
+  communities: [Community!]!
+  id: String!
+  name: String
+  username: String!
+}

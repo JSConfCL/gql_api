@@ -50,7 +50,7 @@ module.exports = {
         "plugin:@graphql-eslint/operations-recommended",
       ],
       parserOptions: {
-        schema: "http://127.0.0.1:8787/graphql",
+        schema: "./src/generated/schema.graphql",
         operations: ["./src/tests/**/*.gql", "./src/tests/**/*.graphql"],
       },
       rules: {
@@ -87,6 +87,7 @@ module.exports = {
     "/.husky",
     "/.yarn",
     "/*/dist",
+    "./src/generated",
     "src/@types/schema.generated.ts",
   ],
 };

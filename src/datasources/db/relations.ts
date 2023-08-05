@@ -27,7 +27,7 @@ export const communityRelations = relations(communitySchema, ({ many }) => ({
 }));
 export const usersToCommunitiesRelations = relations(
   usersToCommunitiesSchema,
-  ({ one, many }) => ({
+  ({ one }) => ({
     community: one(communitySchema, {
       fields: [usersToCommunitiesSchema.communityId],
       references: [communitySchema.id],
@@ -36,7 +36,6 @@ export const usersToCommunitiesRelations = relations(
       fields: [usersToCommunitiesSchema.userId],
       references: [usersSchema.id],
     }),
-    tickets: many(userTicketsSchema),
   }),
 );
 
@@ -62,7 +61,6 @@ export const tagsRelations = relations(tagsSchema, ({ many }) => ({
 export const eventsRelations = relations(eventsSchema, ({ many }) => ({
   eventsToCommunities: many(eventsToCommunitiesSchema),
   eventsToTags: many(eventsToTagsSchema),
-  eventsToUserTickets: many(userTicketsSchema),
 }));
 
 export const eventsToCommunitiesRelations = relations(
