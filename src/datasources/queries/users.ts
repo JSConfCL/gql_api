@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ORM_TYPE } from "~/datasources/db";
 import { selectUsersSchema } from "~/datasources/db/schema";
@@ -59,6 +59,7 @@ export const updateUserProfileInfo = async (
         publicMetadata: parsedProfileInfo.public_metadata ?? {},
         updatedAt: sql`current_timestamp`,
       })
+      .where(eq(usersSchema.id, parsedProfileInfo.sub))
       .returning()
       .get();
     return selectUsersSchema.parse(createdUser);
