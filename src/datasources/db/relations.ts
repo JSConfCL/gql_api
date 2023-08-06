@@ -5,6 +5,7 @@ import {
   eventsSchema,
   eventsToCommunitiesSchema,
   eventsToTagsSchema,
+  eventsToTicketsSchema,
   eventsToUsersRolesSchema,
   eventsToUsersSchema,
   tagsSchema,
@@ -61,6 +62,7 @@ export const tagsRelations = relations(tagsSchema, ({ many }) => ({
 export const eventsRelations = relations(eventsSchema, ({ many }) => ({
   eventsToCommunities: many(eventsToCommunitiesSchema),
   eventsToTags: many(eventsToTagsSchema),
+  eventsToTickets: many(eventsToTicketsSchema),
 }));
 
 export const eventsToCommunitiesRelations = relations(
