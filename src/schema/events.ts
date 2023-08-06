@@ -19,7 +19,7 @@ export const EventStatus = builder.enumType("EventStatus", {
 });
 
 const TicketStatus = builder.enumType("TicketStatus", {
-  values: ["active", "canceled"] as const,
+  values: ["active", "cancelled"] as const,
 });
 
 const TicketPaymentStatus = builder.enumType("TicketPaymentStatus", {
@@ -93,7 +93,6 @@ builder.objectType(EventRef, {
     longitude: t.exposeString("geoLongitude", { nullable: true }),
     address: t.exposeString("geoAddressJSON", { nullable: true }),
     tickets: t.field({
-      description: "Get a list of tickets. Filter by status",
       type: [UserTicketRef],
       args: {
         input: t.arg({ type: EventsTicketsSearchInput, required: false }),
@@ -178,18 +177,6 @@ builder.objectType(EventRef, {
           },
         });
         return tags.map((t) => selectTagsSchema.parse(t));
-      },
-    }),
-    tickets: t.field({
-      type: [UserTicketRef],
-      resolve: async (root, args, ctx) => {
-        const tickets = await ctx.DB.query.userTicketsSchema.findMany({
-          where: (ut, { eq }) => eq(ut.eventId, root.id),
-          orderBy(fields, operators) {
-            return operators.desc(fields.createdAt);
-          },
-        });
-        return tickets.map((t) => userTicketsSchema.parse(t));
       },
     }),
   }),
