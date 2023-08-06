@@ -8,9 +8,12 @@ import {
   selectCommunitySchema,
   selectEventsSchema,
   selectTagsSchema,
+  selectUserTicketsSchema,
   selectUsersSchema,
+  userTicketsSchema,
 } from "~/datasources/db/schema";
-import { CommunityRef, EventRef, TagRef, UserRef } from "~/schema/shared/refs";
+import { CommunityRef, EventRef, TagRef, UserRef, UserTicketRef } from "~/schema/shared/refs";
+import { TicketApprovalStatus, TicketPaymentStatus, TicketRedemptionStatus, TicketStatus } from "./userTickets";
 
 export const EventStatus = builder.enumType("EventStatus", {
   values: ["active", "inactive"] as const,
@@ -100,6 +103,44 @@ builder.objectType(EventRef, {
         return tags.map((t) => selectTagsSchema.parse(t));
       },
     }),
+    tickets: t.field({
+      type: [UserTicketRef],
+      args: {
+        input: t.arg({ type: EventsTicketsSearchInput, required: false }),
+      },
+      resolve: async (root, { input }, ctx) => {
+        const {
+          id,
+          status,
+          paymentStatus,
+          approvalStatus,
+          redemptionStatus
+        } = input ?? {};
+        const wheres: SQL[] = [];
+        if (id) {
+          wheres.push(eq(userTicketsSchema.id, id));
+        }
+        if (status) {
+          wheres.push(eq(userTicketsSchema.status, status));
+        }
+        if (paymentStatus) {
+          wheres.push(eq(userTicketsSchema.paymentStatus, paymentStatus));
+        }
+        if (approvalStatus) {
+          wheres.push(eq(userTicketsSchema.approvalStatus, approvalStatus));
+        }
+        if (redemptionStatus) {
+          wheres.push(eq(userTicketsSchema.redemptionStatus, redemptionStatus));
+        }
+        const tickets = await ctx.DB.query.userTicketsSchema.findMany({
+          where: (c, { and }) => and(...wheres),
+          orderBy(fields, operators) {
+            return operators.desc(fields.createdAt);
+          },
+        });
+        return tickets.map((t) => selectUserTicketsSchema.parse(t));
+      },
+    }),
   }),
 });
 
@@ -121,6 +162,28 @@ const EventsSearchInput = builder.inputType("EventsSearchInput", {
     }),
     startDateTimeTo: t.field({
       type: "DateTime",
+      required: false,
+    }),
+  }),
+});
+
+const EventsTicketsSearchInput = builder.inputType("EventsTicketsSearchInput", {
+  fields: (t) => ({
+    id: t.string({ required: false }),
+    status: t.field({
+      type: TicketStatus,
+      required: false,
+    }),
+    paymentStatus: t.field({
+      type: TicketPaymentStatus,
+      required: false,
+    }),
+    approvalStatus: t.field({
+      type: TicketApprovalStatus,
+      required: false,
+    }),
+    redemptionStatus: t.field({
+      type: TicketRedemptionStatus,
       required: false,
     }),
   }),
