@@ -197,6 +197,18 @@ export const eventsToTagsSchema = sqliteTable(
   }),
 );
 
+// EVENT-TICKET
+export const eventsToTicketsSchema = sqliteTable(
+  "event_tickets",
+  {
+    eventId: text("event_id").references(() => eventsSchema.id),
+    ticketId: text("ticket_id").references(() => ticketsSchema.id),
+  },
+  (t) => ({
+    primary_key: primaryKey(t.eventId, t.ticketId),
+  }),
+);
+
 // EVENT—USER
 export const eventsToUsersSchema = sqliteTable("events_users", {
   eventId: text("event_id").references(() => eventsSchema.id),
