@@ -105,6 +105,13 @@ builder.objectType(EventRef, {
     }),
     tickets: t.field({
       type: [UserTicketRef],
+      authz: {
+        compositeRules: [
+          {
+            or: ["isCommunityCollaborator", "isCommunityAdmin", "IsSuperAdmin"],
+          },
+        ],
+      },
       args: {
         input: t.arg({ type: EventsTicketsSearchInput, required: false }),
       },
