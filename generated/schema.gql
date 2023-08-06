@@ -40,6 +40,7 @@ type Event {
   startDateTime: DateTime!
   status: EventStatus!
   tags: [Tag!]!
+  tickets(input: EventsTicketsSearchInput): [UserTicket!]!
   users: [User!]!
   visibility: EventVisibility!
 }
@@ -78,6 +79,14 @@ input EventsSearchInput {
   startDateTimeTo: DateTime
   status: EventStatus
   visibility: EventVisibility
+}
+
+input EventsTicketsSearchInput {
+  approvalStatus: TicketApprovalStatus
+  id: String
+  paymentStatus: TicketPaymentStatus
+  redemptionStatus: TicketRedemptionStatus
+  status: TicketStatus
 }
 
 type Mutation {
@@ -122,10 +131,39 @@ input TagSearchInput {
   name: String
 }
 
+enum TicketApprovalStatus {
+  approved
+  pending
+}
+
+enum TicketPaymentStatus {
+  paid
+  unpaid
+}
+
+enum TicketRedemptionStatus {
+  pending
+  redeemed
+}
+
+enum TicketStatus {
+  active
+  cancelled
+}
+
 """Representation of a user"""
 type User {
   communities: [Community!]!
   id: String!
   name: String
   username: String!
+}
+
+"""Representation of a UserTicket"""
+type UserTicket {
+  approvalStatus: TicketApprovalStatus!
+  id: ID!
+  paymentStatus: TicketPaymentStatus!
+  redemptionStatus: TicketRedemptionStatus!
+  status: TicketStatus!
 }
