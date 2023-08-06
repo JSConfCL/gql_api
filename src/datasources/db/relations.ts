@@ -5,7 +5,6 @@ import {
   eventsSchema,
   eventsToCommunitiesSchema,
   eventsToTagsSchema,
-  eventsToTicketsSchema,
   eventsToUsersRolesSchema,
   eventsToUsersSchema,
   tagsSchema,

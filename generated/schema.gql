@@ -40,7 +40,6 @@ type Event {
   startDateTime: DateTime!
   status: EventStatus!
   tags: [Tag!]!
-  tickets(input: EventsTicketsSearchInput): [UserTicket!]!
   users: [User!]!
   visibility: EventVisibility!
 }
@@ -81,17 +80,13 @@ input EventsSearchInput {
   visibility: EventVisibility
 }
 
-input EventsTicketsSearchInput {
-  approvalStatus: TicketApprovalStatus
-  id: String
-  paymentStatus: TicketPaymentStatus
-  redemptionStatus: TicketRedemptionStatus
-  status: TicketStatus
-}
-
 type Mutation {
   """Create an event"""
   createEvent(input: EventCreateInput!): Event!
+}
+
+input MyTicketsSearchInput {
+  eventId: String
 }
 
 type Query {
@@ -106,6 +101,9 @@ type Query {
 
   """Get a list of events. Filter by name, id, status or date"""
   events(input: EventsSearchInput): [Event!]!
+
+  """Get a list of tickets for the current user"""
+  myTickets(input: MyTicketsSearchInput): [UserTicket!]!
   status(name: String): String!
 
   """Get a list of tags"""
@@ -159,7 +157,7 @@ type User {
   username: String!
 }
 
-"""Representation of a UserTicket"""
+"""Representation of a User ticket"""
 type UserTicket {
   approvalStatus: TicketApprovalStatus!
   id: ID!
