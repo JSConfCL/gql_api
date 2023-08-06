@@ -4,11 +4,13 @@ import {
   insertEventsSchema,
   selectCommunitySchema,
   selectEventsSchema,
+  selectUserTicketsSchema,
   selectTagsSchema,
   selectUsersSchema,
+  userTicketsSchema,
 } from "~/datasources/db/schema";
 import { SQL, eq, gte, like, lte } from "drizzle-orm";
-import { CommunityRef, EventRef, TagRef, UserRef } from "~/schema/shared/refs";
+import { CommunityRef, EventRef, TagRef, UserRef, UserTicketRef } from "~/schema/shared/refs";
 import { builder } from "~/builder";
 import { v4 } from "uuid";
 
@@ -16,8 +18,46 @@ export const EventStatus = builder.enumType("EventStatus", {
   values: ["active", "inactive"] as const,
 });
 
+const TicketStatus = builder.enumType("TicketStatus", {
+  values: ["active", "canceled"] as const,
+});
+
+const TicketPaymentStatus = builder.enumType("TicketPaymentStatus", {
+  values: ["paid", "unpaid"] as const,
+});
+
+const TicketApprovalStatus = builder.enumType("TicketApprovalStatus", {
+  values: ["approved", "pending"] as const,
+});
+
+const TicketRedemptionStatus = builder.enumType("TicketRedemptionStatus", {
+  values: ["redeemed", "pending"] as const,
+});
+
 export const EventVisibility = builder.enumType("EventVisibility", {
   values: ["public", "private", "unlisted"] as const,
+});
+
+const EventsTicketsSearchInput = builder.inputType("EventsTicketsSearchInput", {
+  fields: (t) => ({
+    id: t.string({ required: false }),
+    status: t.field({
+      type: TicketStatus,
+      required: false,
+    }),
+    paymentStatus: t.field({
+      type: TicketPaymentStatus,
+      required: false,
+    }),
+    approvalStatus: t.field({
+      type: TicketApprovalStatus,
+      required: false,
+    }),
+    redemptionStatus: t.field({
+      type: TicketRedemptionStatus,
+      required: false,
+    }),
+  }),
 });
 
 builder.objectType(EventRef, {
@@ -52,6 +92,45 @@ builder.objectType(EventRef, {
     latitude: t.exposeString("geoLatitude", { nullable: true }),
     longitude: t.exposeString("geoLongitude", { nullable: true }),
     address: t.exposeString("geoAddressJSON", { nullable: true }),
+    tickets: t.field({
+      description: "Get a list of tickets. Filter by status",
+      type: [UserTicketRef],
+      args: {
+        input: t.arg({ type: EventsTicketsSearchInput, required: false }),
+      },
+      resolve: async (root, { input }, ctx) => {
+        const {
+          id,
+          status,
+          paymentStatus,
+          approvalStatus,
+          redemptionStatus
+        } = input ?? {};
+        const wheres: SQL[] = [];
+        if (id) {
+          wheres.push(eq(userTicketsSchema.id, id));
+        }
+        if (status) {
+          wheres.push(eq(userTicketsSchema.status, status));
+        }
+        if (paymentStatus) {
+          wheres.push(eq(userTicketsSchema.paymentStatus, paymentStatus));
+        }
+        if (approvalStatus) {
+          wheres.push(eq(userTicketsSchema.approvalStatus, approvalStatus));
+        }
+        if (redemptionStatus) {
+          wheres.push(eq(userTicketsSchema.redemptionStatus, redemptionStatus));
+        }
+        const tickets = await ctx.DB.query.userTicketsSchema.findMany({
+          where: (c, { and }) => and(...wheres),
+          orderBy(fields, operators) {
+            return operators.desc(fields.createdAt);
+          },
+        });
+        return tickets.map((t) => selectUserTicketsSchema.parse(t));
+      },
+    }),
     community: t.field({
       type: CommunityRef,
       nullable: true,
@@ -101,6 +180,18 @@ builder.objectType(EventRef, {
         return tags.map((t) => selectTagsSchema.parse(t));
       },
     }),
+    tickets: t.field({
+      type: [UserTicketRef],
+      resolve: async (root, args, ctx) => {
+        const tickets = await ctx.DB.query.userTicketsSchema.findMany({
+          where: (ut, { eq }) => eq(ut.eventId, root.id),
+          orderBy(fields, operators) {
+            return operators.desc(fields.createdAt);
+          },
+        });
+        return tickets.map((t) => userTicketsSchema.parse(t));
+      },
+    }),
   }),
 });
 
@@ -126,6 +217,8 @@ const EventsSearchInput = builder.inputType("EventsSearchInput", {
     }),
   }),
 });
+
+
 
 builder.queryFields((t) => ({
   events: t.field({
