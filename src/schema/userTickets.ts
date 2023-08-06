@@ -83,6 +83,9 @@ builder.queryFields((t) => ({
     },
     resolve: async (root, {input}, ctx) => {
       const { eventId, status, paymentStatus, approvalStatus, redemptionStatus } = input ?? {};
+      if(!ctx.USER){
+        return [];
+      }
       const wheres: SQL[] = [];
       if (eventId) {
         wheres.push(eq(eventsSchema.id, eventId));
@@ -98,6 +101,9 @@ builder.queryFields((t) => ({
       }
       if (redemptionStatus) {
         wheres.push(eq(userTicketsSchema.redemptionStatus, redemptionStatus));
+      }
+      if(ctx.USER){
+        wheres.push(eq(userTicketsSchema.userId, ctx.USER.id));
       }
       const myTickets = await ctx.DB.query.userTicketsSchema.findMany({
         where: (_, { and }) => and(...wheres),
