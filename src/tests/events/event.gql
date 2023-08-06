@@ -16,12 +16,5 @@ query Event($eventId: String!) {
     users {
       id
     }
-    tickets {
-      id,
-      status,
-      paymentStatus,
-      approvalStatus,
-      redemptionStatus
-    }
   }
 }

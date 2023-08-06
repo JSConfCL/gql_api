@@ -55,15 +55,8 @@ export type Event = {
   startDateTime: Scalars['DateTime']['output'];
   status: EventStatus;
   tags: Array<Tag>;
-  tickets: Array<UserTicket>;
   users: Array<User>;
   visibility: EventVisibility;
-};
-
-
-/** Representation of an Event (Events and Users, is what tickets are linked to) */
-export type EventTicketsArgs = {
-  input?: InputMaybe<EventsTicketsSearchInput>;
 };
 
 export type EventCreateInput = {
@@ -102,14 +95,6 @@ export type EventsSearchInput = {
   visibility?: InputMaybe<EventVisibility>;
 };
 
-export type EventsTicketsSearchInput = {
-  approvalStatus?: InputMaybe<TicketApprovalStatus>;
-  id?: InputMaybe<Scalars['String']['input']>;
-  paymentStatus?: InputMaybe<TicketPaymentStatus>;
-  redemptionStatus?: InputMaybe<TicketRedemptionStatus>;
-  status?: InputMaybe<TicketStatus>;
-};
-
 export type Mutation = {
   __typename?: 'Mutation';
   /** Create an event */
@@ -119,6 +104,10 @@ export type Mutation = {
 
 export type MutationCreateEventArgs = {
   input: EventCreateInput;
+};
+
+export type MyTicketsSearchInput = {
+  eventId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Query = {
@@ -131,6 +120,8 @@ export type Query = {
   event?: Maybe<Event>;
   /** Get a list of events. Filter by name, id, status or date */
   events: Array<Event>;
+  /** Get a list of tickets for the current user */
+  myTickets: Array<UserTicket>;
   status: Scalars['String']['output'];
   /** Get a list of tags */
   tags: Array<Tag>;
@@ -158,6 +149,11 @@ export type QueryEventArgs = {
 
 export type QueryEventsArgs = {
   input?: InputMaybe<EventsSearchInput>;
+};
+
+
+export type QueryMyTicketsArgs = {
+  input?: InputMaybe<MyTicketsSearchInput>;
 };
 
 
@@ -214,7 +210,7 @@ export type User = {
   username: Scalars['String']['output'];
 };
 
-/** Representation of a UserTicket */
+/** Representation of a User ticket */
 export type UserTicket = {
   __typename?: 'UserTicket';
   approvalStatus: TicketApprovalStatus;

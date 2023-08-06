@@ -49,6 +49,22 @@ const MyTicketsSearchInput = builder.inputType("MyTicketsSearchInput", {
       type: "String",
       required: false,
     }),
+    status: t.field({
+      type: TicketStatus,
+      required: false,
+    }),
+    paymentStatus: t.field({
+      type: TicketPaymentStatus,
+      required: false,
+    }),
+    approvalStatus: t.field({
+      type: TicketApprovalStatus,
+      required: false,
+    }),
+    redemptionStatus: t.field({
+      type: TicketRedemptionStatus,
+      required: false,
+    }),
   }),
 });
 
@@ -65,11 +81,23 @@ builder.queryFields((t) => ({
     authz: {
       rules: ["IsAuthenticated"],
     },
-    resolve: async (root, args, ctx) => {
-      const { eventId } = args.input ?? {};
+    resolve: async (root, {input}, ctx) => {
+      const { eventId, status, paymentStatus, approvalStatus, redemptionStatus } = input ?? {};
       const wheres: SQL[] = [];
       if (eventId) {
         wheres.push(eq(eventsSchema.id, eventId));
+      }
+      if (status) {
+        wheres.push(eq(userTicketsSchema.status, status));
+      }
+      if (paymentStatus) {
+        wheres.push(eq(userTicketsSchema.paymentStatus, paymentStatus));
+      }
+      if (approvalStatus) {
+        wheres.push(eq(userTicketsSchema.approvalStatus, approvalStatus));
+      }
+      if (redemptionStatus) {
+        wheres.push(eq(userTicketsSchema.redemptionStatus, redemptionStatus));
       }
       const myTickets = await ctx.DB.query.userTicketsSchema.findMany({
         where: (_, { and }) => and(...wheres),
