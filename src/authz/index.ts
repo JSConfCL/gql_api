@@ -9,6 +9,19 @@ export class IsAuthenticated extends PreExecutionRule {
   }
 }
 
+export class IsSameUser extends PreExecutionRule {
+  error = new UnauthorizedError("User is not the same");
+  public execute(
+    { USER, DB }: GraphqlContext,
+    fieldArgs: { input: { id: string } },
+  ) {
+    if (!USER || !fieldArgs.input.id) {
+      return false;
+    }
+    return USER.id === fieldArgs.input.id;
+  }
+}
+
 export class CanEditCommunity extends PreExecutionRule {
   error = new UnauthorizedError("User cannot edit community");
 
