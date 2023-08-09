@@ -4,6 +4,7 @@ import { builder } from "~/builder";
 import {
   eventsSchema,
   eventsToCommunitiesSchema,
+  eventsToTicketsSchema,
   insertEventsSchema,
   selectCommunitySchema,
   selectEventsSchema,
@@ -12,8 +13,19 @@ import {
   selectUsersSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
-import { CommunityRef, EventRef, TagRef, UserRef, UserTicketRef } from "~/schema/shared/refs";
-import { TicketApprovalStatus, TicketPaymentStatus, TicketRedemptionStatus, TicketStatus } from "./userTickets";
+import {
+  CommunityRef,
+  EventRef,
+  TagRef,
+  UserRef,
+  UserTicketRef,
+} from "~/schema/shared/refs";
+import {
+  TicketApprovalStatus,
+  TicketPaymentStatus,
+  TicketRedemptionStatus,
+  TicketStatus,
+} from "./userTickets";
 
 export const EventStatus = builder.enumType("EventStatus", {
   values: ["active", "inactive"] as const,
@@ -116,13 +128,8 @@ builder.objectType(EventRef, {
         input: t.arg({ type: EventsTicketsSearchInput, required: false }),
       },
       resolve: async (root, { input }, ctx) => {
-        const {
-          id,
-          status,
-          paymentStatus,
-          approvalStatus,
-          redemptionStatus
-        } = input ?? {};
+        const { id, status, paymentStatus, approvalStatus, redemptionStatus } =
+          input ?? {};
         const wheres: SQL[] = [];
         if (id) {
           wheres.push(eq(userTicketsSchema.id, id));
@@ -139,8 +146,25 @@ builder.objectType(EventRef, {
         if (redemptionStatus) {
           wheres.push(eq(userTicketsSchema.redemptionStatus, redemptionStatus));
         }
+        wheres.push(eq(eventsToTicketsSchema.eventId, root.id));
+        const eventSchema = await ctx.DB.query.eventsSchema.findFirst({
+          where: (t, { eq }) => eq(t.id, root.id),
+          with: {
+            eventsToTickets: true,
+          },
+        });
+
         const tickets = await ctx.DB.query.userTicketsSchema.findMany({
           where: (c, { and }) => and(...wheres),
+          with: {
+            ticketTemplate: {
+              with: {
+                event: {
+                  where: (e) => eq(e.id, root.id),
+                },
+              },
+            },
+          },
           orderBy(fields, operators) {
             return operators.desc(fields.createdAt);
           },

@@ -3,7 +3,7 @@ import { DateResolver, DateTimeResolver } from "graphql-scalars";
 import { ORM_TYPE } from "~/datasources/db";
 import * as rules from "~/authz";
 import AuthzPlugin from "@pothos/plugin-authz";
-import { selectUsersSchema } from "~/datasources/db/CRUD";
+import { selectUsersSchema } from "~/datasources/db/schema";
 import { z } from "zod";
 import { Env } from "worker-configuration";
 

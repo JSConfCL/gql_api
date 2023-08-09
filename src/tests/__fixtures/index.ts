@@ -11,34 +11,32 @@ import { type ExecutionResult } from "graphql";
 import { createYoga } from "graphql-yoga";
 import { Env } from "worker-configuration";
 import { ZodType, z } from "zod";
+import * as rules from "~/authz";
 import {
+  communitySchema,
+  eventsSchema,
+  eventsToCommunitiesSchema,
+  eventsToTagsSchema,
   insertCommunitySchema,
   insertEventsSchema,
+  insertEventsToCommunitiesSchema,
   insertEventsToTagsSchema,
   insertTagsSchema,
   insertUsersSchema,
   insertUsersToCommunitiesSchema,
   selectCommunitySchema,
   selectEventsSchema,
+  selectEventsToCommunitiesSchema,
   selectEventsToTagsSchema,
   selectTagsSchema,
   selectUsersSchema,
   selectUsersToCommunitiesSchema,
-  selectEventsToCommunitiesSchema,
-  insertEventsToCommunitiesSchema,
-} from "~/datasources/db/schema";
-import {
-  communitySchema,
-  eventsSchema,
-  eventsToCommunitiesSchema,
-  eventsToTagsSchema,
   tagsSchema,
   usersSchema,
   usersToCommunitiesSchema,
-} from "~/datasources/db/tables";
+} from "~/datasources/db/schema";
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/__fixtures/databaseHelper";
-import * as rules from "~/authz";
 
 const insertUserRequest = insertUsersSchema.deepPartial();
 
