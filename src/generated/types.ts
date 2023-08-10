@@ -55,8 +55,15 @@ export type Event = {
   startDateTime: Scalars['DateTime']['output'];
   status: EventStatus;
   tags: Array<Tag>;
+  tickets: Array<UserTicket>;
   users: Array<User>;
   visibility: EventVisibility;
+};
+
+
+/** Representation of an Event (Events and Users, is what tickets are linked to) */
+export type EventTicketsArgs = {
+  input?: InputMaybe<EventsTicketsSearchInput>;
 };
 
 export type EventCreateInput = {
@@ -95,6 +102,14 @@ export type EventsSearchInput = {
   visibility?: InputMaybe<EventVisibility>;
 };
 
+export type EventsTicketsSearchInput = {
+  approvalStatus?: InputMaybe<TicketApprovalStatus>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  paymentStatus?: InputMaybe<TicketPaymentStatus>;
+  redemptionStatus?: InputMaybe<TicketRedemptionStatus>;
+  status?: InputMaybe<TicketStatus>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   /** Create an event */
@@ -107,7 +122,11 @@ export type MutationCreateEventArgs = {
 };
 
 export type MyTicketsSearchInput = {
+  approvalStatus?: InputMaybe<TicketApprovalStatus>;
   eventId?: InputMaybe<Scalars['String']['input']>;
+  paymentStatus?: InputMaybe<TicketPaymentStatus>;
+  redemptionStatus?: InputMaybe<TicketRedemptionStatus>;
+  status?: InputMaybe<TicketStatus>;
 };
 
 export type Query = {

@@ -10,7 +10,7 @@ import {
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { Event, EventQuery, EventQueryVariables } from "./event.generated";
 import { Events, EventsQuery, EventsQueryVariables } from "./events.generated";
-import { EventStatus, EventVisibility } from "generated/types";
+import { EventStatus, EventVisibility } from "~/generated/types";
 
 afterEach(() => {
   clearDatabase();

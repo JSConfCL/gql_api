@@ -40,6 +40,7 @@ type Event {
   startDateTime: DateTime!
   status: EventStatus!
   tags: [Tag!]!
+  tickets(input: EventsTicketsSearchInput): [UserTicket!]!
   users: [User!]!
   visibility: EventVisibility!
 }
@@ -80,13 +81,25 @@ input EventsSearchInput {
   visibility: EventVisibility
 }
 
+input EventsTicketsSearchInput {
+  approvalStatus: TicketApprovalStatus
+  id: String
+  paymentStatus: TicketPaymentStatus
+  redemptionStatus: TicketRedemptionStatus
+  status: TicketStatus
+}
+
 type Mutation {
   """Create an event"""
   createEvent(input: EventCreateInput!): Event!
 }
 
 input MyTicketsSearchInput {
+  approvalStatus: TicketApprovalStatus
   eventId: String
+  paymentStatus: TicketPaymentStatus
+  redemptionStatus: TicketRedemptionStatus
+  status: TicketStatus
 }
 
 type Query {

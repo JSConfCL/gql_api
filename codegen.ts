@@ -16,7 +16,7 @@ const codeInjection = {
 
 const config: CodegenConfig = {
   ignoreNoDocuments: true,
-  schema: "./generated/schema.gql",
+  schema: "./src/generated/schema.gql",
   documents: ["./src/**/*.gql"],
   generates: {
     "src/generated/types.ts": {

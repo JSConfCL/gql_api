@@ -1,8 +1,11 @@
 import { builder } from "~/builder";
 import { UserTicketRef } from "./shared/refs";
-import { eventsSchema, userTicketsSchema } from "~/datasources/db/tables";
 import { SQL, eq } from "drizzle-orm";
-import { selectUserTicketsSchema } from "~/datasources/db/CRUD";
+import {
+  selectUserTicketsSchema,
+  eventsSchema,
+  userTicketsSchema,
+} from "~/datasources/db/schema";
 
 export const TicketStatus = builder.enumType("TicketStatus", {
   values: ["active", "cancelled"] as const,
@@ -81,9 +84,15 @@ builder.queryFields((t) => ({
     authz: {
       rules: ["IsAuthenticated"],
     },
-    resolve: async (root, {input}, ctx) => {
-      const { eventId, status, paymentStatus, approvalStatus, redemptionStatus } = input ?? {};
-      if(!ctx.USER){
+    resolve: async (root, { input }, ctx) => {
+      const {
+        eventId,
+        status,
+        paymentStatus,
+        approvalStatus,
+        redemptionStatus,
+      } = input ?? {};
+      if (!ctx.USER) {
         return [];
       }
       const wheres: SQL[] = [];
@@ -102,7 +111,7 @@ builder.queryFields((t) => ({
       if (redemptionStatus) {
         wheres.push(eq(userTicketsSchema.redemptionStatus, redemptionStatus));
       }
-      if(ctx.USER){
+      if (ctx.USER) {
         wheres.push(eq(userTicketsSchema.userId, ctx.USER.id));
       }
       const myTickets = await ctx.DB.query.userTicketsSchema.findMany({

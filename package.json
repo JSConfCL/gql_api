@@ -16,7 +16,7 @@
     "prettier": "prettier ./src --cache",
     "typecheck": "tsc",
     "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info",
-    "generate": "tsx ./generated/generate.ts && graphql-codegen --config codegen.ts"
+    "generate": "tsx ./src/generated/generate.ts && graphql-codegen --config codegen.ts"
   },
   "devDependencies": {
     "@clerk/types": "^3.48.1",

@@ -11,7 +11,7 @@ import {
   CommunityQuery,
   CommunityQueryVariables,
 } from "~/tests/community/getCommunity.generated";
-import { CommnunityStatus } from "generated/types";
+import { CommnunityStatus } from "~/generated/types";
 
 afterEach(() => {
   clearDatabase();
