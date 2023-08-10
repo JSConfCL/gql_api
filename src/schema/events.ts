@@ -10,7 +10,6 @@ import {
   selectTagsSchema,
   selectUserTicketsSchema,
   selectUsersSchema,
-  ticketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
 import {
