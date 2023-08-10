@@ -30,7 +30,7 @@ export const userTicketsSchema = sqliteTable("user_tickets", {
   ...createdAndUpdatedAtFields,
 });
 
-export const userTIcketsRelations = relations(userTicketsSchema, ({ one }) => ({
+export const userTicketsRelations = relations(userTicketsSchema, ({ one }) => ({
   ticketTemplate: one(ticketsSchema, {
     fields: [userTicketsSchema.ticketTemplateId],
     references: [ticketsSchema.id],
