@@ -10,5 +10,4 @@ export * from "~/datasources/db/tagsCommunities";
 export * from "~/datasources/db/usersCommunities";
 export * from "~/datasources/db/eventsCommunities";
 export * from "~/datasources/db/eventsTags";
-export * from "~/datasources/db/eventsTickets";
 export * from "~/datasources/db/eventsUsers";

@@ -1,16 +1,16 @@
-import { SQL, eq, gte, like, lte } from "drizzle-orm";
+import { SQL, eq, gte, like, lte, inArray } from "drizzle-orm";
 import { v4 } from "uuid";
 import { builder } from "~/builder";
 import {
   eventsSchema,
   eventsToCommunitiesSchema,
-  eventsToTicketsSchema,
   insertEventsSchema,
   selectCommunitySchema,
   selectEventsSchema,
   selectTagsSchema,
   selectUserTicketsSchema,
   selectUsersSchema,
+  ticketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
 import {
@@ -146,29 +146,39 @@ builder.objectType(EventRef, {
         if (redemptionStatus) {
           wheres.push(eq(userTicketsSchema.redemptionStatus, redemptionStatus));
         }
-        wheres.push(eq(eventsToTicketsSchema.eventId, root.id));
-        const eventSchema = await ctx.DB.query.eventsSchema.findFirst({
-          where: (t, { eq }) => eq(t.id, root.id),
-          with: {
-            eventsToTickets: true,
-          },
-        });
 
+        // TODO: (Felipe) — Esta es otra manera de hacerlo, aun no se cual es
+        // mejor. La diferencia es que con esta query, no es facil obtener un
+        // tipado fuerte en comparación a las relational queries.
+        // https://orm.drizzle.team/docs/rqb
+        //
+        // Es probable que podamos hacerlo si usamos el builder de drizzle-orm
+        // para generar el schema de la query, pero aun no lo he intentado.
+        //
+        // const withJoin = await ctx.DB.select()
+        //   .from(eventsSchema)
+        //   .innerJoin(ticketsSchema, eq(eventsSchema.id, ticketsSchema.eventId))
+        //   .innerJoin(
+        //     userTicketsSchema,
+        //     eq(ticketsSchema.id, userTicketsSchema.ticketTemplateId),
+        //   )
+        //   .where(eq(eventsSchema.id, root.id))
+        //   .run();
+
+        const ticketsTemplates = await ctx.DB.query.ticketsSchema.findMany({
+          where: (c, { eq }) => eq(c.eventId, root.id),
+        });
+        const ticketTemplateIds = ticketsTemplates.map((t) => t.id);
+        wheres.push(
+          inArray(userTicketsSchema.ticketTemplateId, ticketTemplateIds),
+        );
         const tickets = await ctx.DB.query.userTicketsSchema.findMany({
           where: (c, { and }) => and(...wheres),
-          with: {
-            ticketTemplate: {
-              with: {
-                event: {
-                  where: (e) => eq(e.id, root.id),
-                },
-              },
-            },
-          },
           orderBy(fields, operators) {
             return operators.desc(fields.createdAt);
           },
         });
+
         return tickets.map((t) => selectUserTicketsSchema.parse(t));
       },
     }),
