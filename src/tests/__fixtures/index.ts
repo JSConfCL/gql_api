@@ -22,6 +22,8 @@ import {
   insertEventsToCommunitiesSchema,
   insertEventsToTagsSchema,
   insertTagsSchema,
+  insertTicketSchema,
+  insertUserTicketsSchema,
   insertUsersSchema,
   insertUsersToCommunitiesSchema,
   selectCommunitySchema,
@@ -29,9 +31,13 @@ import {
   selectEventsToCommunitiesSchema,
   selectEventsToTagsSchema,
   selectTagsSchema,
+  selectTicketSchema,
+  selectUserTicketsSchema,
   selectUsersSchema,
   selectUsersToCommunitiesSchema,
   tagsSchema,
+  ticketsSchema,
+  userTicketsSchema,
   usersSchema,
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
@@ -217,6 +223,41 @@ export const insertTag = async (
     insertTagsSchema,
     selectTagsSchema,
     tagsSchema,
+    possibleInput,
+  );
+};
+
+export const insertTicketTemplate = async (
+  partialInput?: Partial<z.infer<typeof insertTicketSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    name: partialInput?.name ?? faker.company.name(),
+    startDateTime: partialInput?.startDateTime ?? faker.date.future(),
+    endDateTime: partialInput?.endDateTime ?? faker.date.future(),
+  } satisfies z.infer<typeof insertTicketSchema>;
+
+  return insertOne(
+    insertTicketSchema,
+    selectTicketSchema,
+    ticketsSchema,
+    possibleInput,
+  );
+};
+
+export const insertTicket = async (
+  partialInput?: Partial<z.infer<typeof insertUserTicketsSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    userId: partialInput?.userId,
+    ticketTemplateId: partialInput?.ticketTemplateId,
+  } satisfies z.infer<typeof insertUserTicketsSchema>;
+
+  return insertOne(
+    insertUserTicketsSchema,
+    selectUserTicketsSchema,
+    userTicketsSchema,
     possibleInput,
   );
 };
