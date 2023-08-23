@@ -9,6 +9,8 @@ import {
   insertTicketTemplate,
   insertUser,
   insertTicket,
+  executeGraphqlOperationAsSuperAdmin,
+  insertUserToCommunity,
 } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { Event, EventQuery, EventQueryVariables } from "./event.generated";
@@ -29,7 +31,7 @@ afterEach(() => {
 describe("Event", () => {
   it("Should find an event by ID", async () => {
     const event1 = await insertEvent();
-    const response = await executeGraphqlOperation<
+    const response = await executeGraphqlOperationAsSuperAdmin<
       EventQuery,
       EventQueryVariables
     >({
@@ -70,7 +72,7 @@ describe("Event", () => {
       eventId: event1.id,
       tagId: tag2.id,
     });
-    const response = await executeGraphqlOperation<
+    const response = await executeGraphqlOperationAsSuperAdmin<
       EventQuery,
       EventQueryVariables
     >({
@@ -118,7 +120,7 @@ describe("Event", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user2.id,
     });
-    const response = await executeGraphqlOperation<
+    const response = await executeGraphqlOperationAsSuperAdmin<
       EventQuery,
       EventQueryVariables
     >({
@@ -166,7 +168,7 @@ describe("Event", () => {
       communityId: community1.id,
       eventId: event1.id,
     });
-    const response = await executeGraphqlOperation<
+    const response = await executeGraphqlOperationAsSuperAdmin<
       EventQuery,
       EventQueryVariables
     >({
@@ -196,7 +198,7 @@ describe("Event", () => {
   });
   it("Should get an event users", async () => {
     const event1 = await insertEvent();
-    const response = await executeGraphqlOperation<
+    const response = await executeGraphqlOperationAsSuperAdmin<
       EventQuery,
       EventQueryVariables
     >({
@@ -222,7 +224,7 @@ describe("Event", () => {
     } as EventQuery["event"]);
   });
   it("return null when no event  is found", async () => {
-    const response = await executeGraphqlOperation<
+    const response = await executeGraphqlOperationAsSuperAdmin<
       EventQuery,
       EventQueryVariables
     >({
@@ -295,7 +297,7 @@ describe("Events", () => {
     await insertEvent({
       name: "MY MEETTUP 3",
     });
-    const response = await executeGraphqlOperation<
+    const response = await executeGraphqlOperationAsSuperAdmin<
       EventsQuery,
       EventsQueryVariables
     >({
@@ -360,7 +362,7 @@ describe("Events", () => {
     await insertEvent({
       status: EventStatus.Inactive,
     });
-    const response = await executeGraphqlOperation<
+    const response = await executeGraphqlOperationAsSuperAdmin<
       EventsQuery,
       EventsQueryVariables
     >({
@@ -425,7 +427,7 @@ describe("Events", () => {
     await insertEvent({
       name: "SOME OTHER NAME",
     });
-    const response = await executeGraphqlOperation<
+    const response = await executeGraphqlOperationAsSuperAdmin<
       EventsQuery,
       EventsQueryVariables
     >({
@@ -451,265 +453,282 @@ describe("Events", () => {
   });
 });
 //Event tickets filter test
-it("Should filter event ticket by id", async () => {
-  const event1 = await insertEvent();
-  const user1 = await insertUser();
-  const ticketTemplate1 = await insertTicketTemplate({
-    eventId: event1.id,
-  });
-  const ticket1 = await insertTicket({
-    ticketTemplateId: ticketTemplate1.id,
-    userId: user1.id,
-  });
-  await insertTicket({
-    ticketTemplateId: ticketTemplate1.id,
-    userId: user1.id,
-  });
-  const response = await executeGraphqlOperation<
-    EventQuery,
-    EventQueryVariables
-  >({
-    document: Event,
-    variables: {
+describe("Event tickets filter", () => {
+  it("Should filter event ticket by id", async () => {
+    const event1 = await insertEvent();
+    const user1 = await insertUser();
+    const community1 = await insertCommunity();
+    await insertEventToCommunity({
       eventId: event1.id,
-      eventTickets: {
-        id: ticket1.id,
+      communityId: community1.id,
+    });
+    await insertUserToCommunity({
+      userId: user1.id,
+      communityId: community1.id,
+    });
+    const ticketTemplate1 = await insertTicketTemplate({
+      eventId: event1.id,
+    });
+    const ticket1 = await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+    });
+    await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+    });
+    const response = await executeGraphqlOperationAsSuperAdmin<
+      EventQuery,
+      EventQueryVariables
+    >({
+      document: Event,
+      variables: {
+        eventId: event1.id,
+        eventTickets: {
+          id: ticket1.id,
+        },
       },
-    },
+    });
+    assert.equal(response.errors, undefined);
+    assert.deepEqual(response.data?.event?.tickets.length, 1);
+    assert.deepEqual(response.data?.event, {
+      id: event1.id,
+      name: event1.name,
+      description: event1.description,
+      status: event1.status,
+      visibility: event1.visibility,
+      startDateTime: event1.startDateTime.toISOString(),
+      endDateTime: event1.endDateTime?.toISOString(),
+      community: {
+        id: community1.id,
+      },
+      tags: [],
+      users: [
+        {
+          id: user1.id,
+        },
+      ],
+      tickets: [
+        {
+          id: ticket1.id,
+          approvalStatus: ticket1.approvalStatus,
+          paymentStatus: ticket1.paymentStatus,
+          redemptionStatus: ticket1.redemptionStatus,
+          status: ticket1.status,
+        },
+      ],
+    } as EventQuery["event"]);
   });
-  assert.equal(response.errors, undefined);
-  assert.deepEqual(response.data?.event?.tickets.length, 1);
-  assert.deepEqual(response.data?.event, {
-    id: event1.id,
-    name: event1.name,
-    description: event1.description,
-    status: event1.status,
-    visibility: event1.visibility,
-    startDateTime: event1.startDateTime.toISOString(),
-    endDateTime: event1.endDateTime?.toISOString(),
-    community: null,
-    tags: [],
-    users: [],
-    tickets: [
-      {
-        id: ticket1.id,
-        approvalStatus: ticket1.approvalStatus,
-        paymentStatus: ticket1.paymentStatus,
-        redemptionStatus: ticket1.redemptionStatus,
-        status: ticket1.status,
-      },
-    ],
-  } as EventQuery["event"]);
-});
 
-it("Should filter event ticket by approval status", async () => {
-  const event1 = await insertEvent();
-  const user1 = await insertUser();
-  const ticketTemplate1 = await insertTicketTemplate({
-    eventId: event1.id,
-  });
-  const ticket1 = await insertTicket({
-    ticketTemplateId: ticketTemplate1.id,
-    userId: user1.id,
-    approvalStatus: TicketApprovalStatus.Approved,
-  });
-  await insertTicket({
-    ticketTemplateId: ticketTemplate1.id,
-    userId: user1.id,
-    approvalStatus: TicketApprovalStatus.Pending,
-  });
-  const response = await executeGraphqlOperation<
-    EventQuery,
-    EventQueryVariables
-  >({
-    document: Event,
-    variables: {
+  it("Should filter event ticket by approval status", async () => {
+    const event1 = await insertEvent();
+    const user1 = await insertUser();
+    const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
-      eventTickets: {
-        approvalStatus: TicketApprovalStatus.Approved,
+    });
+    const ticket1 = await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      approvalStatus: TicketApprovalStatus.Approved,
+    });
+    await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      approvalStatus: TicketApprovalStatus.Pending,
+    });
+    const response = await executeGraphqlOperationAsSuperAdmin<
+      EventQuery,
+      EventQueryVariables
+    >({
+      document: Event,
+      variables: {
+        eventId: event1.id,
+        eventTickets: {
+          approvalStatus: TicketApprovalStatus.Approved,
+        },
       },
-    },
+    });
+    assert.equal(response.errors, undefined);
+    assert.deepEqual(response.data?.event?.tickets.length, 1);
+    assert.deepEqual(response.data?.event, {
+      id: event1.id,
+      name: event1.name,
+      description: event1.description,
+      status: event1.status,
+      visibility: event1.visibility,
+      startDateTime: event1.startDateTime.toISOString(),
+      endDateTime: event1.endDateTime?.toISOString(),
+      community: null,
+      tags: [],
+      users: [],
+      tickets: [
+        {
+          id: ticket1.id,
+          approvalStatus: ticket1.approvalStatus,
+          paymentStatus: ticket1.paymentStatus,
+          redemptionStatus: ticket1.redemptionStatus,
+          status: ticket1.status,
+        },
+      ],
+    } as EventQuery["event"]);
   });
-  assert.equal(response.errors, undefined);
-  assert.deepEqual(response.data?.event?.tickets.length, 1);
-  assert.deepEqual(response.data?.event, {
-    id: event1.id,
-    name: event1.name,
-    description: event1.description,
-    status: event1.status,
-    visibility: event1.visibility,
-    startDateTime: event1.startDateTime.toISOString(),
-    endDateTime: event1.endDateTime?.toISOString(),
-    community: null,
-    tags: [],
-    users: [],
-    tickets: [
-      {
-        id: ticket1.id,
-        approvalStatus: ticket1.approvalStatus,
-        paymentStatus: ticket1.paymentStatus,
-        redemptionStatus: ticket1.redemptionStatus,
-        status: ticket1.status,
-      },
-    ],
-  } as EventQuery["event"]);
-});
 
-it("Should filter event ticket by payment status", async () => {
-  const event1 = await insertEvent();
-  const user1 = await insertUser();
-  const ticketTemplate1 = await insertTicketTemplate({
-    eventId: event1.id,
-  });
-  const ticket1 = await insertTicket({
-    ticketTemplateId: ticketTemplate1.id,
-    userId: user1.id,
-    paymentStatus: TicketPaymentStatus.Paid,
-  });
-  await insertTicket({
-    ticketTemplateId: ticketTemplate1.id,
-    userId: user1.id,
-    paymentStatus: TicketPaymentStatus.Unpaid,
-  });
-  const response = await executeGraphqlOperation<
-    EventQuery,
-    EventQueryVariables
-  >({
-    document: Event,
-    variables: {
+  it("Should filter event ticket by payment status", async () => {
+    const event1 = await insertEvent();
+    const user1 = await insertUser();
+    const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
-      eventTickets: {
-        paymentStatus: TicketPaymentStatus.Paid,
+    });
+    const ticket1 = await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      paymentStatus: TicketPaymentStatus.Paid,
+    });
+    await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      paymentStatus: TicketPaymentStatus.Unpaid,
+    });
+    const response = await executeGraphqlOperationAsSuperAdmin<
+      EventQuery,
+      EventQueryVariables
+    >({
+      document: Event,
+      variables: {
+        eventId: event1.id,
+        eventTickets: {
+          paymentStatus: TicketPaymentStatus.Paid,
+        },
       },
-    },
+    });
+    assert.equal(response.errors, undefined);
+    assert.deepEqual(response.data?.event?.tickets.length, 1);
+    assert.deepEqual(response.data?.event, {
+      id: event1.id,
+      name: event1.name,
+      description: event1.description,
+      status: event1.status,
+      visibility: event1.visibility,
+      startDateTime: event1.startDateTime.toISOString(),
+      endDateTime: event1.endDateTime?.toISOString(),
+      community: null,
+      tags: [],
+      users: [],
+      tickets: [
+        {
+          id: ticket1.id,
+          approvalStatus: ticket1.approvalStatus,
+          paymentStatus: ticket1.paymentStatus,
+          redemptionStatus: ticket1.redemptionStatus,
+          status: ticket1.status,
+        },
+      ],
+    } as EventQuery["event"]);
   });
-  assert.equal(response.errors, undefined);
-  assert.deepEqual(response.data?.event?.tickets.length, 1);
-  assert.deepEqual(response.data?.event, {
-    id: event1.id,
-    name: event1.name,
-    description: event1.description,
-    status: event1.status,
-    visibility: event1.visibility,
-    startDateTime: event1.startDateTime.toISOString(),
-    endDateTime: event1.endDateTime?.toISOString(),
-    community: null,
-    tags: [],
-    users: [],
-    tickets: [
-      {
-        id: ticket1.id,
-        approvalStatus: ticket1.approvalStatus,
-        paymentStatus: ticket1.paymentStatus,
-        redemptionStatus: ticket1.redemptionStatus,
-        status: ticket1.status,
-      },
-    ],
-  } as EventQuery["event"]);
-});
 
-it("Should filter event ticket by redemption status", async () => {
-  const event1 = await insertEvent();
-  const user1 = await insertUser();
-  const ticketTemplate1 = await insertTicketTemplate({
-    eventId: event1.id,
-  });
-  const ticket1 = await insertTicket({
-    ticketTemplateId: ticketTemplate1.id,
-    userId: user1.id,
-    redemptionStatus: TicketRedemptionStatus.Redeemed,
-  });
-  await insertTicket({
-    ticketTemplateId: ticketTemplate1.id,
-    userId: user1.id,
-    redemptionStatus: TicketRedemptionStatus.Pending,
-  });
-  const response = await executeGraphqlOperation<
-    EventQuery,
-    EventQueryVariables
-  >({
-    document: Event,
-    variables: {
+  it("Should filter event ticket by redemption status", async () => {
+    const event1 = await insertEvent();
+    const user1 = await insertUser();
+    const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
-      eventTickets: {
-        redemptionStatus: TicketRedemptionStatus.Redeemed,
+    });
+    const ticket1 = await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      redemptionStatus: TicketRedemptionStatus.Redeemed,
+    });
+    await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      redemptionStatus: TicketRedemptionStatus.Pending,
+    });
+    const response = await executeGraphqlOperationAsSuperAdmin<
+      EventQuery,
+      EventQueryVariables
+    >({
+      document: Event,
+      variables: {
+        eventId: event1.id,
+        eventTickets: {
+          redemptionStatus: TicketRedemptionStatus.Redeemed,
+        },
       },
-    },
+    });
+    assert.equal(response.errors, undefined);
+    assert.deepEqual(response.data?.event?.tickets.length, 1);
+    assert.deepEqual(response.data?.event, {
+      id: event1.id,
+      name: event1.name,
+      description: event1.description,
+      status: event1.status,
+      visibility: event1.visibility,
+      startDateTime: event1.startDateTime.toISOString(),
+      endDateTime: event1.endDateTime?.toISOString(),
+      community: null,
+      tags: [],
+      users: [],
+      tickets: [
+        {
+          id: ticket1.id,
+          approvalStatus: ticket1.approvalStatus,
+          paymentStatus: ticket1.paymentStatus,
+          redemptionStatus: ticket1.redemptionStatus,
+          status: ticket1.status,
+        },
+      ],
+    } as EventQuery["event"]);
   });
-  assert.equal(response.errors, undefined);
-  assert.deepEqual(response.data?.event?.tickets.length, 1);
-  assert.deepEqual(response.data?.event, {
-    id: event1.id,
-    name: event1.name,
-    description: event1.description,
-    status: event1.status,
-    visibility: event1.visibility,
-    startDateTime: event1.startDateTime.toISOString(),
-    endDateTime: event1.endDateTime?.toISOString(),
-    community: null,
-    tags: [],
-    users: [],
-    tickets: [
-      {
-        id: ticket1.id,
-        approvalStatus: ticket1.approvalStatus,
-        paymentStatus: ticket1.paymentStatus,
-        redemptionStatus: ticket1.redemptionStatus,
-        status: ticket1.status,
-      },
-    ],
-  } as EventQuery["event"]);
-});
 
-it("Should filter event ticket by status", async () => {
-  const event1 = await insertEvent();
-  const user1 = await insertUser();
-  const ticketTemplate1 = await insertTicketTemplate({
-    eventId: event1.id,
-  });
-  const ticket1 = await insertTicket({
-    ticketTemplateId: ticketTemplate1.id,
-    userId: user1.id,
-    status: TicketStatus.Active,
-  });
-  await insertTicket({
-    ticketTemplateId: ticketTemplate1.id,
-    userId: user1.id,
-    status: TicketStatus.Cancelled,
-  });
-  const response = await executeGraphqlOperation<
-    EventQuery,
-    EventQueryVariables
-  >({
-    document: Event,
-    variables: {
+  it.only("Should filter event ticket by status", async () => {
+    const event1 = await insertEvent();
+    const user1 = await insertUser();
+    const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
-      eventTickets: {
-        status: TicketStatus.Active,
+    });
+    const ticket1 = await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      status: TicketStatus.Active,
+    });
+    await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      status: TicketStatus.Cancelled,
+    });
+    const response = await executeGraphqlOperationAsSuperAdmin<
+      EventQuery,
+      EventQueryVariables
+    >({
+      document: Event,
+      variables: {
+        eventId: event1.id,
+        eventTickets: {
+          status: TicketStatus.Active,
+        },
       },
-    },
+    });
+    assert.equal(response.errors, undefined);
+    assert.deepEqual(response.data?.event?.tickets.length, 1);
+    assert.deepEqual(response.data?.event, {
+      id: event1.id,
+      name: event1.name,
+      description: event1.description,
+      status: event1.status,
+      visibility: event1.visibility,
+      startDateTime: event1.startDateTime.toISOString(),
+      endDateTime: event1.endDateTime?.toISOString(),
+      community: null,
+      tags: [],
+      users: [],
+      tickets: [
+        {
+          id: ticket1.id,
+          approvalStatus: ticket1.approvalStatus,
+          paymentStatus: ticket1.paymentStatus,
+          redemptionStatus: ticket1.redemptionStatus,
+          status: ticket1.status,
+        },
+      ],
+    } as EventQuery["event"]);
   });
-  assert.equal(response.errors, undefined);
-  assert.deepEqual(response.data?.event?.tickets.length, 1);
-  assert.deepEqual(response.data?.event, {
-    id: event1.id,
-    name: event1.name,
-    description: event1.description,
-    status: event1.status,
-    visibility: event1.visibility,
-    startDateTime: event1.startDateTime.toISOString(),
-    endDateTime: event1.endDateTime?.toISOString(),
-    community: null,
-    tags: [],
-    users: [],
-    tickets: [
-      {
-        id: ticket1.id,
-        approvalStatus: ticket1.approvalStatus,
-        paymentStatus: ticket1.paymentStatus,
-        redemptionStatus: ticket1.redemptionStatus,
-        status: ticket1.status,
-      },
-    ],
-  } as EventQuery["event"]);
 });

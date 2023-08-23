@@ -11,6 +11,7 @@ import {
   selectUserTicketsSchema,
   selectUsersSchema,
   userTicketsSchema,
+  usersSchema,
 } from "~/datasources/db/schema";
 import {
   CommunityRef,
@@ -85,12 +86,34 @@ builder.objectType(EventRef, {
     users: t.field({
       type: [UserRef],
       resolve: async (root, args, ctx) => {
+        const wheres: SQL[] = [];
+
+        const eventToCommunitie =
+          await ctx.DB.query.eventsToCommunitiesSchema.findFirst({
+            where: (etc, { eq }) => eq(etc.eventId, root.id),
+          });
+
+        if(!eventToCommunitie){
+          return [];
+        }
+
+        const usersToCommunitie =
+          await ctx.DB.query.usersToCommunitiesSchema.findMany({
+            where: (utc, { eq }) =>
+              eq(utc.communityId, eventToCommunitie.communityId),
+          });
+
+        const usersToCommunitieIds = usersToCommunitie.map((utc) => utc.userId);
+
+        if(!usersToCommunitieIds){
+          return [];
+        }
+
+        wheres.push(
+          inArray(usersSchema.id, usersToCommunitieIds),
+        );
         const users = await ctx.DB.query.usersSchema.findMany({
-          with: {
-            usersToCommunities: {
-              where: (utc, { eq }) => eq(utc.userId, root.id),
-            },
-          },
+          where: (c, { and }) => and(...wheres),
           orderBy(fields, operators) {
             return operators.desc(fields.username);
           },
@@ -168,6 +191,11 @@ builder.objectType(EventRef, {
           where: (c, { eq }) => eq(c.eventId, root.id),
         });
         const ticketTemplateIds = ticketsTemplates.map((t) => t.id);
+
+        if(ticketTemplateIds){
+          return [];
+        }
+
         wheres.push(
           inArray(userTicketsSchema.ticketTemplateId, ticketTemplateIds),
         );

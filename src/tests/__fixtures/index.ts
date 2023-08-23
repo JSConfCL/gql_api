@@ -41,6 +41,7 @@ import {
   usersSchema,
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
+import { TicketApprovalStatus, TicketPaymentStatus, TicketRedemptionStatus, TicketStatus } from "~/generated/types";
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/__fixtures/databaseHelper";
 
@@ -228,10 +229,11 @@ export const insertTag = async (
 };
 
 export const insertTicketTemplate = async (
-  partialInput?: Partial<z.infer<typeof insertTicketSchema>>,
+  partialInput: Partial<z.infer<typeof insertTicketSchema>>,
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
+    eventId: partialInput.eventId ?? faker.string.uuid(),
     name: partialInput?.name ?? faker.company.name(),
     startDateTime: partialInput?.startDateTime ?? faker.date.future(),
     endDateTime: partialInput?.endDateTime ?? faker.date.future(),
@@ -252,6 +254,10 @@ export const insertTicket = async (
     id: partialInput?.id ?? faker.string.uuid(),
     userId: partialInput?.userId,
     ticketTemplateId: partialInput?.ticketTemplateId,
+    approvalStatus: partialInput?.approvalStatus ?? TicketApprovalStatus.Pending,
+    paymentStatus: partialInput?.paymentStatus ?? TicketPaymentStatus.Unpaid,
+    redemptionStatus: partialInput?.redemptionStatus ?? TicketRedemptionStatus.Pending,
+    status: partialInput?.status ?? TicketStatus.Cancelled,
   } satisfies z.infer<typeof insertUserTicketsSchema>;
 
   return insertOne(

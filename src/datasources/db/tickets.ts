@@ -30,7 +30,7 @@ export const ticketsSchema = sqliteTable("tickets", {
   ),
   price: int("price"),
   quantity: int("quantity"),
-  eventId: text("event_id").references(() => eventsSchema.id),
+  eventId: text("event_id").references(() => eventsSchema.id).notNull(),
   currencyId: text("currency").references(() => allowedCurrencySchema.id),
   ...createdAndUpdatedAtFields,
 });

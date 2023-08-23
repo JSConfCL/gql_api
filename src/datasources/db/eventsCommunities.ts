@@ -8,8 +8,8 @@ import { createdAndUpdatedAtFields } from "./shared";
 export const eventsToCommunitiesSchema = sqliteTable(
   "events_communities",
   {
-    eventId: text("event_id").references(() => eventsSchema.id),
-    communityId: text("community_id").references(() => communitySchema.id),
+    eventId: text("event_id").references(() => eventsSchema.id).notNull(),
+    communityId: text("community_id").references(() => communitySchema.id).notNull(),
     ...createdAndUpdatedAtFields,
   },
   (t) => ({
