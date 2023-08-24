@@ -4,6 +4,7 @@ import { builder } from "~/builder";
 import {
   eventsSchema,
   eventsToCommunitiesSchema,
+  eventsToUsersSchema,
   insertEventsSchema,
   selectCommunitySchema,
   selectEventsSchema,
@@ -12,6 +13,7 @@ import {
   selectUsersSchema,
   userTicketsSchema,
   usersSchema,
+  usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
 import {
   CommunityRef,
@@ -33,6 +35,7 @@ export const EventStatus = builder.enumType("EventStatus", {
 export const EventVisibility = builder.enumType("EventVisibility", {
   values: ["public", "private", "unlisted"] as const,
 });
+const AdminRoles = new Set(["admin", "collaborator"]);
 
 builder.objectType(EventRef, {
   description:
@@ -140,11 +143,7 @@ builder.objectType(EventRef, {
     tickets: t.field({
       type: [UserTicketRef],
       authz: {
-        compositeRules: [
-          {
-            or: ["isCommunityCollaborator", "isCommunityAdmin", "IsSuperAdmin"],
-          },
-        ],
+        rules: ["IsAuthenticated"]
       },
       args: {
         input: t.arg({ type: EventsTicketsSearchInput, required: false }),
@@ -153,6 +152,11 @@ builder.objectType(EventRef, {
         const { id, status, paymentStatus, approvalStatus, redemptionStatus } =
           input ?? {};
         const wheres: SQL[] = [];
+
+        if(!ctx.USER){
+          return [];
+        }
+
         if (id) {
           wheres.push(eq(userTicketsSchema.id, id));
         }
@@ -167,6 +171,24 @@ builder.objectType(EventRef, {
         }
         if (redemptionStatus) {
           wheres.push(eq(userTicketsSchema.redemptionStatus, redemptionStatus));
+        }
+        const roleUserEvent = await ctx.DB.query.eventsToUsersSchema.findFirst({
+          where: (etc, { eq, and }) => and(eq(etc.eventId, root.id), eq(etc.userId, ctx.USER.id)),
+          columns: {
+            role: true,
+          }
+        })
+        const community = await ctx.DB.query.eventsToCommunitiesSchema.findFirst({
+          where: (etc, { eq }) => eq(etc.eventId, root.id),
+        })
+        if(!community){
+          return []
+        }
+        const roleUserCommunity = await ctx.DB.query.usersToCommunitiesSchema.findFirst({
+          where: (etc, {eq, and}) => and(eq(etc.communityId, community?.communityId), eq(etc.userId, ctx.USER.id)),
+        })
+        if(!(roleUserEvent && AdminRoles.has(roleUserEvent?.role)) || !(roleUserCommunity && AdminRoles.has(roleUserCommunity?.role))) {
+          wheres.push(eq(userTicketsSchema.userId, ctx.USER.id))
         }
 
         // TODO: (Felipe) — Esta es otra manera de hacerlo, aun no se cual es
