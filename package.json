@@ -14,9 +14,11 @@
     "test:ci": "vitest --coverage",
     "lint": "eslint ./src --cache",
     "prettier": "prettier ./src --cache",
+    "prettier:ci": "prettier ./src --cache --check",
+    "prettier:fix": "prettier ./src --cache --write",
     "typecheck": "tsc",
     "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info",
-    "generate": "tsx ./generated/generate.ts && graphql-codegen --config codegen.ts"
+    "generate": "tsx ./src/generated/generate.ts && graphql-codegen --config codegen.ts"
   },
   "devDependencies": {
     "@clerk/types": "^3.48.1",
@@ -75,8 +77,8 @@
     "@pothos/core": "^3.30.0",
     "@pothos/plugin-authz": "^3.5.8",
     "cookie": "^0.5.0",
-    "drizzle-orm": "^0.27.2",
-    "drizzle-zod": "^0.4.4",
+    "drizzle-orm": "^0.28.1",
+    "drizzle-zod": "^0.5.0",
     "graphql": "^16.7.1",
     "graphql-config": "^5.0.2",
     "graphql-scalars": "^1.22.2",

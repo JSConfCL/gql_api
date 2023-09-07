@@ -62,9 +62,7 @@
       "indexes": {
         "communities_slug_unique": {
           "name": "communities_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": true
         }
       },
@@ -145,9 +143,7 @@
       "indexes": {
         "events_name_unique": {
           "name": "events_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         }
       },
@@ -194,12 +190,8 @@
           "name": "events_communities_event_id_events_id_fk",
           "tableFrom": "events_communities",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -207,22 +199,15 @@
           "name": "events_communities_community_id_communities_id_fk",
           "tableFrom": "events_communities",
           "tableTo": "communities",
-          "columnsFrom": [
-            "community_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["community_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "events_communities_event_id_community_id_pk": {
-          "columns": [
-            "community_id",
-            "event_id"
-          ]
+          "columns": ["community_id", "event_id"]
         }
       },
       "uniqueConstraints": {}
@@ -266,12 +251,8 @@
           "name": "events_tags_event_id_events_id_fk",
           "tableFrom": "events_tags",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -279,22 +260,15 @@
           "name": "events_tags_tag_id_tags_id_fk",
           "tableFrom": "events_tags",
           "tableTo": "tags",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tag_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "events_tags_event_id_tag_id_pk": {
-          "columns": [
-            "event_id",
-            "tag_id"
-          ]
+          "columns": ["event_id", "tag_id"]
         }
       },
       "uniqueConstraints": {}
@@ -346,12 +320,8 @@
           "name": "events_users_roles_event_id_events_id_fk",
           "tableFrom": "events_users_roles",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -359,22 +329,15 @@
           "name": "events_users_roles_user_id_users_id_fk",
           "tableFrom": "events_users_roles",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "events_users_roles_event_id_user_id_pk": {
-          "columns": [
-            "event_id",
-            "user_id"
-          ]
+          "columns": ["event_id", "user_id"]
         }
       },
       "uniqueConstraints": {}
@@ -418,12 +381,8 @@
           "name": "events_users_event_id_events_id_fk",
           "tableFrom": "events_users",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -431,12 +390,8 @@
           "name": "events_users_user_id_users_id_fk",
           "tableFrom": "events_users",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -487,9 +442,7 @@
       "indexes": {
         "tags_name_unique": {
           "name": "tags_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         }
       },
@@ -536,12 +489,8 @@
           "name": "tags_communities_tag_id_tags_id_fk",
           "tableFrom": "tags_communities",
           "tableTo": "tags",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tag_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -549,22 +498,15 @@
           "name": "tags_communities_community_id_communities_id_fk",
           "tableFrom": "tags_communities",
           "tableTo": "communities",
-          "columnsFrom": [
-            "community_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["community_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "tags_communities_tag_id_community_id_pk": {
-          "columns": [
-            "community_id",
-            "tag_id"
-          ]
+          "columns": ["community_id", "tag_id"]
         }
       },
       "uniqueConstraints": {}
@@ -677,9 +619,7 @@
       "indexes": {
         "users_username_unique": {
           "name": "users_username_unique",
-          "columns": [
-            "username"
-          ],
+          "columns": ["username"],
           "isUnique": true
         }
       },
@@ -734,12 +674,8 @@
           "name": "users_communities_user_id_users_id_fk",
           "tableFrom": "users_communities",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -747,12 +683,8 @@
           "name": "users_communities_community_id_communities_id_fk",
           "tableFrom": "users_communities",
           "tableTo": "communities",
-          "columnsFrom": [
-            "community_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["community_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }

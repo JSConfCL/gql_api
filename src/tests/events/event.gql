@@ -1,4 +1,4 @@
-query Event($eventId: String!) {
+query Event($eventId: String!, $eventTickets: EventsTicketsSearchInput) {
   event(id: $eventId) {
     id
     name
@@ -15,6 +15,13 @@ query Event($eventId: String!) {
     }
     users {
       id
+    }
+    tickets(input: $eventTickets) {
+      id
+      approvalStatus
+      paymentStatus
+      redemptionStatus
+      status
     }
   }
 }

@@ -1,7 +1,7 @@
 import type { IGraphQLConfig } from "graphql-config";
 
 const config = {
-  schema: "./generated/schema.gql",
+  schema: "./src/generated/schema.gql",
   documents: ["./src/**/*.gql"],
 } satisfies IGraphQLConfig;
 

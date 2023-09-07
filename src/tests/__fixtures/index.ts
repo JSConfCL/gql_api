@@ -11,34 +11,47 @@ import { type ExecutionResult } from "graphql";
 import { createYoga } from "graphql-yoga";
 import { Env } from "worker-configuration";
 import { ZodType, z } from "zod";
-import {
-  insertCommunitySchema,
-  insertEventsSchema,
-  insertEventsToTagsSchema,
-  insertTagsSchema,
-  insertUsersSchema,
-  insertUsersToCommunitiesSchema,
-  selectCommunitySchema,
-  selectEventsSchema,
-  selectEventsToTagsSchema,
-  selectTagsSchema,
-  selectUsersSchema,
-  selectUsersToCommunitiesSchema,
-  selectEventsToCommunitiesSchema,
-  insertEventsToCommunitiesSchema,
-} from "~/datasources/db/schema";
+import * as rules from "~/authz";
 import {
   communitySchema,
   eventsSchema,
   eventsToCommunitiesSchema,
   eventsToTagsSchema,
+  eventsToUsersSchema,
+  insertCommunitySchema,
+  insertEventsSchema,
+  insertEventsToCommunitiesSchema,
+  insertEventsToTagsSchema,
+  insertEventsToUsersSchema,
+  insertTagsSchema,
+  insertTicketSchema,
+  insertUserTicketsSchema,
+  insertUsersSchema,
+  insertUsersToCommunitiesSchema,
+  selectCommunitySchema,
+  selectEventsSchema,
+  selectEventsToCommunitiesSchema,
+  selectEventsToTagsSchema,
+  selectEventsToUsersSchema,
+  selectTagsSchema,
+  selectTicketSchema,
+  selectUserTicketsSchema,
+  selectUsersSchema,
+  selectUsersToCommunitiesSchema,
   tagsSchema,
+  ticketsSchema,
+  userTicketsSchema,
   usersSchema,
   usersToCommunitiesSchema,
-} from "~/datasources/db/tables";
+} from "~/datasources/db/schema";
+import {
+  TicketApprovalStatus,
+  TicketPaymentStatus,
+  TicketRedemptionStatus,
+  TicketStatus,
+} from "~/generated/types";
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/__fixtures/databaseHelper";
-import * as rules from "~/authz";
 
 const insertUserRequest = insertUsersSchema.deepPartial();
 
@@ -196,6 +209,22 @@ export const insertUserToCommunity = async (
   );
 };
 
+export const insertUserToEvent = async (
+  partialInput: z.infer<typeof insertEventsToUsersSchema>,
+) => {
+  const possibleInput = {
+    userId: partialInput?.userId,
+    eventId: partialInput?.eventId,
+    role: partialInput?.role ?? "admin",
+  } satisfies z.infer<typeof insertEventsToUsersSchema>;
+  return insertOne(
+    insertEventsToUsersSchema,
+    selectEventsToUsersSchema,
+    eventsToUsersSchema,
+    possibleInput,
+  );
+};
+
 export const insertEventToCommunity = async (
   possibleInput: z.infer<typeof insertEventsToCommunitiesSchema>,
 ) => {
@@ -219,6 +248,48 @@ export const insertTag = async (
     insertTagsSchema,
     selectTagsSchema,
     tagsSchema,
+    possibleInput,
+  );
+};
+
+export const insertTicketTemplate = async (
+  partialInput: Partial<z.infer<typeof insertTicketSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    eventId: partialInput.eventId ?? faker.string.uuid(),
+    name: partialInput?.name ?? faker.company.name(),
+    startDateTime: partialInput?.startDateTime ?? faker.date.future(),
+    endDateTime: partialInput?.endDateTime ?? faker.date.future(),
+  } satisfies z.infer<typeof insertTicketSchema>;
+
+  return insertOne(
+    insertTicketSchema,
+    selectTicketSchema,
+    ticketsSchema,
+    possibleInput,
+  );
+};
+
+export const insertTicket = async (
+  partialInput?: Partial<z.infer<typeof insertUserTicketsSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    userId: partialInput?.userId,
+    ticketTemplateId: partialInput?.ticketTemplateId,
+    approvalStatus:
+      partialInput?.approvalStatus ?? TicketApprovalStatus.Pending,
+    paymentStatus: partialInput?.paymentStatus ?? TicketPaymentStatus.Unpaid,
+    redemptionStatus:
+      partialInput?.redemptionStatus ?? TicketRedemptionStatus.Pending,
+    status: partialInput?.status ?? TicketStatus.Cancelled,
+  } satisfies z.infer<typeof insertUserTicketsSchema>;
+
+  return insertOne(
+    insertUserTicketsSchema,
+    selectUserTicketsSchema,
+    userTicketsSchema,
     possibleInput,
   );
 };

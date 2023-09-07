@@ -59,3 +59,44 @@ export class CanCreateEvent extends PreExecutionRule {
     return Boolean(user);
   }
 }
+
+export class isCommunityCollaborator extends PreExecutionRule {
+  public async execute(
+    { USER, DB }: GraphqlContext,
+    fieldArgs: { input: { communityId: string } },
+  ) {
+    if (!USER || !fieldArgs?.input?.communityId) {
+      return false;
+    }
+    const user = await DB.query.communitySchema.findFirst({
+      with: {
+        usersToCommunities: {
+          where: (utc, { eq, and }) =>
+            and(eq(utc.userId, USER.id), eq(utc.role, "admin")),
+        },
+      },
+    });
+    return Boolean(user);
+  }
+}
+
+export class isCommunityAdmin extends PreExecutionRule {
+  public async execute(
+    { USER, DB }: GraphqlContext,
+    fieldArgs: { input: { communityId: string } },
+  ) {
+    if (!USER || !fieldArgs?.input?.communityId) {
+      return false;
+    }
+    const user = await DB.query.communitySchema.findFirst({
+      with: {
+        usersToCommunities: {
+          where: (utc, { eq, and }) =>
+            and(eq(utc.userId, USER.id), eq(utc.role, "admin")),
+        },
+      },
+    });
+
+    return Boolean(user);
+  }
+}

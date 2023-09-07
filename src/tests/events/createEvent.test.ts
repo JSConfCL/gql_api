@@ -17,7 +17,7 @@ import {
   CommunityEventsQuery,
   CommunityEventsQueryVariables,
 } from "./createEvent.generated";
-import { EventStatus, EventVisibility } from "generated/types";
+import { EventStatus, EventVisibility } from "~/generated/types";
 import { faker } from "@faker-js/faker";
 
 afterEach(() => {
