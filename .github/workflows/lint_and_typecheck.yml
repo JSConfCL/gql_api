@@ -55,4 +55,4 @@ jobs:
         run: npm run typecheck
 
       - name: Run Prettier
-        run: npm run prettier
+        run: npm run prettier:ci
