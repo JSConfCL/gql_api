@@ -94,7 +94,7 @@ builder.objectType(EventRef, {
             where: (etc, { eq }) => eq(etc.eventId, root.id),
           });
 
-        if(!eventToCommunitie){
+        if (!eventToCommunitie) {
           return [];
         }
 
@@ -104,15 +104,15 @@ builder.objectType(EventRef, {
               eq(utc.communityId, eventToCommunitie.communityId),
           });
 
-        const usersToCommunitieIds = usersToCommunitie.map((utc) => utc.userId);
+        const usersToCommunitieIds = usersToCommunitie
+          .map((utc) => utc.userId)
+          .filter(Boolean);
 
-        if(usersToCommunitieIds.length === 0){
+        if (usersToCommunitieIds.length === 0) {
           return [];
         }
 
-        wheres.push(
-          inArray(usersSchema.id, usersToCommunitieIds),
-        );
+        wheres.push(inArray(usersSchema.id, usersToCommunitieIds));
         const users = await ctx.DB.query.usersSchema.findMany({
           where: (c, { and }) => and(...wheres),
           orderBy(fields, operators) {
@@ -141,15 +141,19 @@ builder.objectType(EventRef, {
     tickets: t.field({
       type: [UserTicketRef],
       authz: {
-        rules: ["IsAuthenticated"]
+        rules: ["IsAuthenticated"],
       },
       args: {
         input: t.arg({ type: EventsTicketsSearchInput, required: false }),
       },
-      resolve: async (root, { input }, ctx) => {
+      resolve: async (root, { input }, { DB, USER }) => {
         const { id, status, paymentStatus, approvalStatus, redemptionStatus } =
           input ?? {};
         const wheres: SQL[] = [];
+
+        if (!USER) {
+          return [];
+        }
 
         if (id) {
           wheres.push(eq(userTicketsSchema.id, id));
@@ -166,20 +170,29 @@ builder.objectType(EventRef, {
         if (redemptionStatus) {
           wheres.push(eq(userTicketsSchema.redemptionStatus, redemptionStatus));
         }
-        const roleUserEvent = await ctx.DB.query.eventsToUsersSchema.findFirst({
-          where: (etc, { eq, and }) => and(eq(etc.eventId, root.id), eq(etc.userId, ctx.USER.id))
-        })
-        const community = await ctx.DB.query.eventsToCommunitiesSchema.findFirst({
+        const roleUserEvent = await DB.query.eventsToUsersSchema.findFirst({
+          where: (etc, { eq, and }) =>
+            and(eq(etc.eventId, root.id), eq(etc.userId, USER.id)),
+        });
+        const community = await DB.query.eventsToCommunitiesSchema.findFirst({
           where: (etc, { eq }) => eq(etc.eventId, root.id),
-        })
-        if(!community){
-          return []
+        });
+        if (!community) {
+          return [];
         }
-        const roleUserCommunity = await ctx.DB.query.usersToCommunitiesSchema.findFirst({
-          where: (etc, {eq, and}) => and(eq(etc.communityId, community?.communityId), eq(etc.userId, ctx.USER.id)),
-        })
-        if(!(roleUserEvent && AdminRoles.has(roleUserEvent?.role)) || !(roleUserCommunity && AdminRoles.has(roleUserCommunity?.role))) {
-          wheres.push(eq(userTicketsSchema.userId, ctx.USER.id))
+        const roleUserCommunity =
+          await DB.query.usersToCommunitiesSchema.findFirst({
+            where: (etc, { eq, and }) =>
+              and(
+                eq(etc.communityId, community?.communityId),
+                eq(etc.userId, USER.id),
+              ),
+          });
+        if (
+          !(roleUserEvent?.role && AdminRoles.has(roleUserEvent.role)) ||
+          !(roleUserCommunity?.role && AdminRoles.has(roleUserCommunity.role))
+        ) {
+          wheres.push(eq(userTicketsSchema.userId, USER.id));
         }
 
         // TODO: (Felipe) — Esta es otra manera de hacerlo, aun no se cual es
@@ -190,7 +203,7 @@ builder.objectType(EventRef, {
         // Es probable que podamos hacerlo si usamos el builder de drizzle-orm
         // para generar el schema de la query, pero aun no lo he intentado.
         //
-        // const withJoin = await ctx.DB.select()
+        // const withJoin = await DB.select()
         //   .from(eventsSchema)
         //   .innerJoin(ticketsSchema, eq(eventsSchema.id, ticketsSchema.eventId))
         //   .innerJoin(
@@ -200,18 +213,18 @@ builder.objectType(EventRef, {
         //   .where(eq(eventsSchema.id, root.id))
         //   .run();
 
-        const ticketsTemplates = await ctx.DB.query.ticketsSchema.findMany({
+        const ticketsTemplates = await DB.query.ticketsSchema.findMany({
           where: (c, { eq }) => eq(c.eventId, root.id),
         });
         const ticketTemplateIds = ticketsTemplates.map((t) => t.id);
-        if(ticketTemplateIds.length === 0){
+        if (ticketTemplateIds.length === 0) {
           return [];
         }
 
         wheres.push(
           inArray(userTicketsSchema.ticketTemplateId, ticketTemplateIds),
         );
-        const tickets = await ctx.DB.query.userTicketsSchema.findMany({
+        const tickets = await DB.query.userTicketsSchema.findMany({
           where: (c, { and }) => and(...wheres),
           orderBy(fields, operators) {
             return operators.desc(fields.createdAt);
