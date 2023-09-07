@@ -75,7 +75,7 @@ describe("User", () => {
       ...fakeInput,
     });
   });
-  it("Should update a user but is not the same user", async () => {
+  it("It should throw an error, if not the same user", async () => {
     const user1 = await insertUser();
     const user2 = await insertUser();
     const fakeInput = {
