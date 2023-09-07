@@ -126,10 +126,16 @@ export type Mutation = {
   __typename?: "Mutation";
   /** Create an event */
   createEvent: Event;
+  /** Update a user */
+  updateUser: User;
 };
 
 export type MutationCreateEventArgs = {
   input: EventCreateInput;
+};
+
+export type MutationUpdateUserArgs = {
+  input: UserEditInput;
 };
 
 export type MyTicketsSearchInput = {
@@ -227,8 +233,10 @@ export enum TicketStatus {
 /** Representation of a user */
 export type User = {
   __typename?: "User";
+  bio?: Maybe<Scalars["String"]["output"]>;
   communities: Array<Community>;
   id: Scalars["String"]["output"];
+  lastName?: Maybe<Scalars["String"]["output"]>;
   name?: Maybe<Scalars["String"]["output"]>;
   username: Scalars["String"]["output"];
 };
@@ -241,4 +249,12 @@ export type UserTicket = {
   paymentStatus: TicketPaymentStatus;
   redemptionStatus: TicketRedemptionStatus;
   status: TicketStatus;
+};
+
+export type UserEditInput = {
+  bio?: InputMaybe<Scalars["String"]["input"]>;
+  id: Scalars["String"]["input"];
+  lastName?: InputMaybe<Scalars["String"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  username?: InputMaybe<Scalars["String"]["input"]>;
 };

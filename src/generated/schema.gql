@@ -96,6 +96,11 @@ type Mutation {
   Create an event
   """
   createEvent(input: EventCreateInput!): Event!
+
+  """
+  Update a user
+  """
+  updateUser(input: userEditInput!): User!
 }
 
 input MyTicketsSearchInput {
@@ -184,8 +189,10 @@ enum TicketStatus {
 Representation of a user
 """
 type User {
+  bio: String
   communities: [Community!]!
   id: String!
+  lastName: String
   name: String
   username: String!
 }
@@ -199,4 +206,12 @@ type UserTicket {
   paymentStatus: TicketPaymentStatus!
   redemptionStatus: TicketRedemptionStatus!
   status: TicketStatus!
+}
+
+input userEditInput {
+  bio: String
+  id: String!
+  lastName: String
+  name: String
+  username: String
 }
