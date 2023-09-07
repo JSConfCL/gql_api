@@ -14,6 +14,7 @@
     "test:ci": "vitest --coverage",
     "lint": "eslint ./src --cache",
     "prettier": "prettier ./src --cache",
+    "prettier:ci": "prettier ./src --cache --check",
     "typecheck": "tsc",
     "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info",
     "generate": "tsx ./src/generated/generate.ts && graphql-codegen --config codegen.ts"
