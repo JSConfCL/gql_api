@@ -11,6 +11,8 @@ import {
   insertTicket,
   executeGraphqlOperationAsSuperAdmin,
   insertUserToCommunity,
+  insertUserToEvent,
+  executeGraphqlOperationAsUser,
 } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { Event, EventQuery, EventQueryVariables } from "./event.generated";
@@ -106,9 +108,24 @@ describe("Event", () => {
     } as EventQuery["event"]);
   });
   it("Should get an event tickets", async () => {
+    const community1 = await insertCommunity();
     const event1 = await insertEvent();
+    await insertEventToCommunity({
+      eventId: event1.id,
+      communityId: community1.id,
+    });
     const user1 = await insertUser();
     const user2 = await insertUser();
+    await insertUserToCommunity({
+      communityId: community1.id,
+      userId: user1.id,
+      role: "admin",
+    });
+    await insertUserToEvent({
+      eventId: event1.id,
+      userId: user1.id,
+      role: "admin",
+    });
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
@@ -120,7 +137,7 @@ describe("Event", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user2.id,
     });
-    const response = await executeGraphqlOperationAsSuperAdmin<
+    const response = await executeGraphqlOperationAsUser<
       EventQuery,
       EventQueryVariables
     >({
@@ -129,9 +146,9 @@ describe("Event", () => {
         eventId: event1.id,
         eventTickets: {},
       },
-    });
+    }, user1);
     assert.equal(response.errors, undefined);
-    assert.equal(response.data?.event?.tags?.length, 2);
+    assert.equal(response.data?.event?.tickets?.length, 2);
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -140,8 +157,12 @@ describe("Event", () => {
       visibility: event1.visibility,
       startDateTime: event1.startDateTime.toISOString(),
       endDateTime: event1.endDateTime?.toISOString(),
-      community: null,
-      users: [],
+      community: {
+        id: community1.id,
+      },
+      users: [{
+        id: user1.id,
+      }],
       tags: [],
       tickets: [
         {
@@ -455,16 +476,22 @@ describe("Events", () => {
 //Event tickets filter test
 describe("Event tickets filter", () => {
   it("Should filter event ticket by id", async () => {
-    const event1 = await insertEvent();
-    const user1 = await insertUser();
     const community1 = await insertCommunity();
+    const event1 = await insertEvent();
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
     });
+    const user1 = await insertUser();
     await insertUserToCommunity({
-      userId: user1.id,
       communityId: community1.id,
+      userId: user1.id,
+      role: "admin",
+    });
+    await insertUserToEvent({
+      eventId: event1.id,
+      userId: user1.id,
+      role: "admin",
     });
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
@@ -477,7 +504,7 @@ describe("Event tickets filter", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
     });
-    const response = await executeGraphqlOperationAsSuperAdmin<
+    const response = await executeGraphqlOperationAsUser<
       EventQuery,
       EventQueryVariables
     >({
@@ -488,7 +515,7 @@ describe("Event tickets filter", () => {
           id: ticket1.id,
         },
       },
-    });
+    }, user1);
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.event?.tickets.length, 1);
     assert.deepEqual(response.data?.event, {
@@ -521,8 +548,23 @@ describe("Event tickets filter", () => {
   });
 
   it("Should filter event ticket by approval status", async () => {
+    const community1 = await insertCommunity();
     const event1 = await insertEvent();
+    await insertEventToCommunity({
+      eventId: event1.id,
+      communityId: community1.id,
+    });
     const user1 = await insertUser();
+    await insertUserToCommunity({
+      communityId: community1.id,
+      userId: user1.id,
+      role: "admin",
+    });
+    await insertUserToEvent({
+      eventId: event1.id,
+      userId: user1.id,
+      role: "admin",
+    });
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
@@ -536,18 +578,21 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       approvalStatus: TicketApprovalStatus.Pending,
     });
-    const response = await executeGraphqlOperationAsSuperAdmin<
+    const response = await executeGraphqlOperationAsUser<
       EventQuery,
       EventQueryVariables
-    >({
-      document: Event,
-      variables: {
-        eventId: event1.id,
-        eventTickets: {
-          approvalStatus: TicketApprovalStatus.Approved,
+    >(
+      {
+        document: Event,
+        variables: {
+          eventId: event1.id,
+          eventTickets: {
+            approvalStatus: TicketApprovalStatus.Approved,
+          },
         },
       },
-    });
+      user1,
+    );
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.event?.tickets.length, 1);
     assert.deepEqual(response.data?.event, {
@@ -558,9 +603,15 @@ describe("Event tickets filter", () => {
       visibility: event1.visibility,
       startDateTime: event1.startDateTime.toISOString(),
       endDateTime: event1.endDateTime?.toISOString(),
-      community: null,
+      community: {
+        id: community1.id,
+      },
       tags: [],
-      users: [],
+      users: [
+        {
+          id: user1.id,
+        },
+      ],
       tickets: [
         {
           id: ticket1.id,
@@ -574,8 +625,23 @@ describe("Event tickets filter", () => {
   });
 
   it("Should filter event ticket by payment status", async () => {
+    const community1 = await insertCommunity();
     const event1 = await insertEvent();
+    await insertEventToCommunity({
+      eventId: event1.id,
+      communityId: community1.id,
+    });
     const user1 = await insertUser();
+    await insertUserToCommunity({
+      communityId: community1.id,
+      userId: user1.id,
+      role: "admin",
+    });
+    await insertUserToEvent({
+      eventId: event1.id,
+      userId: user1.id,
+      role: "admin",
+    });
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
@@ -589,18 +655,21 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       paymentStatus: TicketPaymentStatus.Unpaid,
     });
-    const response = await executeGraphqlOperationAsSuperAdmin<
+    const response = await executeGraphqlOperationAsUser<
       EventQuery,
       EventQueryVariables
-    >({
-      document: Event,
-      variables: {
-        eventId: event1.id,
-        eventTickets: {
-          paymentStatus: TicketPaymentStatus.Paid,
+    >(
+      {
+        document: Event,
+        variables: {
+          eventId: event1.id,
+          eventTickets: {
+            paymentStatus: TicketPaymentStatus.Paid,
+          },
         },
       },
-    });
+      user1,
+    );
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.event?.tickets.length, 1);
     assert.deepEqual(response.data?.event, {
@@ -611,9 +680,15 @@ describe("Event tickets filter", () => {
       visibility: event1.visibility,
       startDateTime: event1.startDateTime.toISOString(),
       endDateTime: event1.endDateTime?.toISOString(),
-      community: null,
+      community: {
+        id: community1.id,
+      },
       tags: [],
-      users: [],
+      users: [
+        {
+          id: user1.id,
+        },
+      ],
       tickets: [
         {
           id: ticket1.id,
@@ -627,8 +702,23 @@ describe("Event tickets filter", () => {
   });
 
   it("Should filter event ticket by redemption status", async () => {
+    const community1 = await insertCommunity();
     const event1 = await insertEvent();
+    await insertEventToCommunity({
+      eventId: event1.id,
+      communityId: community1.id,
+    });
     const user1 = await insertUser();
+    await insertUserToCommunity({
+      communityId: community1.id,
+      userId: user1.id,
+      role: "admin",
+    });
+    await insertUserToEvent({
+      eventId: event1.id,
+      userId: user1.id,
+      role: "admin",
+    });
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
@@ -642,18 +732,21 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       redemptionStatus: TicketRedemptionStatus.Pending,
     });
-    const response = await executeGraphqlOperationAsSuperAdmin<
+    const response = await executeGraphqlOperationAsUser<
       EventQuery,
       EventQueryVariables
-    >({
-      document: Event,
-      variables: {
-        eventId: event1.id,
-        eventTickets: {
-          redemptionStatus: TicketRedemptionStatus.Redeemed,
+    >(
+      {
+        document: Event,
+        variables: {
+          eventId: event1.id,
+          eventTickets: {
+            redemptionStatus: TicketRedemptionStatus.Redeemed,
+          },
         },
       },
-    });
+      user1,
+    );
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.event?.tickets.length, 1);
     assert.deepEqual(response.data?.event, {
@@ -664,9 +757,15 @@ describe("Event tickets filter", () => {
       visibility: event1.visibility,
       startDateTime: event1.startDateTime.toISOString(),
       endDateTime: event1.endDateTime?.toISOString(),
-      community: null,
+      community: {
+        id: community1.id,
+      },
       tags: [],
-      users: [],
+      users: [
+        {
+          id: user1.id,
+        },
+      ],
       tickets: [
         {
           id: ticket1.id,
@@ -679,9 +778,25 @@ describe("Event tickets filter", () => {
     } as EventQuery["event"]);
   });
 
-  it.only("Should filter event ticket by status", async () => {
+  it("Should filter event ticket by status", async () => {
+    const community1 = await insertCommunity();
     const event1 = await insertEvent();
+    await insertEventToCommunity({
+      eventId: event1.id,
+      communityId: community1.id,
+    });
     const user1 = await insertUser();
+    await insertUserToCommunity({
+      communityId: community1.id,
+      userId: user1.id,
+      role: "admin",
+    });
+    await insertUserToEvent({
+      eventId: event1.id,
+      userId: user1.id,
+      role: "admin",
+    });
+
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
@@ -695,18 +810,22 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       status: TicketStatus.Cancelled,
     });
-    const response = await executeGraphqlOperationAsSuperAdmin<
+
+    const response = await executeGraphqlOperationAsUser<
       EventQuery,
       EventQueryVariables
-    >({
-      document: Event,
-      variables: {
-        eventId: event1.id,
-        eventTickets: {
-          status: TicketStatus.Active,
+    >(
+      {
+        document: Event,
+        variables: {
+          eventId: event1.id,
+          eventTickets: {
+            status: TicketStatus.Active,
+          },
         },
       },
-    });
+      user1,
+    );
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.event?.tickets.length, 1);
     assert.deepEqual(response.data?.event, {
@@ -717,9 +836,15 @@ describe("Event tickets filter", () => {
       visibility: event1.visibility,
       startDateTime: event1.startDateTime.toISOString(),
       endDateTime: event1.endDateTime?.toISOString(),
-      community: null,
+      community: {
+        id: community1.id,
+      },
       tags: [],
-      users: [],
+      users: [
+        {
+          id: user1.id,
+        },
+      ],
       tickets: [
         {
           id: ticket1.id,

@@ -4,7 +4,6 @@ import { builder } from "~/builder";
 import {
   eventsSchema,
   eventsToCommunitiesSchema,
-  eventsToUsersSchema,
   insertEventsSchema,
   selectCommunitySchema,
   selectEventsSchema,
@@ -13,7 +12,6 @@ import {
   selectUsersSchema,
   userTicketsSchema,
   usersSchema,
-  usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
 import {
   CommunityRef,
@@ -108,7 +106,7 @@ builder.objectType(EventRef, {
 
         const usersToCommunitieIds = usersToCommunitie.map((utc) => utc.userId);
 
-        if(!usersToCommunitieIds){
+        if(usersToCommunitieIds.length === 0){
           return [];
         }
 
@@ -153,10 +151,6 @@ builder.objectType(EventRef, {
           input ?? {};
         const wheres: SQL[] = [];
 
-        if(!ctx.USER){
-          return [];
-        }
-
         if (id) {
           wheres.push(eq(userTicketsSchema.id, id));
         }
@@ -173,10 +167,7 @@ builder.objectType(EventRef, {
           wheres.push(eq(userTicketsSchema.redemptionStatus, redemptionStatus));
         }
         const roleUserEvent = await ctx.DB.query.eventsToUsersSchema.findFirst({
-          where: (etc, { eq, and }) => and(eq(etc.eventId, root.id), eq(etc.userId, ctx.USER.id)),
-          columns: {
-            role: true,
-          }
+          where: (etc, { eq, and }) => and(eq(etc.eventId, root.id), eq(etc.userId, ctx.USER.id))
         })
         const community = await ctx.DB.query.eventsToCommunitiesSchema.findFirst({
           where: (etc, { eq }) => eq(etc.eventId, root.id),
@@ -213,8 +204,7 @@ builder.objectType(EventRef, {
           where: (c, { eq }) => eq(c.eventId, root.id),
         });
         const ticketTemplateIds = ticketsTemplates.map((t) => t.id);
-
-        if(ticketTemplateIds){
+        if(ticketTemplateIds.length === 0){
           return [];
         }
 

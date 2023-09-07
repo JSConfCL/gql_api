@@ -17,10 +17,12 @@ import {
   eventsSchema,
   eventsToCommunitiesSchema,
   eventsToTagsSchema,
+  eventsToUsersSchema,
   insertCommunitySchema,
   insertEventsSchema,
   insertEventsToCommunitiesSchema,
   insertEventsToTagsSchema,
+  insertEventsToUsersSchema,
   insertTagsSchema,
   insertTicketSchema,
   insertUserTicketsSchema,
@@ -30,6 +32,7 @@ import {
   selectEventsSchema,
   selectEventsToCommunitiesSchema,
   selectEventsToTagsSchema,
+  selectEventsToUsersSchema,
   selectTagsSchema,
   selectTicketSchema,
   selectUserTicketsSchema,
@@ -197,6 +200,22 @@ export const insertUserToCommunity = async (
     insertUsersToCommunitiesSchema,
     selectUsersToCommunitiesSchema,
     usersToCommunitiesSchema,
+    possibleInput,
+  );
+};
+
+export const insertUserToEvent = async (
+  partialInput: z.infer<typeof insertEventsToUsersSchema>,
+) => {
+  const possibleInput = {
+    userId: partialInput?.userId,
+    eventId: partialInput?.eventId,
+    role: partialInput?.role ?? "admin",
+  } satisfies z.infer<typeof insertEventsToUsersSchema>;
+  return insertOne(
+    insertEventsToUsersSchema,
+    selectEventsToUsersSchema,
+    eventsToUsersSchema,
     possibleInput,
   );
 };
