@@ -140,13 +140,16 @@ describe("Event", () => {
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
       EventQueryVariables
-    >({
-      document: Event,
-      variables: {
-        eventId: event1.id,
-        eventTickets: {},
+    >(
+      {
+        document: Event,
+        variables: {
+          eventId: event1.id,
+          eventTickets: {},
+        },
       },
-    }, user1);
+      user1,
+    );
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.event?.tickets?.length, 2);
     assert.deepEqual(response.data?.event, {
@@ -160,9 +163,11 @@ describe("Event", () => {
       community: {
         id: community1.id,
       },
-      users: [{
-        id: user1.id,
-      }],
+      users: [
+        {
+          id: user1.id,
+        },
+      ],
       tags: [],
       tickets: [
         {
@@ -507,15 +512,18 @@ describe("Event tickets filter", () => {
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
       EventQueryVariables
-    >({
-      document: Event,
-      variables: {
-        eventId: event1.id,
-        eventTickets: {
-          id: ticket1.id,
+    >(
+      {
+        document: Event,
+        variables: {
+          eventId: event1.id,
+          eventTickets: {
+            id: ticket1.id,
+          },
         },
       },
-    }, user1);
+      user1,
+    );
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.event?.tickets.length, 1);
     assert.deepEqual(response.data?.event, {

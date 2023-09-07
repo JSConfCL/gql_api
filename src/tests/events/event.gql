@@ -17,10 +17,10 @@ query Event($eventId: String!, $eventTickets: EventsTicketsSearchInput) {
       id
     }
     tickets(input: $eventTickets) {
-      id,
-      approvalStatus,
-      paymentStatus,
-      redemptionStatus,
+      id
+      approvalStatus
+      paymentStatus
+      redemptionStatus
       status
     }
   }
