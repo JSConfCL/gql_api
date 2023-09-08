@@ -43,6 +43,11 @@ builder.objectType(UserTicketRef, {
       type: TicketRedemptionStatus,
       resolve: (root) => root.redemptionStatus,
     }),
+    deletedAt: t.field({
+      type: "Date",
+      resolve: (root) => root.deletedAt,
+      nullable: true,
+    }),
   }),
 });
 
@@ -125,6 +130,54 @@ builder.queryFields((t) => ({
         },
       });
       return myTickets.map((t) => selectUserTicketsSchema.parse(t));
+    },
+  }),
+}));
+
+const cancelUserTicket = builder.inputType("cancelUserTicket", {
+  fields: (t) => ({
+    id: t.string({ required: true }),
+    communityId: t.string({ required: true }),
+  }),
+});
+
+builder.mutationFields((t) => ({
+  cancelUserTicket: t.field({
+    description: "Cancel a ticket",
+    type: UserTicketRef,
+    nullable: true,
+    args: {
+      input: t.arg({
+        type: cancelUserTicket,
+        required: true,
+      }),
+    },
+    authz: {
+      compositeRules: [
+        {
+          or: ["isCommunityAdmin", "IsSuperAdmin"],
+        },
+      ],
+    },
+    resolve: async (root, { input }, ctx) => {
+      let ticket = await ctx.DB.query.userTicketsSchema.findFirst({
+        where: (t, { eq }) => eq(t.id, input.id),
+      });
+      if (!ticket) {
+        return null;
+      }
+      if (ticket.status === "cancelled") {
+        return selectUserTicketsSchema.parse(ticket);
+      }
+      ticket = await ctx.DB.update(userTicketsSchema)
+        .set({
+          status: "cancelled",
+          deletedAt: new Date(),
+        })
+        .where(eq(userTicketsSchema.id, input.id))
+        .returning()
+        .get();
+      return selectUserTicketsSchema.parse(ticket);
     },
   }),
 }));

@@ -124,10 +124,16 @@ export type EventsTicketsSearchInput = {
 
 export type Mutation = {
   __typename?: "Mutation";
+  /** Cancel a ticket */
+  cancelUserTicket?: Maybe<UserTicket>;
   /** Create an event */
   createEvent: Event;
   /** Update a user */
   updateUser: User;
+};
+
+export type MutationCancelUserTicketArgs = {
+  input: CancelUserTicket;
 };
 
 export type MutationCreateEventArgs = {
@@ -245,10 +251,16 @@ export type User = {
 export type UserTicket = {
   __typename?: "UserTicket";
   approvalStatus: TicketApprovalStatus;
+  deletedAt?: Maybe<Scalars["Date"]["output"]>;
   id: Scalars["ID"]["output"];
   paymentStatus: TicketPaymentStatus;
   redemptionStatus: TicketRedemptionStatus;
   status: TicketStatus;
+};
+
+export type CancelUserTicket = {
+  communityId: Scalars["String"]["input"];
+  id: Scalars["String"]["input"];
 };
 
 export type UserEditInput = {

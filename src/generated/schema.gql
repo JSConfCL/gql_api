@@ -93,6 +93,11 @@ input EventsTicketsSearchInput {
 
 type Mutation {
   """
+  Cancel a ticket
+  """
+  cancelUserTicket(input: cancelUserTicket!): UserTicket
+
+  """
   Create an event
   """
   createEvent(input: EventCreateInput!): Event!
@@ -202,10 +207,16 @@ Representation of a User ticket
 """
 type UserTicket {
   approvalStatus: TicketApprovalStatus!
+  deletedAt: Date
   id: ID!
   paymentStatus: TicketPaymentStatus!
   redemptionStatus: TicketRedemptionStatus!
   status: TicketStatus!
+}
+
+input cancelUserTicket {
+  communityId: String!
+  id: String!
 }
 
 input userEditInput {
