@@ -160,7 +160,7 @@ export const insertUser = async (
     bio: partialInput?.bio ?? faker.lorem.paragraph(),
     deletedAt: partialInput?.deletedAt,
     emailVerified: partialInput?.emailVerified ?? false,
-    lastName: partialInput?.lastName ?? faker.name.lastName(),
+    lastName: partialInput?.lastName ?? faker.person.lastName(),
     publicMetadata: partialInput?.publicMetadata ?? JSON.stringify({}),
     twoFactorEnabled: partialInput?.twoFactorEnabled ?? false,
     unsafeMetadata: partialInput?.unsafeMetadata ?? JSON.stringify({}),
