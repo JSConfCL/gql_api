@@ -114,7 +114,7 @@ describe("User", () => {
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.cancelUserTicket?.status, "cancelled");
   });
-  it("Should cancel a ticket that doesn't exist", async () => {
+  it("It should throw an error, if ticket does not exist", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
     await insertEventToCommunity({
@@ -147,9 +147,7 @@ describe("User", () => {
       },
       user1,
     );
-
-    assert.equal(response.errors, undefined);
-    assert.equal(response.data?.cancelUserTicket, null);
+    assert.equal(response.errors?.[0].message, "Ticket not found");
   });
   it("It should throw a error, if is not authorized", async () => {
     const community1 = await insertCommunity();
@@ -159,6 +157,7 @@ describe("User", () => {
       communityId: community1.id,
     });
     const user1 = await insertUser();
+    const user2 = await insertUser();
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
@@ -190,7 +189,7 @@ describe("User", () => {
           },
         },
       },
-      user1,
+      user2,
     );
     assert.deepInclude(response.errors?.[0].message, "Unauthorized!");
   });

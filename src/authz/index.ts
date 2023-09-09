@@ -22,6 +22,22 @@ export class IsSameUser extends PreExecutionRule {
   }
 }
 
+export class IsTicketOwner extends PreExecutionRule {
+  error = new UnauthorizedError("Not authorized");
+  public async execute(
+    { USER, DB }: GraphqlContext,
+    fieldArgs: { input: { id: string } },
+  ) {
+    if (!USER || !fieldArgs.input.id) {
+      return false;
+    }
+    const IsTicketOwner = await DB.query.userTicketsSchema.findFirst({
+      where: (utc, { eq, and }) =>
+        and(eq(utc.userId, USER.id), eq(utc.id, fieldArgs.input.id)),
+    })
+    return Boolean(IsTicketOwner);
+  }
+}
 export class CanEditCommunity extends PreExecutionRule {
   error = new UnauthorizedError("User cannot edit community");
 

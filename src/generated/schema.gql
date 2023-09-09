@@ -3,9 +3,7 @@ enum CommnunityStatus {
   inactive
 }
 
-"""
-Representation of a Community
-"""
+"""Representation of a Community"""
 type Community {
   description: String
   events: [Event!]!
@@ -92,19 +90,13 @@ input EventsTicketsSearchInput {
 }
 
 type Mutation {
-  """
-  Cancel a ticket
-  """
+  """Cancel a ticket"""
   cancelUserTicket(input: cancelUserTicket!): UserTicket
 
-  """
-  Create an event
-  """
+  """Create an event"""
   createEvent(input: EventCreateInput!): Event!
 
-  """
-  Update a user
-  """
+  """Update a user"""
   updateUser(input: userEditInput!): User!
 }
 
@@ -117,40 +109,26 @@ input MyTicketsSearchInput {
 }
 
 type Query {
-  """
-  Get a list of communities. Filter by name, id, or status
-  """
+  """Get a list of communities. Filter by name, id, or status"""
   communities(id: String, name: String, status: CommnunityStatus): [Community!]!
 
-  """
-  Get a community by id
-  """
+  """Get a community by id"""
   community(id: String!): Community
 
-  """
-  Get an event by id
-  """
+  """Get an event by id"""
   event(id: String!): Event
 
-  """
-  Get a list of events. Filter by name, id, status or date
-  """
+  """Get a list of events. Filter by name, id, status or date"""
   events(input: EventsSearchInput): [Event!]!
 
-  """
-  Get a list of tickets for the current user
-  """
+  """Get a list of tickets for the current user"""
   myTickets(input: MyTicketsSearchInput): [UserTicket!]!
   status(name: String): String!
 
-  """
-  Get a list of tags
-  """
+  """Get a list of tags"""
   tags(input: TagSearchInput): [Tag!]!
 
-  """
-  Get a list of users
-  """
+  """Get a list of users"""
   users: [User!]!
 }
 
@@ -190,9 +168,7 @@ enum TicketStatus {
   cancelled
 }
 
-"""
-Representation of a user
-"""
+"""Representation of a user"""
 type User {
   bio: String
   communities: [Community!]!
@@ -202,12 +178,9 @@ type User {
   username: String!
 }
 
-"""
-Representation of a User ticket
-"""
+"""Representation of a User ticket"""
 type UserTicket {
   approvalStatus: TicketApprovalStatus!
-  deletedAt: Date
   id: ID!
   paymentStatus: TicketPaymentStatus!
   redemptionStatus: TicketRedemptionStatus!

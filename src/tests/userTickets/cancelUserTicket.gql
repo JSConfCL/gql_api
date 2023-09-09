@@ -5,6 +5,5 @@ mutation CancelUserTicket($input: cancelUserTicket!) {
     paymentStatus
     approvalStatus
     redemptionStatus
-    deletedAt
   }
 }

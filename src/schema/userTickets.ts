@@ -6,6 +6,7 @@ import {
   eventsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
+import { GraphQLError } from "graphql";
 
 export const TicketStatus = builder.enumType("TicketStatus", {
   values: ["active", "cancelled"] as const,
@@ -42,11 +43,6 @@ builder.objectType(UserTicketRef, {
     redemptionStatus: t.field({
       type: TicketRedemptionStatus,
       resolve: (root) => root.redemptionStatus,
-    }),
-    deletedAt: t.field({
-      type: "Date",
-      resolve: (root) => root.deletedAt,
-      nullable: true,
     }),
   }),
 });
@@ -155,29 +151,33 @@ builder.mutationFields((t) => ({
     authz: {
       compositeRules: [
         {
-          or: ["isCommunityAdmin", "IsSuperAdmin"],
+          or: ["isCommunityAdmin", "IsSuperAdmin", "IsTicketOwner"],
         },
       ],
     },
     resolve: async (root, { input }, ctx) => {
-      let ticket = await ctx.DB.query.userTicketsSchema.findFirst({
-        where: (t, { eq }) => eq(t.id, input.id),
-      });
-      if (!ticket) {
-        return null;
-      }
-      if (ticket.status === "cancelled") {
+      try {
+        let ticket = await ctx.DB.query.userTicketsSchema.findFirst({
+          where: (t, { eq }) => eq(t.id, input.id),
+        });
+        if (!ticket) {
+          throw new Error("Ticket not found");
+        }
+        if (ticket.status === "cancelled") {
+          throw new Error("Ticket already cancelled");
+        }
+        ticket = await ctx.DB.update(userTicketsSchema)
+          .set({
+            status: "cancelled",
+            deletedAt: new Date(),
+          })
+          .where(eq(userTicketsSchema.id, input.id))
+          .returning()
+          .get();
         return selectUserTicketsSchema.parse(ticket);
+      } catch (e: any) {
+        return new GraphQLError(e.message)
       }
-      ticket = await ctx.DB.update(userTicketsSchema)
-        .set({
-          status: "cancelled",
-          deletedAt: new Date(),
-        })
-        .where(eq(userTicketsSchema.id, input.id))
-        .returning()
-        .get();
-      return selectUserTicketsSchema.parse(ticket);
     },
   }),
 }));
