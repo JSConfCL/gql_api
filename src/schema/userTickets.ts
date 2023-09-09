@@ -141,7 +141,6 @@ builder.mutationFields((t) => ({
   cancelUserTicket: t.field({
     description: "Cancel a ticket",
     type: UserTicketRef,
-    nullable: true,
     args: {
       input: t.arg({
         type: cancelUserTicket,
@@ -175,8 +174,10 @@ builder.mutationFields((t) => ({
           .returning()
           .get();
         return selectUserTicketsSchema.parse(ticket);
-      } catch (e: any) {
-        return new GraphQLError(e.message)
+      } catch (e: unknown) {
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
+        );
       }
     },
   }),
