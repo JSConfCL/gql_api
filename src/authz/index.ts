@@ -34,7 +34,7 @@ export class IsTicketOwner extends PreExecutionRule {
     const IsTicketOwner = await DB.query.userTicketsSchema.findFirst({
       where: (utc, { eq, and }) =>
         and(eq(utc.userId, USER.id), eq(utc.id, fieldArgs.input.id)),
-    })
+    });
     return Boolean(IsTicketOwner);
   }
 }
@@ -120,11 +120,9 @@ export class isCommunityAdmin extends PreExecutionRule {
     const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
       where: (utc, { eq, and }) =>
         and(
-          ...[
-            eq(utc.communityId, fieldArgs.input.communityId),
-            eq(utc.userId, USER.id),
-            eq(utc.role, "admin"),
-          ],
+          eq(utc.communityId, fieldArgs.input.communityId),
+          eq(utc.userId, USER.id),
+          eq(utc.role, "admin"),
         ),
     });
 
