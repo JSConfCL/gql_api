@@ -1,0 +1,9 @@
+mutation CancelUserTicket($input: cancelUserTicket!) {
+  cancelUserTicket(input: $input) {
+    id
+    status
+    paymentStatus
+    approvalStatus
+    redemptionStatus
+  }
+}

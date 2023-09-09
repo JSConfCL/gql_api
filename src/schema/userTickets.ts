@@ -6,6 +6,7 @@ import {
   eventsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
+import { GraphQLError } from "graphql";
 
 export const TicketStatus = builder.enumType("TicketStatus", {
   values: ["active", "cancelled"] as const,
@@ -125,6 +126,59 @@ builder.queryFields((t) => ({
         },
       });
       return myTickets.map((t) => selectUserTicketsSchema.parse(t));
+    },
+  }),
+}));
+
+const cancelUserTicket = builder.inputType("cancelUserTicket", {
+  fields: (t) => ({
+    id: t.string({ required: true }),
+    communityId: t.string({ required: true }),
+  }),
+});
+
+builder.mutationFields((t) => ({
+  cancelUserTicket: t.field({
+    description: "Cancel a ticket",
+    type: UserTicketRef,
+    args: {
+      input: t.arg({
+        type: cancelUserTicket,
+        required: true,
+      }),
+    },
+    authz: {
+      compositeRules: [
+        {
+          or: ["isCommunityAdmin", "IsSuperAdmin", "IsTicketOwner"],
+        },
+      ],
+    },
+    resolve: async (root, { input }, ctx) => {
+      try {
+        let ticket = await ctx.DB.query.userTicketsSchema.findFirst({
+          where: (t, { eq }) => eq(t.id, input.id),
+        });
+        if (!ticket) {
+          throw new Error("Ticket not found");
+        }
+        if (ticket.status === "cancelled") {
+          throw new Error("Ticket already cancelled");
+        }
+        ticket = await ctx.DB.update(userTicketsSchema)
+          .set({
+            status: "cancelled",
+            deletedAt: new Date(),
+          })
+          .where(eq(userTicketsSchema.id, input.id))
+          .returning()
+          .get();
+        return selectUserTicketsSchema.parse(ticket);
+      } catch (e: unknown) {
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
+        );
+      }
     },
   }),
 }));
