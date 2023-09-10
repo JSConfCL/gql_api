@@ -93,9 +93,14 @@ input EventsTicketsSearchInput {
 
 type Mutation {
   """
+  Approve a ticket
+  """
+  approvalUserTicket(id: String!): UserTicket!
+
+  """
   Cancel a ticket
   """
-  cancelUserTicket(input: cancelUserTicket!): UserTicket
+  cancelUserTicket(input: cancelUserTicket!): UserTicket!
 
   """
   Create an event

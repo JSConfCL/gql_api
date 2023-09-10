@@ -182,3 +182,61 @@ builder.mutationFields((t) => ({
     },
   }),
 }));
+
+builder.mutationFields((t) => ({
+  approvalUserTicket: t.field({
+    description: "Approve a ticket",
+    type: UserTicketRef,
+    args: {
+      id: t.arg({
+        type: "String",
+        required: true,
+      }),
+    },
+    resolve: async (root, { id }, { DB, USER }) => {
+      try {
+        const ticket = await DB.query.userTicketsSchema.findFirst({
+          where: (t, { eq }) => eq(t.id, id),
+          with: {
+            ticketTemplate: true,
+          },
+        });
+        if (!ticket) {
+          throw new Error("Ticket not found");
+        }
+        if (!USER) {
+          throw new Error("User not found");
+        }
+        if (ticket.approvalStatus === "approved") {
+          throw new Error("Ticket already approved");
+        }
+        if (!ticket.ticketTemplate?.requiresApproval) {
+          throw new Error("Ticket does not require approval");
+        }
+        const isEventAdmin = await DB.query.eventsToUsersSchema.findFirst({
+          where: (t, { and, eq }) =>
+            and(
+              eq(t.eventId, ticket.ticketTemplate?.eventId),
+              eq(t.userId, USER?.id),
+              eq(t.role, "admin"),
+            ),
+        });
+        if (!USER.isSuperAdmin && !isEventAdmin) {
+          throw new Error("Unauthorized!");
+        }
+        const updatedTicket = await DB.update(userTicketsSchema)
+          .set({
+            approvalStatus: "approved",
+          })
+          .where(eq(userTicketsSchema.id, id))
+          .returning()
+          .get();
+        return selectUserTicketsSchema.parse(updatedTicket);
+      } catch (e: unknown) {
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
+        );
+      }
+    },
+  }),
+}));

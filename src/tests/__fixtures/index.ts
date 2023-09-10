@@ -261,6 +261,7 @@ export const insertTicketTemplate = async (
     name: partialInput?.name ?? faker.company.name(),
     startDateTime: partialInput?.startDateTime ?? faker.date.future(),
     endDateTime: partialInput?.endDateTime ?? faker.date.future(),
+    requiresApproval: partialInput?.requiresApproval ?? false,
   } satisfies z.infer<typeof insertTicketSchema>;
 
   return insertOne(
@@ -272,12 +273,14 @@ export const insertTicketTemplate = async (
 };
 
 export const insertTicket = async (
-  partialInput?: Partial<z.infer<typeof insertUserTicketsSchema>>,
+  partialInput: Omit<z.infer<typeof insertUserTicketsSchema>, "id"> & {
+    id?: string;
+  },
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     userId: partialInput?.userId,
-    ticketTemplateId: partialInput?.ticketTemplateId,
+    ticketTemplateId: partialInput.ticketTemplateId,
     approvalStatus:
       partialInput?.approvalStatus ?? TicketApprovalStatus.Pending,
     paymentStatus: partialInput?.paymentStatus ?? TicketPaymentStatus.Unpaid,

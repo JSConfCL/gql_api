@@ -1,0 +1,9 @@
+mutation ApprovalUserTicket($id: String!) {
+  approvalUserTicket(id: $id) {
+    id
+    status
+    approvalStatus
+    paymentStatus
+    redemptionStatus
+  }
+}

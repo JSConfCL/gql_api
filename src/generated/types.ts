@@ -124,12 +124,18 @@ export type EventsTicketsSearchInput = {
 
 export type Mutation = {
   __typename?: "Mutation";
+  /** Approve a ticket */
+  approvalUserTicket: UserTicket;
   /** Cancel a ticket */
-  cancelUserTicket?: Maybe<UserTicket>;
+  cancelUserTicket: UserTicket;
   /** Create an event */
   createEvent: Event;
   /** Update a user */
   updateUser: User;
+};
+
+export type MutationApprovalUserTicketArgs = {
+  id: Scalars["String"]["input"];
 };
 
 export type MutationCancelUserTicketArgs = {

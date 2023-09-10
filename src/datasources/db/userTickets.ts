@@ -8,9 +8,9 @@ import { createdAndUpdatedAtFields } from "./shared";
 export const userTicketsSchema = sqliteTable("user_tickets", {
   id: text("id").primaryKey().notNull(),
   userId: text("user_id").references(() => usersSchema.id),
-  ticketTemplateId: text("ticket_template_id").references(
-    () => ticketsSchema.id,
-  ),
+  ticketTemplateId: text("ticket_template_id")
+    .references(() => ticketsSchema.id)
+    .notNull(),
   status: text("status", { enum: ["active", "cancelled"] })
     .default("cancelled")
     .notNull(),
