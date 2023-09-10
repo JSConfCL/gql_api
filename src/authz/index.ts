@@ -129,3 +129,24 @@ export class isCommunityAdmin extends PreExecutionRule {
     return Boolean(isCommunityAdmin);
   }
 }
+
+export class isEventAdmin extends PreExecutionRule {
+  public async execute(
+    { USER, DB }: GraphqlContext,
+    fieldArgs: { input: { eventId: string } },
+  ) {
+    if (!USER || !fieldArgs?.input?.eventId) {
+      return false;
+    }
+    const isEventAdmin = await DB.query.eventsToUsersSchema.findFirst({
+      where: (utc, { eq, and }) =>
+        and(
+          eq(utc.eventId, fieldArgs.input.eventId),
+          eq(utc.userId, USER.id),
+          eq(utc.role, "admin"),
+        ),
+    });
+
+    return Boolean(isEventAdmin);
+  }
+}

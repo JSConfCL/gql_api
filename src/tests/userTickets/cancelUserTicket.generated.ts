@@ -11,7 +11,7 @@ export type CancelUserTicketMutationVariables = Types.Exact<{
 }>;
 
 
-export type CancelUserTicketMutation = { __typename?: 'Mutation', cancelUserTicket: { __typename?: 'UserTicket', id: string, status: Types.TicketStatus, paymentStatus: Types.TicketPaymentStatus, approvalStatus: Types.TicketApprovalStatus, redemptionStatus: Types.TicketRedemptionStatus } | null };
+export type CancelUserTicketMutation = { __typename?: 'Mutation', cancelUserTicket: { __typename?: 'UserTicket', id: string, status: Types.TicketStatus, paymentStatus: Types.TicketPaymentStatus, approvalStatus: Types.TicketApprovalStatus, redemptionStatus: Types.TicketRedemptionStatus } };
 
 
 export const CancelUserTicket = gql`
