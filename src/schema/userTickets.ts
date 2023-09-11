@@ -188,15 +188,18 @@ builder.mutationFields((t) => ({
     description: "Approve a ticket",
     type: UserTicketRef,
     args: {
-      id: t.arg({
+      userTicketId: t.arg({
         type: "String",
         required: true,
       }),
     },
-    resolve: async (root, { id }, { DB, USER }) => {
+    authz: {
+      rules: ["canApproveTicket"],
+    },
+    resolve: async (root, { userTicketId }, { DB, USER }) => {
       try {
         const ticket = await DB.query.userTicketsSchema.findFirst({
-          where: (t, { eq }) => eq(t.id, id),
+          where: (t, { eq }) => eq(t.id, userTicketId),
           with: {
             ticketTemplate: true,
           },
@@ -213,22 +216,11 @@ builder.mutationFields((t) => ({
         if (!ticket.ticketTemplate?.requiresApproval) {
           throw new Error("Ticket does not require approval");
         }
-        const isEventAdmin = await DB.query.eventsToUsersSchema.findFirst({
-          where: (t, { and, eq }) =>
-            and(
-              eq(t.eventId, ticket.ticketTemplate?.eventId),
-              eq(t.userId, USER?.id),
-              eq(t.role, "admin"),
-            ),
-        });
-        if (!USER.isSuperAdmin && !isEventAdmin) {
-          throw new Error("Unauthorized!");
-        }
         const updatedTicket = await DB.update(userTicketsSchema)
           .set({
             approvalStatus: "approved",
           })
-          .where(eq(userTicketsSchema.id, id))
+          .where(eq(userTicketsSchema.id, userTicketId))
           .returning()
           .get();
         return selectUserTicketsSchema.parse(updatedTicket);

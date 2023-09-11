@@ -44,7 +44,7 @@ describe("Approval user ticket test", () => {
       {
         document: ApprovalUserTicket,
         variables: {
-          id: ticket1.id,
+          userTicketId: ticket1.id,
         },
       },
       user1,
@@ -76,7 +76,7 @@ describe("Approval user ticket test", () => {
       {
         document: ApprovalUserTicket,
         variables: {
-          id: ticket1.id,
+          userTicketId: ticket1.id,
         },
       },
       user1,
@@ -108,7 +108,7 @@ describe("Approval user ticket test", () => {
       {
         document: ApprovalUserTicket,
         variables: {
-          id: ticket1.id,
+          userTicketId: ticket1.id,
         },
       },
       user1,
@@ -142,7 +142,7 @@ describe("Approval user ticket test", () => {
       {
         document: ApprovalUserTicket,
         variables: {
-          id: ticket1.id,
+          userTicketId: ticket1.id,
         },
       },
       user1,
@@ -175,7 +175,7 @@ describe("Approval user ticket test", () => {
       {
         document: ApprovalUserTicket,
         variables: {
-          id: ticket1.id,
+          userTicketId: ticket1.id,
         },
       },
       user1,
@@ -197,7 +197,7 @@ describe("Approval user ticket test", () => {
       {
         document: ApprovalUserTicket,
         variables: {
-          id: "123",
+          userTicketId: "123",
         },
       },
       user1,

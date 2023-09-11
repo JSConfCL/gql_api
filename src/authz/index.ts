@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { PreExecutionRule, UnauthorizedError } from "@graphql-authz/core";
+import { GraphQLError } from "graphql";
 import { GraphqlContext } from "~/builder";
 
 export class IsAuthenticated extends PreExecutionRule {
@@ -142,6 +143,41 @@ export class isEventAdmin extends PreExecutionRule {
       where: (utc, { eq, and }) =>
         and(
           eq(utc.eventId, fieldArgs.input.eventId),
+          eq(utc.userId, USER.id),
+          eq(utc.role, "admin"),
+        ),
+    });
+
+    return Boolean(isEventAdmin);
+  }
+}
+
+export class canApproveTicket extends PreExecutionRule {
+  public async execute(
+    { USER, DB }: GraphqlContext,
+    fieldArgs: { userTicketId: string },
+  ) {
+    if (!USER || !fieldArgs?.userTicketId) {
+      return false;
+    }
+
+    const userTicket = await DB.query.userTicketsSchema.findFirst({
+      where: (utc, { eq }) => eq(utc.id, fieldArgs.userTicketId),
+      with: {
+        ticketTemplate: true,
+      },
+    });
+
+    if (!userTicket) {
+        throw new GraphQLError("Ticket not found");
+    }
+    console.log(userTicket);
+    if(USER.isSuperAdmin) return true;
+
+    const isEventAdmin = await DB.query.eventsToUsersSchema.findFirst({
+      where: (utc, { eq, and }) =>
+        and(
+          eq(utc.eventId, userTicket?.ticketTemplate.eventId),
           eq(utc.userId, USER.id),
           eq(utc.role, "admin"),
         ),
