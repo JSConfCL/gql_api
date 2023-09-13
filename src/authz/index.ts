@@ -172,7 +172,7 @@ export class canApproveTicket extends PreExecutionRule {
       return false;
     }
 
-    if(USER.isSuperAdmin) return true;
+    if (USER.isSuperAdmin) return true;
 
     const isEventAdmin = await DB.query.eventsToUsersSchema.findFirst({
       where: (utc, { eq, and }) =>
