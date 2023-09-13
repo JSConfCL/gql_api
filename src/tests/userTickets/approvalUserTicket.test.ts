@@ -203,6 +203,6 @@ describe("Approval user ticket test", () => {
       user1,
     );
 
-    assert.equal(response.errors?.[0].message, "Ticket not found");
+    assert.equal(response.errors?.[0].message, "Unauthorized!");
   });
 });

@@ -169,9 +169,9 @@ export class canApproveTicket extends PreExecutionRule {
     });
 
     if (!userTicket) {
-        throw new GraphQLError("Ticket not found");
+      return false;
     }
-    console.log(userTicket);
+
     if(USER.isSuperAdmin) return true;
 
     const isEventAdmin = await DB.query.eventsToUsersSchema.findFirst({
