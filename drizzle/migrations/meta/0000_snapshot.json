@@ -1,9 +1,67 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "3f85516d-0107-4798-a1c4-ade868cfc18b",
+  "id": "6b75c437-0cf5-4d8b-a3a2-66953cb36e93",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "allowed_currencies": {
+      "name": "allowed_currencies",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payment_methods": {
+          "name": "payment_methods",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "current_timestamp"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "allowed_currencies_currency_unique": {
+          "name": "allowed_currencies_currency_unique",
+          "columns": ["currency"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "communities": {
       "name": "communities",
       "columns": {
@@ -57,12 +115,98 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
         "communities_slug_unique": {
           "name": "communities_slug_unique",
           "columns": ["slug"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "companies": {
+      "name": "companies",
+      "columns": {
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "domain": {
+          "name": "domain",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "logo": {
+          "name": "logo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "website": {
+          "name": "website",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "current_timestamp"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "companies_company_id_unique": {
+          "name": "companies_company_id_unique",
+          "columns": ["company_id"],
           "isUnique": true
         }
       },
@@ -124,6 +268,48 @@
           "notNull": false,
           "autoincrement": false
         },
+        "timezone": {
+          "name": "timezone",
+          "type": "text(64)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "geo_latitude": {
+          "name": "geo_latitude",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "geo_longitude": {
+          "name": "geo_longitude",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "geo_address_json": {
+          "name": "geo_address_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "meeting_url": {
+          "name": "meeting_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "max_attendees": {
+          "name": "max_attendees",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -134,6 +320,13 @@
         },
         "updated_at": {
           "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -158,14 +351,14 @@
           "name": "event_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "community_id": {
           "name": "community_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "created_at": {
@@ -178,6 +371,13 @@
         },
         "updated_at": {
           "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -243,6 +443,13 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -273,8 +480,8 @@
       },
       "uniqueConstraints": {}
     },
-    "events_users_roles": {
-      "name": "events_users_roles",
+    "events_users": {
+      "name": "events_users",
       "columns": {
         "event_id": {
           "name": "event_id",
@@ -312,63 +519,9 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "events_users_roles_event_id_events_id_fk": {
-          "name": "events_users_roles_event_id_events_id_fk",
-          "tableFrom": "events_users_roles",
-          "tableTo": "events",
-          "columnsFrom": ["event_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
         },
-        "events_users_roles_user_id_users_id_fk": {
-          "name": "events_users_roles_user_id_users_id_fk",
-          "tableFrom": "events_users_roles",
-          "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "events_users_roles_event_id_user_id_pk": {
-          "columns": ["event_id", "user_id"]
-        }
-      },
-      "uniqueConstraints": {}
-    },
-    "events_users": {
-      "name": "events_users",
-      "columns": {
-        "event_id": {
-          "name": "event_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "current_timestamp"
-        },
-        "updated_at": {
-          "name": "updated_at",
+        "deleted_at": {
+          "name": "deleted_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -392,6 +545,120 @@
           "tableTo": "users",
           "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "salaries": {
+      "name": "salaries",
+      "columns": {
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "work_role_id": {
+          "name": "work_role_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "years_of_experience": {
+          "name": "years_of_experience",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "country_code": {
+          "name": "country_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "current_timestamp"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "salaries_company_id_unique": {
+          "name": "salaries_company_id_unique",
+          "columns": ["company_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "salaries_user_id_users_id_fk": {
+          "name": "salaries_user_id_users_id_fk",
+          "tableFrom": "salaries",
+          "tableTo": "users",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "salaries_currency_allowed_currencies_id_fk": {
+          "name": "salaries_currency_allowed_currencies_id_fk",
+          "tableFrom": "salaries",
+          "tableTo": "allowed_currencies",
+          "columnsFrom": ["currency"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "salaries_work_role_id_work_role_company_id_fk": {
+          "name": "salaries_work_role_id_work_role_company_id_fk",
+          "tableFrom": "salaries",
+          "tableTo": "work_role",
+          "columnsFrom": ["work_role_id"],
+          "columnsTo": ["company_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -433,6 +700,13 @@
         },
         "updated_at": {
           "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -481,6 +755,13 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -509,6 +790,149 @@
           "columns": ["community_id", "tag_id"]
         }
       },
+      "uniqueConstraints": {}
+    },
+    "tickets": {
+      "name": "tickets",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text(1024)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text(4096)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'inactive'"
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'unlisted'"
+        },
+        "start_date_time": {
+          "name": "start_date_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "end_date_time": {
+          "name": "end_date_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "requires_approval": {
+          "name": "requires_approval",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
+        "price": {
+          "name": "price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "current_timestamp"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "tickets_name_unique": {
+          "name": "tickets_name_unique",
+          "columns": ["name"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "tickets_event_id_events_id_fk": {
+          "name": "tickets_event_id_events_id_fk",
+          "tableFrom": "tickets",
+          "tableTo": "events",
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tickets_currency_allowed_currencies_id_fk": {
+          "name": "tickets_currency_allowed_currencies_id_fk",
+          "tableFrom": "tickets",
+          "tableTo": "allowed_currencies",
+          "columnsFrom": ["currency"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
     "users": {
@@ -549,6 +973,28 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "gender": {
+          "name": "gender",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "gender_other_text": {
+          "name": "gender_other_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "isSuperAdmin": {
+          "name": "isSuperAdmin",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
         },
         "emailVerified": {
           "name": "emailVerified",
@@ -606,6 +1052,13 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -658,6 +1111,13 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -681,6 +1141,266 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "user_tickets": {
+      "name": "user_tickets",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ticket_template_id": {
+          "name": "ticket_template_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'cancelled'"
+        },
+        "payment_status": {
+          "name": "payment_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'unpaid'"
+        },
+        "approval_status": {
+          "name": "approval_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "redemption_status": {
+          "name": "redemption_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "current_timestamp"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_tickets_user_id_users_id_fk": {
+          "name": "user_tickets_user_id_users_id_fk",
+          "tableFrom": "user_tickets",
+          "tableTo": "users",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_tickets_ticket_template_id_tickets_id_fk": {
+          "name": "user_tickets_ticket_template_id_tickets_id_fk",
+          "tableFrom": "user_tickets",
+          "tableTo": "tickets",
+          "columnsFrom": ["ticket_template_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "work_email": {
+      "name": "work_email",
+      "columns": {
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "work_email": {
+          "name": "work_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "confirmation_token": {
+          "name": "confirmation_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_confirmed": {
+          "name": "is_confirmed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
+        "confirmation_date": {
+          "name": "confirmation_date",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "current_timestamp"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "work_email_company_id_unique": {
+          "name": "work_email_company_id_unique",
+          "columns": ["company_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "work_email_user_id_users_id_fk": {
+          "name": "work_email_user_id_users_id_fk",
+          "tableFrom": "work_email",
+          "tableTo": "users",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "work_email_company_id_companies_company_id_fk": {
+          "name": "work_email_company_id_companies_company_id_fk",
+          "tableFrom": "work_email",
+          "tableTo": "companies",
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["company_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "work_role": {
+      "name": "work_role",
+      "columns": {
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "current_timestamp"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "work_role_company_id_unique": {
+          "name": "work_role_company_id_unique",
+          "columns": ["company_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     }

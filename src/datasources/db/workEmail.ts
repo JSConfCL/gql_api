@@ -11,7 +11,7 @@ export const workEmailSchema = sqliteTable("work_email", {
     .references(() => usersSchema.id)
     .notNull(),
   workEmail: text("work_email").notNull(),
-  confirmationToken: text("confirmation_token").notNull(),
+  confirmationToken: text("confirmation_token"),
   isConfirmed: int("is_confirmed", { mode: "boolean" }).default(false),
   confirmationDate: int("confirmation_date", {
     mode: "timestamp_ms",
