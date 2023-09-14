@@ -7,7 +7,7 @@ import type * as Types from '../../generated/types';
 import type { JsonObject } from "type-fest";
 import gql from 'graphql-tag';
 export type CancelUserTicketMutationVariables = Types.Exact<{
-  input: Types.CancelUserTicket;
+  userTicketId: Types.Scalars['String']['input'];
 }>;
 
 
@@ -15,8 +15,8 @@ export type CancelUserTicketMutation = { __typename?: 'Mutation', cancelUserTick
 
 
 export const CancelUserTicket = gql`
-    mutation CancelUserTicket($input: cancelUserTicket!) {
-  cancelUserTicket(input: $input) {
+    mutation CancelUserTicket($userTicketId: String!) {
+  cancelUserTicket(userTicketId: $userTicketId) {
     id
     status
     paymentStatus

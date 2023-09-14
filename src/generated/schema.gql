@@ -100,7 +100,7 @@ type Mutation {
   """
   Cancel a ticket
   """
-  cancelUserTicket(input: cancelUserTicket!): UserTicket!
+  cancelUserTicket(userTicketId: String!): UserTicket!
 
   """
   Create an event
@@ -219,8 +219,7 @@ type UserTicket {
 }
 
 input cancelUserTicket {
-  communityId: String!
-  id: String!
+  userTicketId: String!
 }
 
 input userEditInput {

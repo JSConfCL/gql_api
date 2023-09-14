@@ -132,8 +132,7 @@ builder.queryFields((t) => ({
 
 const cancelUserTicket = builder.inputType("cancelUserTicket", {
   fields: (t) => ({
-    id: t.string({ required: true }),
-    communityId: t.string({ required: true }),
+    userTicketId: t.string({ required: true }),
   }),
 });
 
@@ -142,25 +141,21 @@ builder.mutationFields((t) => ({
     description: "Cancel a ticket",
     type: UserTicketRef,
     args: {
-      input: t.arg({
-        type: cancelUserTicket,
+      userTicketId: t.arg({
+        type: "String",
         required: true,
       }),
     },
     authz: {
-      compositeRules: [
-        {
-          or: ["isCommunityAdmin", "IsSuperAdmin", "IsTicketOwner"],
-        },
-      ],
+      rules: ["canCancelUserTicket"],
     },
-    resolve: async (root, { input }, ctx) => {
+    resolve: async (root, { userTicketId }, ctx) => {
       try {
         let ticket = await ctx.DB.query.userTicketsSchema.findFirst({
-          where: (t, { eq }) => eq(t.id, input.id),
+          where: (t, { eq }) => eq(t.id, userTicketId),
         });
         if (!ticket) {
-          throw new Error("Ticket not found");
+          throw new Error("Unauthorized!");
         }
         if (ticket.status === "cancelled") {
           throw new Error("Ticket already cancelled");
@@ -170,7 +165,7 @@ builder.mutationFields((t) => ({
             status: "cancelled",
             deletedAt: new Date(),
           })
-          .where(eq(userTicketsSchema.id, input.id))
+          .where(eq(userTicketsSchema.id, userTicketId))
           .returning()
           .get();
         return selectUserTicketsSchema.parse(ticket);

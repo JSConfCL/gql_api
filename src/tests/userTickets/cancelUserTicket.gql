@@ -1,5 +1,5 @@
-mutation CancelUserTicket($input: cancelUserTicket!) {
-  cancelUserTicket(input: $input) {
+mutation CancelUserTicket($userTicketId: String!) {
+  cancelUserTicket(userTicketId: $userTicketId) {
     id
     status
     paymentStatus
