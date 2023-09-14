@@ -54,9 +54,7 @@
       "indexes": {
         "allowed_currencies_currency_unique": {
           "name": "allowed_currencies_currency_unique",
-          "columns": [
-            "currency"
-          ],
+          "columns": ["currency"],
           "isUnique": true
         }
       },
@@ -129,9 +127,7 @@
       "indexes": {
         "communities_slug_unique": {
           "name": "communities_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": true
         }
       },
@@ -210,9 +206,7 @@
       "indexes": {
         "companies_company_id_unique": {
           "name": "companies_company_id_unique",
-          "columns": [
-            "company_id"
-          ],
+          "columns": ["company_id"],
           "isUnique": true
         }
       },
@@ -342,9 +336,7 @@
       "indexes": {
         "events_name_unique": {
           "name": "events_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         }
       },
@@ -398,12 +390,8 @@
           "name": "events_communities_event_id_events_id_fk",
           "tableFrom": "events_communities",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -411,22 +399,15 @@
           "name": "events_communities_community_id_communities_id_fk",
           "tableFrom": "events_communities",
           "tableTo": "communities",
-          "columnsFrom": [
-            "community_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["community_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "events_communities_event_id_community_id_pk": {
-          "columns": [
-            "community_id",
-            "event_id"
-          ]
+          "columns": ["community_id", "event_id"]
         }
       },
       "uniqueConstraints": {}
@@ -477,12 +458,8 @@
           "name": "events_tags_event_id_events_id_fk",
           "tableFrom": "events_tags",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -490,22 +467,15 @@
           "name": "events_tags_tag_id_tags_id_fk",
           "tableFrom": "events_tags",
           "tableTo": "tags",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tag_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "events_tags_event_id_tag_id_pk": {
-          "columns": [
-            "event_id",
-            "tag_id"
-          ]
+          "columns": ["event_id", "tag_id"]
         }
       },
       "uniqueConstraints": {}
@@ -564,12 +534,8 @@
           "name": "events_users_event_id_events_id_fk",
           "tableFrom": "events_users",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -577,12 +543,8 @@
           "name": "events_users_user_id_users_id_fk",
           "tableFrom": "events_users",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -668,9 +630,7 @@
       "indexes": {
         "salaries_company_id_unique": {
           "name": "salaries_company_id_unique",
-          "columns": [
-            "company_id"
-          ],
+          "columns": ["company_id"],
           "isUnique": true
         }
       },
@@ -679,12 +639,8 @@
           "name": "salaries_user_id_users_id_fk",
           "tableFrom": "salaries",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -692,12 +648,8 @@
           "name": "salaries_currency_allowed_currencies_id_fk",
           "tableFrom": "salaries",
           "tableTo": "allowed_currencies",
-          "columnsFrom": [
-            "currency"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["currency"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -705,12 +657,8 @@
           "name": "salaries_work_role_id_work_role_company_id_fk",
           "tableFrom": "salaries",
           "tableTo": "work_role",
-          "columnsFrom": [
-            "work_role_id"
-          ],
-          "columnsTo": [
-            "company_id"
-          ],
+          "columnsFrom": ["work_role_id"],
+          "columnsTo": ["company_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -768,9 +716,7 @@
       "indexes": {
         "tags_name_unique": {
           "name": "tags_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         }
       },
@@ -824,12 +770,8 @@
           "name": "tags_communities_tag_id_tags_id_fk",
           "tableFrom": "tags_communities",
           "tableTo": "tags",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tag_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -837,22 +779,15 @@
           "name": "tags_communities_community_id_communities_id_fk",
           "tableFrom": "tags_communities",
           "tableTo": "communities",
-          "columnsFrom": [
-            "community_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["community_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "tags_communities_tag_id_community_id_pk": {
-          "columns": [
-            "community_id",
-            "tag_id"
-          ]
+          "columns": ["community_id", "tag_id"]
         }
       },
       "uniqueConstraints": {}
@@ -973,9 +908,7 @@
       "indexes": {
         "tickets_name_unique": {
           "name": "tickets_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         }
       },
@@ -984,12 +917,8 @@
           "name": "tickets_event_id_events_id_fk",
           "tableFrom": "tickets",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -997,12 +926,8 @@
           "name": "tickets_currency_allowed_currencies_id_fk",
           "tableFrom": "tickets",
           "tableTo": "allowed_currencies",
-          "columnsFrom": [
-            "currency"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["currency"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1139,9 +1064,7 @@
       "indexes": {
         "users_username_unique": {
           "name": "users_username_unique",
-          "columns": [
-            "username"
-          ],
+          "columns": ["username"],
           "isUnique": true
         }
       },
@@ -1203,12 +1126,8 @@
           "name": "users_communities_user_id_users_id_fk",
           "tableFrom": "users_communities",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1216,12 +1135,8 @@
           "name": "users_communities_community_id_communities_id_fk",
           "tableFrom": "users_communities",
           "tableTo": "communities",
-          "columnsFrom": [
-            "community_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["community_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1314,12 +1229,8 @@
           "name": "user_tickets_user_id_users_id_fk",
           "tableFrom": "user_tickets",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1327,12 +1238,8 @@
           "name": "user_tickets_ticket_template_id_tickets_id_fk",
           "tableFrom": "user_tickets",
           "tableTo": "tickets",
-          "columnsFrom": [
-            "ticket_template_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["ticket_template_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1412,9 +1319,7 @@
       "indexes": {
         "work_email_company_id_unique": {
           "name": "work_email_company_id_unique",
-          "columns": [
-            "company_id"
-          ],
+          "columns": ["company_id"],
           "isUnique": true
         }
       },
@@ -1423,12 +1328,8 @@
           "name": "work_email_user_id_users_id_fk",
           "tableFrom": "work_email",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1436,12 +1337,8 @@
           "name": "work_email_company_id_companies_company_id_fk",
           "tableFrom": "work_email",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "company_id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["company_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1499,9 +1396,7 @@
       "indexes": {
         "work_role_company_id_unique": {
           "name": "work_role_company_id_unique",
-          "columns": [
-            "company_id"
-          ],
+          "columns": ["company_id"],
           "isUnique": true
         }
       },
