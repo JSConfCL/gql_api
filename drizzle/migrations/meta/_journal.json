@@ -50,13 +50,6 @@
       "when": 1691634462785,
       "tag": "0006_rapid_cassandra_nova",
       "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "5",
-      "when": 1694669628729,
-      "tag": "0007_woozy_umar",
-      "breakpoints": true
     }
   ]
 }

@@ -6,7 +6,7 @@ import { allowedCurrencySchema } from "./allowedCurrencies";
 import { workRoleSchema } from "./workRoles";
 
 // SALARIES-TABLE
-export const salariesSchema = sqliteTable("companies", {
+export const salariesSchema = sqliteTable("salaries", {
   id: text("company_id").primaryKey().unique(),
   userId: text("user_id")
     .references(() => usersSchema.id)

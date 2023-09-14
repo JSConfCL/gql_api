@@ -5,7 +5,7 @@ import { usersSchema } from "./users";
 import { companiesSchema } from "./companies";
 
 // WORK-EMAILS-TABLE
-export const workEmailSchema = sqliteTable("companies", {
+export const workEmailSchema = sqliteTable("work_email", {
   id: text("company_id").primaryKey().unique(),
   userId: text("user_id")
     .references(() => usersSchema.id)

@@ -3,7 +3,7 @@ import { createdAndUpdatedAtFields } from "./shared";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 // WORK-ROLES-TABLE
-export const workRoleSchema = sqliteTable("companies", {
+export const workRoleSchema = sqliteTable("work_role", {
   id: text("company_id").primaryKey().unique(),
   name: text("name").notNull(),
   description: text("description").notNull(),
