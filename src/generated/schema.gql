@@ -95,7 +95,7 @@ type Mutation {
   """
   Approve a ticket
   """
-  approvalUserTicket(id: String!): UserTicket!
+  approvalUserTicket(userTicketId: String!): UserTicket!
 
   """
   Cancel a ticket

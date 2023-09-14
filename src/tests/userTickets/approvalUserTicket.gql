@@ -1,5 +1,5 @@
-mutation ApprovalUserTicket($id: String!) {
-  approvalUserTicket(id: $id) {
+mutation ApprovalUserTicket($userTicketId: String!) {
+  approvalUserTicket(userTicketId: $userTicketId) {
     id
     status
     approvalStatus

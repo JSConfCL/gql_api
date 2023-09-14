@@ -7,7 +7,7 @@ import type * as Types from '../../generated/types';
 import type { JsonObject } from "type-fest";
 import gql from 'graphql-tag';
 export type ApprovalUserTicketMutationVariables = Types.Exact<{
-  id: Types.Scalars['String']['input'];
+  userTicketId: Types.Scalars['String']['input'];
 }>;
 
 
@@ -15,8 +15,8 @@ export type ApprovalUserTicketMutation = { __typename?: 'Mutation', approvalUser
 
 
 export const ApprovalUserTicket = gql`
-    mutation ApprovalUserTicket($id: String!) {
-  approvalUserTicket(id: $id) {
+    mutation ApprovalUserTicket($userTicketId: String!) {
+  approvalUserTicket(userTicketId: $userTicketId) {
     id
     status
     approvalStatus

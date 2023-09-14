@@ -135,7 +135,7 @@ export type Mutation = {
 };
 
 export type MutationApprovalUserTicketArgs = {
-  id: Scalars["String"]["input"];
+  userTicketId: Scalars["String"]["input"];
 };
 
 export type MutationCancelUserTicketArgs = {
