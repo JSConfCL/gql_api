@@ -55,10 +55,7 @@ describe("User", () => {
       {
         document: CancelUserTicket,
         variables: {
-          input: {
-            id: ticket1.id,
-            communityId: community1.id,
-          },
+          userTicketId: ticket1.id,
         },
       },
       user1,
@@ -102,10 +99,7 @@ describe("User", () => {
       {
         document: CancelUserTicket,
         variables: {
-          input: {
-            id: ticket1.id,
-            communityId: community1.id,
-          },
+          userTicketId: ticket1.id,
         },
       },
       user1,
@@ -139,15 +133,12 @@ describe("User", () => {
       {
         document: CancelUserTicket,
         variables: {
-          input: {
-            id: "2",
-            communityId: community1.id,
-          },
+          userTicketId: "2",
         },
       },
       user1,
     );
-    assert.equal(response.errors?.[0].message, "Ticket not found");
+    assert.equal(response.errors?.[0].message, "Unauthorized!");
   });
   it("It should throw a error, if is not authorized", async () => {
     const community1 = await insertCommunity();
@@ -183,10 +174,7 @@ describe("User", () => {
       {
         document: CancelUserTicket,
         variables: {
-          input: {
-            id: ticket1.id,
-            communityId: community1.id,
-          },
+          userTicketId: ticket1.id,
         },
       },
       user2,

@@ -186,3 +186,48 @@ export class canApproveTicket extends PreExecutionRule {
     return Boolean(isEventAdmin);
   }
 }
+
+export class canCancelUserTicket extends PreExecutionRule {
+  public async execute(
+    { USER, DB }: GraphqlContext,
+    fieldArgs: { userTicketId: string },
+  ) {
+    if (!USER || !fieldArgs?.userTicketId) {
+      return false;
+    }
+
+    const userTicket = await DB.query.userTicketsSchema.findFirst({
+      where: (utc, { eq }) => eq(utc.id, fieldArgs.userTicketId),
+      with: {
+        ticketTemplate: true,
+      },
+    });
+
+    if (!userTicket) {
+      return false;
+    }
+
+    if (USER.isSuperAdmin) return true;
+    if (USER.id === userTicket.userId) return true;
+
+    const communityId = await DB.query.eventsToCommunitiesSchema.findFirst({
+      where: (utc, { eq, and }) =>
+        eq(utc.eventId, userTicket?.ticketTemplate.eventId),
+    });
+
+    if (!communityId) {
+      return false;
+    }
+
+    const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
+      where: (utc, { eq, and }) =>
+        and(
+          eq(utc.communityId, communityId?.communityId),
+          eq(utc.userId, USER.id),
+          eq(utc.role, "admin"),
+        ),
+    });
+
+    return Boolean(isCommunityAdmin);
+  }
+}

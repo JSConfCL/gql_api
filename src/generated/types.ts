@@ -139,7 +139,7 @@ export type MutationApprovalUserTicketArgs = {
 };
 
 export type MutationCancelUserTicketArgs = {
-  input: CancelUserTicket;
+  userTicketId: Scalars["String"]["input"];
 };
 
 export type MutationCreateEventArgs = {
@@ -264,8 +264,7 @@ export type UserTicket = {
 };
 
 export type CancelUserTicket = {
-  communityId: Scalars["String"]["input"];
-  id: Scalars["String"]["input"];
+  userTicketId: Scalars["String"]["input"];
 };
 
 export type UserEditInput = {
