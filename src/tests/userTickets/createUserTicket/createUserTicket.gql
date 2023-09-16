@@ -1,0 +1,9 @@
+mutation CreateUserTicket($ticketId: String!) {
+  createUserTicket(ticketId: $ticketId) {
+    id
+    approvalStatus
+    paymentStatus
+    redemptionStatus
+    status
+  }
+}

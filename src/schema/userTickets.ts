@@ -5,8 +5,10 @@ import {
   selectUserTicketsSchema,
   eventsSchema,
   userTicketsSchema,
+  insertUserTicketsSchema,
 } from "~/datasources/db/schema";
 import { GraphQLError } from "graphql";
+import { v4 } from "uuid";
 
 export const TicketStatus = builder.enumType("TicketStatus", {
   values: ["active", "cancelled"] as const,
@@ -130,12 +132,6 @@ builder.queryFields((t) => ({
   }),
 }));
 
-const cancelUserTicket = builder.inputType("cancelUserTicket", {
-  fields: (t) => ({
-    userTicketId: t.string({ required: true }),
-  }),
-});
-
 builder.mutationFields((t) => ({
   cancelUserTicket: t.field({
     description: "Cancel a ticket",
@@ -219,6 +215,99 @@ builder.mutationFields((t) => ({
           .returning()
           .get();
         return selectUserTicketsSchema.parse(updatedTicket);
+      } catch (e: unknown) {
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
+        );
+      }
+    },
+  }),
+}));
+
+builder.mutationFields((t) => ({
+  createUserTicket: t.field({
+    description: "Create user ticket",
+    type: UserTicketRef,
+    args: {
+      ticketId: t.arg({
+        type: "String",
+        required: true,
+      }),
+    },
+    authz: {
+      rules: ["canReserveTicket"],
+    },
+    resolve: async (root, { ticketId }, { DB, USER }) => {
+      try {
+        if (!USER) {
+          throw new Error("User not found");
+        }
+        const ticketTemplate = await DB.query.ticketsSchema.findFirst({
+          where: (t, { eq }) => eq(t.id, ticketId),
+          with: {
+            event: true,
+          },
+        });
+        //Se supone que estas validaciones las tiene que hacer el authz
+        //pero no se como hacerlo para que no me las pida aqui
+        if (
+          !ticketTemplate ||
+          !ticketTemplate.endDateTime ||
+          !ticketTemplate.quantity
+        ) {
+          throw new Error("Unauthorized!");
+        }
+        if (
+          !ticketTemplate.event ||
+          !ticketTemplate.event.endDateTime ||
+          !ticketTemplate.event.maxAttendees
+        ) {
+          throw new Error("Unauthorized!");
+        }
+        const isMemberEvent = await DB.query.eventsToUsersSchema.findFirst({
+          where: (t, { and, eq }) =>
+            and(eq(t.eventId, ticketTemplate.eventId), eq(t.userId, USER.id)),
+        });
+        if (!isMemberEvent) {
+          throw new Error("Unauthorized!");
+        }
+        if (
+          ticketTemplate.event.endDateTime < new Date() ||
+          ticketTemplate.endDateTime < new Date()
+        ) {
+          throw new Error("Event has ended");
+        }
+
+        const userTicketsCount = await DB.query.userTicketsSchema
+          .findMany({
+            where: (t, { and, eq }) =>
+              and(
+                eq(t.ticketTemplateId, ticketId),
+                eq(t.status, "active"),
+                eq(t.approvalStatus, "approved"),
+              ),
+          })
+          .then((tickets) => tickets.length);
+
+        if (
+          !(userTicketsCount < ticketTemplate.quantity) ||
+          !(userTicketsCount < ticketTemplate.event.maxAttendees)
+        ) {
+          throw new Error("Ticket sold out");
+        }
+        const ticketValues = insertUserTicketsSchema.parse({
+          id: v4(),
+          userId: USER.id,
+          ticketTemplateId: ticketId,
+          approvalStatus: ticketTemplate.requiresApproval
+            ? "pending"
+            : "approved",
+        });
+        const ticket = await DB.insert(userTicketsSchema)
+          .values(ticketValues)
+          .returning()
+          .get();
+        return selectUserTicketsSchema.parse(ticket);
       } catch (e: unknown) {
         throw new GraphQLError(
           e instanceof Error ? e.message : "Unknown error",
