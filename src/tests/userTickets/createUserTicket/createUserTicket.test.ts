@@ -21,7 +21,7 @@ afterEach(() => {
   clearDatabase();
 });
 
-describe.only("User", () => {
+describe("User", () => {
   it("It should throw a error, if event is not active", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent({
