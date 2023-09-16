@@ -130,6 +130,8 @@ export type Mutation = {
   cancelUserTicket: UserTicket;
   /** Create an event */
   createEvent: Event;
+  /** Create user ticket */
+  createUserTicket: UserTicket;
   /** Update a user */
   updateUser: User;
 };
@@ -144,6 +146,10 @@ export type MutationCancelUserTicketArgs = {
 
 export type MutationCreateEventArgs = {
   input: EventCreateInput;
+};
+
+export type MutationCreateUserTicketArgs = {
+  ticketId: Scalars["String"]["input"];
 };
 
 export type MutationUpdateUserArgs = {
@@ -261,10 +267,6 @@ export type UserTicket = {
   paymentStatus: TicketPaymentStatus;
   redemptionStatus: TicketRedemptionStatus;
   status: TicketStatus;
-};
-
-export type CancelUserTicket = {
-  userTicketId: Scalars["String"]["input"];
 };
 
 export type UserEditInput = {

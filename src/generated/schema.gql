@@ -108,6 +108,11 @@ type Mutation {
   createEvent(input: EventCreateInput!): Event!
 
   """
+  Create user ticket
+  """
+  createUserTicket(ticketId: String!): UserTicket!
+
+  """
   Update a user
   """
   updateUser(input: userEditInput!): User!
@@ -216,10 +221,6 @@ type UserTicket {
   paymentStatus: TicketPaymentStatus!
   redemptionStatus: TicketRedemptionStatus!
   status: TicketStatus!
-}
-
-input cancelUserTicket {
-  userTicketId: String!
 }
 
 input userEditInput {
