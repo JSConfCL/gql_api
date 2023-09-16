@@ -250,18 +250,7 @@ builder.mutationFields((t) => ({
         });
         //Se supone que estas validaciones las tiene que hacer el authz
         //pero no se como hacerlo para que no me las pida aqui
-        if (
-          !ticketTemplate ||
-          !ticketTemplate.endDateTime ||
-          !ticketTemplate.quantity
-        ) {
-          throw new Error("Unauthorized!");
-        }
-        if (
-          !ticketTemplate.event ||
-          !ticketTemplate.event.endDateTime ||
-          !ticketTemplate.event.maxAttendees
-        ) {
+        if (!ticketTemplate || !ticketTemplate.event) {
           throw new Error("Unauthorized!");
         }
         const isMemberEvent = await DB.query.eventsToUsersSchema.findFirst({
