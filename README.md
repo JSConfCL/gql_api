@@ -6,7 +6,7 @@
 - Crear una base de datos en turso.tech
   - Instala el CLI de turso [acá](https://github.com/tursodatabase/turso-cli)
   - Authentícate con `turso auth login`
-  - Crea una base de datos con `turso db create NOMBRE_DE_TU_BDD`
+  - Crea una base de datos con `turso db create NOMBRE_DE_TU_BDD --enable-extensions`
   - Obten la TOKEN de tu DB con `turso db tokens create NOMBRE_DE_TU_BDD`
   - Obten la URL de tu DB con `turso db tokens list`
   - Guarda la URL de tu BDD y la token en el archivo .dev.vars bajo `DATABASE_URL` y `DATABASE_TOKEN`
