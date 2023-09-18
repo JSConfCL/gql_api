@@ -186,6 +186,44 @@ describe("test the email validation process", () => {
 
       assert.equal(ValidateWorkEmailResponse.errors?.length, 1);
     });
+    it("Without an email", async () => {
+      const email = faker.internet.email();
+      const user = await insertUser({
+        email,
+      });
+      const user2 = await insertUser();
+
+      const StartWorkEmailValidationResponse =
+        await executeGraphqlOperationAsUser<
+          StartWorkEmailValidationMutation,
+          StartWorkEmailValidationMutationVariables
+        >(
+          {
+            document: StartWorkEmailValidation,
+            variables: {
+              email: "",
+            },
+          },
+          user,
+        );
+      const ValidateWorkEmailResponse = await executeGraphqlOperationAsUser<
+        ValidateWorkEmailMutation,
+        ValidateWorkEmailMutationVariables
+      >(
+        {
+          document: ValidateWorkEmail,
+          variables: {
+            confirmationToken: "12312",
+          },
+        },
+        user2,
+      );
+      assert.equal(
+        StartWorkEmailValidationResponse.errors?.[0]?.message,
+        "Unexpected error.",
+      );
+      assert.equal(ValidateWorkEmailResponse.errors?.length, 1);
+    });
     it("Without a user", async () => {
       const testDB = await getTestDB();
       const email = faker.internet.email();
