@@ -1,0 +1,7 @@
+mutation ValidateWorkEmail($confirmationToken: String!) {
+  validateWorkEmail(confirmationToken: $confirmationToken) {
+    __typename
+    id
+    isValidated
+  }
+}

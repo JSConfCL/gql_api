@@ -1,12 +1,12 @@
 import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { createdAndUpdatedAtFields } from "./shared";
-import { usersSchema } from "./users";
-import { companiesSchema } from "./companies";
+import { usersSchema, companiesSchema } from "./schema";
+import { relations } from "drizzle-orm";
 
 // WORK-EMAILS-TABLE
 export const workEmailSchema = sqliteTable("work_email", {
-  id: text("company_id").primaryKey().unique(),
+  id: text("id").primaryKey().unique(),
   userId: text("user_id")
     .references(() => usersSchema.id)
     .notNull(),
@@ -19,6 +19,11 @@ export const workEmailSchema = sqliteTable("work_email", {
   companyId: text("company_id").references(() => companiesSchema.id),
   ...createdAndUpdatedAtFields,
 });
+
+export const userRelations = relations(workEmailSchema, ({ one }) => ({
+  associatedCompany: one(companiesSchema),
+  user: one(usersSchema),
+}));
 
 export const selectWorkEmailSchema = createSelectSchema(workEmailSchema);
 export const insertWorkEmailSchema = createInsertSchema(workEmailSchema);

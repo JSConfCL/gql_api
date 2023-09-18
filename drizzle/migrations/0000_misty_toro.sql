@@ -185,12 +185,13 @@ CREATE TABLE `user_tickets` (
 );
 --> statement-breakpoint
 CREATE TABLE `work_email` (
-	`company_id` text,
+	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
 	`work_email` text NOT NULL,
 	`confirmation_token` text,
 	`is_confirmed` integer DEFAULT false,
 	`confirmation_date` integer,
+	`company_id` text,
 	`created_at` integer DEFAULT current_timestamp NOT NULL,
 	`updated_at` integer,
 	`deleted_at` integer,
@@ -215,5 +216,5 @@ CREATE UNIQUE INDEX `salaries_company_id_unique` ON `salaries` (`company_id`);--
 CREATE UNIQUE INDEX `tags_name_unique` ON `tags` (`name`);--> statement-breakpoint
 CREATE UNIQUE INDEX `tickets_name_unique` ON `tickets` (`name`);--> statement-breakpoint
 CREATE UNIQUE INDEX `users_username_unique` ON `users` (`username`);--> statement-breakpoint
-CREATE UNIQUE INDEX `work_email_company_id_unique` ON `work_email` (`company_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `work_email_id_unique` ON `work_email` (`id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `work_role_company_id_unique` ON `work_role` (`company_id`);

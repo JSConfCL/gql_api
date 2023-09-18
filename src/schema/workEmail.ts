@@ -10,12 +10,8 @@ import {
 } from "~/datasources/db/schema";
 import { workEmailRef } from "~/schema/shared/refs";
 
-export const CommnunityStatus = builder.enumType("CommnunityStatus", {
-  values: ["active", "inactive"] as const,
-});
-
 builder.objectType(workEmailRef, {
-  description: "Representation of a Community",
+  description: "Representation of a workEmail",
   fields: (t) => ({
     id: t.exposeString("id", { nullable: false }),
     isValidated: t.field({
@@ -152,7 +148,7 @@ builder.mutationFields((t) => ({
       return selectWorkEmailSchema.parse(result);
     },
   }),
-  validateWorkEMail: t.field({
+  validateWorkEmail: t.field({
     description: "Validates work email for a user",
     type: workEmailRef,
     authz: {
