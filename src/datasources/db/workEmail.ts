@@ -20,7 +20,7 @@ export const workEmailSchema = sqliteTable("work_email", {
   ...createdAndUpdatedAtFields,
 });
 
-export const userRelations = relations(workEmailSchema, ({ one }) => ({
+export const workEmailRelations = relations(workEmailSchema, ({ one }) => ({
   associatedCompany: one(companiesSchema),
   user: one(usersSchema),
 }));
