@@ -19,6 +19,7 @@ builder.objectType(workEmailRef, {
       nullable: false,
       resolve: async (root, args, { USER, DB }) => {
         // TODO: Consider also  checking if the confirmationDate is over a year old.
+        /* c8 ignore next 3 */
         if (!USER) {
           return false;
         }
@@ -43,9 +44,6 @@ builder.queryFields((t) => ({
       email: t.arg.string({ required: true }),
     },
     resolve: async (root, { email }, { DB }) => {
-      if (!email) {
-        throw new Error("email is required");
-      }
       const workEmail = await DB.query.workEmailSchema.findFirst({
         where: (wes, { like }) => like(wes.workEmail, email.toLowerCase()),
       });
@@ -69,10 +67,6 @@ builder.mutationFields((t) => ({
       if (!USER) {
         throw new Error("User is required");
       }
-      if (!email) {
-        throw new Error("email is required");
-      }
-
       const emailDomain = email.split("@")?.[1];
       if (!emailDomain) {
         throw new Error("Invalid email");

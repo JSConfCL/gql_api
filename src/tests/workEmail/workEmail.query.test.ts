@@ -51,4 +51,30 @@ describe("test the work email query", () => {
       insertedWorkEmail.isConfirmed,
     );
   });
+
+  it("Should fail if we don't pass the WorkEmail", async () => {
+    const email = faker.internet.email();
+    const company = await insertCompany();
+    const user = await insertUser({
+      email,
+    });
+
+    await insertWorkEmail({
+      companyId: company.id,
+      userId: user.id,
+      workEmail: email,
+    });
+
+    const query = await executeGraphqlOperationAsUser<
+      WorkEmailQuery,
+      WorkEmailQueryVariables
+    >(
+      {
+        document: WorkEmail,
+      },
+      user,
+    );
+
+    assert.equal(query.errors?.length, 1);
+  });
 });
