@@ -1,5 +1,9 @@
 import { it, describe, assert, afterEach } from "vitest";
-import { executeGraphqlOperationAsUser, insertUser } from "~/tests/__fixtures";
+import {
+  executeGraphqlOperation,
+  executeGraphqlOperationAsUser,
+  insertUser,
+} from "~/tests/__fixtures";
 import { clearDatabase, getTestDB } from "~/tests/__fixtures/databaseHelper";
 import {
   ValidateWorkEmail,
@@ -181,6 +185,41 @@ describe("test the email validation process", () => {
       );
 
       assert.equal(ValidateWorkEmailResponse.errors?.length, 1);
+    });
+    it("Without a user", async () => {
+      const testDB = await getTestDB();
+      const email = faker.internet.email();
+      const StartWorkEmailValidationResponse = await executeGraphqlOperation<
+        StartWorkEmailValidationMutation,
+        StartWorkEmailValidationMutationVariables
+      >({
+        document: StartWorkEmailValidation,
+        variables: {
+          email,
+        },
+      });
+      const workEmailEntry = await testDB.query.workEmailSchema.findFirst();
+      const ValidateWorkEmailResponse = await executeGraphqlOperation<
+        ValidateWorkEmailMutation,
+        ValidateWorkEmailMutationVariables
+      >({
+        document: ValidateWorkEmail,
+        variables: {
+          confirmationToken: "12312",
+        },
+      });
+
+      assert.equal(workEmailEntry, undefined);
+      assert.equal(StartWorkEmailValidationResponse.errors?.length, 1);
+      assert.equal(
+        StartWorkEmailValidationResponse.errors?.[0]?.message,
+        "User is not authenticated",
+      );
+      assert.equal(ValidateWorkEmailResponse.errors?.length, 1);
+      assert.equal(
+        ValidateWorkEmailResponse.errors?.[0]?.message,
+        "User is not authenticated",
+      );
     });
   });
 });
