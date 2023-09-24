@@ -6,12 +6,10 @@ import { relations } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 // EVENT—USER
-export const eventsToUsersSchema = sqliteTable("events_users", {
+export const eventsToUsersSchema = sqliteTable("events_user_roles", {
   eventId: text("event_id").references(() => eventsSchema.id),
   userId: text("user_id").references(() => usersSchema.id),
-  role: text("role", { enum: ["admin", "member", "collaborator"] }).default(
-    "member",
-  ),
+  role: text("role", { enum: ["admin", "collaborator"] }),
   ...createdAndUpdatedAtFields,
 });
 

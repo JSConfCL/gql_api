@@ -248,16 +248,7 @@ builder.mutationFields((t) => ({
             event: true,
           },
         });
-        //Se supone que estas validaciones las tiene que hacer el authz
-        //pero no se como hacerlo para que no me las pida aqui
         if (!ticketTemplate || !ticketTemplate.event) {
-          throw new Error("Unauthorized!");
-        }
-        const isMemberEvent = await DB.query.eventsToUsersSchema.findFirst({
-          where: (t, { and, eq }) =>
-            and(eq(t.eventId, ticketTemplate.eventId), eq(t.userId, USER.id)),
-        });
-        if (!isMemberEvent) {
           throw new Error("Unauthorized!");
         }
         if (
@@ -279,11 +270,12 @@ builder.mutationFields((t) => ({
           .then((tickets) => tickets.length);
 
         if (
-          !(userTicketsCount < ticketTemplate.quantity) ||
-          !(userTicketsCount < ticketTemplate.event.maxAttendees)
+          userTicketsCount >= ticketTemplate.quantity ||
+          userTicketsCount >= ticketTemplate.event.maxAttendees
         ) {
           throw new Error("Ticket sold out");
         }
+
         const ticketValues = insertUserTicketsSchema.parse({
           id: v4(),
           userId: USER.id,
