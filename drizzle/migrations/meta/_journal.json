@@ -5,57 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1690167602118,
-      "tag": "0000_tricky_captain_cross",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1690436036044,
-      "tag": "0001_spotty_charles_xavier",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1690689592932,
-      "tag": "0002_overrated_edwin_jarvis",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1690774708904,
-      "tag": "0003_bumpy_venus",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1691297782004,
-      "tag": "0004_loving_kulan_gath",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1691595161608,
-      "tag": "0005_equal_alex_wilder",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "5",
-      "when": 1691634462785,
-      "tag": "0006_rapid_cassandra_nova",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "5",
-      "when": 1694670518270,
-      "tag": "0007_bumpy_namora",
+      "when": 1695009365070,
+      "tag": "0000_misty_toro",
       "breakpoints": true
     }
   ]

@@ -108,9 +108,19 @@ type Mutation {
   createEvent(input: EventCreateInput!): Event!
 
   """
+  Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position
+  """
+  startWorkEmailValidation(email: String!): WorkEmail!
+
+  """
   Update a user
   """
   updateUser(input: userEditInput!): User!
+
+  """
+  Validates work email for a user
+  """
+  validateWorkEmail(confirmationToken: String!): WorkEmail!
 }
 
 input MyTicketsSearchInput {
@@ -157,6 +167,11 @@ type Query {
   Get a list of users
   """
   users: [User!]!
+
+  """
+  Get a workEmail and check if its validated for this user
+  """
+  workEmail(email: String!): WorkEmail!
 }
 
 """
@@ -216,6 +231,14 @@ type UserTicket {
   paymentStatus: TicketPaymentStatus!
   redemptionStatus: TicketRedemptionStatus!
   status: TicketStatus!
+}
+
+"""
+Representation of a workEmail
+"""
+type WorkEmail {
+  id: String!
+  isValidated: Boolean!
 }
 
 input cancelUserTicket {

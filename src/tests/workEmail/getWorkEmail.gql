@@ -1,0 +1,7 @@
+query WorkEmail($email: String!) {
+  workEmail(email: $email) {
+    __typename
+    id
+    isValidated
+  }
+}

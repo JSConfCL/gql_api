@@ -130,8 +130,12 @@ export type Mutation = {
   cancelUserTicket: UserTicket;
   /** Create an event */
   createEvent: Event;
+  /** Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position */
+  startWorkEmailValidation: WorkEmail;
   /** Update a user */
   updateUser: User;
+  /** Validates work email for a user */
+  validateWorkEmail: WorkEmail;
 };
 
 export type MutationApprovalUserTicketArgs = {
@@ -146,8 +150,16 @@ export type MutationCreateEventArgs = {
   input: EventCreateInput;
 };
 
+export type MutationStartWorkEmailValidationArgs = {
+  email: Scalars["String"]["input"];
+};
+
 export type MutationUpdateUserArgs = {
   input: UserEditInput;
+};
+
+export type MutationValidateWorkEmailArgs = {
+  confirmationToken: Scalars["String"]["input"];
 };
 
 export type MyTicketsSearchInput = {
@@ -175,6 +187,8 @@ export type Query = {
   tags: Array<Tag>;
   /** Get a list of users */
   users: Array<User>;
+  /** Get a workEmail and check if its validated for this user */
+  workEmail: WorkEmail;
 };
 
 export type QueryCommunitiesArgs = {
@@ -205,6 +219,10 @@ export type QueryStatusArgs = {
 
 export type QueryTagsArgs = {
   input?: InputMaybe<TagSearchInput>;
+};
+
+export type QueryWorkEmailArgs = {
+  email: Scalars["String"]["input"];
 };
 
 /** Representation of a tag. Tags can be associated to many things. An event, a community, etc. */
@@ -261,6 +279,13 @@ export type UserTicket = {
   paymentStatus: TicketPaymentStatus;
   redemptionStatus: TicketRedemptionStatus;
   status: TicketStatus;
+};
+
+/** Representation of a workEmail */
+export type WorkEmail = {
+  __typename?: "WorkEmail";
+  id: Scalars["String"]["output"];
+  isValidated: Scalars["Boolean"]["output"];
 };
 
 export type CancelUserTicket = {

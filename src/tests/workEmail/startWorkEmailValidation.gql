@@ -1,0 +1,7 @@
+mutation StartWorkEmailValidation($email: String!) {
+  startWorkEmailValidation(email: $email) {
+    __typename
+    id
+    isValidated
+  }
+}

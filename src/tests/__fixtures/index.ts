@@ -14,11 +14,13 @@ import { ZodType, z } from "zod";
 import * as rules from "~/authz";
 import {
   communitySchema,
+  companiesSchema,
   eventsSchema,
   eventsToCommunitiesSchema,
   eventsToTagsSchema,
   eventsToUsersSchema,
   insertCommunitySchema,
+  insertCompaniesSchema,
   insertEventsSchema,
   insertEventsToCommunitiesSchema,
   insertEventsToTagsSchema,
@@ -28,7 +30,9 @@ import {
   insertUserTicketsSchema,
   insertUsersSchema,
   insertUsersToCommunitiesSchema,
+  insertWorkEmailSchema,
   selectCommunitySchema,
+  selectCompaniesSchema,
   selectEventsSchema,
   selectEventsToCommunitiesSchema,
   selectEventsToTagsSchema,
@@ -38,11 +42,13 @@ import {
   selectUserTicketsSchema,
   selectUsersSchema,
   selectUsersToCommunitiesSchema,
+  selectWorkEmailSchema,
   tagsSchema,
   ticketsSchema,
   userTicketsSchema,
   usersSchema,
   usersToCommunitiesSchema,
+  workEmailSchema,
 } from "~/datasources/db/schema";
 import {
   TicketApprovalStatus,
@@ -329,6 +335,47 @@ export const insertEventTag = async (
     insertEventsToTagsSchema,
     selectEventsToTagsSchema,
     eventsToTagsSchema,
+    possibleInput,
+  );
+};
+
+export const insertCompany = async (
+  partialInput?: Partial<z.infer<typeof insertCompaniesSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    name: partialInput?.name ?? faker.company.name(),
+    description: partialInput?.description ?? faker.lorem.paragraph(),
+    domain: partialInput?.domain ?? faker.internet.domainName(),
+    logo: partialInput?.logo,
+    website: partialInput?.website,
+  } satisfies z.infer<typeof insertCompaniesSchema>;
+  return insertOne(
+    insertCompaniesSchema,
+    selectCompaniesSchema,
+    companiesSchema,
+    possibleInput,
+  );
+};
+
+export const insertWorkEmail = async (
+  partialInput?: Partial<z.infer<typeof insertWorkEmailSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    userId: partialInput?.userId ?? faker.string.uuid(),
+    workEmail: partialInput?.workEmail ?? faker.internet.email(),
+    confirmationToken: partialInput?.confirmationToken,
+    isConfirmed: partialInput?.isConfirmed,
+    confirmationDate: partialInput?.confirmationDate,
+    companyId: partialInput?.companyId,
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
+  } satisfies z.infer<typeof insertWorkEmailSchema>;
+  return insertOne(
+    insertWorkEmailSchema,
+    selectWorkEmailSchema,
+    workEmailSchema,
     possibleInput,
   );
 };

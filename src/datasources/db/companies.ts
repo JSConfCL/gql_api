@@ -5,8 +5,8 @@ import { createdAndUpdatedAtFields } from "./shared";
 // COMPANIES-TABLE
 export const companiesSchema = sqliteTable("companies", {
   id: text("company_id").primaryKey().unique(),
-  name: text("name").notNull(),
-  description: text("description").notNull(),
+  name: text("name"),
+  description: text("description"),
   domain: text("domain").notNull(),
   logo: text("logo"),
   website: text("website"),

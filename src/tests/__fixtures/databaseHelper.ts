@@ -15,7 +15,7 @@ if (!existsSync(`./${testDabasesFolder}`)) {
   mkdirSync(`./${testDabasesFolder}`);
 }
 const createDatabase = () => {
-  const databaseName = `${faker.string.uuid().replaceAll("-", "_")}`;
+  const databaseName = `${faker.string.uuid().replaceAll("-", "_")}.sqlite`;
   const databasePath = `${process.cwd()}/${testDabasesFolder}/${databaseName}`;
   const command = `echo "CREATE TABLE IF NOT EXISTS SOME_TABLE (id INTEGER PRIMARY KEY);" | sqlite3 ${databasePath}`;
   return new Promise<string>((resolve, reject) => {
