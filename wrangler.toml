@@ -13,8 +13,26 @@ _APP_ENV = "'development'"
 [placement]
 mode = "smart"
 
+[[queues.producers]]
+queue = "mail-queue-staging"
+binding = "MAIL_QUEUE"
 
+[[queues.consumers]]
+queue = "mail-queue-staging"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 10
+dead_letter_queue = "deadletter-mail-queue-staging"
+
+
+
+
+
+# =====================================
+# =====================================
 # 🚨 PRODUCTION CONFIG 🚨
+# =====================================
+# =====================================
 [env.production]
 name = "graphql-api-prod"
 route = "api.jschile.org/*"
@@ -29,7 +47,26 @@ _APP_ENV = "'production'"
 [env.production.placement]
 mode = "smart"
 
+[[env.production.queues.producers]]
+queue = "mail-queue-production"
+binding = "MAIL_QUEUE"
+
+[[env.production.queues.consumers]]
+queue = "mail-queue-production"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 10
+dead_letter_queue = "deadletter-mail-queue-production"
+
+
+
+
+
+# =====================================
+# =====================================
 # 🚨 STAGING CONFIG 🚨
+# =====================================
+# =====================================
 [env.staging]
 name = "graphql-api-staging"
 route = "api.jsconf.dev/*"
@@ -43,3 +80,15 @@ _APP_ENV = "'staging'"
 
 [env.staging.placement]
 mode = "smart"
+
+[[env.staging.queues.producers]]
+queue = "mail-queue-staging"
+binding = "MAIL_QUEUE"
+
+[[env.staging.queues.consumers]]
+queue = "mail-queue-staging"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 10
+dead_letter_queue = "deadletter-mail-queue-staging"
+

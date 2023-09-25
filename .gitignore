@@ -2,6 +2,9 @@
 .yalc
 yalc.lock
 
+# For emails
+.react-email
+
 build
 src/@types/schema.generated.ts
 node_modules

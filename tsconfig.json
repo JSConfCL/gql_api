@@ -6,12 +6,14 @@
     "src/**/*",
     "./.*.cjs",
     "./*.json",
-    "generated"
+    "generated",
+    "emails/**/*"
   ],
   "compilerOptions": {
     "target": "ESNext",
     "module": "CommonJS",
     "lib": ["ESNext"],
+    "jsx": "react",
     "strict": true,
     "allowJs": false,
     "skipLibCheck": true,
