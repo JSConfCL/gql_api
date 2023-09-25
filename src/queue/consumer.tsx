@@ -1,15 +1,10 @@
+import WorkEmailValidationEmail from "../../emails/invite-email";
+import * as React from "react";
 import { Env } from "../../worker-configuration";
 import { EmailMessageType, sendTransactionalEmail } from "../datasources/mail";
+import { render } from "@react-email/render";
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export const queueConsumer = async (batch: MessageBatch<any>, env: Env) => {
-  console.log(
-    "Processing batch for",
-    batch.queue,
-    "with",
-    batch.messages.length,
-    "messages",
-  );
   for await (const msg of batch.messages) {
     switch (batch.queue) {
       case "mail-queue-staging":
@@ -33,7 +28,13 @@ const processEmailQueue = async (
       from: "Javascript Chile <team@jschile.org>",
       to: message.body.to,
       subject: "Tu código de verificación",
-      html: `<p>Este es tu código de verificación: ${message.body.code}</p>`,
+      html: render(
+        <WorkEmailValidationEmail
+          baseUrl=""
+          code={message.body.code}
+          userId={message.body.userId}
+        />,
+      ),
     });
     message.ack();
   } catch (e) {

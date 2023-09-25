@@ -126,6 +126,7 @@ builder.mutationFields((t) => ({
               .get();
             await enqueueEmail(MAIL_QUEUE, {
               code: confirmationToken,
+              userId: USER.id,
               to: email.toLowerCase(),
             });
             return updatedWorkEmail;
@@ -145,6 +146,7 @@ builder.mutationFields((t) => ({
               .returning()
               .get();
             await enqueueEmail(MAIL_QUEUE, {
+              userId: USER.id,
               code: confirmationToken,
               to: email.toLowerCase(),
             });

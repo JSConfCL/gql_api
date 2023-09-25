@@ -2,6 +2,7 @@ import { Env } from "../../../worker-configuration";
 
 export type EmailMessageType = {
   code: string;
+  userId: string;
   to: string;
 };
 export const enqueueEmail = (
