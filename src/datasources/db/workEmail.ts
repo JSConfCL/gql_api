@@ -21,8 +21,14 @@ export const workEmailSchema = sqliteTable("work_email", {
 });
 
 export const workEmailRelations = relations(workEmailSchema, ({ one }) => ({
-  associatedCompany: one(companiesSchema),
-  user: one(usersSchema),
+  associatedCompany: one(companiesSchema, {
+    fields: [workEmailSchema.companyId],
+    references: [companiesSchema.id],
+  }),
+  user: one(usersSchema, {
+    fields: [workEmailSchema.userId],
+    references: [usersSchema.id],
+  }),
 }));
 
 export const selectWorkEmailSchema = createSelectSchema(workEmailSchema);
