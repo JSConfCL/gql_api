@@ -1,17 +1,17 @@
-name: Deploy to STAGING
+name: Deploy DB Model
 
 on:
   workflow_run:
     # Esto tiene q hacer match con los nombres de los workflows de tests
     workflows: ["Graphql and Database Tests", "Lint and Typecheck"]
-    # branches: [main]
+    branches: [main]
     types:
       - completed
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    name: Deploy to Cloudflare Workers — STAGING
+    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    name: Deploy to dbdocs.io
     runs-on: ubuntu-latest
     steps:
       - name: ⏳ Cloning repo
@@ -32,4 +32,6 @@ jobs:
       - name: 🛠️ Build new DB model
         run: npm run db:model
       - name: 🛳️ Deploy DB model
-        run: npx dbdocs build ./drizzle/schema.dbml
+        env:
+          DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
+        run: npx dbdocs build ./drizzle/schema.dbml --project API
