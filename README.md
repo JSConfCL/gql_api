@@ -13,6 +13,19 @@
 - Finalmente, `npm i` & `num run dev`
 - Listo! Tu servidor GraphQL está corriendo en http://127.0.0.1:8787
 
+# Cómo ver el esquema de la BDD?
+
+El esquema de la BDD se genera corriendo `npm run db:model` y se puede visualizar en https://dbdiagram.io
+
+La documentación de nuestro modelo está en https://dbdocs.io/fforres/API?view=relationships
+(O haz click en la imagen)
+
+<a href="https://dbdocs.io/fforres/API?view=relationships">
+  <img src="./model.png" width="300px">
+</a>
+
+  <!--  -->
+
 # Cómo escribir tests
 
 > PSA: Los tests se corren con `npm run tests` (o `npm run test:interactive` si quieres explorar una UI con mas informacion)

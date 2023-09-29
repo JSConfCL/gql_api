@@ -1,4 +1,4 @@
-name: Deploy to STAGING
+name: Deploy DB Model
 
 on:
   workflow_run:
@@ -10,8 +10,8 @@ on:
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    name: Deploy to Cloudflare Workers — STAGING
+    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    name: Deploy to dbdocs.io
     runs-on: ubuntu-latest
     steps:
       - name: ⏳ Cloning repo
@@ -29,5 +29,9 @@ jobs:
           key: CACHE-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
       - name: 📥 Install dependencies
         run: npm ci --prefer-offline --no-audit --legacy-peer-deps --cache ~/.npm
-      - name: 🛳️ DEPLOY Cloudflare Workers
-        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=staging
+      - name: 🛠️ Build new DB model
+        run: npm run db:model
+      - name: 🛳️ Deploy DB model
+        env:
+          DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
+        run: npx dbdocs build ./drizzle/schema.dbml --project API
