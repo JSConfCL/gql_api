@@ -130,12 +130,6 @@ builder.queryFields((t) => ({
   }),
 }));
 
-const cancelUserTicket = builder.inputType("cancelUserTicket", {
-  fields: (t) => ({
-    userTicketId: t.string({ required: true }),
-  }),
-});
-
 builder.mutationFields((t) => ({
   cancelUserTicket: t.field({
     description: "Cancel a ticket",
