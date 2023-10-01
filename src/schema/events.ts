@@ -26,6 +26,7 @@ import {
   TicketRedemptionStatus,
   TicketStatus,
 } from "./userTickets";
+import { canCreateEvent } from "~/validations";
 
 export const EventStatus = builder.enumType("EventStatus", {
   values: ["active", "inactive"] as const,
@@ -391,11 +392,7 @@ builder.mutationFields((t) => ({
     type: EventRef,
     nullable: false,
     authz: {
-      compositeRules: [
-        {
-          or: ["CanCreateEvent", "IsSuperAdmin"],
-        },
-      ],
+      rules: ["IsAuthenticated"],
     },
     args: {
       input: t.arg({ type: eventCreateInput, required: true }),
@@ -416,6 +413,8 @@ builder.mutationFields((t) => ({
         status,
         timeZone,
       } = input;
+      if(!ctx.USER) throw new Error("User not found");
+      if(await canCreateEvent(ctx.USER.id, communityId, ctx.DB)) throw new Error("You don't have permission to create an event");
       const result = await ctx.DB.transaction(async (trx) => {
         try {
           const id = v4();

@@ -7,6 +7,7 @@ import {
   userTicketsSchema,
 } from "~/datasources/db/schema";
 import { GraphQLError } from "graphql";
+import { canApproveTicket, canCancelUserTicket } from "~/validations";
 
 export const TicketStatus = builder.enumType("TicketStatus", {
   values: ["active", "cancelled"] as const,
@@ -141,17 +142,19 @@ builder.mutationFields((t) => ({
       }),
     },
     authz: {
-      rules: ["canCancelUserTicket"],
+      rules: ["IsAuthenticated"],
     },
     resolve: async (root, { userTicketId }, ctx) => {
       try {
+        if (!ctx.USER) {
+          throw new Error("User not found");
+        }
+        if (await canCancelUserTicket(ctx.USER?.id, userTicketId, ctx.DB))
+          throw new Error("You can't cancel this ticket");
         let ticket = await ctx.DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
         });
-        if (!ticket) {
-          throw new Error("Unauthorized!");
-        }
-        if (ticket.status === "cancelled") {
+        if (ticket?.status === "cancelled") {
           throw new Error("Ticket already cancelled");
         }
         ticket = await ctx.DB.update(userTicketsSchema)
@@ -183,10 +186,12 @@ builder.mutationFields((t) => ({
       }),
     },
     authz: {
-      rules: ["canApproveTicket"],
+      rules: ["IsAuthenticated"],
     },
     resolve: async (root, { userTicketId }, { DB, USER }) => {
       try {
+        if(!USER) throw new Error("User not found");
+        if(await canApproveTicket(USER.id, userTicketId, DB)) throw new Error("You can't approve this ticket");
         const ticket = await DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
           with: {
