@@ -18,7 +18,7 @@
     "prettier:ci": "prettier ./src --cache --check",
     "prettier:fix": "prettier ./src --cache --write",
     "typecheck": "tsc",
-    "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info",
+    "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info --port 50123",
     "generate": "tsx ./src/generated/generate.ts && graphql-codegen --config codegen.ts",
     "email:dev": "email dev",
     "email:export": "email export"
@@ -60,7 +60,7 @@
     "uuid": "^9.0.0",
     "vite-tsconfig-paths": "^4.2.0",
     "vitest": "^0.33.0",
-    "wrangler": "^3.3.0"
+    "wrangler": "^3.10.1"
   },
   "engines": {
     "node": ">=18"
@@ -76,7 +76,7 @@
     "@faker-js/faker": "^8.0.2",
     "@graphql-authz/envelop-plugin": "^1.0.4",
     "@graphql-yoga/plugin-csrf-prevention": "^2.0.3",
-    "@libsql/client": "^0.3.0",
+    "@libsql/client": "^0.3.5",
     "@microlabs/otel-cf-workers": "^1.0.0-rc.6",
     "@neondatabase/serverless": "^0.4.26",
     "@opentelemetry/sdk-trace-base": "^1.15.0",
