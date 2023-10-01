@@ -413,8 +413,9 @@ builder.mutationFields((t) => ({
         status,
         timeZone,
       } = input;
-      if(!ctx.USER) throw new Error("User not found");
-      if(await canCreateEvent(ctx.USER.id, communityId, ctx.DB)) throw new Error("You don't have permission to create an event");
+      if (!ctx.USER) throw new Error("User not found");
+      if (await canCreateEvent(ctx.USER.id, communityId, ctx.DB))
+        throw new Error("You don't have permission to create an event");
       const result = await ctx.DB.transaction(async (trx) => {
         try {
           const id = v4();

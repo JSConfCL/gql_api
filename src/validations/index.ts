@@ -55,19 +55,20 @@ export async function canCreateEvent(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
-  if(user?.isSuperAdmin) return true;
+  if (user?.isSuperAdmin) return true;
   const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
     where: (utc, { eq, and }) =>
-      and(eq(utc.userId, userId), eq(utc.role, "admin"), eq(utc.communityId, communityId)),
+      and(
+        eq(utc.userId, userId),
+        eq(utc.role, "admin"),
+        eq(utc.communityId, communityId),
+      ),
   });
 
   return Boolean(isCommunityAdmin);
 }
 
-export function isSameUser(
-  userId: string,
-  targetUserId: string,
-): boolean {
+export function isSameUser(userId: string, targetUserId: string): boolean {
   return userId === targetUserId;
 }
 
@@ -79,7 +80,7 @@ export async function canCancelUserTicket(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
-  if(user?.isSuperAdmin) return true;
+  if (user?.isSuperAdmin) return true;
 
   const userTicket = await DB.query.userTicketsSchema.findFirst({
     where: (utc, { eq }) => eq(utc.id, userTicketId),
@@ -92,8 +93,7 @@ export async function canCancelUserTicket(
   if (userId === userTicket.userId) return true;
 
   const community = await DB.query.eventsToCommunitiesSchema.findFirst({
-    where: (utc, { eq }) =>
-      eq(utc.eventId, userTicket?.ticketTemplate.eventId),
+    where: (utc, { eq }) => eq(utc.eventId, userTicket?.ticketTemplate.eventId),
   });
 
   if (!community) return false;
@@ -118,7 +118,7 @@ export async function canApproveTicket(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
-  if(user?.isSuperAdmin) return true;
+  if (user?.isSuperAdmin) return true;
 
   const userTicket = await DB.query.userTicketsSchema.findFirst({
     where: (utc, { eq }) => eq(utc.id, userTicketId),

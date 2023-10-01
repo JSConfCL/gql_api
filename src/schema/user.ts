@@ -84,8 +84,9 @@ builder.mutationFields((t) => ({
     },
     resolve: async (root, { input }, ctx) => {
       const { id, name, lastName, bio, username } = input;
-      if(!ctx.USER) throw new Error("User not found");
-      if(!isSameUser(id, ctx.USER.id)) throw new Error("You can't edit this user");
+      if (!ctx.USER) throw new Error("User not found");
+      if (!isSameUser(id, ctx.USER.id))
+        throw new Error("You can't edit this user");
       const updateFields = {} as {
         name?: string;
         lastName?: string;

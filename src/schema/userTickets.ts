@@ -190,8 +190,9 @@ builder.mutationFields((t) => ({
     },
     resolve: async (root, { userTicketId }, { DB, USER }) => {
       try {
-        if(!USER) throw new Error("User not found");
-        if(await canApproveTicket(USER.id, userTicketId, DB)) throw new Error("You can't approve this ticket");
+        if (!USER) throw new Error("User not found");
+        if (await canApproveTicket(USER.id, userTicketId, DB))
+          throw new Error("You can't approve this ticket");
         const ticket = await DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
           with: {
