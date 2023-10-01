@@ -138,7 +138,7 @@ describe("User", () => {
       },
       user1,
     );
-    assert.equal(response.errors?.[0].message, "Unauthorized!");
+    assert.equal(response.errors?.[0].message, "You can't cancel this ticket");
   });
   it("It should throw a error, if is not authorized", async () => {
     const community1 = await insertCommunity();
@@ -179,6 +179,9 @@ describe("User", () => {
       },
       user2,
     );
-    assert.deepInclude(response.errors?.[0].message, "Unauthorized!");
+    assert.deepInclude(
+      response.errors?.[0].message,
+      "You can't cancel this ticket",
+    );
   });
 });
