@@ -163,3 +163,32 @@ export async function canUpdateUserRoleInCommunity(
 
   return Boolean(isCommunityAdmin);
 }
+
+export async function canEditTicket(
+  userId: string,
+  ticketId: string,
+  DB: ORM_TYPE,
+): Promise<boolean> {
+  const user = await DB.query.usersSchema.findFirst({
+    where: (u, { eq }) => eq(u.id, userId),
+  });
+  if (user?.isSuperAdmin) return true;
+
+  const ticket = await DB.query.ticketsSchema.findFirst({
+    where: (t, { eq }) => eq(t.id, ticketId),
+  });
+  if (!ticket) return false;
+  const eventToCommunitie = await DB.query.eventsToCommunitiesSchema.findFirst({
+    where: (utc, { eq }) => eq(utc.eventId, ticket?.eventId),
+  });
+  if (!eventToCommunitie) return false;
+  const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
+    where: (utc, { eq, and }) =>
+      and(
+        eq(utc.userId, userId),
+        eq(utc.role, "admin"),
+        eq(utc.communityId, eventToCommunitie?.communityId),
+      ),
+  });
+  return Boolean(isCommunityAdmin);
+}
