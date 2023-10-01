@@ -48,7 +48,7 @@ describe("User update role in communities", () => {
         document: UpdateUserRoleInCommunity,
         variables: {
           input: {
-            id: user2.id,
+            userId: user2.id,
             communityId: community1.id,
             role: "admin",
           },
@@ -88,7 +88,7 @@ describe("User update role in communities", () => {
         document: UpdateUserRoleInCommunity,
         variables: {
           input: {
-            id: user2.id,
+            userId: user2.id,
             communityId: community1.id,
             role: "admin",
           },
@@ -130,7 +130,7 @@ describe("User update role in communities", () => {
         document: UpdateUserRoleInCommunity,
         variables: {
           input: {
-            id: user2.id,
+            userId: user2.id,
             communityId: community1.id,
             role: "admin",
           },
@@ -170,7 +170,7 @@ describe("User update role in communities", () => {
         document: UpdateUserRoleInCommunity,
         variables: {
           input: {
-            id: user2.id,
+            userId: user2.id,
             communityId: community1.id,
             role: "admin",
           },

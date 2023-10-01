@@ -80,7 +80,7 @@ const updateUserRoleInCommunityInput = builder.inputType(
   "updateUserRoleInCommunityInput",
   {
     fields: (t) => ({
-      id: t.string({ required: true }),
+      userId: t.string({ required: true }),
       communityId: t.string({ required: true }),
       role: t.string({ required: true }),
     }),
@@ -146,7 +146,7 @@ builder.mutationFields((t) => ({
     },
     resolve: async (root, { input }, ctx) => {
       try {
-        const { id, communityId, role } = input;
+        const { userId, communityId, role } = input;
         if (!ctx.USER) throw new Error("User not found");
         if (
           !(await canUpdateUserRoleInCommunity(
@@ -160,10 +160,10 @@ builder.mutationFields((t) => ({
           .set({
             role: role as UserRoleCommunity,
           })
-          .where(eq(usersToCommunitiesSchema.userId, id));
+          .where(eq(usersToCommunitiesSchema.userId, userId));
 
         const user = await ctx.DB.query.usersSchema.findFirst({
-          where: (u, { eq }) => eq(u.id, id),
+          where: (u, { eq }) => eq(u.id, userId),
         });
 
         return selectUsersSchema.parse(user);

@@ -11,7 +11,7 @@ export type UpdateUserRoleInCommunityMutationVariables = Types.Exact<{
 }>;
 
 
-export type UpdateUserRoleInCommunityMutation = { __typename?: 'Mutation', updateUserRoleInCommunity: { __typename?: 'User', id: string, name: string | null, bio: string | null, lastName: string | null, username: string, communities: Array<{ __typename?: 'Community', name: string | null }> } };
+export type UpdateUserRoleInCommunityMutation = { __typename?: 'Mutation', updateUserRoleInCommunity: { __typename?: 'User', id: string, name: string | null, bio: string | null, lastName: string | null, username: string } };
 
 
 export const UpdateUserRoleInCommunity = gql`
@@ -20,9 +20,6 @@ export const UpdateUserRoleInCommunity = gql`
     id
     name
     bio
-    communities {
-      name
-    }
     lastName
     username
   }
