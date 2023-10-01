@@ -264,13 +264,6 @@ type UserTicket {
   status: TicketStatus!
 }
 
-"""Representation of a user to communities"""
-type UserToCommunities {
-  communityId: String
-  role: String
-  userId: String
-}
-
 """Representation of a workEmail"""
 type WorkEmail {
   id: String!
