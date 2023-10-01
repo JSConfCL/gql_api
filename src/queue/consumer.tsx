@@ -23,7 +23,6 @@ const processEmailQueue = async (
 ) => {
   try {
     // TODO: Send azure email
-    console.log("Sending email", message.body);
     await sendTransactionalEmail(env, {
       from: "Javascript Chile <team@jschile.org>",
       to: message.body.to,

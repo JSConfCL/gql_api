@@ -45,10 +45,7 @@ export const sendTransactionalEmail = async (
     if (response.status >= 400) {
       throw new Error(`API Error Sending email. Status ${response.status}`);
     }
-    const text = await response.text();
-    console.log("RESPONSE", text);
   } catch (e) {
-    console.error(e);
     throw new Error("Error sending email");
   }
 };
