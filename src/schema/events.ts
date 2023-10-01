@@ -454,7 +454,10 @@ builder.mutationFields((t) => ({
 
             return events;
           } catch (e) {
-            // trx.rollback();
+            trx.rollback();
+            throw new GraphQLError(
+              e instanceof Error ? e.message : "Unknown error",
+            );
           }
         });
         return selectEventsSchema.parse(result);
