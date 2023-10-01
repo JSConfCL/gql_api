@@ -8,6 +8,7 @@ import {
   selectUserTicketsSchema,
   selectTicketSchema,
   selectWorkEmailSchema,
+  selectCompaniesSchema,
 } from "~/datasources/db/schema";
 
 type UserGraphqlSchema = z.infer<typeof selectUsersSchema>;
@@ -33,3 +34,6 @@ export const TicketRef = builder.objectRef<TicketGraphqlSchema>("Ticket");
 type WorkEmailGraphqlSchema = z.infer<typeof selectWorkEmailSchema>;
 export const workEmailRef =
   builder.objectRef<WorkEmailGraphqlSchema>("WorkEmail");
+
+type CompanyGraphqlSchema = z.infer<typeof selectCompaniesSchema>;
+export const companyRef = builder.objectRef<CompanyGraphqlSchema>("Company");
