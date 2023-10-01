@@ -9,11 +9,13 @@ export const enqueueEmail = (
   MAIL_QUEUE: Queue,
   emailMessage: EmailMessageType,
 ) => {
-  // Solo hacemos esto porque en el test no tenemos una cola de cloudflare queues.
-  // Así que en ves de enviar el email, asumimos que se encola correctamente.
+  // Solo hacemos esto porque en nuestros tests de graphql, no tenemos una cola
+  // de cloudflare queues. Así que en ves de enviar el email, asumimos que se
+  // encola correctamente.
   if (!MAIL_QUEUE) {
     return;
   }
+
   return MAIL_QUEUE.send(emailMessage, {
     contentType: "json",
   });

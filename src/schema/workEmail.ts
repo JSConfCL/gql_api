@@ -145,7 +145,6 @@ builder.mutationFields((t) => ({
               .values(insertWorkEmail)
               .returning()
               .get();
-            console.log({ insertedWorkEmail });
             await enqueueEmail(MAIL_QUEUE, {
               userId: USER.id,
               code: confirmationToken,
