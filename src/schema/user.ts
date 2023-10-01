@@ -1,7 +1,4 @@
-import {
-  CommunityRef,
-  UserRef,
-} from "~/schema/shared/refs";
+import { CommunityRef, UserRef } from "~/schema/shared/refs";
 import {
   selectCommunitySchema,
   selectUsersSchema,
@@ -163,7 +160,7 @@ builder.mutationFields((t) => ({
           .set({
             role: role as UserRoleCommunity,
           })
-          .where(eq(usersToCommunitiesSchema.userId, id))
+          .where(eq(usersToCommunitiesSchema.userId, id));
 
         const user = await ctx.DB.query.usersSchema.findFirst({
           where: (u, { eq }) => eq(u.id, id),

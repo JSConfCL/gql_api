@@ -1,7 +1,19 @@
 import { it, describe, afterEach, assert } from "vitest";
-import { executeGraphqlOperationAsUser, insertCommunity, insertEvent, insertEventToCommunity, insertUser, insertUserToCommunity, insertUserToEvent } from "~/tests/__fixtures";
+import {
+  executeGraphqlOperationAsUser,
+  insertCommunity,
+  insertEvent,
+  insertEventToCommunity,
+  insertUser,
+  insertUserToCommunity,
+  insertUserToEvent,
+} from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
-import { UpdateUserRoleInCommunity, UpdateUserRoleInCommunityMutation, UpdateUserRoleInCommunityMutationVariables } from "./updateUserRoleInCommunity.generated";
+import {
+  UpdateUserRoleInCommunity,
+  UpdateUserRoleInCommunityMutation,
+  UpdateUserRoleInCommunityMutationVariables,
+} from "./updateUserRoleInCommunity.generated";
 
 afterEach(() => {
   clearDatabase();
