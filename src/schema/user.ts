@@ -6,6 +6,8 @@ import {
 } from "~/datasources/db/schema";
 import { builder } from "~/builder";
 import { eq } from "drizzle-orm";
+import { isSameUser } from "~/validations";
+import { GraphQLError } from "graphql";
 
 builder.objectType(UserRef, {
   description: "Representation of a user",
@@ -76,38 +78,46 @@ builder.mutationFields((t) => ({
     type: UserRef,
     nullable: false,
     authz: {
-      rules: ["IsSameUser"],
+      rules: ["IsAuthenticated"],
     },
     args: {
       input: t.arg({ type: userEditInput, required: true }),
     },
     resolve: async (root, { input }, ctx) => {
-      const { id, name, lastName, bio, username } = input;
-      const updateFields = {} as {
-        name?: string;
-        lastName?: string;
-        bio?: string;
-        username?: string;
-      };
+      try {
+        const { id, name, lastName, bio, username } = input;
+        if (!ctx.USER) throw new Error("User not found");
+        if (!isSameUser(id, ctx.USER.id)) throw new Error("Not authorized");
+        const updateFields = {} as {
+          name?: string;
+          lastName?: string;
+          bio?: string;
+          username?: string;
+        };
 
-      if (name) {
-        updateFields.name = name;
+        if (name) {
+          updateFields.name = name;
+        }
+        if (lastName) {
+          updateFields.lastName = lastName;
+        }
+        if (bio) {
+          updateFields.bio = bio;
+        }
+        if (username) {
+          updateFields.username = username;
+        }
+        const user = await ctx.DB.update(usersSchema)
+          .set(updateFields)
+          .where(eq(usersSchema.id, id))
+          .returning()
+          .get();
+        return selectUsersSchema.parse(user);
+      } catch (e) {
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
+        );
       }
-      if (lastName) {
-        updateFields.lastName = lastName;
-      }
-      if (bio) {
-        updateFields.bio = bio;
-      }
-      if (username) {
-        updateFields.username = username;
-      }
-      const user = await ctx.DB.update(usersSchema)
-        .set(updateFields)
-        .where(eq(usersSchema.id, id))
-        .returning()
-        .get();
-      return selectUsersSchema.parse(user);
     },
   }),
 }));

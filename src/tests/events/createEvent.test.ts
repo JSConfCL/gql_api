@@ -144,7 +144,7 @@ describe("Event", () => {
       );
 
       assert.equal(response.errors?.length, 1);
-      assert.equal(response.errors?.[0]?.extensions?.code, "FORBIDDEN");
+      assert.equal(response.errors?.[0]?.message, "FORBIDDEN");
     });
     it("As volunteer", async () => {
       const startDate = faker.date
@@ -185,7 +185,7 @@ describe("Event", () => {
       );
 
       assert.equal(response.errors?.length, 1);
-      assert.equal(response.errors?.[0]?.extensions?.code, "FORBIDDEN");
+      assert.equal(response.errors?.[0]?.message, "FORBIDDEN");
     });
   });
 

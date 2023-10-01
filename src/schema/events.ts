@@ -26,6 +26,8 @@ import {
   TicketRedemptionStatus,
   TicketStatus,
 } from "./userTickets";
+import { canCreateEvent } from "~/validations";
+import { GraphQLError } from "graphql";
 
 export const EventStatus = builder.enumType("EventStatus", {
   values: ["active", "inactive"] as const,
@@ -391,70 +393,79 @@ builder.mutationFields((t) => ({
     type: EventRef,
     nullable: false,
     authz: {
-      compositeRules: [
-        {
-          or: ["CanCreateEvent", "IsSuperAdmin"],
-        },
-      ],
+      rules: ["IsAuthenticated"],
     },
     args: {
       input: t.arg({ type: eventCreateInput, required: true }),
     },
     resolve: async (root, { input }, ctx) => {
-      const {
-        name,
-        description,
-        visibility,
-        startDateTime,
-        endDateTime,
-        communityId,
-        maxAttendees,
-        address,
-        latitude,
-        longitude,
-        meetingURL,
-        status,
-        timeZone,
-      } = input;
-      const result = await ctx.DB.transaction(async (trx) => {
-        try {
-          const id = v4();
-          const newEvent = insertEventsSchema.parse({
-            id,
-            name,
-            description,
-            visibility,
-            startDateTime,
-            endDateTime,
-            maxAttendees,
-            geoAddressJSON: address,
-            geoLongitude: longitude,
-            getLatitude: latitude,
-            meetingURL,
-            status: status ?? "inactive",
-            timeZone,
-          });
-
-          const events = await trx
-            .insert(eventsSchema)
-            .values(newEvent)
-            .returning()
-            .get();
-          await trx
-            .insert(eventsToCommunitiesSchema)
-            .values({
-              eventId: id,
-              communityId: communityId,
-            })
-            .returning()
-            .get();
-
-          return events;
-        } catch (e) {
-          // trx.rollback();
+      try {
+        const {
+          name,
+          description,
+          visibility,
+          startDateTime,
+          endDateTime,
+          communityId,
+          maxAttendees,
+          address,
+          latitude,
+          longitude,
+          meetingURL,
+          status,
+          timeZone,
+        } = input;
+        if (!ctx.USER) throw new Error("User not found");
+        if (!(await canCreateEvent(ctx.USER.id, communityId, ctx.DB))) {
+          throw new Error("FORBIDDEN");
         }
-      });
-      return selectEventsSchema.parse(result);
+        const result = await ctx.DB.transaction(async (trx) => {
+          try {
+            const id = v4();
+            const newEvent = insertEventsSchema.parse({
+              id,
+              name,
+              description,
+              visibility,
+              startDateTime,
+              endDateTime,
+              maxAttendees,
+              geoAddressJSON: address,
+              geoLongitude: longitude,
+              getLatitude: latitude,
+              meetingURL,
+              status: status ?? "inactive",
+              timeZone,
+            });
+
+            const events = await trx
+              .insert(eventsSchema)
+              .values(newEvent)
+              .returning()
+              .get();
+            await trx
+              .insert(eventsToCommunitiesSchema)
+              .values({
+                eventId: id,
+                communityId: communityId,
+              })
+              .returning()
+              .get();
+
+            return events;
+          } catch (e) {
+            trx.rollback();
+            throw new GraphQLError(
+              e instanceof Error ? e.message : "Unknown error",
+            );
+          }
+        });
+        return selectEventsSchema.parse(result);
+      } catch (e) {
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
+        );
+      }
     },
   }),
 }));
