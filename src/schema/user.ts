@@ -1,12 +1,18 @@
-import { CommunityRef, UserRef } from "~/schema/shared/refs";
+import { CommunityRef, UserRef, UserToCommunitiesRef } from "~/schema/shared/refs";
 import {
   selectCommunitySchema,
   selectUsersSchema,
+  selectUsersToCommunitiesSchema,
   usersSchema,
+  usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
 import { builder } from "~/builder";
 import { eq } from "drizzle-orm";
-import { isSameUser } from "~/validations";
+import {
+  UserRoleCommunity,
+  canUpdateUserRoleInCommunity,
+  isSameUser,
+} from "~/validations";
 import { GraphQLError } from "graphql";
 
 builder.objectType(UserRef, {
@@ -71,7 +77,13 @@ const userEditInput = builder.inputType("userEditInput", {
     username: t.string({ required: false }),
   }),
 });
-
+const updateUserRoleInCommunityInput = builder.inputType("updateUserRoleInCommunityInput", {
+  fields: (t) => ({
+    id: t.string({ required: true }),
+    communityId: t.string({ required: true }),
+    role: t.string({ required: true }),
+  }),
+});
 builder.mutationFields((t) => ({
   updateUser: t.field({
     description: "Update a user",
@@ -113,6 +125,37 @@ builder.mutationFields((t) => ({
           .returning()
           .get();
         return selectUsersSchema.parse(user);
+      } catch (e) {
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
+        );
+      }
+    },
+  }),
+  updateUserRoleInCommunity: t.field({
+    description: "Update a user role",
+    type: UserToCommunitiesRef,
+    nullable: false,
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    args: {
+      input: t.arg({ type: updateUserRoleInCommunityInput, required: true }),
+    },
+    resolve: async (root, { input }, ctx) => {
+      try {
+        const { id, communityId, role } = input;
+        if (!ctx.USER) throw new Error("User not found");
+        if (!(await canUpdateUserRoleInCommunity(ctx.USER?.id, communityId, ctx.DB)))
+          throw new Error("Not authorized");
+        const user = await ctx.DB.update(usersToCommunitiesSchema)
+          .set({
+            role: role as UserRoleCommunity,
+          })
+          .where(eq(usersToCommunitiesSchema.userId, id))
+          .returning()
+          .get();
+        return selectUsersToCommunitiesSchema.parse(user);
       } catch (e) {
         throw new GraphQLError(
           e instanceof Error ? e.message : "Unknown error",

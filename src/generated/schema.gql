@@ -3,9 +3,7 @@ enum CommnunityStatus {
   inactive
 }
 
-"""
-Representation of a Community
-"""
+"""Representation of a Community"""
 type Community {
   description: String
   events: [Event!]!
@@ -92,19 +90,13 @@ input EventsTicketsSearchInput {
 }
 
 type Mutation {
-  """
-  Approve a ticket
-  """
+  """Approve a ticket"""
   approvalUserTicket(userTicketId: String!): UserTicket!
 
-  """
-  Cancel a ticket
-  """
+  """Cancel a ticket"""
   cancelUserTicket(userTicketId: String!): UserTicket!
 
-  """
-  Create an event
-  """
+  """Create an event"""
   createEvent(input: EventCreateInput!): Event!
 
   """
@@ -112,14 +104,13 @@ type Mutation {
   """
   startWorkEmailValidation(email: String!): WorkEmail!
 
-  """
-  Update a user
-  """
+  """Update a user"""
   updateUser(input: userEditInput!): User!
 
-  """
-  Validates work email for a user
-  """
+  """Update a user role"""
+  updateUserRoleInCommunity(input: updateUserRoleInCommunityInput!): UserToCommunities!
+
+  """Validates work email for a user"""
   validateWorkEmail(confirmationToken: String!): WorkEmail!
 }
 
@@ -132,45 +123,29 @@ input MyTicketsSearchInput {
 }
 
 type Query {
-  """
-  Get a list of communities. Filter by name, id, or status
-  """
+  """Get a list of communities. Filter by name, id, or status"""
   communities(id: String, name: String, status: CommnunityStatus): [Community!]!
 
-  """
-  Get a community by id
-  """
+  """Get a community by id"""
   community(id: String!): Community
 
-  """
-  Get an event by id
-  """
+  """Get an event by id"""
   event(id: String!): Event
 
-  """
-  Get a list of events. Filter by name, id, status or date
-  """
+  """Get a list of events. Filter by name, id, status or date"""
   events(input: EventsSearchInput): [Event!]!
 
-  """
-  Get a list of tickets for the current user
-  """
+  """Get a list of tickets for the current user"""
   myTickets(input: MyTicketsSearchInput): [UserTicket!]!
   status(name: String): String!
 
-  """
-  Get a list of tags
-  """
+  """Get a list of tags"""
   tags(input: TagSearchInput): [Tag!]!
 
-  """
-  Get a list of users
-  """
+  """Get a list of users"""
   users: [User!]!
 
-  """
-  Get a workEmail and check if its validated for this user
-  """
+  """Get a workEmail and check if its validated for this user"""
   workEmail(email: String!): WorkEmail!
 }
 
@@ -210,9 +185,7 @@ enum TicketStatus {
   cancelled
 }
 
-"""
-Representation of a user
-"""
+"""Representation of a user"""
 type User {
   bio: String
   communities: [Community!]!
@@ -222,9 +195,7 @@ type User {
   username: String!
 }
 
-"""
-Representation of a User ticket
-"""
+"""Representation of a User ticket"""
 type UserTicket {
   approvalStatus: TicketApprovalStatus!
   id: ID!
@@ -233,16 +204,23 @@ type UserTicket {
   status: TicketStatus!
 }
 
-"""
-Representation of a workEmail
-"""
+"""Representation of a user to communities"""
+type UserToCommunities {
+  communityId: String
+  role: String
+  userId: String
+}
+
+"""Representation of a workEmail"""
 type WorkEmail {
   id: String!
   isValidated: Boolean!
 }
 
-input cancelUserTicket {
-  userTicketId: String!
+input updateUserRoleInCommunityInput {
+  communityId: String!
+  id: String!
+  role: String!
 }
 
 input userEditInput {

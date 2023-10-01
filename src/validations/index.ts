@@ -1,8 +1,8 @@
 import { ORM_TYPE } from "~/datasources/db";
 import { EventStatus } from "~/generated/types";
 
-type UserRoleEvent = "admin" | "member" | "collaborator";
-type UserRoleCommunity = "admin" | "member" | "volunteer";
+export type UserRoleEvent = "admin" | "member" | "collaborator";
+export type UserRoleCommunity = "admin" | "member" | "volunteer";
 
 export async function eventIsActive(
   eventId: string,
@@ -140,4 +140,26 @@ export async function canApproveTicket(
   });
 
   return Boolean(isEventAdmin);
+}
+
+export async function canUpdateUserRoleInCommunity(
+  userId: string,
+  communityId: string,
+  DB: ORM_TYPE,
+): Promise<boolean> {
+  const user = await DB.query.usersSchema.findFirst({
+    where: (u, { eq }) => eq(u.id, userId),
+  });
+  if (user?.isSuperAdmin) return true;
+
+  const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
+    where: (utc, { eq, and }) =>
+      and(
+        eq(utc.userId, userId),
+        eq(utc.role, "admin"),
+        eq(utc.communityId, communityId),
+      ),
+  });
+
+  return Boolean(isCommunityAdmin);
 }
