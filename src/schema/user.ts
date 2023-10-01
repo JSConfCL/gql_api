@@ -1,8 +1,10 @@
-import { CommunityRef, UserRef, UserToCommunitiesRef } from "~/schema/shared/refs";
+import {
+  CommunityRef,
+  UserRef,
+} from "~/schema/shared/refs";
 import {
   selectCommunitySchema,
   selectUsersSchema,
-  selectUsersToCommunitiesSchema,
   usersSchema,
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
