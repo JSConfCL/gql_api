@@ -20,7 +20,7 @@ module.exports = {
         project: ["tsconfig.json"],
       },
       plugins: ["@typescript-eslint"],
-      files: ["*.ts"],
+      files: ["*.ts", "*.tsx"],
       rules: {
         // Es re-funcional nuestra API, no nos sirve esta regla realmente y causa
         // varios falsos positivos

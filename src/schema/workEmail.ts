@@ -9,6 +9,7 @@ import {
   workEmailSchema,
 } from "~/datasources/db/schema";
 import { workEmailRef } from "~/schema/shared/refs";
+import { enqueueEmail } from "../datasources/mail";
 
 builder.objectType(workEmailRef, {
   description: "Representation of a workEmail",
@@ -63,7 +64,7 @@ builder.mutationFields((t) => ({
     args: {
       email: t.arg.string({ required: true }),
     },
-    resolve: async (root, { email }, { DB, USER }) => {
+    resolve: async (root, { email }, { DB, USER, MAIL_QUEUE }) => {
       if (!USER) {
         throw new Error("User is required");
       }
@@ -106,6 +107,15 @@ builder.mutationFields((t) => ({
           const confirmationToken = v4();
 
           if (possibleWorkSchema) {
+            const oneHourFromNow = new Date(possibleWorkSchema.createdAt);
+            oneHourFromNow.setHours(oneHourFromNow.getHours() + 1);
+
+            if (possibleWorkSchema.createdAt < oneHourFromNow) {
+              throw new Error(
+                "You can only request a new confirmation email once per hour",
+              );
+            }
+
             const updatedWorkEmail = await trx
               .update(workEmailSchema)
               .set({
@@ -114,7 +124,11 @@ builder.mutationFields((t) => ({
               })
               .returning()
               .get();
-            // TODO: Send email with confirmation token
+            await enqueueEmail(MAIL_QUEUE, {
+              code: confirmationToken,
+              userId: USER.id,
+              to: email.toLowerCase(),
+            });
             return updatedWorkEmail;
           } else {
             const id = v4();
@@ -131,7 +145,11 @@ builder.mutationFields((t) => ({
               .values(insertWorkEmail)
               .returning()
               .get();
-            // TODO: Send email with confirmation token
+            await enqueueEmail(MAIL_QUEUE, {
+              userId: USER.id,
+              code: confirmationToken,
+              to: email.toLowerCase(),
+            });
             return insertedWorkEmail;
           }
         } catch (e) {
@@ -158,6 +176,7 @@ builder.mutationFields((t) => ({
       if (!confirmationToken) {
         throw new Error("confirmationToken is required");
       }
+
       const result = await DB.transaction(async (trx) => {
         try {
           const possibleWorkSchema = await trx.query.workEmailSchema.findFirst({

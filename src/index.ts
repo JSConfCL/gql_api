@@ -16,6 +16,7 @@ import {
 } from "~/datasources/queries/users";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import * as rules from "~/authz";
+import { queueConsumer } from "./queue/consumer";
 
 const getUser = async ({
   request,
@@ -121,6 +122,7 @@ export const yoga = createYoga<Env>({
     DATABASE_TOKEN,
     CLERK_PEM_PUBLIC_KEY,
     CLERK_ISSUER_ID,
+    MAIL_QUEUE,
   }) => {
     if (!CLERK_PEM_PUBLIC_KEY) {
       throw new Error("Missing CLERK_KEY");
@@ -133,6 +135,9 @@ export const yoga = createYoga<Env>({
     }
     if (!DATABASE_TOKEN) {
       throw new Error("Missing DATABASE_TOKEN");
+    }
+    if (!MAIL_QUEUE) {
+      throw new Error("Missing MAIL_QUEUE");
     }
     const DB = getDb({
       authToken: DATABASE_TOKEN,
@@ -148,10 +153,12 @@ export const yoga = createYoga<Env>({
       ...initContextCache(),
       DB,
       USER,
+      MAIL_QUEUE,
     };
   },
 });
 
 export default {
   fetch: yoga.fetch,
+  queue: queueConsumer,
 };

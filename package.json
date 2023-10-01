@@ -18,8 +18,10 @@
     "prettier:ci": "prettier ./src --cache --check",
     "prettier:fix": "prettier ./src --cache --write",
     "typecheck": "tsc",
-    "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info",
-    "generate": "tsx ./src/generated/generate.ts && graphql-codegen --config codegen.ts"
+    "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info --port 50123",
+    "generate": "tsx ./src/generated/generate.ts && graphql-codegen --config codegen.ts",
+    "email:dev": "email dev",
+    "email:export": "email export"
   },
   "devDependencies": {
     "@clerk/types": "^3.48.1",
@@ -36,6 +38,7 @@
     "@graphql-eslint/eslint-plugin": "^3.20.1",
     "@graphql-typed-document-node/core": "^3.2.0",
     "@parcel/watcher": "^2.2.0",
+    "@react-email/components": "0.0.6",
     "@total-typescript/ts-reset": "^0.4.2",
     "@types/cookie": "^0.5.1",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
@@ -49,6 +52,7 @@
     "eslint-config-prettier": "^8.8.0",
     "graphql-tag": "^2.12.6",
     "prettier": "^3.0.0",
+    "react-email": "1.9.3",
     "sqlite3": "^5.1.6",
     "tsx": "^3.13.0",
     "type-fest": "^4.0.0",
@@ -56,7 +60,7 @@
     "uuid": "^9.0.0",
     "vite-tsconfig-paths": "^4.2.0",
     "vitest": "^0.33.0",
-    "wrangler": "^3.3.0"
+    "wrangler": "^3.10.1"
   },
   "engines": {
     "node": ">=18"
@@ -72,13 +76,14 @@
     "@faker-js/faker": "^8.0.2",
     "@graphql-authz/envelop-plugin": "^1.0.4",
     "@graphql-yoga/plugin-csrf-prevention": "^2.0.3",
-    "@libsql/client": "^0.3.0",
+    "@libsql/client": "^0.3.5",
     "@microlabs/otel-cf-workers": "^1.0.0-rc.6",
     "@neondatabase/serverless": "^0.4.26",
     "@opentelemetry/sdk-trace-base": "^1.15.0",
     "@opentelemetry/tracing": "^0.24.0",
     "@pothos/core": "^3.30.0",
     "@pothos/plugin-authz": "^3.5.8",
+    "@types/react": "^18.2.22",
     "cookie": "^0.5.0",
     "dbdocs": "^0.8.2",
     "drizzle-orm": "^0.28.6",
@@ -89,6 +94,7 @@
     "graphql-yoga": "^4.0.3",
     "libhoney": "^4.0.1",
     "nexus": "^1.3.0",
+    "react": "^18.2.0",
     "slugify": "^1.6.6",
     "zod": "^3.21.4"
   }

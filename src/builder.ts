@@ -10,6 +10,7 @@ import { Env } from "worker-configuration";
 type Context = {
   DB: ORM_TYPE;
   USER: z.infer<typeof selectUsersSchema> | null;
+  MAIL_QUEUE: Queue;
 };
 
 export type GraphqlContext = Context &
