@@ -132,6 +132,8 @@ export type Mutation = {
   createEvent: Event;
   /** Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position */
   startWorkEmailValidation: WorkEmail;
+  /** Create user ticket */
+  createUserTicket: UserTicket;
   /** Update a user */
   updateUser: User;
   /** Validates work email for a user */
@@ -152,6 +154,10 @@ export type MutationCreateEventArgs = {
 
 export type MutationStartWorkEmailValidationArgs = {
   email: Scalars["String"]["input"];
+};
+
+export type MutationCreateUserTicketArgs = {
+  ticketId: Scalars["String"]["input"];
 };
 
 export type MutationUpdateUserArgs = {

@@ -24,13 +24,13 @@ export const eventsSchema = sqliteTable("events", {
   startDateTime: int("start_date_time", {
     mode: "timestamp_ms",
   }).notNull(),
-  endDateTime: int("end_date_time", { mode: "timestamp_ms" }),
+  endDateTime: int("end_date_time", { mode: "timestamp_ms" }).notNull(),
   timeZone: text("timezone", { length: 64 }),
   geoLatitude: text("geo_latitude"),
   geoLongitude: text("geo_longitude"),
   geoAddressJSON: text("geo_address_json"),
   meetingURL: text("meeting_url"),
-  maxAttendees: int("max_attendees"),
+  maxAttendees: int("max_attendees").notNull().default(1),
   ...createdAndUpdatedAtFields,
 });
 

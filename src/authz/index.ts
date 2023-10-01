@@ -231,3 +231,29 @@ export class canCancelUserTicket extends PreExecutionRule {
     return Boolean(isCommunityAdmin);
   }
 }
+
+export class canReserveTicket extends PreExecutionRule {
+  public async execute(
+    { USER, DB }: GraphqlContext,
+    fieldArgs: { ticketId: string },
+  ) {
+    if (!USER || !fieldArgs?.ticketId) {
+      return false;
+    }
+    const ticketTemplate = await DB.query.ticketsSchema.findFirst({
+      where: (t, { eq }) => eq(t.id, fieldArgs.ticketId),
+      with: {
+        event: true,
+      },
+    });
+    if (
+      !ticketTemplate ||
+      !ticketTemplate.event ||
+      ticketTemplate.event.status !== "active" ||
+      ticketTemplate.status !== "active"
+    ) {
+      return false;
+    }
+    return true;
+  }
+}

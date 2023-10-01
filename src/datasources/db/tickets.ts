@@ -24,12 +24,12 @@ export const ticketsSchema = sqliteTable("tickets", {
   startDateTime: int("start_date_time", {
     mode: "timestamp_ms",
   }).notNull(),
-  endDateTime: int("end_date_time", { mode: "timestamp_ms" }),
+  endDateTime: int("end_date_time", { mode: "timestamp_ms" }).notNull(),
   requiresApproval: int("requires_approval", { mode: "boolean" }).default(
     false,
   ),
-  price: int("price"),
-  quantity: int("quantity"),
+  price: int("price").notNull().default(0),
+  quantity: int("quantity").notNull().default(1),
   eventId: text("event_id")
     .references(() => eventsSchema.id)
     .notNull(),

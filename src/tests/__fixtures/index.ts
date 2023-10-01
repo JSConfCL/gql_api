@@ -268,6 +268,8 @@ export const insertTicketTemplate = async (
     startDateTime: partialInput?.startDateTime ?? faker.date.future(),
     endDateTime: partialInput?.endDateTime ?? faker.date.future(),
     requiresApproval: partialInput?.requiresApproval ?? false,
+    status: partialInput?.status ?? "active",
+    quantity: partialInput?.quantity ?? 100,
   } satisfies z.infer<typeof insertTicketSchema>;
 
   return insertOne(
@@ -314,6 +316,7 @@ export const insertEvent = async (
     status: partialInput?.status ?? "active",
     startDateTime: partialInput?.startDateTime ?? faker.date.future(),
     endDateTime: partialInput?.endDateTime ?? faker.date.future(),
+    maxAttendees: partialInput?.maxAttendees ?? 100,
   } satisfies z.infer<typeof insertEventsSchema>;
   return insertOne(
     insertEventsSchema,
