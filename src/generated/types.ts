@@ -123,7 +123,7 @@ export type Mutation = {
   /** Update a user */
   updateUser: User;
   /** Update a user role */
-  updateUserRoleInCommunity: UserToCommunities;
+  updateUserRoleInCommunity: User;
   /** Validates work email for a user */
   validateWorkEmail: WorkEmail;
 };
@@ -288,14 +288,6 @@ export type UserTicket = {
   paymentStatus: TicketPaymentStatus;
   redemptionStatus: TicketRedemptionStatus;
   status: TicketStatus;
-};
-
-/** Representation of a user to communities */
-export type UserToCommunities = {
-  __typename?: 'UserToCommunities';
-  communityId?: Maybe<Scalars['String']['output']>;
-  role?: Maybe<Scalars['String']['output']>;
-  userId?: Maybe<Scalars['String']['output']>;
 };
 
 /** Representation of a workEmail */

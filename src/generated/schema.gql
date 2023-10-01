@@ -108,7 +108,7 @@ type Mutation {
   updateUser(input: userEditInput!): User!
 
   """Update a user role"""
-  updateUserRoleInCommunity(input: updateUserRoleInCommunityInput!): UserToCommunities!
+  updateUserRoleInCommunity(input: updateUserRoleInCommunityInput!): User!
 
   """Validates work email for a user"""
   validateWorkEmail(confirmationToken: String!): WorkEmail!
@@ -202,13 +202,6 @@ type UserTicket {
   paymentStatus: TicketPaymentStatus!
   redemptionStatus: TicketRedemptionStatus!
   status: TicketStatus!
-}
-
-"""Representation of a user to communities"""
-type UserToCommunities {
-  communityId: String
-  role: String
-  userId: String
 }
 
 """Representation of a workEmail"""

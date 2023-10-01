@@ -1,7 +1,12 @@
 mutation UpdateUserRoleInCommunity($input: updateUserRoleInCommunityInput!) {
   updateUserRoleInCommunity(input: $input) {
-    userId
-    communityId
-    role
+    id
+    name
+    bio
+    communities {
+      name
+    }
+    lastName
+    username
   }
 }
