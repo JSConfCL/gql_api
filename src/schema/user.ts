@@ -1,8 +1,10 @@
-import { CommunityRef, UserRef, UserToCommunitiesRef } from "~/schema/shared/refs";
+import {
+  CommunityRef,
+  UserRef,
+} from "~/schema/shared/refs";
 import {
   selectCommunitySchema,
   selectUsersSchema,
-  selectUsersToCommunitiesSchema,
   usersSchema,
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
@@ -77,13 +79,16 @@ const userEditInput = builder.inputType("userEditInput", {
     username: t.string({ required: false }),
   }),
 });
-const updateUserRoleInCommunityInput = builder.inputType("updateUserRoleInCommunityInput", {
-  fields: (t) => ({
-    id: t.string({ required: true }),
-    communityId: t.string({ required: true }),
-    role: t.string({ required: true }),
-  }),
-});
+const updateUserRoleInCommunityInput = builder.inputType(
+  "updateUserRoleInCommunityInput",
+  {
+    fields: (t) => ({
+      id: t.string({ required: true }),
+      communityId: t.string({ required: true }),
+      role: t.string({ required: true }),
+    }),
+  },
+);
 builder.mutationFields((t) => ({
   updateUser: t.field({
     description: "Update a user",
@@ -134,7 +139,7 @@ builder.mutationFields((t) => ({
   }),
   updateUserRoleInCommunity: t.field({
     description: "Update a user role",
-    type: UserToCommunitiesRef,
+    type: UserRef,
     nullable: false,
     authz: {
       rules: ["IsAuthenticated"],
@@ -146,16 +151,25 @@ builder.mutationFields((t) => ({
       try {
         const { id, communityId, role } = input;
         if (!ctx.USER) throw new Error("User not found");
-        if (!(await canUpdateUserRoleInCommunity(ctx.USER?.id, communityId, ctx.DB)))
+        if (
+          !(await canUpdateUserRoleInCommunity(
+            ctx.USER?.id,
+            communityId,
+            ctx.DB,
+          ))
+        )
           throw new Error("Not authorized");
-        const user = await ctx.DB.update(usersToCommunitiesSchema)
+        await ctx.DB.update(usersToCommunitiesSchema)
           .set({
             role: role as UserRoleCommunity,
           })
           .where(eq(usersToCommunitiesSchema.userId, id))
-          .returning()
-          .get();
-        return selectUsersToCommunitiesSchema.parse(user);
+
+        const user = await ctx.DB.query.usersSchema.findFirst({
+          where: (u, { eq }) => eq(u.id, id),
+        });
+
+        return selectUsersSchema.parse(user);
       } catch (e) {
         throw new GraphQLError(
           e instanceof Error ? e.message : "Unknown error",

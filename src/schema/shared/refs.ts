@@ -8,7 +8,6 @@ import {
   selectUserTicketsSchema,
   selectTicketSchema,
   selectWorkEmailSchema,
-  selectUsersToCommunitiesSchema,
 } from "~/datasources/db/schema";
 
 type UserGraphqlSchema = z.infer<typeof selectUsersSchema>;
@@ -34,6 +33,3 @@ export const TicketRef = builder.objectRef<TicketGraphqlSchema>("Ticket");
 type WorkEmailGraphqlSchema = z.infer<typeof selectWorkEmailSchema>;
 export const workEmailRef =
   builder.objectRef<WorkEmailGraphqlSchema>("WorkEmail");
-
-type UserToCommunitiesGraphqlSchema = z.infer<typeof selectUsersToCommunitiesSchema>;
-export const UserToCommunitiesRef = builder.objectRef<UserToCommunitiesGraphqlSchema>("UserToCommunities");
