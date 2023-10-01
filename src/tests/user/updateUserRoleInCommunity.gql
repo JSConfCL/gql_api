@@ -1,0 +1,9 @@
+mutation UpdateUserRoleInCommunity($input: updateUserRoleInCommunityInput!) {
+  updateUserRoleInCommunity(input: $input) {
+    id
+    name
+    bio
+    lastName
+    username
+  }
+}

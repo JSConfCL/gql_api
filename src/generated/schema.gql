@@ -118,6 +118,11 @@ type Mutation {
   updateUser(input: userEditInput!): User!
 
   """
+  Update a user role
+  """
+  updateUserRoleInCommunity(input: updateUserRoleInCommunityInput!): User!
+
+  """
   Validates work email for a user
   """
   validateWorkEmail(confirmationToken: String!): WorkEmail!
@@ -241,8 +246,10 @@ type WorkEmail {
   isValidated: Boolean!
 }
 
-input cancelUserTicket {
-  userTicketId: String!
+input updateUserRoleInCommunityInput {
+  communityId: String!
+  role: String!
+  userId: String!
 }
 
 input userEditInput {

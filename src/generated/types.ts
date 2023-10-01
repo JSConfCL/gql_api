@@ -134,6 +134,8 @@ export type Mutation = {
   startWorkEmailValidation: WorkEmail;
   /** Update a user */
   updateUser: User;
+  /** Update a user role */
+  updateUserRoleInCommunity: User;
   /** Validates work email for a user */
   validateWorkEmail: WorkEmail;
 };
@@ -156,6 +158,10 @@ export type MutationStartWorkEmailValidationArgs = {
 
 export type MutationUpdateUserArgs = {
   input: UserEditInput;
+};
+
+export type MutationUpdateUserRoleInCommunityArgs = {
+  input: UpdateUserRoleInCommunityInput;
 };
 
 export type MutationValidateWorkEmailArgs = {
@@ -288,8 +294,10 @@ export type WorkEmail = {
   isValidated: Scalars["Boolean"]["output"];
 };
 
-export type CancelUserTicket = {
-  userTicketId: Scalars["String"]["input"];
+export type UpdateUserRoleInCommunityInput = {
+  communityId: Scalars["String"]["input"];
+  role: Scalars["String"]["input"];
+  userId: Scalars["String"]["input"];
 };
 
 export type UserEditInput = {

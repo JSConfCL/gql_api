@@ -3,10 +3,15 @@ import {
   selectCommunitySchema,
   selectUsersSchema,
   usersSchema,
+  usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
 import { builder } from "~/builder";
 import { eq } from "drizzle-orm";
-import { isSameUser } from "~/validations";
+import {
+  UserRoleCommunity,
+  canUpdateUserRoleInCommunity,
+  isSameUser,
+} from "~/validations";
 import { GraphQLError } from "graphql";
 
 builder.objectType(UserRef, {
@@ -71,7 +76,16 @@ const userEditInput = builder.inputType("userEditInput", {
     username: t.string({ required: false }),
   }),
 });
-
+const updateUserRoleInCommunityInput = builder.inputType(
+  "updateUserRoleInCommunityInput",
+  {
+    fields: (t) => ({
+      userId: t.string({ required: true }),
+      communityId: t.string({ required: true }),
+      role: t.string({ required: true }),
+    }),
+  },
+);
 builder.mutationFields((t) => ({
   updateUser: t.field({
     description: "Update a user",
@@ -112,6 +126,46 @@ builder.mutationFields((t) => ({
           .where(eq(usersSchema.id, id))
           .returning()
           .get();
+        return selectUsersSchema.parse(user);
+      } catch (e) {
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
+        );
+      }
+    },
+  }),
+  updateUserRoleInCommunity: t.field({
+    description: "Update a user role",
+    type: UserRef,
+    nullable: false,
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    args: {
+      input: t.arg({ type: updateUserRoleInCommunityInput, required: true }),
+    },
+    resolve: async (root, { input }, ctx) => {
+      try {
+        const { userId, communityId, role } = input;
+        if (!ctx.USER) throw new Error("User not found");
+        if (
+          !(await canUpdateUserRoleInCommunity(
+            ctx.USER?.id,
+            communityId,
+            ctx.DB,
+          ))
+        )
+          throw new Error("Not authorized");
+        await ctx.DB.update(usersToCommunitiesSchema)
+          .set({
+            role: role as UserRoleCommunity,
+          })
+          .where(eq(usersToCommunitiesSchema.userId, userId));
+
+        const user = await ctx.DB.query.usersSchema.findFirst({
+          where: (u, { eq }) => eq(u.id, userId),
+        });
+
         return selectUsersSchema.parse(user);
       } catch (e) {
         throw new GraphQLError(

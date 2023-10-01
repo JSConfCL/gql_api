@@ -1,4 +1,4 @@
-import { it, describe, assert, afterEach, vi, expect } from "vitest";
+import { it, describe, vi, expect } from "vitest";
 import { enqueueEmail, sendTransactionalEmail } from "./index";
 
 describe("Test email library", () => {
