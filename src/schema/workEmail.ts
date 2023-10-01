@@ -145,6 +145,7 @@ builder.mutationFields((t) => ({
               .values(insertWorkEmail)
               .returning()
               .get();
+            console.log({ insertedWorkEmail });
             await enqueueEmail(MAIL_QUEUE, {
               userId: USER.id,
               code: confirmationToken,
@@ -176,6 +177,7 @@ builder.mutationFields((t) => ({
       if (!confirmationToken) {
         throw new Error("confirmationToken is required");
       }
+
       const result = await DB.transaction(async (trx) => {
         try {
           const possibleWorkSchema = await trx.query.workEmailSchema.findFirst({
