@@ -154,6 +154,10 @@ const CreateSalaryInput = builder.inputType("CreateSalaryInput", {
 
 const UpdateSalaryInput = builder.inputType("UpdateSalaryInput", {
   fields: (t) => ({
+    salaryId: t.field({
+      type: "String",
+      required: true,
+    }),
     userId: t.field({
       type: "String",
       required: true,
@@ -286,12 +290,16 @@ builder.mutationFields((t) => ({
     },
     args: {
       input: t.arg({
-        type: CreateSalaryInput,
+        type: UpdateSalaryInput,
         required: true,
       }),
     },
     resolve: async (parent, { input }, { DB, USER }) => {
+      if (!USER) {
+        throw new Error("User is required");
+      }
       const {
+        salaryId,
         confirmationToken,
         companyId,
         amount,
@@ -306,8 +314,6 @@ builder.mutationFields((t) => ({
         genderOtherText,
       } = input;
 
-      const salaryId = v4();
-
       const foundConfirmationToken =
         await DB.query.confirmationTokenSchema.findFirst({
           where: (c, { eq, and, inArray }) =>
@@ -321,8 +327,18 @@ builder.mutationFields((t) => ({
       if (!foundConfirmationToken) {
         throw new Error("Invalid token");
       }
-      if (foundConfirmationToken.validUntil <= new Date()) {
+      if (
+        foundConfirmationToken.validUntil <= new Date() ||
+        foundConfirmationToken.userId !== USER.id
+      ) {
         throw new Error("Invalid token");
+      }
+      const foundSalary = await DB.query.salariesSchema.findFirst({
+        where: (c, { eq }) => eq(c.id, salaryId),
+      });
+
+      if (!foundSalary) {
+        throw new Error("Salary not found");
       }
 
       const insertSalary = insertSalariesSchema.parse({
@@ -340,8 +356,9 @@ builder.mutationFields((t) => ({
         genderOtherText,
       });
 
-      const salary = await DB.insert(salariesSchema)
-        .values(insertSalary)
+      const salary = await DB.update(salariesSchema)
+        .set(insertSalary)
+        .where(eq(salariesSchema.id, salaryId))
         .returning()
         .get();
       return selectSalariesSchema.parse(salary);

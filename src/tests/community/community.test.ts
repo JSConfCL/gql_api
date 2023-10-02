@@ -83,8 +83,12 @@ describe("Communities", () => {
     assert.equal(response.data?.communities[1].id, community2.id);
   });
   it("Should return a filtered list by status", async () => {
-    const community1 = await insertCommunity();
-    const community2 = await insertCommunity();
+    const community1 = await insertCommunity({
+      status: "active",
+    });
+    const community2 = await insertCommunity({
+      status: "active",
+    });
     const community3 = await insertCommunity({
       status: "inactive",
     });

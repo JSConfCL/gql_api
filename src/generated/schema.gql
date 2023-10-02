@@ -188,6 +188,11 @@ type Mutation {
   createEvent(input: EventCreateInput!): Event!
 
   """
+  Create a salary
+  """
+  createSalary(input: CreateSalaryInput!): Salary!
+
+  """
   Edit a ticket
   """
   editTicket(input: TicketEditInput!): Ticket!
@@ -206,6 +211,11 @@ type Mutation {
   Update a company
   """
   updateCompany(input: UpdateCompanyInput!): Company!
+
+  """
+  Create a salary
+  """
+  updateSalary(input: UpdateSalaryInput!): Salary!
 
   """
   Update a user
@@ -401,6 +411,22 @@ input UpdateCompanyInput {
   logo: String
   name: String
   website: String
+}
+
+input UpdateSalaryInput {
+  amount: Int!
+  companyId: String!
+  confirmationToken: String!
+  countryCode: String!
+  currencyId: String!
+  gender: Gender!
+  genderOtherText: String!
+  salaryId: String!
+  typeOfEmployment: TypeOfEmployment!
+  userId: String!
+  workMetodology: WorkMetodology!
+  workRoleId: String!
+  yearsOfExperience: Int!
 }
 
 """

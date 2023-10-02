@@ -1,0 +1,41 @@
+mutation CreateSalary($input: CreateSalaryInput!) {
+  createSalary(input: $input) {
+    id
+    amount
+    currency {
+      id
+      currency
+    }
+    yearsOfExperience
+    countryCode
+    gender
+    genderOtherText
+    typeOfEmployment
+    workRole {
+      id
+      name
+    }
+    workMetodology
+  }
+}
+
+mutation UpdateSalary($input: UpdateSalaryInput!) {
+  updateSalary(input: $input) {
+    id
+    amount
+    currency {
+      id
+      currency
+    }
+    yearsOfExperience
+    countryCode
+    gender
+    genderOtherText
+    typeOfEmployment
+    workRole {
+      id
+      name
+    }
+    workMetodology
+  }
+}

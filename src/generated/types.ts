@@ -199,6 +199,8 @@ export type Mutation = {
   createCompany: Company;
   /** Create an event */
   createEvent: Event;
+  /** Create a salary */
+  createSalary: Salary;
   /** Edit a ticket */
   editTicket: Ticket;
   /** Redeem a ticket */
@@ -207,6 +209,8 @@ export type Mutation = {
   startWorkEmailValidation: WorkEmail;
   /** Update a company */
   updateCompany: Company;
+  /** Create a salary */
+  updateSalary: Salary;
   /** Update a user */
   updateUser: User;
   /** Update a user role */
@@ -231,6 +235,10 @@ export type MutationCreateEventArgs = {
   input: EventCreateInput;
 };
 
+export type MutationCreateSalaryArgs = {
+  input: CreateSalaryInput;
+};
+
 export type MutationEditTicketArgs = {
   input: TicketEditInput;
 };
@@ -245,6 +253,10 @@ export type MutationStartWorkEmailValidationArgs = {
 
 export type MutationUpdateCompanyArgs = {
   input: UpdateCompanyInput;
+};
+
+export type MutationUpdateSalaryArgs = {
+  input: UpdateSalaryInput;
 };
 
 export type MutationUpdateUserArgs = {
@@ -448,6 +460,22 @@ export type UpdateCompanyInput = {
   logo?: InputMaybe<Scalars["String"]["input"]>;
   name?: InputMaybe<Scalars["String"]["input"]>;
   website?: InputMaybe<Scalars["String"]["input"]>;
+};
+
+export type UpdateSalaryInput = {
+  amount: Scalars["Int"]["input"];
+  companyId: Scalars["String"]["input"];
+  confirmationToken: Scalars["String"]["input"];
+  countryCode: Scalars["String"]["input"];
+  currencyId: Scalars["String"]["input"];
+  gender: Gender;
+  genderOtherText: Scalars["String"]["input"];
+  salaryId: Scalars["String"]["input"];
+  typeOfEmployment: TypeOfEmployment;
+  userId: Scalars["String"]["input"];
+  workMetodology: WorkMetodology;
+  workRoleId: Scalars["String"]["input"];
+  yearsOfExperience: Scalars["Int"]["input"];
 };
 
 /** Representation of a user */

@@ -254,9 +254,8 @@ builder.mutationFields((t) => ({
           }
 
           if (
-            foundConfirmationToken.status === "expired" ||
-            foundConfirmationToken.status === "rejected" ||
-            foundConfirmationToken.validUntil <= new Date()
+            foundConfirmationToken.validUntil <= new Date() ||
+            foundConfirmationToken.userId !== USER.id
           ) {
             throw new Error("Invalid token");
           }
