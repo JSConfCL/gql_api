@@ -15,6 +15,13 @@
       "when": 1696183607822,
       "tag": "0001_known_silvermane",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1696209454346,
+      "tag": "0002_elite_obadiah_stane",
+      "breakpoints": true
     }
   ]
 }
