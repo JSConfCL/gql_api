@@ -13,7 +13,7 @@ export const workRoleSchema = sqliteTable("work_role", {
   ...createdAndUpdatedAtFields,
 });
 
-export const workRoleRelations = relations(workRoleSchema, ({ one, many }) => ({
+export const workRoleRelations = relations(workRoleSchema, ({ many }) => ({
   salaries: many(salariesSchema),
 }));
 

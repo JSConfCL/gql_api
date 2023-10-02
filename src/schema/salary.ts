@@ -101,10 +101,6 @@ builder.objectType(SalaryRef, {
 
 const CreateSalaryInput = builder.inputType("CreateSalaryInput", {
   fields: (t) => ({
-    userId: t.field({
-      type: "String",
-      required: true,
-    }),
     confirmationToken: t.field({
       type: "String",
       required: true,
@@ -155,10 +151,6 @@ const CreateSalaryInput = builder.inputType("CreateSalaryInput", {
 const UpdateSalaryInput = builder.inputType("UpdateSalaryInput", {
   fields: (t) => ({
     salaryId: t.field({
-      type: "String",
-      required: true,
-    }),
-    userId: t.field({
       type: "String",
       required: true,
     }),
@@ -234,13 +226,13 @@ builder.mutationFields((t) => ({
         workRoleId,
         countryCode,
         typeOfEmployment,
-        userId,
         workMetodology,
         yearsOfExperience,
         gender,
         genderOtherText,
       } = input;
 
+      const userId = USER.id;
       const salaryId = v4();
 
       const foundConfirmationToken =
@@ -252,7 +244,6 @@ builder.mutationFields((t) => ({
               inArray(c.source, ["onboarding", "salary_submission"]),
             ),
         });
-
       if (!foundConfirmationToken) {
         throw new Error("Invalid token");
       }
@@ -260,26 +251,33 @@ builder.mutationFields((t) => ({
         throw new Error("Invalid token");
       }
 
-      const insertSalary = insertSalariesSchema.parse({
-        id: salaryId,
-        companyId,
-        amount,
-        currencyId,
-        workRoleId,
-        countryCode,
-        typeOfEmployment,
-        userId,
-        workMetodology,
-        yearsOfExperience,
-        gender,
-        genderOtherText,
-      });
+      try {
+        const insertSalary = insertSalariesSchema.parse({
+          id: salaryId,
+          companyId,
+          amount,
+          currencyId,
+          workRoleId,
+          countryCode,
+          typeOfEmployment,
+          userId,
+          workMetodology,
+          yearsOfExperience,
+          gender,
+          genderOtherText,
+        });
+        console.log({ insertSalary });
 
-      const salary = await DB.insert(salariesSchema)
-        .values(insertSalary)
-        .returning()
-        .get();
-      return selectSalariesSchema.parse(salary);
+        const salary = await DB.insert(salariesSchema)
+          .values(insertSalary)
+          .returning()
+          .get();
+        console.log({ salary });
+        return selectSalariesSchema.parse(salary);
+      } catch (e) {
+        console.log({ e });
+        throw e;
+      }
     },
   }),
   updateSalary: t.field({
@@ -298,6 +296,8 @@ builder.mutationFields((t) => ({
       if (!USER) {
         throw new Error("User is required");
       }
+      const userId = USER.id;
+
       const {
         salaryId,
         confirmationToken,
@@ -307,7 +307,6 @@ builder.mutationFields((t) => ({
         workRoleId,
         countryCode,
         typeOfEmployment,
-        userId,
         workMetodology,
         yearsOfExperience,
         gender,

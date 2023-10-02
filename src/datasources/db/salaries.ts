@@ -27,7 +27,7 @@ export const salariesSchema = sqliteTable("salaries", {
   genderOtherText: text("gender_other_text"),
   countryCode: text("country_code").notNull(),
   typeOfEmployment: text("type_of_employment", {
-    enum: ["full_time", "part_time", "unpaid_internship", "paid_internship"],
+    enum: ["fullTime", "partTime", "freelance"],
   }).notNull(),
   workMetodology: text("work_metodology", {
     enum: ["remote", "office", "hybrid"],

@@ -70,7 +70,6 @@ input CreateSalaryInput {
   gender: Gender!
   genderOtherText: String!
   typeOfEmployment: TypeOfEmployment!
-  userId: String!
   workMetodology: WorkMetodology!
   workRoleId: String!
   yearsOfExperience: Int!
@@ -423,7 +422,6 @@ input UpdateSalaryInput {
   genderOtherText: String!
   salaryId: String!
   typeOfEmployment: TypeOfEmployment!
-  userId: String!
   workMetodology: WorkMetodology!
   workRoleId: String!
   yearsOfExperience: Int!

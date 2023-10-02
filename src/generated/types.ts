@@ -99,7 +99,6 @@ export type CreateSalaryInput = {
   gender: Gender;
   genderOtherText: Scalars["String"]["input"];
   typeOfEmployment: TypeOfEmployment;
-  userId: Scalars["String"]["input"];
   workMetodology: WorkMetodology;
   workRoleId: Scalars["String"]["input"];
   yearsOfExperience: Scalars["Int"]["input"];
@@ -472,7 +471,6 @@ export type UpdateSalaryInput = {
   genderOtherText: Scalars["String"]["input"];
   salaryId: Scalars["String"]["input"];
   typeOfEmployment: TypeOfEmployment;
-  userId: Scalars["String"]["input"];
   workMetodology: WorkMetodology;
   workRoleId: Scalars["String"]["input"];
   yearsOfExperience: Scalars["Int"]["input"];

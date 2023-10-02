@@ -13,14 +13,18 @@ import { Env } from "worker-configuration";
 import { ZodType, z } from "zod";
 import * as rules from "~/authz";
 import {
+  allowedCurrencySchema,
   communitySchema,
   companiesSchema,
+  confirmationTokenSchema,
   eventsSchema,
   eventsToCommunitiesSchema,
   eventsToTagsSchema,
   eventsToUsersSchema,
+  insertAllowedCurrencySchema,
   insertCommunitySchema,
   insertCompaniesSchema,
+  insertConfirmationTokenSchema,
   insertEventsSchema,
   insertEventsToCommunitiesSchema,
   insertEventsToTagsSchema,
@@ -31,8 +35,11 @@ import {
   insertUsersSchema,
   insertUsersToCommunitiesSchema,
   insertWorkEmailSchema,
+  insertWorkRoleSchema,
+  selectAllowedCurrencySchema,
   selectCommunitySchema,
   selectCompaniesSchema,
+  selectConfirmationTokenSchema,
   selectEventsSchema,
   selectEventsToCommunitiesSchema,
   selectEventsToTagsSchema,
@@ -43,12 +50,14 @@ import {
   selectUsersSchema,
   selectUsersToCommunitiesSchema,
   selectWorkEmailSchema,
+  selectWorkRoleSchema,
   tagsSchema,
   ticketsSchema,
   userTicketsSchema,
   usersSchema,
   usersToCommunitiesSchema,
   workEmailSchema,
+  workRoleSchema,
 } from "~/datasources/db/schema";
 import {
   TicketApprovalStatus,
@@ -415,6 +424,68 @@ export const insertWorkEmail = async (
     insertWorkEmailSchema,
     selectWorkEmailSchema,
     workEmailSchema,
+    possibleInput,
+  );
+};
+
+export const insertConfirmationToken = async (
+  partialInput: Partial<z.infer<typeof insertConfirmationTokenSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    userId: partialInput?.userId ?? faker.string.uuid(),
+    token: partialInput?.token ?? faker.string.uuid(),
+    status: partialInput?.status,
+    source: partialInput?.source ?? "onboarding",
+    validUntil: partialInput?.validUntil ?? faker.date.future(),
+    sourceId: partialInput?.sourceId ?? faker.string.uuid(),
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
+    confirmationDate: partialInput?.confirmationDate,
+  } satisfies z.infer<typeof insertConfirmationTokenSchema>;
+  return insertOne(
+    insertConfirmationTokenSchema,
+    selectConfirmationTokenSchema,
+    confirmationTokenSchema,
+    possibleInput,
+  );
+};
+
+export const insertWorkRole = async (
+  partialInput?: Partial<z.infer<typeof insertWorkRoleSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    name: partialInput?.name ?? faker.person.jobTitle(),
+    description: partialInput?.description ?? faker.person.jobDescriptor(),
+    seniority: partialInput?.seniority ?? faker.lorem.word(),
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
+  } satisfies z.infer<typeof insertWorkRoleSchema>;
+  return insertOne(
+    insertWorkRoleSchema,
+    selectWorkRoleSchema,
+    workRoleSchema,
+    possibleInput,
+  );
+};
+
+export const insertAllowedCurrency = async (
+  partialInput?: Partial<z.infer<typeof insertAllowedCurrencySchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    currency: partialInput?.currency ?? faker.finance.currencyCode(),
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
+  } satisfies z.infer<typeof insertAllowedCurrencySchema>;
+  return insertOne(
+    insertAllowedCurrencySchema,
+    selectAllowedCurrencySchema,
+    allowedCurrencySchema,
     possibleInput,
   );
 };
