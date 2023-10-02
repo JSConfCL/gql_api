@@ -215,14 +215,15 @@ export async function canRedeemUserTicket(
   });
   if (!eventToCommunitie) return false;
 
-  const isCommunityAdminOrVolunteer = await DB.query.usersToCommunitiesSchema.findFirst({
-    where: (utc, { eq, and }) =>
-      and(
-        eq(utc.userId, userId),
-        eq(utc.communityId, eventToCommunitie?.communityId),
-        inArray(utc.role, ["admin", "volunteer"]),
-      ),
-  });
+  const isCommunityAdminOrVolunteer =
+    await DB.query.usersToCommunitiesSchema.findFirst({
+      where: (utc, { eq, and }) =>
+        and(
+          eq(utc.userId, userId),
+          eq(utc.communityId, eventToCommunitie?.communityId),
+          inArray(utc.role, ["admin", "volunteer"]),
+        ),
+    });
 
   return Boolean(isCommunityAdminOrVolunteer);
 }

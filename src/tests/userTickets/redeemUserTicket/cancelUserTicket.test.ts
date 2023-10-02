@@ -12,7 +12,11 @@ import {
 } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { CancelUserTicketMutation } from "../cancelUserTicket/cancelUserTicket.generated";
-import { RedeemUserTicket, RedeemUserTicketMutation, RedeemUserTicketMutationVariables } from "./cancelUserTicket.generated";
+import {
+  RedeemUserTicket,
+  RedeemUserTicketMutation,
+  RedeemUserTicketMutationVariables,
+} from "./cancelUserTicket.generated";
 
 afterEach(() => {
   clearDatabase();
@@ -111,7 +115,7 @@ describe("Redeem user ticket", () => {
       communityId: community1.id,
     });
     const user1 = await insertUser({
-      isSuperAdmin: true
+      isSuperAdmin: true,
     });
     await insertUserToCommunity({
       communityId: community1.id,
