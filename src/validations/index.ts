@@ -250,6 +250,15 @@ export async function canRedeemUserTicket(
           inArray(utc.role, ["admin", "volunteer"]),
         ),
     });
+  const isEventAdminOrCollaborator =
+    await DB.query.eventsToUsersSchema.findFirst({
+      where: (utc, { eq, and }) =>
+        and(
+          eq(utc.userId, userId),
+          eq(utc.eventId, userTicket?.ticketTemplate.eventId),
+          inArray(utc.role, ["admin", "collaborator"]),
+        ),
+    });
 
-  return Boolean(isCommunityAdminOrVolunteer);
+  return Boolean(isCommunityAdminOrVolunteer || isEventAdminOrCollaborator);
 }
