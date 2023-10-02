@@ -344,9 +344,9 @@ export const insertCompany = async (
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
-    name: partialInput?.name ?? faker.company.name(),
-    description: partialInput?.description ?? faker.lorem.paragraph(),
     domain: partialInput?.domain ?? faker.internet.domainName(),
+    name: partialInput?.name,
+    description: partialInput?.description,
     logo: partialInput?.logo,
     website: partialInput?.website,
     status: partialInput?.status,
