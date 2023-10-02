@@ -4,7 +4,7 @@ export const sanitizeForLikeSearch = (str: string) => {
 };
 
 export const addToObjectIfPropertyExists = (
-  object: any,
+  object: Record<string, number | string | boolean | Date | undefined | null>,
   key: string,
   value: number | string | boolean | Date | undefined | null,
 ) => {
