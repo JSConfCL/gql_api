@@ -108,6 +108,11 @@ type Mutation {
   createEvent(input: EventCreateInput!): Event!
 
   """
+  Edit a ticket
+  """
+  editTicket(input: TicketEditInput!): Ticket!
+
+  """
   Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position
   """
   startWorkEmailValidation(email: String!): WorkEmail!
@@ -195,9 +200,42 @@ input TagSearchInput {
   name: String
 }
 
+"""
+Representation of a ticket
+"""
+type Ticket {
+  currencyId: String
+  description: String
+  endDateTime: DateTime
+  eventId: String!
+  id: ID!
+  name: String!
+  price: Int
+  quantity: Int
+  requiresApproval: Boolean
+  startDateTime: DateTime!
+  status: TicketTemplateStatus!
+  visibility: TicketTemplateVisibility!
+}
+
 enum TicketApprovalStatus {
   approved
   pending
+}
+
+input TicketEditInput {
+  currencyId: String
+  description: String
+  endDateTime: DateTime
+  eventId: String
+  name: String
+  price: Int
+  quantity: Int
+  requiresApproval: Boolean
+  startDateTime: DateTime
+  status: TicketTemplateStatus
+  ticketId: String!
+  visibility: TicketTemplateVisibility
 }
 
 enum TicketPaymentStatus {
@@ -213,6 +251,17 @@ enum TicketRedemptionStatus {
 enum TicketStatus {
   active
   cancelled
+}
+
+enum TicketTemplateStatus {
+  active
+  inactive
+}
+
+enum TicketTemplateVisibility {
+  private
+  public
+  unlisted
 }
 
 """

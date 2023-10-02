@@ -6,25 +6,28 @@ import { selectTicketSchema, ticketsSchema } from "~/datasources/db/tickets";
 import { eq } from "drizzle-orm";
 import { addToObjectIfPropertyExists } from "./shared/helpers";
 
-export const TicketStatus = builder.enumType("TicketStatus", {
+export const TicketTemplateStatus = builder.enumType("TicketTemplateStatus", {
   values: ["active", "inactive"] as const,
 });
-export const TicketVisibility = builder.enumType("TicketVisibility", {
-  values: ["public", "private", "unlisted"] as const,
-});
+export const TicketTemplateVisibility = builder.enumType(
+  "TicketTemplateVisibility",
+  {
+    values: ["public", "private", "unlisted"] as const,
+  },
+);
 
 builder.objectType(TicketRef, {
   description: "Representation of a ticket",
   fields: (t) => ({
     id: t.exposeID("id"),
     name: t.exposeString("name"),
-    deescription: t.exposeString("description", { nullable: true }),
+    description: t.exposeString("description", { nullable: true }),
     status: t.field({
-      type: TicketStatus,
+      type: TicketTemplateStatus,
       resolve: (root) => root.status,
     }),
     visibility: t.field({
-      type: TicketVisibility,
+      type: TicketTemplateVisibility,
       resolve: (root) => root.visibility,
     }),
     startDateTime: t.field({
@@ -62,11 +65,11 @@ const TicketEditInput = builder.inputType("TicketEditInput", {
       required: false,
     }),
     status: t.field({
-      type: TicketStatus,
+      type: TicketTemplateStatus,
       required: false,
     }),
     visibility: t.field({
-      type: TicketVisibility,
+      type: TicketTemplateVisibility,
       required: false,
     }),
     startDateTime: t.field({

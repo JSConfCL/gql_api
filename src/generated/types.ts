@@ -130,6 +130,8 @@ export type Mutation = {
   cancelUserTicket: UserTicket;
   /** Create an event */
   createEvent: Event;
+  /** Edit a ticket */
+  editTicket: Ticket;
   /** Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position */
   startWorkEmailValidation: WorkEmail;
   /** Update a user */
@@ -150,6 +152,10 @@ export type MutationCancelUserTicketArgs = {
 
 export type MutationCreateEventArgs = {
   input: EventCreateInput;
+};
+
+export type MutationEditTicketArgs = {
+  input: TicketEditInput;
 };
 
 export type MutationStartWorkEmailValidationArgs = {
@@ -246,10 +252,42 @@ export type TagSearchInput = {
   name?: InputMaybe<Scalars["String"]["input"]>;
 };
 
+/** Representation of a ticket */
+export type Ticket = {
+  __typename?: "Ticket";
+  currencyId?: Maybe<Scalars["String"]["output"]>;
+  description?: Maybe<Scalars["String"]["output"]>;
+  endDateTime?: Maybe<Scalars["DateTime"]["output"]>;
+  eventId: Scalars["String"]["output"];
+  id: Scalars["ID"]["output"];
+  name: Scalars["String"]["output"];
+  price?: Maybe<Scalars["Int"]["output"]>;
+  quantity?: Maybe<Scalars["Int"]["output"]>;
+  requiresApproval?: Maybe<Scalars["Boolean"]["output"]>;
+  startDateTime: Scalars["DateTime"]["output"];
+  status: TicketTemplateStatus;
+  visibility: TicketTemplateVisibility;
+};
+
 export enum TicketApprovalStatus {
   Approved = "approved",
   Pending = "pending",
 }
+
+export type TicketEditInput = {
+  currencyId?: InputMaybe<Scalars["String"]["input"]>;
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  endDateTime?: InputMaybe<Scalars["DateTime"]["input"]>;
+  eventId?: InputMaybe<Scalars["String"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  price?: InputMaybe<Scalars["Int"]["input"]>;
+  quantity?: InputMaybe<Scalars["Int"]["input"]>;
+  requiresApproval?: InputMaybe<Scalars["Boolean"]["input"]>;
+  startDateTime?: InputMaybe<Scalars["DateTime"]["input"]>;
+  status?: InputMaybe<TicketTemplateStatus>;
+  ticketId: Scalars["String"]["input"];
+  visibility?: InputMaybe<TicketTemplateVisibility>;
+};
 
 export enum TicketPaymentStatus {
   Paid = "paid",
@@ -264,6 +302,17 @@ export enum TicketRedemptionStatus {
 export enum TicketStatus {
   Active = "active",
   Cancelled = "cancelled",
+}
+
+export enum TicketTemplateStatus {
+  Active = "active",
+  Inactive = "inactive",
+}
+
+export enum TicketTemplateVisibility {
+  Private = "private",
+  Public = "public",
+  Unlisted = "unlisted",
 }
 
 /** Representation of a user */
