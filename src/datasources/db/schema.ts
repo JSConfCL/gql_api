@@ -2,6 +2,7 @@
 export * from "~/datasources/db/allowedCurrencies";
 export * from "~/datasources/db/communities";
 export * from "~/datasources/db/companies";
+export * from "~/datasources/db/confirmationToken";
 export * from "~/datasources/db/events";
 export * from "~/datasources/db/eventsCommunities";
 export * from "~/datasources/db/eventsTags";

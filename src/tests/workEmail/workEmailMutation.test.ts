@@ -44,13 +44,15 @@ describe("test the email validation process", () => {
           user,
         );
       const workEmailEntry = await testDB.query.workEmailSchema.findFirst();
+      const confirmationToken =
+        await testDB.query.confirmationTokenSchema.findFirst();
       if (!workEmailEntry) {
         throw new Error("Work email entry not found");
       }
 
-      const { confirmationToken } = workEmailEntry;
+      const { confirmationTokenId } = workEmailEntry;
 
-      if (!confirmationToken) {
+      if (!confirmationTokenId || !confirmationToken) {
         throw new Error("Confirmation token not found");
       }
 
@@ -61,7 +63,7 @@ describe("test the email validation process", () => {
         {
           document: ValidateWorkEmail,
           variables: {
-            confirmationToken,
+            confirmationToken: confirmationToken?.token,
           },
         },
         user,
@@ -105,11 +107,11 @@ describe("test the email validation process", () => {
           user,
         );
       const workEmailEntry = await testDB.query.workEmailSchema.findFirst();
+      const confirmationToken =
+        await testDB.query.confirmationTokenSchema.findFirst();
       if (!workEmailEntry) {
         throw new Error("Work email entry not found");
       }
-
-      const { confirmationToken } = workEmailEntry;
 
       if (!confirmationToken) {
         throw new Error("Confirmation token not found");
@@ -122,7 +124,7 @@ describe("test the email validation process", () => {
         {
           document: ValidateWorkEmail,
           variables: {
-            confirmationToken,
+            confirmationToken: confirmationToken?.token,
           },
         },
         user2,

@@ -1,7 +1,11 @@
 import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { createdAndUpdatedAtFields } from "./shared";
-import { usersSchema, companiesSchema } from "./schema";
+import {
+  usersSchema,
+  companiesSchema,
+  confirmationTokenSchema,
+} from "./schema";
 import { relations } from "drizzle-orm";
 
 // WORK-EMAILS-TABLE
@@ -11,8 +15,12 @@ export const workEmailSchema = sqliteTable("work_email", {
     .references(() => usersSchema.id)
     .notNull(),
   workEmail: text("work_email").notNull(),
-  confirmationToken: text("confirmation_token"),
-  isConfirmed: int("is_confirmed", { mode: "boolean" }).default(false),
+  confirmationTokenId: text("confirmation_token_id").references(
+    () => confirmationTokenSchema.id,
+  ),
+  status: text("status", {
+    enum: ["pending", "confirmed", "rejected"],
+  }).default("pending"),
   confirmationDate: int("confirmation_date", {
     mode: "timestamp_ms",
   }),
@@ -24,6 +32,10 @@ export const workEmailRelations = relations(workEmailSchema, ({ one }) => ({
   associatedCompany: one(companiesSchema, {
     fields: [workEmailSchema.companyId],
     references: [companiesSchema.id],
+  }),
+  confirmationToken: one(confirmationTokenSchema, {
+    fields: [workEmailSchema.confirmationTokenId],
+    references: [confirmationTokenSchema.id],
   }),
   user: one(usersSchema, {
     fields: [workEmailSchema.userId],

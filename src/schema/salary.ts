@@ -18,7 +18,7 @@ import {
 import { GenderEnum } from "./shared/enums";
 
 const TypeOfEmployment = builder.enumType("TypeOfEmployment", {
-  values: ["fullTime", "partTime", "freelance", "internship"],
+  values: ["fullTime", "partTime", "freelance"],
 });
 
 const WorkMetodology = builder.enumType("WorkMetodology", {
@@ -98,3 +98,112 @@ builder.objectType(SalaryRef, {
     countryCode: t.exposeString("countryCode", { nullable: false }),
   }),
 });
+
+const CreateSalaryInput = builder.inputType("CreateSalaryInput", {
+  fields: (t) => ({
+    userId: t.field({
+      type: "String",
+      required: true,
+    }),
+    confirmationToken: t.field({
+      type: "String",
+      required: true,
+    }),
+    amount: t.field({
+      type: "Int",
+      required: true,
+    }),
+    companyId: t.field({
+      type: "String",
+      required: true,
+    }),
+    currencyId: t.field({
+      type: "String",
+      required: true,
+    }),
+    countryCode: t.field({
+      type: "String",
+      required: true,
+    }),
+    workRoleId: t.field({
+      type: "String",
+      required: true,
+    }),
+    yearsOfExperience: t.field({
+      type: "Int",
+      required: true,
+    }),
+    gender: t.field({
+      type: GenderEnum,
+      required: true,
+    }),
+    genderOtherText: t.field({
+      type: "String",
+      required: true,
+    }),
+    typeOfEmployment: t.field({
+      type: TypeOfEmployment,
+      required: true,
+    }),
+    workMetodology: t.field({
+      type: WorkMetodology,
+      required: true,
+    }),
+  }),
+});
+
+// builder.mutationFields((t) => ({
+//   createSalary: t.field({
+//     description: "Create a salary",
+//     type: SalaryRef,
+//     authz: {
+//       rules: ["IsAuthenticated"],
+//     },
+//     args: {
+//       input: t.arg({
+//         type: CreateSalaryInput,
+//         required: true,
+//       }),
+//     },
+//     resolve: async (parent, { input }, { DB, USER }) => {
+//       const {
+//         confirmationToken,
+//         companyId,
+//         amount,
+//         currencyId,
+//         workRoleId,
+//         countryCode,
+//         typeOfEmployment,
+//         userId,
+//         workMetodology,
+//         yearsOfExperience,
+//         gender,
+//         genderOtherText,
+//       } = input;
+
+//       const salaryId = v4();
+
+//       const workEmail = await DB.query.workEmailSchema.findFirst({
+//         where: (c, { eq }) => eq(c.confirmationToken, confirmationToken),
+//       });
+//       if(workEmail && workEmail.)
+
+//       const insertSalary = insertSalariesSchema.parse({
+//         id: salaryId,
+//         companyId,
+//         amount,
+//         currencyId,
+//         workRoleId,
+//         countryCode,
+//         typeOfEmployment,
+//         userId,
+//         workMetodology,
+//         yearsOfExperience,
+//         gender,
+//         genderOtherText,
+//       });
+
+//       await DB.insert(salariesSchema).values(insertSalary);
+//     },
+//   }),
+// }));

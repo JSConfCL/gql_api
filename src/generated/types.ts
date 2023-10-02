@@ -90,6 +90,21 @@ export type CreateCompanyInput = {
   website?: InputMaybe<Scalars["String"]["input"]>;
 };
 
+export type CreateSalaryInput = {
+  amount: Scalars["Int"]["input"];
+  companyId: Scalars["String"]["input"];
+  confirmationToken: Scalars["String"]["input"];
+  countryCode: Scalars["String"]["input"];
+  currencyId: Scalars["String"]["input"];
+  gender: Gender;
+  genderOtherText: Scalars["String"]["input"];
+  typeOfEmployment: TypeOfEmployment;
+  userId: Scalars["String"]["input"];
+  workMetodology: WorkMetodology;
+  workRoleId: Scalars["String"]["input"];
+  yearsOfExperience: Scalars["Int"]["input"];
+};
+
 /** Representation of an Event (Events and Users, is what tickets are linked to) */
 export type Event = {
   __typename?: "Event";
@@ -423,7 +438,6 @@ export enum TicketTemplateVisibility {
 export enum TypeOfEmployment {
   Freelance = "freelance",
   FullTime = "fullTime",
-  Internship = "internship",
   PartTime = "partTime",
 }
 
