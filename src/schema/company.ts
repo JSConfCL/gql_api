@@ -6,13 +6,13 @@ import {
   insertCompaniesSchema,
   selectCompaniesSchema,
 } from "~/datasources/db/schema";
-import { companyRef } from "~/schema/shared/refs";
+import { CompanyRef } from "~/schema/shared/refs";
 
 const CompanyStatus = builder.enumType("CompanyStatus", {
   values: ["active", "inactive", "draft"],
 });
 
-builder.objectType(companyRef, {
+builder.objectType(CompanyRef, {
   description: "Representation of a workEmail",
   fields: (t) => ({
     id: t.exposeString("id", { nullable: false }),
@@ -27,7 +27,7 @@ builder.objectType(companyRef, {
       description: "Not available to users",
       // Solo superadmins pueden saber el status de una empresa
       resolve: (root, _, { USER }) => {
-        if (USER?.isSuperAdmin) {
+        if (USER?.isSuperAdmin && root.status) {
           return root.status;
         }
         return null;
@@ -86,7 +86,7 @@ const SearchCompaniesInput = builder.inputType("SearchCompaniesInput", {
 builder.queryFields((t) => ({
   companies: t.field({
     description: "Get all available companies",
-    type: [companyRef],
+    type: [CompanyRef],
     authz: {
       rules: ["IsAuthenticated"],
     },
@@ -127,7 +127,7 @@ builder.queryFields((t) => ({
   }),
   company: t.field({
     description: "Get all available companies",
-    type: companyRef,
+    type: CompanyRef,
     authz: {
       rules: ["IsAuthenticated"],
     },
@@ -210,7 +210,7 @@ const CreateCompanyInput = builder.inputType("CreateCompanyInput", {
 builder.mutationFields((t) => ({
   updateCompany: t.field({
     description: "Update a company",
-    type: companyRef,
+    type: CompanyRef,
     authz: {
       rules: ["IsAuthenticated"],
     },
@@ -261,7 +261,7 @@ builder.mutationFields((t) => ({
   }),
   createCompany: t.field({
     description: "Create a company",
-    type: companyRef,
+    type: CompanyRef,
     authz: {
       rules: ["IsSuperAdmin"],
     },

@@ -8,10 +8,10 @@ import {
   selectWorkEmailSchema,
   workEmailSchema,
 } from "~/datasources/db/schema";
-import { workEmailRef } from "~/schema/shared/refs";
+import { WorkEmailRef } from "~/schema/shared/refs";
 import { enqueueEmail } from "../datasources/mail";
 
-builder.objectType(workEmailRef, {
+builder.objectType(WorkEmailRef, {
   description: "Representation of a workEmail",
   fields: (t) => ({
     id: t.exposeString("id", { nullable: false }),
@@ -37,7 +37,7 @@ builder.objectType(workEmailRef, {
 builder.queryFields((t) => ({
   workEmail: t.field({
     description: "Get a workEmail and check if its validated for this user",
-    type: workEmailRef,
+    type: WorkEmailRef,
     authz: {
       rules: ["IsAuthenticated"],
     },
@@ -57,7 +57,7 @@ builder.mutationFields((t) => ({
   startWorkEmailValidation: t.field({
     description:
       "Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position",
-    type: workEmailRef,
+    type: WorkEmailRef,
     authz: {
       rules: ["IsAuthenticated"],
     },
@@ -162,7 +162,7 @@ builder.mutationFields((t) => ({
   }),
   validateWorkEmail: t.field({
     description: "Validates work email for a user",
-    type: workEmailRef,
+    type: WorkEmailRef,
     authz: {
       rules: ["IsAuthenticated"],
     },

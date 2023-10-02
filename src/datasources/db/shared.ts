@@ -8,3 +8,17 @@ export const createdAndUpdatedAtFields = {
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }),
   deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
 };
+
+export const genderOptions = [
+  "male",
+  "female",
+  "transgender_male",
+  "transgender_female",
+  "non_binary",
+  "genderqueer",
+  "genderfluid",
+  "agender",
+  "two_spirit",
+  "other",
+  "prefer_not_to_say",
+] as const;

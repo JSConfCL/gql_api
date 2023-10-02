@@ -1,3 +1,11 @@
+"""
+Representation of a workEmail
+"""
+type AllowedCurrency {
+  currency: String!
+  id: String!
+}
+
 enum CommnunityStatus {
   active
   inactive
@@ -26,6 +34,10 @@ type Company {
   logo: String
   name: String
   salarySubmissions: Int!
+
+  """
+  Not available to users
+  """
   status: CompanyStatus
   website: String
 }
@@ -123,6 +135,20 @@ input EventsTicketsSearchInput {
   paymentStatus: TicketPaymentStatus
   redemptionStatus: TicketRedemptionStatus
   status: TicketStatus
+}
+
+enum Gender {
+  agender
+  female
+  genderfluid
+  genderqueer
+  male
+  non_binary
+  other
+  prefer_not_to_say
+  transgender_female
+  transgender_male
+  two_spirit
 }
 
 type Mutation {
@@ -243,6 +269,23 @@ type Query {
   workEmail(email: String!): WorkEmail!
 }
 
+"""
+Representation of a workEmail
+"""
+type Salary {
+  amount: Int!
+  company: Company!
+  countryCode: String!
+  currency: AllowedCurrency!
+  gender: Gender
+  genderOtherText: String
+  id: String!
+  typeOfEmployment: TypeOfEmployment!
+  workMetodology: WorkMetodology!
+  workRole: WorkRole!
+  yearsOfExperience: Int!
+}
+
 input SearchCompaniesInput {
   companyName: String
   description: String
@@ -330,6 +373,13 @@ enum TicketTemplateVisibility {
   unlisted
 }
 
+enum TypeOfEmployment {
+  freelance
+  fullTime
+  internship
+  partTime
+}
+
 input UpdateCompanyInput {
   companyId: String!
   description: String
@@ -368,6 +418,22 @@ Representation of a workEmail
 type WorkEmail {
   id: String!
   isValidated: Boolean!
+}
+
+enum WorkMetodology {
+  hybrid
+  office
+  remote
+}
+
+"""
+Representation of a workEmail
+"""
+type WorkRole {
+  description: String!
+  id: String!
+  name: String!
+  seniority: String!
 }
 
 input updateUserRoleInCommunityInput {

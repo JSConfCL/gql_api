@@ -9,6 +9,9 @@ import {
   selectTicketSchema,
   selectWorkEmailSchema,
   selectCompaniesSchema,
+  selectSalariesSchema,
+  selectAllowedCurrencySchema,
+  selectWorkRoleSchema,
 } from "~/datasources/db/schema";
 
 type UserGraphqlSchema = z.infer<typeof selectUsersSchema>;
@@ -32,8 +35,18 @@ type TicketGraphqlSchema = z.infer<typeof selectTicketSchema>;
 export const TicketRef = builder.objectRef<TicketGraphqlSchema>("Ticket");
 
 type WorkEmailGraphqlSchema = z.infer<typeof selectWorkEmailSchema>;
-export const workEmailRef =
+export const WorkEmailRef =
   builder.objectRef<WorkEmailGraphqlSchema>("WorkEmail");
 
+type AllowedCurrencyGraphqlSchema = z.infer<typeof selectAllowedCurrencySchema>;
+export const AllowedCurrencyRef =
+  builder.objectRef<AllowedCurrencyGraphqlSchema>("AllowedCurrency");
+
 type CompanyGraphqlSchema = z.infer<typeof selectCompaniesSchema>;
-export const companyRef = builder.objectRef<CompanyGraphqlSchema>("Company");
+export const CompanyRef = builder.objectRef<CompanyGraphqlSchema>("Company");
+
+type SalaryGraphqlSchema = z.infer<typeof selectSalariesSchema>;
+export const SalaryRef = builder.objectRef<SalaryGraphqlSchema>("Salary");
+
+type WorkRoleGraphqlSchema = z.infer<typeof selectWorkRoleSchema>;
+export const WorkRoleRef = builder.objectRef<WorkRoleGraphqlSchema>("WorkRole");

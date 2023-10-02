@@ -6,6 +6,7 @@ import { allowedCurrencySchema } from "./allowedCurrencies";
 import { workRoleSchema } from "./workRoles";
 import { relations } from "drizzle-orm";
 import { companiesSchema } from "./companies";
+import { genderOptions } from "./shared";
 
 // SALARIES-TABLE
 export const salariesSchema = sqliteTable("salaries", {
@@ -18,6 +19,10 @@ export const salariesSchema = sqliteTable("salaries", {
   currencyId: text("currency").references(() => allowedCurrencySchema.id),
   workRoleId: text("work_role_id").references(() => workRoleSchema.id),
   yearsOfExperience: int("years_of_experience").notNull(),
+  gender: text("gender", {
+    enum: genderOptions,
+  }),
+  genderOtherText: text("gender_other_text"),
   countryCode: text("country_code").notNull(),
   typeOfEmployment: text("type_of_employment", {
     enum: ["full_time", "part_time", "unpaid_internship", "paid_internship"],
