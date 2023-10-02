@@ -152,58 +152,199 @@ const CreateSalaryInput = builder.inputType("CreateSalaryInput", {
   }),
 });
 
-// builder.mutationFields((t) => ({
-//   createSalary: t.field({
-//     description: "Create a salary",
-//     type: SalaryRef,
-//     authz: {
-//       rules: ["IsAuthenticated"],
-//     },
-//     args: {
-//       input: t.arg({
-//         type: CreateSalaryInput,
-//         required: true,
-//       }),
-//     },
-//     resolve: async (parent, { input }, { DB, USER }) => {
-//       const {
-//         confirmationToken,
-//         companyId,
-//         amount,
-//         currencyId,
-//         workRoleId,
-//         countryCode,
-//         typeOfEmployment,
-//         userId,
-//         workMetodology,
-//         yearsOfExperience,
-//         gender,
-//         genderOtherText,
-//       } = input;
+const UpdateSalaryInput = builder.inputType("UpdateSalaryInput", {
+  fields: (t) => ({
+    userId: t.field({
+      type: "String",
+      required: true,
+    }),
+    confirmationToken: t.field({
+      type: "String",
+      required: true,
+    }),
+    amount: t.field({
+      type: "Int",
+      required: true,
+    }),
+    companyId: t.field({
+      type: "String",
+      required: true,
+    }),
+    currencyId: t.field({
+      type: "String",
+      required: true,
+    }),
+    countryCode: t.field({
+      type: "String",
+      required: true,
+    }),
+    workRoleId: t.field({
+      type: "String",
+      required: true,
+    }),
+    yearsOfExperience: t.field({
+      type: "Int",
+      required: true,
+    }),
+    gender: t.field({
+      type: GenderEnum,
+      required: true,
+    }),
+    genderOtherText: t.field({
+      type: "String",
+      required: true,
+    }),
+    typeOfEmployment: t.field({
+      type: TypeOfEmployment,
+      required: true,
+    }),
+    workMetodology: t.field({
+      type: WorkMetodology,
+      required: true,
+    }),
+  }),
+});
 
-//       const salaryId = v4();
+builder.mutationFields((t) => ({
+  createSalary: t.field({
+    description: "Create a salary",
+    type: SalaryRef,
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    args: {
+      input: t.arg({
+        type: CreateSalaryInput,
+        required: true,
+      }),
+    },
+    resolve: async (parent, { input }, { DB, USER }) => {
+      if (!USER) {
+        throw new Error("User is required");
+      }
+      const {
+        confirmationToken,
+        companyId,
+        amount,
+        currencyId,
+        workRoleId,
+        countryCode,
+        typeOfEmployment,
+        userId,
+        workMetodology,
+        yearsOfExperience,
+        gender,
+        genderOtherText,
+      } = input;
 
-//       const workEmail = await DB.query.workEmailSchema.findFirst({
-//         where: (c, { eq }) => eq(c.confirmationToken, confirmationToken),
-//       });
-//       if(workEmail && workEmail.)
+      const salaryId = v4();
 
-//       const insertSalary = insertSalariesSchema.parse({
-//         id: salaryId,
-//         companyId,
-//         amount,
-//         currencyId,
-//         workRoleId,
-//         countryCode,
-//         typeOfEmployment,
-//         userId,
-//         workMetodology,
-//         yearsOfExperience,
-//         gender,
-//         genderOtherText,
-//       });
+      const foundConfirmationToken =
+        await DB.query.confirmationTokenSchema.findFirst({
+          where: (c, { eq, and, inArray }) =>
+            and(
+              eq(c.token, confirmationToken),
+              inArray(c.status, ["pending"]),
+              inArray(c.source, ["onboarding", "salary_submission"]),
+            ),
+        });
 
-//       await DB.insert(salariesSchema).values(insertSalary);
-//     },
-//   }),
-// }));
+      if (!foundConfirmationToken) {
+        throw new Error("Invalid token");
+      }
+      if (foundConfirmationToken.validUntil <= new Date()) {
+        throw new Error("Invalid token");
+      }
+
+      const insertSalary = insertSalariesSchema.parse({
+        id: salaryId,
+        companyId,
+        amount,
+        currencyId,
+        workRoleId,
+        countryCode,
+        typeOfEmployment,
+        userId,
+        workMetodology,
+        yearsOfExperience,
+        gender,
+        genderOtherText,
+      });
+
+      const salary = await DB.insert(salariesSchema)
+        .values(insertSalary)
+        .returning()
+        .get();
+      return selectSalariesSchema.parse(salary);
+    },
+  }),
+  updateSalary: t.field({
+    description: "Create a salary",
+    type: SalaryRef,
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    args: {
+      input: t.arg({
+        type: CreateSalaryInput,
+        required: true,
+      }),
+    },
+    resolve: async (parent, { input }, { DB, USER }) => {
+      const {
+        confirmationToken,
+        companyId,
+        amount,
+        currencyId,
+        workRoleId,
+        countryCode,
+        typeOfEmployment,
+        userId,
+        workMetodology,
+        yearsOfExperience,
+        gender,
+        genderOtherText,
+      } = input;
+
+      const salaryId = v4();
+
+      const foundConfirmationToken =
+        await DB.query.confirmationTokenSchema.findFirst({
+          where: (c, { eq, and, inArray }) =>
+            and(
+              eq(c.token, confirmationToken),
+              inArray(c.status, ["pending"]),
+              inArray(c.source, ["onboarding", "salary_submission"]),
+            ),
+        });
+
+      if (!foundConfirmationToken) {
+        throw new Error("Invalid token");
+      }
+      if (foundConfirmationToken.validUntil <= new Date()) {
+        throw new Error("Invalid token");
+      }
+
+      const insertSalary = insertSalariesSchema.parse({
+        id: salaryId,
+        companyId,
+        amount,
+        currencyId,
+        workRoleId,
+        countryCode,
+        typeOfEmployment,
+        userId,
+        workMetodology,
+        yearsOfExperience,
+        gender,
+        genderOtherText,
+      });
+
+      const salary = await DB.insert(salariesSchema)
+        .values(insertSalary)
+        .returning()
+        .get();
+      return selectSalariesSchema.parse(salary);
+    },
+  }),
+}));

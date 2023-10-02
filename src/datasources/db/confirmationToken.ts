@@ -1,6 +1,8 @@
 import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { createdAndUpdatedAtFields } from "./shared";
+import { usersSchema } from "./users";
+import { relations } from "drizzle-orm";
 
 // CONFIRMATION-TOKEN-TABLE
 // Usada para validar emails, resetear passwords, etc.
@@ -12,8 +14,11 @@ import { createdAndUpdatedAtFields } from "./shared";
 export const confirmationTokenSchema = sqliteTable("confirmation_token", {
   id: text("id").primaryKey().unique(),
   source: text("source", {
-    enum: ["work_email"],
+    enum: ["work_email", "onboarding", "salary_submission"],
   }).notNull(),
+  userId: text("user_id")
+    .references(() => usersSchema.id)
+    .notNull(),
   sourceId: text("source_id").notNull(),
   token: text("token").notNull().unique(),
   status: text("status", {
@@ -27,6 +32,16 @@ export const confirmationTokenSchema = sqliteTable("confirmation_token", {
   }),
   ...createdAndUpdatedAtFields,
 });
+
+export const confirmationTokenRelations = relations(
+  confirmationTokenSchema,
+  ({ one }) => ({
+    user: one(usersSchema, {
+      fields: [confirmationTokenSchema.userId],
+      references: [usersSchema.id],
+    }),
+  }),
+);
 
 export const selectConfirmationTokenSchema = createSelectSchema(
   confirmationTokenSchema,

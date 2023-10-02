@@ -140,17 +140,18 @@ builder.mutationFields((t) => ({
                   .execute();
               }
             }
-            const confirmationToken = v4();
-            const insertToken = insertConfirmationTokenSchema.parse({
-              id: confirmationToken,
-              source: "work_email",
+            const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
+              id: v4(),
+              source: "onboarding",
               sourceId: workEmail.id,
+              userId: USER.id,
+              token: v4(),
               // by default, the token is valid for 1 hour
               validUntil: new Date(Date.now() + 1000 * 60 * 60),
             });
             const insertedToken = await trx
               .insert(confirmationTokenSchema)
-              .values(insertToken)
+              .values(insertWorkEmailToken)
               .returning()
               .get();
 
@@ -169,7 +170,6 @@ builder.mutationFields((t) => ({
             });
             return updatedWorkEmail;
           } else {
-            const confirmationToken = v4();
             const insertWorkEmail = insertWorkEmailSchema.parse({
               id: v4(),
               userId: USER.id,
@@ -183,17 +183,18 @@ builder.mutationFields((t) => ({
               .returning()
               .get();
 
-            const insertToken = insertConfirmationTokenSchema.parse({
+            const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
               id: v4(),
-              source: "work_email",
+              source: "onboarding",
               sourceId: insertedWorkEmail.id,
-              token: confirmationToken,
+              userId: USER.id,
+              token: v4(),
               // by default, the token is valid for 1 hour
               validUntil: new Date(Date.now() + 1000 * 60 * 60),
             });
             const insertedToken = await trx
               .insert(confirmationTokenSchema)
-              .values(insertToken)
+              .values(insertWorkEmailToken)
               .returning()
               .get();
             await trx
@@ -241,12 +242,24 @@ builder.mutationFields((t) => ({
         try {
           const foundConfirmationToken =
             await trx.query.confirmationTokenSchema.findFirst({
-              where: (ct, { eq }) => eq(ct.token, confirmationToken),
+              where: (c, { eq, and, inArray }) =>
+                and(
+                  eq(c.token, confirmationToken),
+                  inArray(c.status, ["pending"]),
+                  inArray(c.source, ["onboarding", "work_email"]),
+                ),
             });
           if (!foundConfirmationToken) {
             throw new Error("Invalid token");
           }
-          const allWorkEmails = await trx.query.workEmailSchema.findMany({});
+
+          if (
+            foundConfirmationToken.status === "expired" ||
+            foundConfirmationToken.status === "rejected" ||
+            foundConfirmationToken.validUntil <= new Date()
+          ) {
+            throw new Error("Invalid token");
+          }
 
           const possibleWorkSchema = await trx.query.workEmailSchema.findFirst({
             where: (wes, { eq, and }) =>
