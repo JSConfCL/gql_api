@@ -262,7 +262,9 @@ builder.mutationFields((t) => ({
         if (ticket.redemptionStatus === "redeemed") {
           throw new Error("Ticket already redeemed");
         }
-
+        if (ticket.status !== "active") {
+          throw new Error("Ticket is not active");
+        }
         const updatedTicket = await DB.update(userTicketsSchema)
           .set({
             redemptionStatus: "redeemed",
