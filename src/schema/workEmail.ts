@@ -46,10 +46,16 @@ builder.queryFields((t) => ({
     args: {
       email: t.arg.string({ required: true }),
     },
-    resolve: async (root, { email }, { DB }) => {
+    resolve: async (root, { email }, { DB, USER }) => {
       const workEmail = await DB.query.workEmailSchema.findFirst({
         where: (wes, { like }) => like(wes.workEmail, email.toLowerCase()),
+        with: {
+          user: true,
+        },
       });
+      if (workEmail?.user?.id !== USER?.id) {
+        throw new Error("You don't have access");
+      }
       return selectWorkEmailSchema.parse(workEmail);
     },
   }),
@@ -241,7 +247,6 @@ builder.mutationFields((t) => ({
             throw new Error("Invalid token");
           }
           const allWorkEmails = await trx.query.workEmailSchema.findMany({});
-          console.log({ foundConfirmationToken, allWorkEmails });
 
           const possibleWorkSchema = await trx.query.workEmailSchema.findFirst({
             where: (wes, { eq, and }) =>
@@ -250,8 +255,6 @@ builder.mutationFields((t) => ({
                 eq(wes.userId, USER.id),
               ),
           });
-
-          console.log({ possibleWorkSchema });
 
           if (possibleWorkSchema) {
             // TODO: Consider also checking if the confirmationDate is over a year old.
@@ -273,7 +276,6 @@ builder.mutationFields((t) => ({
             throw new Error("No email found for that token");
           }
         } catch (e) {
-          console.error(e);
           trx.rollback();
           throw e;
         }
