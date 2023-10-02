@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "ba812e92-56f0-4664-838d-d3361a6702a4",
+  "id": "a5325804-2de0-43cb-8dc8-548bc58e53c0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "allowed_currencies": {
@@ -151,14 +151,14 @@
         },
         "name": {
           "name": "name",
-          "type": "text",
+          "type": "text(512)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "description": {
           "name": "description",
-          "type": "text",
+          "type": "text(4096)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -179,6 +179,13 @@
         },
         "website": {
           "name": "website",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -596,8 +603,8 @@
         "company_id": {
           "name": "company_id",
           "type": "text",
-          "primaryKey": true,
-          "notNull": true,
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "user_id": {
@@ -637,6 +644,20 @@
         },
         "country_code": {
           "name": "country_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type_of_employment": {
+          "name": "type_of_employment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "work_metodology": {
+          "name": "work_metodology",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -688,6 +709,19 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
+        "salaries_company_id_companies_company_id_fk": {
+          "name": "salaries_company_id_companies_company_id_fk",
+          "tableFrom": "salaries",
+          "tableTo": "companies",
+          "columnsFrom": [
+            "company_id"
+          ],
+          "columnsTo": [
+            "company_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "salaries_currency_allowed_currencies_id_fk": {
           "name": "salaries_currency_allowed_currencies_id_fk",
           "tableFrom": "salaries",
@@ -701,15 +735,15 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "salaries_work_role_id_work_role_company_id_fk": {
-          "name": "salaries_work_role_id_work_role_company_id_fk",
+        "salaries_work_role_id_work_role_id_fk": {
+          "name": "salaries_work_role_id_work_role_id_fk",
           "tableFrom": "salaries",
           "tableTo": "work_role",
           "columnsFrom": [
             "work_role_id"
           ],
           "columnsTo": [
-            "company_id"
+            "id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -1459,8 +1493,8 @@
     "work_role": {
       "name": "work_role",
       "columns": {
-        "company_id": {
-          "name": "company_id",
+        "id": {
+          "name": "id",
           "type": "text",
           "primaryKey": true,
           "notNull": true,
@@ -1504,10 +1538,10 @@
         }
       },
       "indexes": {
-        "work_role_company_id_unique": {
-          "name": "work_role_company_id_unique",
+        "work_role_id_unique": {
+          "name": "work_role_id_unique",
           "columns": [
-            "company_id"
+            "id"
           ],
           "isUnique": true
         }

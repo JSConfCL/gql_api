@@ -20,11 +20,12 @@ CREATE TABLE `communities` (
 --> statement-breakpoint
 CREATE TABLE `companies` (
 	`company_id` text PRIMARY KEY NOT NULL,
-	`name` text,
-	`description` text,
+	`name` text(512),
+	`description` text(4096),
 	`domain` text NOT NULL,
 	`logo` text,
 	`website` text,
+	`status` text,
 	`created_at` integer DEFAULT current_timestamp NOT NULL,
 	`updated_at` integer,
 	`deleted_at` integer
@@ -83,19 +84,22 @@ CREATE TABLE `events_users` (
 );
 --> statement-breakpoint
 CREATE TABLE `salaries` (
-	`company_id` text PRIMARY KEY NOT NULL,
+	`company_id` text,
 	`user_id` text NOT NULL,
 	`amount` integer NOT NULL,
 	`currency` text,
 	`work_role_id` text,
 	`years_of_experience` integer NOT NULL,
 	`country_code` text NOT NULL,
+	`type_of_employment` text NOT NULL,
+	`work_metodology` text NOT NULL,
 	`created_at` integer DEFAULT current_timestamp NOT NULL,
 	`updated_at` integer,
 	`deleted_at` integer,
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`company_id`) REFERENCES `companies`(`company_id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`currency`) REFERENCES `allowed_currencies`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`work_role_id`) REFERENCES `work_role`(`company_id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`work_role_id`) REFERENCES `work_role`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `tags` (
@@ -200,7 +204,7 @@ CREATE TABLE `work_email` (
 );
 --> statement-breakpoint
 CREATE TABLE `work_role` (
-	`company_id` text PRIMARY KEY NOT NULL,
+	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`description` text NOT NULL,
 	`created_at` integer DEFAULT current_timestamp NOT NULL,
@@ -217,4 +221,4 @@ CREATE UNIQUE INDEX `tags_name_unique` ON `tags` (`name`);--> statement-breakpoi
 CREATE UNIQUE INDEX `tickets_name_unique` ON `tickets` (`name`);--> statement-breakpoint
 CREATE UNIQUE INDEX `users_username_unique` ON `users` (`username`);--> statement-breakpoint
 CREATE UNIQUE INDEX `work_email_id_unique` ON `work_email` (`id`);--> statement-breakpoint
-CREATE UNIQUE INDEX `work_role_company_id_unique` ON `work_role` (`company_id`);
+CREATE UNIQUE INDEX `work_role_id_unique` ON `work_role` (`id`);
