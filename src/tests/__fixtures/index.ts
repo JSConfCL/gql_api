@@ -349,6 +349,10 @@ export const insertCompany = async (
     domain: partialInput?.domain ?? faker.internet.domainName(),
     logo: partialInput?.logo,
     website: partialInput?.website,
+    status: partialInput?.status,
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
   } satisfies z.infer<typeof insertCompaniesSchema>;
   return insertOne(
     insertCompaniesSchema,

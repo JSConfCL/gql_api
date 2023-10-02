@@ -1,0 +1,27 @@
+mutation UpdateCompany($input: UpdateCompanyInput!) {
+  updateCompany(input: $input) {
+    id
+    name
+    description
+    logo
+    website
+    status
+    domain
+    hasBeenUpdated
+    salarySubmissions
+  }
+}
+
+mutation CreateCompany($input: CreateCompanyInput!) {
+  createCompany(input: $input) {
+    id
+    name
+    description
+    logo
+    website
+    status
+    domain
+    hasBeenUpdated
+    salarySubmissions
+  }
+}

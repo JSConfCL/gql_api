@@ -3,7 +3,7 @@
   "main": "./build/index.js",
   "scripts": {
     "drizzle-kit": "drizzle-kit",
-    "db:generate": "drizzle-kit generate:sqlite",
+    "db:generate": "drizzle-kit generate:sqlite && prettier ./drizzle/migrations --write",
     "db:check": "drizzle-kit check:sqlite",
     "db:up": "drizzle-kit up:sqlite",
     "db:studio": "drizzle-kit studio --verbose",

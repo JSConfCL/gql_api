@@ -1,11 +1,12 @@
-import "./status";
-import "./user";
 import "./community";
-import "./tags";
+import "./company";
 import "./events";
+import "./status";
+import "./tags";
+import "./ticket";
+import "./user";
 import "./userTickets";
 import "./workEmail";
-import "./ticket";
 import { builder } from "~/builder";
 
 export const schema = builder.toSchema();

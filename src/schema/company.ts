@@ -1,4 +1,5 @@
 import { SQL, eq, like } from "drizzle-orm";
+import { v4 } from "uuid";
 import { builder } from "~/builder";
 import {
   companiesSchema,
@@ -6,6 +7,10 @@ import {
   selectCompaniesSchema,
 } from "~/datasources/db/schema";
 import { companyRef } from "~/schema/shared/refs";
+
+const CompanyStatus = builder.enumType("CompanyStatus", {
+  values: ["active", "inactive", "draft"],
+});
 
 builder.objectType(companyRef, {
   description: "Representation of a workEmail",
@@ -16,7 +21,17 @@ builder.objectType(companyRef, {
     domain: t.exposeString("domain", { nullable: false }),
     logo: t.exposeString("logo", { nullable: true }),
     website: t.exposeString("website", { nullable: true }),
-    status: t.exposeString("status", { nullable: true }),
+    status: t.field({
+      type: CompanyStatus,
+      nullable: true,
+      // Solo superadmins pueden saber el status de una empresa
+      resolve: (root, _, { USER }) => {
+        if (USER?.isSuperAdmin) {
+          return root.status;
+        }
+        return null;
+      },
+    }),
     hasBeenUpdated: t.field({
       type: "Boolean",
       nullable: false,
@@ -46,7 +61,7 @@ builder.objectType(companyRef, {
   }),
 });
 
-const SearchCompaniesInput = builder.inputType("MyTicketsSearchInput", {
+const SearchCompaniesInput = builder.inputType("SearchCompaniesInput", {
   fields: (t) => ({
     companyName: t.field({
       type: "String",
@@ -130,11 +145,15 @@ builder.queryFields((t) => ({
   }),
 }));
 
-const UpdateCompanyInput = builder.inputType("MyTicketsSearchInput", {
+const UpdateCompanyInput = builder.inputType("UpdateCompanyInput", {
   fields: (t) => ({
     companyId: t.field({
       type: "String",
       required: true,
+    }),
+    name: t.field({
+      type: "String",
+      required: false,
     }),
     description: t.field({
       type: "String",
@@ -150,6 +169,38 @@ const UpdateCompanyInput = builder.inputType("MyTicketsSearchInput", {
     }),
     website: t.field({
       type: "String",
+      required: false,
+    }),
+  }),
+});
+
+const CreateCompanyInput = builder.inputType("CreateCompanyInput", {
+  fields: (t) => ({
+    domain: t.field({
+      type: "String",
+      description:
+        "The email domain of the company (What we'll use to match the company to the user on account-creation)",
+      required: true,
+    }),
+    name: t.field({
+      type: "String",
+      required: false,
+    }),
+    description: t.field({
+      type: "String",
+      required: false,
+    }),
+    logo: t.field({
+      type: "String",
+      required: false,
+    }),
+
+    website: t.field({
+      type: "String",
+      required: false,
+    }),
+    status: t.field({
+      type: CompanyStatus,
       required: false,
     }),
   }),
@@ -176,30 +227,18 @@ builder.mutationFields((t) => ({
       if (!company) {
         throw new Error("Company not found");
       }
-      let dataToUpdate = {};
-      if (!company.domain) {
-        dataToUpdate = {
-          ...dataToUpdate,
-          domain,
-        };
+      const dataToUpdate: Record<string, string | null | undefined> = {};
+      if (company.domain) {
+        dataToUpdate.domain = domain;
       }
-      if (!company.website) {
-        dataToUpdate = {
-          ...dataToUpdate,
-          website,
-        };
+      if (company.website) {
+        dataToUpdate.website = website;
       }
-      if (!company.logo) {
-        dataToUpdate = {
-          ...dataToUpdate,
-          logo,
-        };
+      if (company.logo) {
+        dataToUpdate.logo = logo;
       }
-      if (!company.description) {
-        dataToUpdate = {
-          ...dataToUpdate,
-          description,
-        };
+      if (company.description) {
+        dataToUpdate.description = description;
       }
       if (Object.keys(dataToUpdate).length === 0) {
         throw new Error("Nothing to update");
@@ -212,6 +251,53 @@ builder.mutationFields((t) => ({
         .get();
 
       return selectCompaniesSchema.parse(updatedCompany);
+    },
+  }),
+  createCompany: t.field({
+    description: "Create a company",
+    type: companyRef,
+    authz: {
+      rules: ["IsSuperAdmin"],
+    },
+    args: {
+      input: t.arg({
+        type: CreateCompanyInput,
+        required: true,
+      }),
+    },
+    resolve: async (root, { input }, { DB }) => {
+      const { description, logo, domain, website, name, status } = input;
+
+      const dataToCreate: Record<string, string | null | undefined> = {};
+      if (domain) {
+        dataToCreate.domain = domain;
+      }
+      if (website) {
+        dataToCreate.website = website;
+      }
+      if (logo) {
+        dataToCreate.logo = logo;
+      }
+      if (description) {
+        dataToCreate.description = description;
+      }
+      if (name) {
+        dataToCreate.name = name;
+      }
+      if (status) {
+        dataToCreate.status = status;
+      }
+      if (Object.keys(dataToCreate).length === 0) {
+        throw new Error("No data to create a company");
+      }
+      dataToCreate.id = v4();
+      const updateCompanyData = insertCompaniesSchema.parse(dataToCreate);
+      const createCompany = await DB.insert(companiesSchema)
+        .values(updateCompanyData)
+        .returning()
+        .get();
+
+      return selectCompaniesSchema.parse(createCompany);
     },
   }),
 }));

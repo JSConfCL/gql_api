@@ -52,6 +52,36 @@ export type Community = {
   users: Array<User>;
 };
 
+/** Representation of a workEmail */
+export type Company = {
+  __typename?: "Company";
+  description?: Maybe<Scalars["String"]["output"]>;
+  domain: Scalars["String"]["output"];
+  hasBeenUpdated: Scalars["Boolean"]["output"];
+  id: Scalars["String"]["output"];
+  logo?: Maybe<Scalars["String"]["output"]>;
+  name?: Maybe<Scalars["String"]["output"]>;
+  salarySubmissions: Scalars["Int"]["output"];
+  status?: Maybe<CompanyStatus>;
+  website?: Maybe<Scalars["String"]["output"]>;
+};
+
+export enum CompanyStatus {
+  Active = "active",
+  Draft = "draft",
+  Inactive = "inactive",
+}
+
+export type CreateCompanyInput = {
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  /** The email domain of the company (What we'll use to match the company to the user on account-creation) */
+  domain: Scalars["String"]["input"];
+  logo?: InputMaybe<Scalars["String"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  status?: InputMaybe<CompanyStatus>;
+  website?: InputMaybe<Scalars["String"]["input"]>;
+};
+
 /** Representation of an Event (Events and Users, is what tickets are linked to) */
 export type Event = {
   __typename?: "Event";
@@ -128,6 +158,8 @@ export type Mutation = {
   approvalUserTicket: UserTicket;
   /** Cancel a ticket */
   cancelUserTicket: UserTicket;
+  /** Create a company */
+  createCompany: Company;
   /** Create an event */
   createEvent: Event;
   /** Edit a ticket */
@@ -136,6 +168,8 @@ export type Mutation = {
   redeemUserTicket: UserTicket;
   /** Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position */
   startWorkEmailValidation: WorkEmail;
+  /** Update a company */
+  updateCompany: Company;
   /** Update a user */
   updateUser: User;
   /** Update a user role */
@@ -152,6 +186,10 @@ export type MutationCancelUserTicketArgs = {
   userTicketId: Scalars["String"]["input"];
 };
 
+export type MutationCreateCompanyArgs = {
+  input: CreateCompanyInput;
+};
+
 export type MutationCreateEventArgs = {
   input: EventCreateInput;
 };
@@ -166,6 +204,10 @@ export type MutationRedeemUserTicketArgs = {
 
 export type MutationStartWorkEmailValidationArgs = {
   email: Scalars["String"]["input"];
+};
+
+export type MutationUpdateCompanyArgs = {
+  input: UpdateCompanyInput;
 };
 
 export type MutationUpdateUserArgs = {
@@ -194,6 +236,10 @@ export type Query = {
   communities: Array<Community>;
   /** Get a community by id */
   community?: Maybe<Community>;
+  /** Get all available companies */
+  companies: Array<Company>;
+  /** Get all available companies */
+  company: Company;
   /** Get an event by id */
   event?: Maybe<Event>;
   /** Get a list of events. Filter by name, id, status or date */
@@ -219,6 +265,14 @@ export type QueryCommunityArgs = {
   id: Scalars["String"]["input"];
 };
 
+export type QueryCompaniesArgs = {
+  input?: InputMaybe<SearchCompaniesInput>;
+};
+
+export type QueryCompanyArgs = {
+  companyId: Scalars["String"]["input"];
+};
+
 export type QueryEventArgs = {
   id: Scalars["String"]["input"];
 };
@@ -241,6 +295,13 @@ export type QueryTagsArgs = {
 
 export type QueryWorkEmailArgs = {
   email: Scalars["String"]["input"];
+};
+
+export type SearchCompaniesInput = {
+  companyName?: InputMaybe<Scalars["String"]["input"]>;
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  domain?: InputMaybe<Scalars["String"]["input"]>;
+  website?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 /** Representation of a tag. Tags can be associated to many things. An event, a community, etc. */
@@ -320,6 +381,15 @@ export enum TicketTemplateVisibility {
   Public = "public",
   Unlisted = "unlisted",
 }
+
+export type UpdateCompanyInput = {
+  companyId: Scalars["String"]["input"];
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  domain?: InputMaybe<Scalars["String"]["input"]>;
+  logo?: InputMaybe<Scalars["String"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  website?: InputMaybe<Scalars["String"]["input"]>;
+};
 
 /** Representation of a user */
 export type User = {

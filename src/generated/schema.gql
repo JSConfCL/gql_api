@@ -16,6 +16,40 @@ type Community {
 }
 
 """
+Representation of a workEmail
+"""
+type Company {
+  description: String
+  domain: String!
+  hasBeenUpdated: Boolean!
+  id: String!
+  logo: String
+  name: String
+  salarySubmissions: Int!
+  status: CompanyStatus
+  website: String
+}
+
+enum CompanyStatus {
+  active
+  draft
+  inactive
+}
+
+input CreateCompanyInput {
+  description: String
+
+  """
+  The email domain of the company (What we'll use to match the company to the user on account-creation)
+  """
+  domain: String!
+  logo: String
+  name: String
+  status: CompanyStatus
+  website: String
+}
+
+"""
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
 scalar Date
@@ -103,6 +137,11 @@ type Mutation {
   cancelUserTicket(userTicketId: String!): UserTicket!
 
   """
+  Create a company
+  """
+  createCompany(input: CreateCompanyInput!): Company!
+
+  """
   Create an event
   """
   createEvent(input: EventCreateInput!): Event!
@@ -121,6 +160,11 @@ type Mutation {
   Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position
   """
   startWorkEmailValidation(email: String!): WorkEmail!
+
+  """
+  Update a company
+  """
+  updateCompany(input: UpdateCompanyInput!): Company!
 
   """
   Update a user
@@ -158,6 +202,16 @@ type Query {
   community(id: String!): Community
 
   """
+  Get all available companies
+  """
+  companies(input: SearchCompaniesInput): [Company!]!
+
+  """
+  Get all available companies
+  """
+  company(companyId: String!): Company!
+
+  """
   Get an event by id
   """
   event(id: String!): Event
@@ -187,6 +241,13 @@ type Query {
   Get a workEmail and check if its validated for this user
   """
   workEmail(email: String!): WorkEmail!
+}
+
+input SearchCompaniesInput {
+  companyName: String
+  description: String
+  domain: String
+  website: String
 }
 
 """
@@ -267,6 +328,15 @@ enum TicketTemplateVisibility {
   private
   public
   unlisted
+}
+
+input UpdateCompanyInput {
+  companyId: String!
+  description: String
+  domain: String
+  logo: String
+  name: String
+  website: String
 }
 
 """
