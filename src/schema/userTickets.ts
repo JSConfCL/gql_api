@@ -153,8 +153,9 @@ builder.mutationFields((t) => ({
         if (!ctx.USER) {
           throw new Error("User not found");
         }
-        if (!(await canCancelUserTicket(ctx.USER?.id, userTicketId, ctx.DB)))
+        if (!(await canCancelUserTicket(ctx.USER?.id, userTicketId, ctx.DB))) {
           throw new Error("You can't cancel this ticket");
+        }
         let ticket = await ctx.DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
         });
@@ -191,9 +192,12 @@ builder.mutationFields((t) => ({
     },
     resolve: async (root, { userTicketId }, { DB, USER }) => {
       try {
-        if (!USER) throw new Error("User not found");
-        if (!(await canApproveTicket(USER.id, userTicketId, DB)))
+        if (!USER) {
+          throw new Error("User not found");
+        }
+        if (!(await canApproveTicket(USER.id, userTicketId, DB))) {
           throw new Error("Unauthorized!");
+        }
         const ticket = await DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
           with: {
@@ -244,8 +248,9 @@ builder.mutationFields((t) => ({
         if (!USER) {
           throw new Error("User not found");
         }
-        if (!(await canRedeemUserTicket(USER?.id, userTicketId, DB)))
+        if (!(await canRedeemUserTicket(USER?.id, userTicketId, DB))) {
           throw new Error("You can't redeem this ticket");
+        }
 
         const ticket = await DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),

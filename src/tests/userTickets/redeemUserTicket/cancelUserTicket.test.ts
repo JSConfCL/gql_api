@@ -11,7 +11,6 @@ import {
   insertUserToEvent,
 } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
-import { CancelUserTicketMutation } from "../cancelUserTicket/cancelUserTicket.generated";
 import {
   RedeemUserTicket,
   RedeemUserTicketMutation,

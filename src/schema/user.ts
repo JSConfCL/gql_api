@@ -100,8 +100,12 @@ builder.mutationFields((t) => ({
     resolve: async (root, { input }, ctx) => {
       try {
         const { id, name, lastName, bio, username } = input;
-        if (!ctx.USER) throw new Error("User not found");
-        if (!isSameUser(id, ctx.USER.id)) throw new Error("Not authorized");
+        if (!ctx.USER) {
+          throw new Error("User not found");
+        }
+        if (!isSameUser(id, ctx.USER.id)) {
+          throw new Error("Not authorized");
+        }
         const updateFields = {} as {
           name?: string;
           lastName?: string;
@@ -147,15 +151,18 @@ builder.mutationFields((t) => ({
     resolve: async (root, { input }, ctx) => {
       try {
         const { userId, communityId, role } = input;
-        if (!ctx.USER) throw new Error("User not found");
+        if (!ctx.USER) {
+          throw new Error("User not found");
+        }
         if (
           !(await canUpdateUserRoleInCommunity(
             ctx.USER?.id,
             communityId,
             ctx.DB,
           ))
-        )
+        ) {
           throw new Error("Not authorized");
+        }
         await ctx.DB.update(usersToCommunitiesSchema)
           .set({
             role: role as UserRoleCommunity,

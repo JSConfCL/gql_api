@@ -415,7 +415,9 @@ builder.mutationFields((t) => ({
           status,
           timeZone,
         } = input;
-        if (!ctx.USER) throw new Error("User not found");
+        if (!ctx.USER) {
+          throw new Error("User not found");
+        }
         if (!(await canCreateEvent(ctx.USER.id, communityId, ctx.DB))) {
           throw new Error("FORBIDDEN");
         }

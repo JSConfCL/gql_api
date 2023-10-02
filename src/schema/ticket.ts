@@ -118,9 +118,12 @@ builder.mutationFields((t) => ({
     resolve: async (root, { input }, ctx) => {
       try {
         const { ticketId } = input;
-        if (!ctx.USER) throw new GraphQLError("User not found");
-        if (!(await canEditTicket(ctx.USER.id, ticketId, ctx.DB)))
+        if (!ctx.USER) {
+          throw new GraphQLError("User not found");
+        }
+        if (!(await canEditTicket(ctx.USER.id, ticketId, ctx.DB))) {
           throw new GraphQLError("Not authorized");
+        }
 
         const updateFields = {};
         addToObjectIfPropertyExists(updateFields, "name", input.name);
