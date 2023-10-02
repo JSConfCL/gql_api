@@ -16,6 +16,20 @@ builder.objectType(companyRef, {
     domain: t.exposeString("domain", { nullable: false }),
     logo: t.exposeString("logo", { nullable: true }),
     website: t.exposeString("website", { nullable: true }),
+    status: t.exposeString("status", { nullable: true }),
+    hasBeenUpdated: t.field({
+      type: "Boolean",
+      nullable: false,
+      resolve: async (root, args, { DB }) => {
+        const company = await DB.query.companiesSchema.findFirst({
+          where: (c, { eq }) => eq(c.id, root.id),
+        });
+        if (!company) {
+          return false;
+        }
+        return Boolean(company.updatedAt);
+      },
+    }),
     salarySubmissions: t.field({
       type: "Int",
       nullable: false,

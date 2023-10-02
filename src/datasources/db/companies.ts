@@ -12,7 +12,9 @@ export const companiesSchema = sqliteTable("companies", {
   domain: text("domain").notNull(),
   logo: text("logo"),
   website: text("website"),
-  status: text("status", { enum: ["active", "inactive", "draft"] }),
+  status: text("status", { enum: ["active", "inactive", "draft"] }).default(
+    "draft",
+  ),
   ...createdAndUpdatedAtFields,
 });
 
