@@ -24,6 +24,7 @@ builder.objectType(companyRef, {
     status: t.field({
       type: CompanyStatus,
       nullable: true,
+      description: "Not available to users",
       // Solo superadmins pueden saber el status de una empresa
       resolve: (root, _, { USER }) => {
         if (USER?.isSuperAdmin) {
@@ -219,33 +220,38 @@ builder.mutationFields((t) => ({
         required: true,
       }),
     },
-    resolve: async (root, { input }, { DB }) => {
-      const { companyId, description, logo, domain, website } = input;
+    resolve: async (root, { input }, { DB, USER }) => {
+      const { companyId, description, logo, domain, website, name } = input;
       const company = await DB.query.companiesSchema.findFirst({
         where: (c, { eq }) => eq(c.id, companyId),
       });
       if (!company) {
         throw new Error("Company not found");
       }
+      if (!USER?.isSuperAdmin && company.updatedAt !== null) {
+        throw new Error("Cannot update an already updated company");
+      }
       const dataToUpdate: Record<string, string | null | undefined> = {};
-      if (company.domain) {
+      if (domain) {
         dataToUpdate.domain = domain;
       }
-      if (company.website) {
+      if (website) {
         dataToUpdate.website = website;
       }
-      if (company.logo) {
+      if (name) {
+        dataToUpdate.name = name;
+      }
+      if (logo) {
         dataToUpdate.logo = logo;
       }
-      if (company.description) {
+      if (description) {
         dataToUpdate.description = description;
       }
       if (Object.keys(dataToUpdate).length === 0) {
         throw new Error("Nothing to update");
       }
-      const updateCompanyData = insertCompaniesSchema.parse(dataToUpdate);
       const updatedCompany = await DB.update(companiesSchema)
-        .set(updateCompanyData)
+        .set(dataToUpdate)
         .where(eq(companiesSchema.id, companyId))
         .returning()
         .get();
