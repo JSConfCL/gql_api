@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, assert, describe, it } from "vitest";
 import {
+  executeGraphqlOperation,
   executeGraphqlOperationAsUser,
   insertCompany,
   insertUser,
@@ -48,8 +49,65 @@ describe("test the work email query", () => {
     assert.equal(query.data?.workEmail.id, insertedWorkEmail.id);
     assert.equal(
       query.data?.workEmail.isValidated,
-      insertedWorkEmail.isConfirmed,
+      Boolean(insertedWorkEmail.confirmationDate),
     );
+  });
+
+  it("Should fail for not authenticated users", async () => {
+    const email = faker.internet.email();
+    const company = await insertCompany();
+    const user = await insertUser({
+      email,
+    });
+
+    const insertedWorkEmail = await insertWorkEmail({
+      companyId: company.id,
+      userId: user.id,
+      workEmail: email,
+    });
+
+    const query = await executeGraphqlOperation<
+      WorkEmailQuery,
+      WorkEmailQueryVariables
+    >({
+      document: WorkEmail,
+      variables: {
+        email: insertedWorkEmail.workEmail,
+      },
+    });
+
+    assert.equal(query.errors?.length, 1);
+  });
+
+  it("Should fail for different user", async () => {
+    const email = faker.internet.email();
+    const company = await insertCompany();
+    const user = await insertUser({
+      email,
+    });
+
+    const user2 = await insertUser();
+
+    const insertedWorkEmail = await insertWorkEmail({
+      companyId: company.id,
+      userId: user.id,
+      workEmail: email,
+    });
+
+    const query = await executeGraphqlOperationAsUser<
+      WorkEmailQuery,
+      WorkEmailQueryVariables
+    >(
+      {
+        document: WorkEmail,
+        variables: {
+          email: insertedWorkEmail.workEmail,
+        },
+      },
+      user2,
+    );
+
+    assert.equal(query.errors?.length, 1);
   });
 
   it("Should fail if we don't pass the WorkEmail", async () => {

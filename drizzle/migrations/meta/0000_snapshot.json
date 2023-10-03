@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "ba812e92-56f0-4664-838d-d3361a6702a4",
+  "id": "563c1142-21aa-4193-907c-c3070d314b2c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "allowed_currencies": {
@@ -54,9 +54,7 @@
       "indexes": {
         "allowed_currencies_currency_unique": {
           "name": "allowed_currencies_currency_unique",
-          "columns": [
-            "currency"
-          ],
+          "columns": ["currency"],
           "isUnique": true
         }
       },
@@ -129,9 +127,7 @@
       "indexes": {
         "communities_slug_unique": {
           "name": "communities_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": true
         }
       },
@@ -151,14 +147,14 @@
         },
         "name": {
           "name": "name",
-          "type": "text",
+          "type": "text(512)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "description": {
           "name": "description",
-          "type": "text",
+          "type": "text(4096)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -180,6 +176,108 @@
         "website": {
           "name": "website",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'draft'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "current_timestamp"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "companies_company_id_unique": {
+          "name": "companies_company_id_unique",
+          "columns": ["company_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "confirmation_token": {
+      "name": "confirmation_token",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "valid_until": {
+          "name": "valid_until",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "confirmation_date": {
+          "name": "confirmation_date",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -208,15 +306,28 @@
         }
       },
       "indexes": {
-        "companies_company_id_unique": {
-          "name": "companies_company_id_unique",
-          "columns": [
-            "company_id"
-          ],
+        "confirmation_token_id_unique": {
+          "name": "confirmation_token_id_unique",
+          "columns": ["id"],
+          "isUnique": true
+        },
+        "confirmation_token_token_unique": {
+          "name": "confirmation_token_token_unique",
+          "columns": ["token"],
           "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "confirmation_token_user_id_users_id_fk": {
+          "name": "confirmation_token_user_id_users_id_fk",
+          "tableFrom": "confirmation_token",
+          "tableTo": "users",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -342,9 +453,7 @@
       "indexes": {
         "events_name_unique": {
           "name": "events_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         }
       },
@@ -398,12 +507,8 @@
           "name": "events_communities_event_id_events_id_fk",
           "tableFrom": "events_communities",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -411,22 +516,15 @@
           "name": "events_communities_community_id_communities_id_fk",
           "tableFrom": "events_communities",
           "tableTo": "communities",
-          "columnsFrom": [
-            "community_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["community_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "events_communities_event_id_community_id_pk": {
-          "columns": [
-            "community_id",
-            "event_id"
-          ]
+          "columns": ["community_id", "event_id"]
         }
       },
       "uniqueConstraints": {}
@@ -477,12 +575,8 @@
           "name": "events_tags_event_id_events_id_fk",
           "tableFrom": "events_tags",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -490,22 +584,15 @@
           "name": "events_tags_tag_id_tags_id_fk",
           "tableFrom": "events_tags",
           "tableTo": "tags",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tag_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "events_tags_event_id_tag_id_pk": {
-          "columns": [
-            "event_id",
-            "tag_id"
-          ]
+          "columns": ["event_id", "tag_id"]
         }
       },
       "uniqueConstraints": {}
@@ -564,12 +651,8 @@
           "name": "events_users_event_id_events_id_fk",
           "tableFrom": "events_users",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -577,12 +660,8 @@
           "name": "events_users_user_id_users_id_fk",
           "tableFrom": "events_users",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -593,8 +672,8 @@
     "salaries": {
       "name": "salaries",
       "columns": {
-        "company_id": {
-          "name": "company_id",
+        "id": {
+          "name": "id",
           "type": "text",
           "primaryKey": true,
           "notNull": true,
@@ -614,6 +693,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "currency": {
           "name": "currency",
           "type": "text",
@@ -628,6 +714,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "work_email_id": {
+          "name": "work_email_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "years_of_experience": {
           "name": "years_of_experience",
           "type": "integer",
@@ -635,8 +728,36 @@
           "notNull": true,
           "autoincrement": false
         },
+        "gender": {
+          "name": "gender",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "gender_other_text": {
+          "name": "gender_other_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "country_code": {
           "name": "country_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type_of_employment": {
+          "name": "type_of_employment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "work_metodology": {
+          "name": "work_metodology",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -666,11 +787,9 @@
         }
       },
       "indexes": {
-        "salaries_company_id_unique": {
-          "name": "salaries_company_id_unique",
-          "columns": [
-            "company_id"
-          ],
+        "salaries_id_unique": {
+          "name": "salaries_id_unique",
+          "columns": ["id"],
           "isUnique": true
         }
       },
@@ -679,12 +798,17 @@
           "name": "salaries_user_id_users_id_fk",
           "tableFrom": "salaries",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "salaries_company_id_companies_company_id_fk": {
+          "name": "salaries_company_id_companies_company_id_fk",
+          "tableFrom": "salaries",
+          "tableTo": "companies",
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["company_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -692,25 +816,26 @@
           "name": "salaries_currency_allowed_currencies_id_fk",
           "tableFrom": "salaries",
           "tableTo": "allowed_currencies",
-          "columnsFrom": [
-            "currency"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["currency"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "salaries_work_role_id_work_role_company_id_fk": {
-          "name": "salaries_work_role_id_work_role_company_id_fk",
+        "salaries_work_role_id_work_role_id_fk": {
+          "name": "salaries_work_role_id_work_role_id_fk",
           "tableFrom": "salaries",
           "tableTo": "work_role",
-          "columnsFrom": [
-            "work_role_id"
-          ],
-          "columnsTo": [
-            "company_id"
-          ],
+          "columnsFrom": ["work_role_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "salaries_work_email_id_work_email_id_fk": {
+          "name": "salaries_work_email_id_work_email_id_fk",
+          "tableFrom": "salaries",
+          "tableTo": "work_email",
+          "columnsFrom": ["work_email_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -768,9 +893,7 @@
       "indexes": {
         "tags_name_unique": {
           "name": "tags_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         }
       },
@@ -824,12 +947,8 @@
           "name": "tags_communities_tag_id_tags_id_fk",
           "tableFrom": "tags_communities",
           "tableTo": "tags",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tag_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -837,22 +956,15 @@
           "name": "tags_communities_community_id_communities_id_fk",
           "tableFrom": "tags_communities",
           "tableTo": "communities",
-          "columnsFrom": [
-            "community_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["community_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "tags_communities_tag_id_community_id_pk": {
-          "columns": [
-            "community_id",
-            "tag_id"
-          ]
+          "columns": ["community_id", "tag_id"]
         }
       },
       "uniqueConstraints": {}
@@ -973,9 +1085,7 @@
       "indexes": {
         "tickets_name_unique": {
           "name": "tickets_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         }
       },
@@ -984,12 +1094,8 @@
           "name": "tickets_event_id_events_id_fk",
           "tableFrom": "tickets",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -997,12 +1103,8 @@
           "name": "tickets_currency_allowed_currencies_id_fk",
           "tableFrom": "tickets",
           "tableTo": "allowed_currencies",
-          "columnsFrom": [
-            "currency"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["currency"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1139,9 +1241,7 @@
       "indexes": {
         "users_username_unique": {
           "name": "users_username_unique",
-          "columns": [
-            "username"
-          ],
+          "columns": ["username"],
           "isUnique": true
         }
       },
@@ -1203,12 +1303,8 @@
           "name": "users_communities_user_id_users_id_fk",
           "tableFrom": "users_communities",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1216,12 +1312,8 @@
           "name": "users_communities_community_id_communities_id_fk",
           "tableFrom": "users_communities",
           "tableTo": "communities",
-          "columnsFrom": [
-            "community_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["community_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1314,12 +1406,8 @@
           "name": "user_tickets_user_id_users_id_fk",
           "tableFrom": "user_tickets",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1327,12 +1415,8 @@
           "name": "user_tickets_ticket_template_id_tickets_id_fk",
           "tableFrom": "user_tickets",
           "tableTo": "tickets",
-          "columnsFrom": [
-            "ticket_template_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["ticket_template_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1364,20 +1448,20 @@
           "notNull": true,
           "autoincrement": false
         },
-        "confirmation_token": {
-          "name": "confirmation_token",
+        "confirmation_token_id": {
+          "name": "confirmation_token_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "is_confirmed": {
-          "name": "is_confirmed",
-          "type": "integer",
+        "status": {
+          "name": "status",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": false
+          "default": "'pending'"
         },
         "confirmation_date": {
           "name": "confirmation_date",
@@ -1419,9 +1503,7 @@
       "indexes": {
         "work_email_id_unique": {
           "name": "work_email_id_unique",
-          "columns": [
-            "id"
-          ],
+          "columns": ["id"],
           "isUnique": true
         }
       },
@@ -1430,12 +1512,17 @@
           "name": "work_email_user_id_users_id_fk",
           "tableFrom": "work_email",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "work_email_confirmation_token_id_confirmation_token_id_fk": {
+          "name": "work_email_confirmation_token_id_confirmation_token_id_fk",
+          "tableFrom": "work_email",
+          "tableTo": "confirmation_token",
+          "columnsFrom": ["confirmation_token_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1443,12 +1530,8 @@
           "name": "work_email_company_id_companies_company_id_fk",
           "tableFrom": "work_email",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "company_id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["company_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1459,8 +1542,8 @@
     "work_role": {
       "name": "work_role",
       "columns": {
-        "company_id": {
-          "name": "company_id",
+        "id": {
+          "name": "id",
           "type": "text",
           "primaryKey": true,
           "notNull": true,
@@ -1468,6 +1551,13 @@
         },
         "name": {
           "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "seniority": {
+          "name": "seniority",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -1504,11 +1594,9 @@
         }
       },
       "indexes": {
-        "work_role_company_id_unique": {
-          "name": "work_role_company_id_unique",
-          "columns": [
-            "company_id"
-          ],
+        "work_role_id_unique": {
+          "name": "work_role_id_unique",
+          "columns": ["id"],
           "isUnique": true
         }
       },

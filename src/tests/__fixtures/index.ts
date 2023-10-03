@@ -13,42 +13,54 @@ import { Env } from "worker-configuration";
 import { ZodType, z } from "zod";
 import * as rules from "~/authz";
 import {
+  allowedCurrencySchema,
   communitySchema,
   companiesSchema,
+  confirmationTokenSchema,
   eventsSchema,
   eventsToCommunitiesSchema,
   eventsToTagsSchema,
   eventsToUsersSchema,
+  insertAllowedCurrencySchema,
   insertCommunitySchema,
   insertCompaniesSchema,
+  insertConfirmationTokenSchema,
   insertEventsSchema,
   insertEventsToCommunitiesSchema,
   insertEventsToTagsSchema,
   insertEventsToUsersSchema,
+  insertSalariesSchema,
   insertTagsSchema,
   insertTicketSchema,
   insertUserTicketsSchema,
   insertUsersSchema,
   insertUsersToCommunitiesSchema,
   insertWorkEmailSchema,
+  insertWorkRoleSchema,
+  salariesSchema,
+  selectAllowedCurrencySchema,
   selectCommunitySchema,
   selectCompaniesSchema,
+  selectConfirmationTokenSchema,
   selectEventsSchema,
   selectEventsToCommunitiesSchema,
   selectEventsToTagsSchema,
   selectEventsToUsersSchema,
+  selectSalariesSchema,
   selectTagsSchema,
   selectTicketSchema,
   selectUserTicketsSchema,
   selectUsersSchema,
   selectUsersToCommunitiesSchema,
   selectWorkEmailSchema,
+  selectWorkRoleSchema,
   tagsSchema,
   ticketsSchema,
   userTicketsSchema,
   usersSchema,
   usersToCommunitiesSchema,
   workEmailSchema,
+  workRoleSchema,
 } from "~/datasources/db/schema";
 import {
   TicketApprovalStatus,
@@ -58,6 +70,7 @@ import {
 } from "~/generated/types";
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/__fixtures/databaseHelper";
+import { genderOptions } from "../../datasources/db/shared";
 
 const insertUserRequest = insertUsersSchema.deepPartial();
 
@@ -157,19 +170,19 @@ export const insertUser = async (
   // ads
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
+    username: partialInput?.username ?? faker.internet.userName(),
+    bio: partialInput?.bio,
     email: partialInput?.email,
     createdAt: partialInput?.createdAt,
     name: partialInput?.name,
     updatedAt: partialInput?.updatedAt,
-    username: partialInput?.username ?? faker.internet.userName(),
-    isSuperAdmin: partialInput?.isSuperAdmin ?? false,
-    bio: partialInput?.bio ?? faker.lorem.paragraph(),
+    isSuperAdmin: partialInput?.isSuperAdmin,
     deletedAt: partialInput?.deletedAt,
-    emailVerified: partialInput?.emailVerified ?? false,
-    lastName: partialInput?.lastName ?? faker.person.lastName(),
-    publicMetadata: partialInput?.publicMetadata ?? JSON.stringify({}),
-    twoFactorEnabled: partialInput?.twoFactorEnabled ?? false,
-    unsafeMetadata: partialInput?.unsafeMetadata ?? JSON.stringify({}),
+    emailVerified: partialInput?.emailVerified,
+    lastName: partialInput?.lastName,
+    publicMetadata: partialInput?.publicMetadata,
+    twoFactorEnabled: partialInput?.twoFactorEnabled,
+    unsafeMetadata: partialInput?.unsafeMetadata,
     imageUrl: partialInput?.imageUrl,
   } satisfies z.infer<typeof insertUsersSchema>;
   return insertOne(
@@ -186,10 +199,12 @@ export const insertCommunity = async (
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     name: partialInput?.name ?? faker.company.name(),
-    status: partialInput?.status ?? "active",
+    status: partialInput?.status,
     createdAt: partialInput?.createdAt,
     updatedAt: partialInput?.updatedAt,
-    description: partialInput?.description ?? faker.lorem.paragraph(),
+    description: partialInput?.description,
+    deletedAt: partialInput?.deletedAt,
+    slug: partialInput?.slug,
   } satisfies z.infer<typeof insertCommunitySchema>;
   return insertOne(
     insertCommunitySchema,
@@ -205,7 +220,10 @@ export const insertUserToCommunity = async (
   const possibleInput = {
     userId: partialInput?.userId,
     communityId: partialInput?.communityId,
-    role: partialInput?.role ?? "admin",
+    role: partialInput?.role,
+    createdAt: partialInput?.createdAt,
+    deletedAt: partialInput?.deletedAt,
+    updatedAt: partialInput?.updatedAt,
   } satisfies z.infer<typeof insertUsersToCommunitiesSchema>;
   return insertOne(
     insertUsersToCommunitiesSchema,
@@ -221,7 +239,10 @@ export const insertUserToEvent = async (
   const possibleInput = {
     userId: partialInput?.userId,
     eventId: partialInput?.eventId,
-    role: partialInput?.role ?? "admin",
+    role: partialInput?.role,
+    createdAt: partialInput?.createdAt,
+    deletedAt: partialInput?.deletedAt,
+    updatedAt: partialInput?.updatedAt,
   } satisfies z.infer<typeof insertEventsToUsersSchema>;
   return insertOne(
     insertEventsToUsersSchema,
@@ -248,7 +269,9 @@ export const insertTag = async (
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     name: partialInput?.name ?? faker.company.name(),
-    description: partialInput?.description ?? faker.lorem.paragraph(),
+    description: partialInput?.description,
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
   } satisfies z.infer<typeof insertTagsSchema>;
   return insertOne(
     insertTagsSchema,
@@ -268,6 +291,15 @@ export const insertTicketTemplate = async (
     startDateTime: partialInput?.startDateTime ?? faker.date.future(),
     endDateTime: partialInput?.endDateTime ?? faker.date.future(),
     requiresApproval: partialInput?.requiresApproval ?? false,
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
+    currencyId: partialInput?.currencyId,
+    price: partialInput?.price,
+    description: partialInput?.description,
+    quantity: partialInput?.quantity ?? 100,
+    status: partialInput?.status,
+    visibility: partialInput?.visibility,
   } satisfies z.infer<typeof insertTicketSchema>;
 
   return insertOne(
@@ -293,6 +325,9 @@ export const insertTicket = async (
     redemptionStatus:
       partialInput?.redemptionStatus ?? TicketRedemptionStatus.Pending,
     status: partialInput?.status ?? TicketStatus.Cancelled,
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
   } satisfies z.infer<typeof insertUserTicketsSchema>;
 
   return insertOne(
@@ -314,6 +349,15 @@ export const insertEvent = async (
     status: partialInput?.status ?? "active",
     startDateTime: partialInput?.startDateTime ?? faker.date.future(),
     endDateTime: partialInput?.endDateTime ?? faker.date.future(),
+    createdAt: partialInput?.createdAt,
+    geoAddressJSON: partialInput?.geoAddressJSON,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
+    geoLatitude: partialInput?.geoLatitude,
+    geoLongitude: partialInput?.geoLongitude,
+    meetingURL: partialInput?.meetingURL,
+    maxAttendees: partialInput?.maxAttendees,
+    timeZone: partialInput?.timeZone,
   } satisfies z.infer<typeof insertEventsSchema>;
   return insertOne(
     insertEventsSchema,
@@ -330,6 +374,9 @@ export const insertEventTag = async (
   const possibleInput = {
     eventId: partialInput?.eventId,
     tagId: partialInput?.tagId,
+    createdAt: partialInput?.createdAt,
+    deletedAt: partialInput?.deletedAt,
+    updatedAt: partialInput?.updatedAt,
   } satisfies z.infer<typeof insertEventsToTagsSchema>;
   return insertOne(
     insertEventsToTagsSchema,
@@ -344,11 +391,15 @@ export const insertCompany = async (
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
-    name: partialInput?.name ?? faker.company.name(),
-    description: partialInput?.description ?? faker.lorem.paragraph(),
     domain: partialInput?.domain ?? faker.internet.domainName(),
+    name: partialInput?.name,
+    description: partialInput?.description,
     logo: partialInput?.logo,
     website: partialInput?.website,
+    status: partialInput?.status,
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
   } satisfies z.infer<typeof insertCompaniesSchema>;
   return insertOne(
     insertCompaniesSchema,
@@ -365,17 +416,119 @@ export const insertWorkEmail = async (
     id: partialInput?.id ?? faker.string.uuid(),
     userId: partialInput?.userId ?? faker.string.uuid(),
     workEmail: partialInput?.workEmail ?? faker.internet.email(),
-    confirmationToken: partialInput?.confirmationToken,
-    isConfirmed: partialInput?.isConfirmed,
+    confirmationTokenId: partialInput?.confirmationTokenId,
     confirmationDate: partialInput?.confirmationDate,
+    status: partialInput?.status,
     companyId: partialInput?.companyId,
     createdAt: partialInput?.createdAt,
     updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
   } satisfies z.infer<typeof insertWorkEmailSchema>;
   return insertOne(
     insertWorkEmailSchema,
     selectWorkEmailSchema,
     workEmailSchema,
+    possibleInput,
+  );
+};
+
+export const insertConfirmationToken = async (
+  partialInput: Partial<z.infer<typeof insertConfirmationTokenSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    userId: partialInput?.userId ?? faker.string.uuid(),
+    token: partialInput?.token ?? faker.string.uuid(),
+    status: partialInput?.status,
+    source: partialInput?.source ?? "onboarding",
+    validUntil: partialInput?.validUntil ?? faker.date.future(),
+    sourceId: partialInput?.sourceId ?? faker.string.uuid(),
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
+    confirmationDate: partialInput?.confirmationDate,
+  } satisfies z.infer<typeof insertConfirmationTokenSchema>;
+  return insertOne(
+    insertConfirmationTokenSchema,
+    selectConfirmationTokenSchema,
+    confirmationTokenSchema,
+    possibleInput,
+  );
+};
+
+export const insertWorkRole = async (
+  partialInput?: Partial<z.infer<typeof insertWorkRoleSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    name: partialInput?.name ?? faker.person.jobTitle(),
+    description: partialInput?.description ?? faker.person.jobDescriptor(),
+    seniority: partialInput?.seniority ?? faker.lorem.word(),
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
+  } satisfies z.infer<typeof insertWorkRoleSchema>;
+  return insertOne(
+    insertWorkRoleSchema,
+    selectWorkRoleSchema,
+    workRoleSchema,
+    possibleInput,
+  );
+};
+
+export const insertAllowedCurrency = async (
+  partialInput?: Partial<z.infer<typeof insertAllowedCurrencySchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    currency: partialInput?.currency ?? faker.finance.currencyCode(),
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
+  } satisfies z.infer<typeof insertAllowedCurrencySchema>;
+  return insertOne(
+    insertAllowedCurrencySchema,
+    selectAllowedCurrencySchema,
+    allowedCurrencySchema,
+    possibleInput,
+  );
+};
+
+export const insertSalary = async (
+  partialInput?: Partial<z.infer<typeof insertSalariesSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    userId: partialInput?.userId ?? faker.string.uuid(),
+    amount: partialInput?.amount ?? faker.datatype.number(),
+    countryCode: partialInput?.countryCode ?? faker.address.countryCode(),
+    typeOfEmployment:
+      partialInput?.typeOfEmployment ??
+      faker.helpers.arrayElement([
+        "fullTime",
+        "partTime",
+        "freelance",
+      ] as const),
+    workMetodology:
+      partialInput?.workMetodology ??
+      faker.helpers.arrayElement(["remote", "office", "hybrid"] as const),
+    yearsOfExperience:
+      partialInput?.yearsOfExperience ?? faker.datatype.number(),
+    gender: partialInput?.gender ?? faker.helpers.arrayElement(genderOptions),
+    genderOtherText: partialInput?.genderOtherText,
+    companyId: partialInput?.companyId,
+    workEmailId: partialInput?.workEmailId,
+    workRoleId: partialInput?.workRoleId,
+
+    createdAt: partialInput?.createdAt,
+    currencyId: partialInput?.currencyId,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
+  } satisfies z.infer<typeof insertSalariesSchema>;
+  return insertOne(
+    insertSalariesSchema,
+    selectSalariesSchema,
+    salariesSchema,
     possibleInput,
   );
 };

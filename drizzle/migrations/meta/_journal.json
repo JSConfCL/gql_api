@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1695009365070,
-      "tag": "0000_misty_toro",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1696183607822,
-      "tag": "0001_known_silvermane",
+      "when": 1696303412275,
+      "tag": "0000_premium_jack_power",
       "breakpoints": true
     }
   ]

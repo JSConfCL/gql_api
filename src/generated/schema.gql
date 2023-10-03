@@ -1,3 +1,11 @@
+"""
+Representation of a workEmail
+"""
+type AllowedCurrency {
+  currency: String!
+  id: String!
+}
+
 enum CommnunityStatus {
   active
   inactive
@@ -13,6 +21,58 @@ type Community {
   name: String
   status: CommnunityStatus!
   users: [User!]!
+}
+
+"""
+Representation of a workEmail
+"""
+type Company {
+  description: String
+  domain: String!
+  hasBeenUpdated: Boolean!
+  id: String!
+  logo: String
+  name: String
+  salarySubmissions: Int!
+
+  """
+  Not available to users
+  """
+  status: CompanyStatus
+  website: String
+}
+
+enum CompanyStatus {
+  active
+  draft
+  inactive
+}
+
+input CreateCompanyInput {
+  description: String
+
+  """
+  The email domain of the company (What we'll use to match the company to the user on account-creation)
+  """
+  domain: String!
+  logo: String
+  name: String
+  status: CompanyStatus
+  website: String
+}
+
+input CreateSalaryInput {
+  amount: Int!
+  companyId: String!
+  confirmationToken: String!
+  countryCode: String!
+  currencyId: String!
+  gender: Gender!
+  genderOtherText: String!
+  typeOfEmployment: TypeOfEmployment!
+  workMetodology: WorkMetodology!
+  workRoleId: String!
+  yearsOfExperience: Int!
 }
 
 """
@@ -91,6 +151,20 @@ input EventsTicketsSearchInput {
   status: TicketStatus
 }
 
+enum Gender {
+  agender
+  female
+  genderfluid
+  genderqueer
+  male
+  non_binary
+  other
+  prefer_not_to_say
+  transgender_female
+  transgender_male
+  two_spirit
+}
+
 type Mutation {
   """
   Approve a ticket
@@ -103,9 +177,19 @@ type Mutation {
   cancelUserTicket(userTicketId: String!): UserTicket!
 
   """
+  Create a company
+  """
+  createCompany(input: CreateCompanyInput!): Company!
+
+  """
   Create an event
   """
   createEvent(input: EventCreateInput!): Event!
+
+  """
+  Create a salary
+  """
+  createSalary(input: CreateSalaryInput!): Salary!
 
   """
   Edit a ticket
@@ -121,6 +205,16 @@ type Mutation {
   Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position
   """
   startWorkEmailValidation(email: String!): WorkEmail!
+
+  """
+  Update a company
+  """
+  updateCompany(input: UpdateCompanyInput!): Company!
+
+  """
+  Create a salary
+  """
+  updateSalary(input: UpdateSalaryInput!): Salary!
 
   """
   Update a user
@@ -158,6 +252,16 @@ type Query {
   community(id: String!): Community
 
   """
+  Get all available companies
+  """
+  companies(input: SearchCompaniesInput): [Company!]!
+
+  """
+  Get all available companies
+  """
+  company(companyId: String!): Company!
+
+  """
   Get an event by id
   """
   event(id: String!): Event
@@ -187,6 +291,30 @@ type Query {
   Get a workEmail and check if its validated for this user
   """
   workEmail(email: String!): WorkEmail!
+}
+
+"""
+Representation of a workEmail
+"""
+type Salary {
+  amount: Int!
+  company: Company!
+  countryCode: String!
+  currency: AllowedCurrency!
+  gender: Gender
+  genderOtherText: String
+  id: String!
+  typeOfEmployment: TypeOfEmployment!
+  workMetodology: WorkMetodology!
+  workRole: WorkRole!
+  yearsOfExperience: Int!
+}
+
+input SearchCompaniesInput {
+  companyName: String
+  description: String
+  domain: String
+  website: String
 }
 
 """
@@ -269,6 +397,36 @@ enum TicketTemplateVisibility {
   unlisted
 }
 
+enum TypeOfEmployment {
+  freelance
+  fullTime
+  partTime
+}
+
+input UpdateCompanyInput {
+  companyId: String!
+  description: String
+  domain: String
+  logo: String
+  name: String
+  website: String
+}
+
+input UpdateSalaryInput {
+  amount: Int!
+  companyId: String!
+  confirmationToken: String!
+  countryCode: String!
+  currencyId: String!
+  gender: Gender!
+  genderOtherText: String!
+  salaryId: String!
+  typeOfEmployment: TypeOfEmployment!
+  workMetodology: WorkMetodology!
+  workRoleId: String!
+  yearsOfExperience: Int!
+}
+
 """
 Representation of a user
 """
@@ -298,6 +456,22 @@ Representation of a workEmail
 type WorkEmail {
   id: String!
   isValidated: Boolean!
+}
+
+enum WorkMetodology {
+  hybrid
+  office
+  remote
+}
+
+"""
+Representation of a workEmail
+"""
+type WorkRole {
+  description: String!
+  id: String!
+  name: String!
+  seniority: String!
 }
 
 input updateUserRoleInCommunityInput {

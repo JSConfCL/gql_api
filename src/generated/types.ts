@@ -36,6 +36,13 @@ export type Scalars = {
   DateTime: { input: any; output: any };
 };
 
+/** Representation of a workEmail */
+export type AllowedCurrency = {
+  __typename?: "AllowedCurrency";
+  currency: Scalars["String"]["output"];
+  id: Scalars["String"]["output"];
+};
+
 export enum CommnunityStatus {
   Active = "active",
   Inactive = "inactive",
@@ -50,6 +57,51 @@ export type Community = {
   name?: Maybe<Scalars["String"]["output"]>;
   status: CommnunityStatus;
   users: Array<User>;
+};
+
+/** Representation of a workEmail */
+export type Company = {
+  __typename?: "Company";
+  description?: Maybe<Scalars["String"]["output"]>;
+  domain: Scalars["String"]["output"];
+  hasBeenUpdated: Scalars["Boolean"]["output"];
+  id: Scalars["String"]["output"];
+  logo?: Maybe<Scalars["String"]["output"]>;
+  name?: Maybe<Scalars["String"]["output"]>;
+  salarySubmissions: Scalars["Int"]["output"];
+  /** Not available to users */
+  status?: Maybe<CompanyStatus>;
+  website?: Maybe<Scalars["String"]["output"]>;
+};
+
+export enum CompanyStatus {
+  Active = "active",
+  Draft = "draft",
+  Inactive = "inactive",
+}
+
+export type CreateCompanyInput = {
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  /** The email domain of the company (What we'll use to match the company to the user on account-creation) */
+  domain: Scalars["String"]["input"];
+  logo?: InputMaybe<Scalars["String"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  status?: InputMaybe<CompanyStatus>;
+  website?: InputMaybe<Scalars["String"]["input"]>;
+};
+
+export type CreateSalaryInput = {
+  amount: Scalars["Int"]["input"];
+  companyId: Scalars["String"]["input"];
+  confirmationToken: Scalars["String"]["input"];
+  countryCode: Scalars["String"]["input"];
+  currencyId: Scalars["String"]["input"];
+  gender: Gender;
+  genderOtherText: Scalars["String"]["input"];
+  typeOfEmployment: TypeOfEmployment;
+  workMetodology: WorkMetodology;
+  workRoleId: Scalars["String"]["input"];
+  yearsOfExperience: Scalars["Int"]["input"];
 };
 
 /** Representation of an Event (Events and Users, is what tickets are linked to) */
@@ -122,20 +174,42 @@ export type EventsTicketsSearchInput = {
   status?: InputMaybe<TicketStatus>;
 };
 
+export enum Gender {
+  Agender = "agender",
+  Female = "female",
+  Genderfluid = "genderfluid",
+  Genderqueer = "genderqueer",
+  Male = "male",
+  NonBinary = "non_binary",
+  Other = "other",
+  PreferNotToSay = "prefer_not_to_say",
+  TransgenderFemale = "transgender_female",
+  TransgenderMale = "transgender_male",
+  TwoSpirit = "two_spirit",
+}
+
 export type Mutation = {
   __typename?: "Mutation";
   /** Approve a ticket */
   approvalUserTicket: UserTicket;
   /** Cancel a ticket */
   cancelUserTicket: UserTicket;
+  /** Create a company */
+  createCompany: Company;
   /** Create an event */
   createEvent: Event;
+  /** Create a salary */
+  createSalary: Salary;
   /** Edit a ticket */
   editTicket: Ticket;
   /** Redeem a ticket */
   redeemUserTicket: UserTicket;
   /** Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position */
   startWorkEmailValidation: WorkEmail;
+  /** Update a company */
+  updateCompany: Company;
+  /** Create a salary */
+  updateSalary: Salary;
   /** Update a user */
   updateUser: User;
   /** Update a user role */
@@ -152,8 +226,16 @@ export type MutationCancelUserTicketArgs = {
   userTicketId: Scalars["String"]["input"];
 };
 
+export type MutationCreateCompanyArgs = {
+  input: CreateCompanyInput;
+};
+
 export type MutationCreateEventArgs = {
   input: EventCreateInput;
+};
+
+export type MutationCreateSalaryArgs = {
+  input: CreateSalaryInput;
 };
 
 export type MutationEditTicketArgs = {
@@ -166,6 +248,14 @@ export type MutationRedeemUserTicketArgs = {
 
 export type MutationStartWorkEmailValidationArgs = {
   email: Scalars["String"]["input"];
+};
+
+export type MutationUpdateCompanyArgs = {
+  input: UpdateCompanyInput;
+};
+
+export type MutationUpdateSalaryArgs = {
+  input: UpdateSalaryInput;
 };
 
 export type MutationUpdateUserArgs = {
@@ -194,6 +284,10 @@ export type Query = {
   communities: Array<Community>;
   /** Get a community by id */
   community?: Maybe<Community>;
+  /** Get all available companies */
+  companies: Array<Company>;
+  /** Get all available companies */
+  company: Company;
   /** Get an event by id */
   event?: Maybe<Event>;
   /** Get a list of events. Filter by name, id, status or date */
@@ -219,6 +313,14 @@ export type QueryCommunityArgs = {
   id: Scalars["String"]["input"];
 };
 
+export type QueryCompaniesArgs = {
+  input?: InputMaybe<SearchCompaniesInput>;
+};
+
+export type QueryCompanyArgs = {
+  companyId: Scalars["String"]["input"];
+};
+
 export type QueryEventArgs = {
   id: Scalars["String"]["input"];
 };
@@ -241,6 +343,29 @@ export type QueryTagsArgs = {
 
 export type QueryWorkEmailArgs = {
   email: Scalars["String"]["input"];
+};
+
+/** Representation of a workEmail */
+export type Salary = {
+  __typename?: "Salary";
+  amount: Scalars["Int"]["output"];
+  company: Company;
+  countryCode: Scalars["String"]["output"];
+  currency: AllowedCurrency;
+  gender?: Maybe<Gender>;
+  genderOtherText?: Maybe<Scalars["String"]["output"]>;
+  id: Scalars["String"]["output"];
+  typeOfEmployment: TypeOfEmployment;
+  workMetodology: WorkMetodology;
+  workRole: WorkRole;
+  yearsOfExperience: Scalars["Int"]["output"];
+};
+
+export type SearchCompaniesInput = {
+  companyName?: InputMaybe<Scalars["String"]["input"]>;
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  domain?: InputMaybe<Scalars["String"]["input"]>;
+  website?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 /** Representation of a tag. Tags can be associated to many things. An event, a community, etc. */
@@ -321,6 +446,36 @@ export enum TicketTemplateVisibility {
   Unlisted = "unlisted",
 }
 
+export enum TypeOfEmployment {
+  Freelance = "freelance",
+  FullTime = "fullTime",
+  PartTime = "partTime",
+}
+
+export type UpdateCompanyInput = {
+  companyId: Scalars["String"]["input"];
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  domain?: InputMaybe<Scalars["String"]["input"]>;
+  logo?: InputMaybe<Scalars["String"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  website?: InputMaybe<Scalars["String"]["input"]>;
+};
+
+export type UpdateSalaryInput = {
+  amount: Scalars["Int"]["input"];
+  companyId: Scalars["String"]["input"];
+  confirmationToken: Scalars["String"]["input"];
+  countryCode: Scalars["String"]["input"];
+  currencyId: Scalars["String"]["input"];
+  gender: Gender;
+  genderOtherText: Scalars["String"]["input"];
+  salaryId: Scalars["String"]["input"];
+  typeOfEmployment: TypeOfEmployment;
+  workMetodology: WorkMetodology;
+  workRoleId: Scalars["String"]["input"];
+  yearsOfExperience: Scalars["Int"]["input"];
+};
+
 /** Representation of a user */
 export type User = {
   __typename?: "User";
@@ -347,6 +502,21 @@ export type WorkEmail = {
   __typename?: "WorkEmail";
   id: Scalars["String"]["output"];
   isValidated: Scalars["Boolean"]["output"];
+};
+
+export enum WorkMetodology {
+  Hybrid = "hybrid",
+  Office = "office",
+  Remote = "remote",
+}
+
+/** Representation of a workEmail */
+export type WorkRole = {
+  __typename?: "WorkRole";
+  description: Scalars["String"]["output"];
+  id: Scalars["String"]["output"];
+  name: Scalars["String"]["output"];
+  seniority: Scalars["String"]["output"];
 };
 
 export type UpdateUserRoleInCommunityInput = {

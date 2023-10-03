@@ -3,15 +3,17 @@ import { v4 } from "uuid";
 import { builder } from "~/builder";
 import {
   companiesSchema,
+  confirmationTokenSchema,
   insertCompaniesSchema,
+  insertConfirmationTokenSchema,
   insertWorkEmailSchema,
   selectWorkEmailSchema,
   workEmailSchema,
 } from "~/datasources/db/schema";
-import { workEmailRef } from "~/schema/shared/refs";
+import { WorkEmailRef } from "~/schema/shared/refs";
 import { enqueueEmail } from "../datasources/mail";
 
-builder.objectType(workEmailRef, {
+builder.objectType(WorkEmailRef, {
   description: "Representation of a workEmail",
   fields: (t) => ({
     id: t.exposeString("id", { nullable: false }),
@@ -28,7 +30,7 @@ builder.objectType(workEmailRef, {
           where: (wes, { eq, and }) =>
             and(eq(wes.id, root.id), eq(wes.userId, USER.id)),
         });
-        return workEmailSchema?.isConfirmed || false;
+        return Boolean(workEmailSchema?.confirmationDate) || false;
       },
     }),
   }),
@@ -37,17 +39,23 @@ builder.objectType(workEmailRef, {
 builder.queryFields((t) => ({
   workEmail: t.field({
     description: "Get a workEmail and check if its validated for this user",
-    type: workEmailRef,
+    type: WorkEmailRef,
     authz: {
       rules: ["IsAuthenticated"],
     },
     args: {
       email: t.arg.string({ required: true }),
     },
-    resolve: async (root, { email }, { DB }) => {
+    resolve: async (root, { email }, { DB, USER }) => {
       const workEmail = await DB.query.workEmailSchema.findFirst({
         where: (wes, { like }) => like(wes.workEmail, email.toLowerCase()),
+        with: {
+          user: true,
+        },
       });
+      if (workEmail?.user?.id !== USER?.id) {
+        throw new Error("You don't have access");
+      }
       return selectWorkEmailSchema.parse(workEmail);
     },
   }),
@@ -57,7 +65,7 @@ builder.mutationFields((t) => ({
   startWorkEmailValidation: t.field({
     description:
       "Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position",
-    type: workEmailRef,
+    type: WorkEmailRef,
     authz: {
       rules: ["IsAuthenticated"],
     },
@@ -96,47 +104,76 @@ builder.mutationFields((t) => ({
           }
 
           // Find the work email, if it exists we update it and retrigger the flow, if not, create the work email and trigger the flow
-          const possibleWorkSchema = await trx.query.workEmailSchema.findFirst({
+          const workEmail = await trx.query.workEmailSchema.findFirst({
             where: (wes, { like, and, eq }) =>
               and(
                 like(wes.workEmail, email.toLowerCase()),
                 eq(wes.userId, USER.id),
               ),
+            with: {
+              confirmationToken: true,
+            },
           });
 
-          const confirmationToken = v4();
-
-          if (possibleWorkSchema) {
-            const oneHourFromNow = new Date(possibleWorkSchema.createdAt);
-            oneHourFromNow.setHours(oneHourFromNow.getHours() + 1);
-
-            if (possibleWorkSchema.createdAt < oneHourFromNow) {
-              throw new Error(
-                "You can only request a new confirmation email once per hour",
-              );
+          if (workEmail) {
+            const currentDate = new Date();
+            currentDate.setHours(currentDate.getHours() + 1);
+            if (workEmail.confirmationToken) {
+              if (workEmail.confirmationToken.validUntil > currentDate) {
+                throw new Error(
+                  "You can only request a new confirmation email once per hour",
+                );
+              } else {
+                await trx
+                  .update(confirmationTokenSchema)
+                  .set({
+                    status: "expired",
+                    validUntil: currentDate,
+                    confirmationDate: null,
+                  })
+                  .where(
+                    eq(
+                      confirmationTokenSchema.id,
+                      workEmail.confirmationToken.id,
+                    ),
+                  )
+                  .execute();
+              }
             }
+            const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
+              id: v4(),
+              source: "onboarding",
+              sourceId: workEmail.id,
+              userId: USER.id,
+              token: v4(),
+              // by default, the token is valid for 1 hour
+              validUntil: new Date(Date.now() + 1000 * 60 * 60),
+            });
+            const insertedToken = await trx
+              .insert(confirmationTokenSchema)
+              .values(insertWorkEmailToken)
+              .returning()
+              .get();
 
             const updatedWorkEmail = await trx
               .update(workEmailSchema)
               .set({
-                confirmationToken,
+                confirmationTokenId: insertedToken.id,
                 companyId,
               })
               .returning()
               .get();
             await enqueueEmail(MAIL_QUEUE, {
-              code: confirmationToken,
+              code: insertedToken.token,
               userId: USER.id,
               to: email.toLowerCase(),
             });
             return updatedWorkEmail;
           } else {
-            const id = v4();
             const insertWorkEmail = insertWorkEmailSchema.parse({
-              id,
+              id: v4(),
               userId: USER.id,
               workEmail: email.toLowerCase(),
-              confirmationToken,
               companyId,
             });
 
@@ -145,9 +182,33 @@ builder.mutationFields((t) => ({
               .values(insertWorkEmail)
               .returning()
               .get();
+
+            const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
+              id: v4(),
+              source: "onboarding",
+              sourceId: insertedWorkEmail.id,
+              userId: USER.id,
+              token: v4(),
+              // by default, the token is valid for 1 hour
+              validUntil: new Date(Date.now() + 1000 * 60 * 60),
+            });
+            const insertedToken = await trx
+              .insert(confirmationTokenSchema)
+              .values(insertWorkEmailToken)
+              .returning()
+              .get();
+            await trx
+              .update(workEmailSchema)
+              .set({
+                confirmationTokenId: insertedToken.id,
+              })
+              .where(eq(workEmailSchema.id, insertedWorkEmail.id))
+              .returning()
+              .get();
+
             await enqueueEmail(MAIL_QUEUE, {
               userId: USER.id,
-              code: confirmationToken,
+              code: insertedToken.token,
               to: email.toLowerCase(),
             });
             return insertedWorkEmail;
@@ -162,7 +223,7 @@ builder.mutationFields((t) => ({
   }),
   validateWorkEmail: t.field({
     description: "Validates work email for a user",
-    type: workEmailRef,
+    type: WorkEmailRef,
     authz: {
       rules: ["IsAuthenticated"],
     },
@@ -179,24 +240,44 @@ builder.mutationFields((t) => ({
 
       const result = await DB.transaction(async (trx) => {
         try {
+          const foundConfirmationToken =
+            await trx.query.confirmationTokenSchema.findFirst({
+              where: (c, { eq, and, inArray }) =>
+                and(
+                  eq(c.token, confirmationToken),
+                  inArray(c.status, ["pending"]),
+                  inArray(c.source, ["onboarding", "work_email"]),
+                ),
+            });
+          if (!foundConfirmationToken) {
+            throw new Error("Invalid token");
+          }
+
+          if (
+            foundConfirmationToken.validUntil <= new Date() ||
+            foundConfirmationToken.userId !== USER.id
+          ) {
+            throw new Error("Invalid token");
+          }
+
           const possibleWorkSchema = await trx.query.workEmailSchema.findFirst({
             where: (wes, { eq, and }) =>
               and(
-                eq(wes.confirmationToken, confirmationToken),
+                eq(wes.confirmationTokenId, foundConfirmationToken.id),
                 eq(wes.userId, USER.id),
               ),
           });
 
           if (possibleWorkSchema) {
             // TODO: Consider also checking if the confirmationDate is over a year old.
-            if (possibleWorkSchema.isConfirmed) {
+            if (possibleWorkSchema.status === "confirmed") {
               throw new Error("Email is already validated");
             }
             const updatedWorkEmail = await trx
               .update(workEmailSchema)
               .set({
-                isConfirmed: true,
-                confirmationToken: null,
+                status: "confirmed",
+                confirmationTokenId: null,
                 confirmationDate: new Date(),
               })
               .where(eq(workEmailSchema.id, possibleWorkSchema.id))

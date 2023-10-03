@@ -354,7 +354,7 @@ builder.queryFields((t) => ({
   }),
 }));
 
-const eventCreateInput = builder.inputType("EventCreateInput", {
+const EventCreateInput = builder.inputType("EventCreateInput", {
   fields: (t) => ({
     name: t.string({ required: true }),
     description: t.string({ required: true }),
@@ -396,7 +396,7 @@ builder.mutationFields((t) => ({
       rules: ["IsAuthenticated"],
     },
     args: {
-      input: t.arg({ type: eventCreateInput, required: true }),
+      input: t.arg({ type: EventCreateInput, required: true }),
     },
     resolve: async (root, { input }, ctx) => {
       try {

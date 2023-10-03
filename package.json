@@ -3,7 +3,7 @@
   "main": "./build/index.js",
   "scripts": {
     "drizzle-kit": "drizzle-kit",
-    "db:generate": "drizzle-kit generate:sqlite",
+    "db:generate": "drizzle-kit generate:sqlite && prettier ./drizzle/migrations --write",
     "db:check": "drizzle-kit check:sqlite",
     "db:up": "drizzle-kit up:sqlite",
     "db:studio": "drizzle-kit studio --verbose",
@@ -19,7 +19,7 @@
     "prettier:fix": "prettier ./src --cache --write",
     "typecheck": "tsc",
     "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info --port 50123",
-    "generate": "tsx ./src/generated/generate.ts && graphql-codegen --config codegen.ts",
+    "generate": "tsx ./src/generated/generate.ts && graphql-codegen --config codegen.ts && prettier ./src/generated --write",
     "email:dev": "email dev",
     "email:export": "email export"
   },
@@ -45,6 +45,7 @@
     "@typescript-eslint/parser": "^5.61.0",
     "@vitest/coverage-v8": "^0.33.0",
     "@vitest/ui": "^0.33.0",
+    "better-sqlite3": "^8.7.0",
     "dotenv": "^16.3.1",
     "drizzle-dbml-generator": "^0.4.0",
     "drizzle-kit": "^0.19.12",

@@ -5,20 +5,29 @@ import { usersSchema } from "./users";
 import { allowedCurrencySchema } from "./allowedCurrencies";
 import { workRoleSchema } from "./workRoles";
 import { relations } from "drizzle-orm";
+import { companiesSchema } from "./companies";
+import { genderOptions } from "./shared";
+import { workEmailSchema } from "./workEmail";
 
 // SALARIES-TABLE
 export const salariesSchema = sqliteTable("salaries", {
-  id: text("company_id").primaryKey().unique(),
+  id: text("id").primaryKey().unique(),
   userId: text("user_id")
     .references(() => usersSchema.id)
     .notNull(),
   amount: int("amount").notNull(),
+  companyId: text("company_id").references(() => companiesSchema.id),
   currencyId: text("currency").references(() => allowedCurrencySchema.id),
   workRoleId: text("work_role_id").references(() => workRoleSchema.id),
+  workEmailId: text("work_email_id").references(() => workEmailSchema.id),
   yearsOfExperience: int("years_of_experience").notNull(),
+  gender: text("gender", {
+    enum: genderOptions,
+  }),
+  genderOtherText: text("gender_other_text"),
   countryCode: text("country_code").notNull(),
   typeOfEmployment: text("type_of_employment", {
-    enum: ["full_time", "part_time", "unpaid_internship", "paid_internship"],
+    enum: ["fullTime", "partTime", "freelance"],
   }).notNull(),
   workMetodology: text("work_metodology", {
     enum: ["remote", "office", "hybrid"],
@@ -31,9 +40,17 @@ export const salairesRelations = relations(salariesSchema, ({ one }) => ({
     fields: [salariesSchema.currencyId],
     references: [allowedCurrencySchema.id],
   }),
+  company: one(companiesSchema, {
+    fields: [salariesSchema.companyId],
+    references: [companiesSchema.id],
+  }),
   workRole: one(workRoleSchema, {
     fields: [salariesSchema.workRoleId],
     references: [workRoleSchema.id],
+  }),
+  workEmail: one(workEmailSchema, {
+    fields: [salariesSchema.workEmailId],
+    references: [workEmailSchema.id],
   }),
   user: one(usersSchema, {
     fields: [salariesSchema.userId],

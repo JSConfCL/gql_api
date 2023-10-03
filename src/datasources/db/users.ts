@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { blob, int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, genderOptions } from "./shared";
 import { userTicketsSchema, usersToCommunitiesSchema } from "./schema";
 
 // USERS
@@ -12,19 +12,7 @@ export const usersSchema = sqliteTable("users", {
   bio: text("bio", { length: 1024 }).default(""),
   email: text("email"),
   gender: text("gender", {
-    enum: [
-      "male",
-      "female",
-      "transgender_male",
-      "transgender_female",
-      "non_binary",
-      "genderqueer",
-      "genderfluid",
-      "agender",
-      "two-spirit",
-      "other",
-      "prefer_not_to_say",
-    ],
+    enum: genderOptions,
   }),
   genderOtherText: text("gender_other_text"),
   isSuperAdmin: int("isSuperAdmin", { mode: "boolean" }).default(false),
