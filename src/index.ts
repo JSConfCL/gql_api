@@ -82,10 +82,13 @@ export const yoga = createYoga<Env>({
       subscriptionsProtocol: "SSE",
       // Podríamos hacer un JSON stringify,
       // pero quiero evitar acciones q bloqueen el eventloop para cuando se inicie el worker.
-      headers: `{
+      headers:
+        APP_ENV === "development"
+          ? `{
   "Authorization":"Bearer ${ENFORCED_JWT_TOKEN ?? "INSERT_TOKEN_HERE"}",
   "x-graphql-csrf-token": "your-csrf-token-in-production"
-}`,
+}`
+          : `{}`,
     };
   },
   cors: {

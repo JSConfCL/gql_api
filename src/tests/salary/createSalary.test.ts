@@ -1,4 +1,5 @@
-import { it, describe, assert, afterEach, expect } from "vitest";
+import { v4 } from "uuid";
+import { afterEach, assert, describe, expect, it } from "vitest";
 import {
   executeGraphqlOperation,
   executeGraphqlOperationAsUser,
@@ -11,16 +12,15 @@ import {
 } from "~/tests/__fixtures";
 import { clearDatabase, getTestDB } from "~/tests/__fixtures/databaseHelper";
 import {
-  CreateSalary,
-  CreateSalaryMutation,
-  CreateSalaryMutationVariables,
-} from "./mutations.generated";
-import {
   Gender,
   TypeOfEmployment,
   WorkMetodology,
 } from "../../generated/types";
-import { v4 } from "uuid";
+import {
+  CreateSalary,
+  CreateSalaryMutation,
+  CreateSalaryMutationVariables,
+} from "./mutations.generated";
 
 afterEach(() => {
   clearDatabase();

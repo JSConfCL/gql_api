@@ -1,6 +1,8 @@
-import { it, describe, assert, afterEach, expect } from "vitest";
+import { v4 } from "uuid";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   executeGraphqlOperation,
+  executeGraphqlOperationAsSuperAdmin,
   executeGraphqlOperationAsUser,
   insertAllowedCurrency,
   insertCompany,
@@ -10,19 +12,17 @@ import {
   insertWorkEmail,
   insertWorkRole,
 } from "~/tests/__fixtures";
-import { clearDatabase, getTestDB } from "~/tests/__fixtures/databaseHelper";
-import {
-  UpdateSalary,
-  UpdateSalaryMutation,
-  UpdateSalaryMutationVariables,
-} from "./mutations.generated";
+import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   Gender,
   TypeOfEmployment,
   WorkMetodology,
 } from "../../generated/types";
-import { v4 } from "uuid";
-import { insertSalariesSchema } from "../../datasources/db/salaries";
+import {
+  UpdateSalary,
+  UpdateSalaryMutation,
+  UpdateSalaryMutationVariables,
+} from "./mutations.generated";
 
 afterEach(() => {
   clearDatabase();
@@ -70,58 +70,60 @@ const createSalary = async () => {
 
 describe("Salary creation", () => {
   describe("User has a valid token", () => {
-    it("Should create a salary", async () => {
-      const { confirmationToken, salaryId, user } = await createSalary();
-      const workRole2 = await insertWorkRole();
-      const allowedCurrency2 = await insertAllowedCurrency();
-      const company2 = await insertCompany({
-        status: "active",
-      });
+    describe("Should update a salary", () => {
+      it("For a user with a correct code", async () => {
+        const { confirmationToken, salaryId, user } = await createSalary();
+        const workRole2 = await insertWorkRole();
+        const allowedCurrency2 = await insertAllowedCurrency();
+        const company2 = await insertCompany({
+          status: "active",
+        });
 
-      const UpdateWorkEmail = await executeGraphqlOperationAsUser<
-        UpdateSalaryMutation,
-        UpdateSalaryMutationVariables
-      >(
-        {
-          document: UpdateSalary,
-          variables: {
-            input: {
-              salaryId: salaryId,
-              confirmationToken: confirmationToken,
-              amount: 100000,
-              countryCode: "CLP",
-              gender: Gender.Female,
-              typeOfEmployment: TypeOfEmployment.PartTime,
-              companyId: company2.id,
-              currencyId: allowedCurrency2.id,
-              workMetodology: WorkMetodology.Office,
-              workRoleId: workRole2.id,
-              genderOtherText: "something",
-              yearsOfExperience: 2,
+        const UpdateWorkEmail = await executeGraphqlOperationAsUser<
+          UpdateSalaryMutation,
+          UpdateSalaryMutationVariables
+        >(
+          {
+            document: UpdateSalary,
+            variables: {
+              input: {
+                salaryId: salaryId,
+                confirmationToken: confirmationToken,
+                amount: 100000,
+                countryCode: "CLP",
+                gender: Gender.Female,
+                typeOfEmployment: TypeOfEmployment.PartTime,
+                companyId: company2.id,
+                currencyId: allowedCurrency2.id,
+                workMetodology: WorkMetodology.Office,
+                workRoleId: workRole2.id,
+                genderOtherText: "something",
+                yearsOfExperience: 2,
+              },
             },
           },
-        },
-        user,
-      );
+          user,
+        );
 
-      expect(UpdateWorkEmail.errors).toBeUndefined();
-      expect(UpdateWorkEmail.data?.updateSalary).toMatchObject({
-        amount: 100000,
-        countryCode: "CLP",
-        currency: {
-          currency: allowedCurrency2.currency,
-          id: allowedCurrency2.id,
-        },
-        gender: Gender.Female,
-        genderOtherText: "something",
-        id: salaryId,
-        typeOfEmployment: TypeOfEmployment.PartTime,
-        workMetodology: WorkMetodology.Office,
-        workRole: {
-          id: workRole2.id,
-          name: workRole2.name,
-        },
-        yearsOfExperience: 2,
+        expect(UpdateWorkEmail.errors).toBeUndefined();
+        expect(UpdateWorkEmail.data?.updateSalary).toMatchObject({
+          amount: 100000,
+          countryCode: "CLP",
+          currency: {
+            currency: allowedCurrency2.currency,
+            id: allowedCurrency2.id,
+          },
+          gender: Gender.Female,
+          genderOtherText: "something",
+          id: salaryId,
+          typeOfEmployment: TypeOfEmployment.PartTime,
+          workMetodology: WorkMetodology.Office,
+          workRole: {
+            id: workRole2.id,
+            name: workRole2.name,
+          },
+          yearsOfExperience: 2,
+        });
       });
     });
   });
@@ -135,6 +137,38 @@ describe("Salary creation", () => {
       });
 
       const UpdateWorkEmail = await executeGraphqlOperation<
+        UpdateSalaryMutation,
+        UpdateSalaryMutationVariables
+      >({
+        document: UpdateSalary,
+        variables: {
+          input: {
+            salaryId: salaryId,
+            confirmationToken: confirmationToken,
+            amount: 100000,
+            countryCode: "CLP",
+            gender: Gender.Female,
+            typeOfEmployment: TypeOfEmployment.PartTime,
+            companyId: company2.id,
+            currencyId: allowedCurrency2.id,
+            workMetodology: WorkMetodology.Office,
+            workRoleId: workRole2.id,
+            genderOtherText: "something",
+            yearsOfExperience: 2,
+          },
+        },
+      });
+      expect(UpdateWorkEmail.errors).toBeDefined();
+    });
+    it("For a SuperAdmin", async () => {
+      const { confirmationToken, salaryId, user } = await createSalary();
+      const workRole2 = await insertWorkRole();
+      const allowedCurrency2 = await insertAllowedCurrency();
+      const company2 = await insertCompany({
+        status: "active",
+      });
+
+      const UpdateWorkEmail = await executeGraphqlOperationAsSuperAdmin<
         UpdateSalaryMutation,
         UpdateSalaryMutationVariables
       >({
@@ -210,28 +244,31 @@ describe("Salary creation", () => {
         status: "active",
       });
 
-      const UpdateWorkEmail = await executeGraphqlOperation<
+      const UpdateWorkEmail = await executeGraphqlOperationAsUser<
         UpdateSalaryMutation,
         UpdateSalaryMutationVariables
-      >({
-        document: UpdateSalary,
-        variables: {
-          input: {
-            salaryId: salaryId,
-            confirmationToken: "HELLA_RANDOM_CODE",
-            amount: 100000,
-            countryCode: "CLP",
-            gender: Gender.Female,
-            typeOfEmployment: TypeOfEmployment.PartTime,
-            companyId: company2.id,
-            currencyId: allowedCurrency2.id,
-            workMetodology: WorkMetodology.Office,
-            workRoleId: workRole2.id,
-            genderOtherText: "something",
-            yearsOfExperience: 2,
+      >(
+        {
+          document: UpdateSalary,
+          variables: {
+            input: {
+              salaryId: salaryId,
+              confirmationToken: "HELLA_RANDOM_CODE",
+              amount: 100000,
+              countryCode: "CLP",
+              gender: Gender.Female,
+              typeOfEmployment: TypeOfEmployment.PartTime,
+              companyId: company2.id,
+              currencyId: allowedCurrency2.id,
+              workMetodology: WorkMetodology.Office,
+              workRoleId: workRole2.id,
+              genderOtherText: "something",
+              yearsOfExperience: 2,
+            },
           },
         },
-      });
+        user,
+      );
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
     it("With a previously validated code", async () => {
