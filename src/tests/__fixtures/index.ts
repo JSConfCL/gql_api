@@ -29,6 +29,7 @@ import {
   insertEventsToCommunitiesSchema,
   insertEventsToTagsSchema,
   insertEventsToUsersSchema,
+  insertSalariesSchema,
   insertTagsSchema,
   insertTicketSchema,
   insertUserTicketsSchema,
@@ -36,6 +37,7 @@ import {
   insertUsersToCommunitiesSchema,
   insertWorkEmailSchema,
   insertWorkRoleSchema,
+  salariesSchema,
   selectAllowedCurrencySchema,
   selectCommunitySchema,
   selectCompaniesSchema,
@@ -44,6 +46,7 @@ import {
   selectEventsToCommunitiesSchema,
   selectEventsToTagsSchema,
   selectEventsToUsersSchema,
+  selectSalariesSchema,
   selectTagsSchema,
   selectTicketSchema,
   selectUserTicketsSchema,
@@ -67,6 +70,7 @@ import {
 } from "~/generated/types";
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/__fixtures/databaseHelper";
+import { genderOptions } from "../../datasources/db/shared";
 
 const insertUserRequest = insertUsersSchema.deepPartial();
 
@@ -486,6 +490,45 @@ export const insertAllowedCurrency = async (
     insertAllowedCurrencySchema,
     selectAllowedCurrencySchema,
     allowedCurrencySchema,
+    possibleInput,
+  );
+};
+
+export const insertSalary = async (
+  partialInput?: Partial<z.infer<typeof insertSalariesSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    userId: partialInput?.userId ?? faker.string.uuid(),
+    amount: partialInput?.amount ?? faker.datatype.number(),
+    countryCode: partialInput?.countryCode ?? faker.address.countryCode(),
+    typeOfEmployment:
+      partialInput?.typeOfEmployment ??
+      faker.helpers.arrayElement([
+        "fullTime",
+        "partTime",
+        "freelance",
+      ] as const),
+    workMetodology:
+      partialInput?.workMetodology ??
+      faker.helpers.arrayElement(["remote", "office", "hybrid"] as const),
+    yearsOfExperience:
+      partialInput?.yearsOfExperience ?? faker.datatype.number(),
+    gender: partialInput?.gender ?? faker.helpers.arrayElement(genderOptions),
+    genderOtherText: partialInput?.genderOtherText,
+    companyId: partialInput?.companyId,
+    workEmailId: partialInput?.workEmailId,
+    workRoleId: partialInput?.workRoleId,
+
+    createdAt: partialInput?.createdAt,
+    currencyId: partialInput?.currencyId,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
+  } satisfies z.infer<typeof insertSalariesSchema>;
+  return insertOne(
+    insertSalariesSchema,
+    selectSalariesSchema,
+    salariesSchema,
     possibleInput,
   );
 };

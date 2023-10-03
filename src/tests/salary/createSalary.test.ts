@@ -84,7 +84,7 @@ describe("Salary creation", () => {
       assert.equal(StartWorkEmailValidationResponse.errors, undefined);
     });
   });
-  describe("Test should fail", () => {
+  describe("Creation should fail", () => {
     it("With an annonymous user", async () => {
       const testDB = await getTestDB();
       const user = await insertUser();
