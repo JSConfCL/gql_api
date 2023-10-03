@@ -11,7 +11,7 @@ import { workEmailSchema } from "./workEmail";
 
 // SALARIES-TABLE
 export const salariesSchema = sqliteTable("salaries", {
-  id: text("company_id").primaryKey().unique(),
+  id: text("id").primaryKey().unique(),
   userId: text("user_id")
     .references(() => usersSchema.id)
     .notNull(),

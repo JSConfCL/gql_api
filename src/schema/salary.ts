@@ -240,6 +240,7 @@ builder.mutationFields((t) => ({
           where: (c, { eq, and, inArray }) =>
             and(
               eq(c.token, confirmationToken),
+              eq(c.userId, userId),
               inArray(c.status, ["pending"]),
               inArray(c.source, ["onboarding", "salary_submission"]),
             ),
@@ -251,33 +252,25 @@ builder.mutationFields((t) => ({
         throw new Error("Invalid token");
       }
 
-      try {
-        const insertSalary = insertSalariesSchema.parse({
-          id: salaryId,
-          companyId,
-          amount,
-          currencyId,
-          workRoleId,
-          countryCode,
-          typeOfEmployment,
-          userId,
-          workMetodology,
-          yearsOfExperience,
-          gender,
-          genderOtherText,
-        });
-        console.log({ insertSalary });
-
-        const salary = await DB.insert(salariesSchema)
-          .values(insertSalary)
-          .returning()
-          .get();
-        console.log({ salary });
-        return selectSalariesSchema.parse(salary);
-      } catch (e) {
-        console.log({ e });
-        throw e;
-      }
+      const insertSalary = insertSalariesSchema.parse({
+        id: salaryId,
+        companyId,
+        amount,
+        currencyId,
+        workRoleId,
+        countryCode,
+        typeOfEmployment,
+        userId,
+        workMetodology,
+        yearsOfExperience,
+        gender,
+        genderOtherText,
+      });
+      const salary = await DB.insert(salariesSchema)
+        .values(insertSalary)
+        .returning()
+        .get();
+      return selectSalariesSchema.parse(salary);
     },
   }),
   updateSalary: t.field({

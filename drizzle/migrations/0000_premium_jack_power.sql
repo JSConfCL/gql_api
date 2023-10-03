@@ -25,10 +25,25 @@ CREATE TABLE `companies` (
 	`domain` text NOT NULL,
 	`logo` text,
 	`website` text,
-	`status` text,
+	`status` text DEFAULT 'draft',
 	`created_at` integer DEFAULT current_timestamp NOT NULL,
 	`updated_at` integer,
 	`deleted_at` integer
+);
+--> statement-breakpoint
+CREATE TABLE `confirmation_token` (
+	`id` text PRIMARY KEY NOT NULL,
+	`source` text NOT NULL,
+	`user_id` text NOT NULL,
+	`source_id` text NOT NULL,
+	`token` text NOT NULL,
+	`status` text DEFAULT 'pending',
+	`valid_until` integer NOT NULL,
+	`confirmation_date` integer,
+	`created_at` integer DEFAULT current_timestamp NOT NULL,
+	`updated_at` integer,
+	`deleted_at` integer,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `events` (
@@ -84,12 +99,16 @@ CREATE TABLE `events_users` (
 );
 --> statement-breakpoint
 CREATE TABLE `salaries` (
-	`company_id` text,
+	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
 	`amount` integer NOT NULL,
+	`company_id` text,
 	`currency` text,
 	`work_role_id` text,
+	`work_email_id` text,
 	`years_of_experience` integer NOT NULL,
+	`gender` text,
+	`gender_other_text` text,
 	`country_code` text NOT NULL,
 	`type_of_employment` text NOT NULL,
 	`work_metodology` text NOT NULL,
@@ -99,7 +118,8 @@ CREATE TABLE `salaries` (
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`company_id`) REFERENCES `companies`(`company_id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`currency`) REFERENCES `allowed_currencies`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`work_role_id`) REFERENCES `work_role`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`work_role_id`) REFERENCES `work_role`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`work_email_id`) REFERENCES `work_email`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `tags` (
@@ -192,20 +212,22 @@ CREATE TABLE `work_email` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
 	`work_email` text NOT NULL,
-	`confirmation_token` text,
-	`is_confirmed` integer DEFAULT false,
+	`confirmation_token_id` text,
+	`status` text DEFAULT 'pending',
 	`confirmation_date` integer,
 	`company_id` text,
 	`created_at` integer DEFAULT current_timestamp NOT NULL,
 	`updated_at` integer,
 	`deleted_at` integer,
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`confirmation_token_id`) REFERENCES `confirmation_token`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`company_id`) REFERENCES `companies`(`company_id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `work_role` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
+	`seniority` text NOT NULL,
 	`description` text NOT NULL,
 	`created_at` integer DEFAULT current_timestamp NOT NULL,
 	`updated_at` integer,
@@ -215,8 +237,10 @@ CREATE TABLE `work_role` (
 CREATE UNIQUE INDEX `allowed_currencies_currency_unique` ON `allowed_currencies` (`currency`);--> statement-breakpoint
 CREATE UNIQUE INDEX `communities_slug_unique` ON `communities` (`slug`);--> statement-breakpoint
 CREATE UNIQUE INDEX `companies_company_id_unique` ON `companies` (`company_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `confirmation_token_id_unique` ON `confirmation_token` (`id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `confirmation_token_token_unique` ON `confirmation_token` (`token`);--> statement-breakpoint
 CREATE UNIQUE INDEX `events_name_unique` ON `events` (`name`);--> statement-breakpoint
-CREATE UNIQUE INDEX `salaries_company_id_unique` ON `salaries` (`company_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `salaries_id_unique` ON `salaries` (`id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `tags_name_unique` ON `tags` (`name`);--> statement-breakpoint
 CREATE UNIQUE INDEX `tickets_name_unique` ON `tickets` (`name`);--> statement-breakpoint
 CREATE UNIQUE INDEX `users_username_unique` ON `users` (`username`);--> statement-breakpoint

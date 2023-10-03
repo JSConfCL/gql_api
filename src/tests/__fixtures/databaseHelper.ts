@@ -38,11 +38,11 @@ const createDatabase = () => {
 let db: ORM_TYPE | null = null;
 export const getTestDB = async () => {
   if (db) {
-    console.info("Retornando BDD previa");
-    console.info("( Si quieres una nueva BDD, llama a clearDatabase() )");
+    console.log("Retornando BDD previa");
+    console.log("( Si quieres una nueva BDD, llama a clearDatabase() )");
     return db;
   } else {
-    console.info("🆕 Creando una nueva BDD");
+    console.log("🆕 Creando una nueva BDD");
   }
   const databaseName = await createDatabase();
   const url = `file:///${databaseName}`;

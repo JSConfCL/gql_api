@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "a5325804-2de0-43cb-8dc8-548bc58e53c0",
+  "id": "563c1142-21aa-4193-907c-c3070d314b2c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "allowed_currencies": {
@@ -185,7 +185,8 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'draft'"
         },
         "created_at": {
           "name": "created_at",
@@ -218,6 +219,115 @@
         }
       },
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "confirmation_token": {
+      "name": "confirmation_token",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "valid_until": {
+          "name": "valid_until",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "confirmation_date": {
+          "name": "confirmation_date",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "current_timestamp"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "confirmation_token_id_unique": {
+          "name": "confirmation_token_id_unique",
+          "columns": ["id"],
+          "isUnique": true
+        },
+        "confirmation_token_token_unique": {
+          "name": "confirmation_token_token_unique",
+          "columns": ["token"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "confirmation_token_user_id_users_id_fk": {
+          "name": "confirmation_token_user_id_users_id_fk",
+          "tableFrom": "confirmation_token",
+          "tableTo": "users",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -562,11 +672,11 @@
     "salaries": {
       "name": "salaries",
       "columns": {
-        "company_id": {
-          "name": "company_id",
+        "id": {
+          "name": "id",
           "type": "text",
-          "primaryKey": false,
-          "notNull": false,
+          "primaryKey": true,
+          "notNull": true,
           "autoincrement": false
         },
         "user_id": {
@@ -583,6 +693,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "currency": {
           "name": "currency",
           "type": "text",
@@ -597,11 +714,32 @@
           "notNull": false,
           "autoincrement": false
         },
+        "work_email_id": {
+          "name": "work_email_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "years_of_experience": {
           "name": "years_of_experience",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "gender": {
+          "name": "gender",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "gender_other_text": {
+          "name": "gender_other_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "country_code": {
@@ -649,9 +787,9 @@
         }
       },
       "indexes": {
-        "salaries_company_id_unique": {
-          "name": "salaries_company_id_unique",
-          "columns": ["company_id"],
+        "salaries_id_unique": {
+          "name": "salaries_id_unique",
+          "columns": ["id"],
           "isUnique": true
         }
       },
@@ -688,6 +826,15 @@
           "tableFrom": "salaries",
           "tableTo": "work_role",
           "columnsFrom": ["work_role_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "salaries_work_email_id_work_email_id_fk": {
+          "name": "salaries_work_email_id_work_email_id_fk",
+          "tableFrom": "salaries",
+          "tableTo": "work_email",
+          "columnsFrom": ["work_email_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -1301,20 +1448,20 @@
           "notNull": true,
           "autoincrement": false
         },
-        "confirmation_token": {
-          "name": "confirmation_token",
+        "confirmation_token_id": {
+          "name": "confirmation_token_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "is_confirmed": {
-          "name": "is_confirmed",
-          "type": "integer",
+        "status": {
+          "name": "status",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": false
+          "default": "'pending'"
         },
         "confirmation_date": {
           "name": "confirmation_date",
@@ -1370,6 +1517,15 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
+        "work_email_confirmation_token_id_confirmation_token_id_fk": {
+          "name": "work_email_confirmation_token_id_confirmation_token_id_fk",
+          "tableFrom": "work_email",
+          "tableTo": "confirmation_token",
+          "columnsFrom": ["confirmation_token_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "work_email_company_id_companies_company_id_fk": {
           "name": "work_email_company_id_companies_company_id_fk",
           "tableFrom": "work_email",
@@ -1395,6 +1551,13 @@
         },
         "name": {
           "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "seniority": {
+          "name": "seniority",
           "type": "text",
           "primaryKey": false,
           "notNull": true,

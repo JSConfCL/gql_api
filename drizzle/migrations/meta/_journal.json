@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1696210766706,
-      "tag": "0000_whole_starbolt",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1696227128192,
-      "tag": "0001_polite_garia",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1696229385534,
-      "tag": "0002_wide_forge",
+      "when": 1696303412275,
+      "tag": "0000_premium_jack_power",
       "breakpoints": true
     }
   ]
