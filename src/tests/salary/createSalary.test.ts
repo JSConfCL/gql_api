@@ -15,12 +15,6 @@ import {
   CreateSalaryMutation,
   CreateSalaryMutationVariables,
 } from "./mutations.generated";
-// import {
-//   StartWorkEmailValidation,
-//   StartWorkEmailValidationMutation,
-//   StartWorkEmailValidationMutationVariables,
-// } from "./startWorkEmailValidation.generated";
-import { faker } from "@faker-js/faker";
 import {
   Gender,
   TypeOfEmployment,
@@ -375,6 +369,61 @@ describe("Salary creation", () => {
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        userId: user.id,
+        status: "expired",
+        token: v4(),
+        sourceId: "123",
+      });
+      await insertWorkEmail({
+        confirmationTokenId: insertedConfirmationToken.id,
+        userId: user.id,
+      });
+
+      const StartWorkEmailValidationResponse =
+        await executeGraphqlOperationAsUser<
+          CreateSalaryMutation,
+          CreateSalaryMutationVariables
+        >(
+          {
+            document: CreateSalary,
+            variables: {
+              input: {
+                confirmationToken: insertedConfirmationToken.token,
+                amount: 1000,
+                companyId: company.id,
+                countryCode: "US",
+                currencyId: allowedCurrency.id,
+                gender: Gender.Agender,
+                typeOfEmployment: TypeOfEmployment.FullTime,
+                workMetodology: WorkMetodology.Hybrid,
+                workRoleId: workRole.id,
+                genderOtherText: "",
+                yearsOfExperience: 1,
+              },
+            },
+          },
+          user,
+        );
+      const confirmationToken =
+        await testDB.query.confirmationTokenSchema.findFirst();
+
+      if (!confirmationToken) {
+        throw new Error("Confirmation token not found");
+      }
+
+      expect(StartWorkEmailValidationResponse.errors).toBeDefined();
+    });
+    it("With an expired code — via date", async () => {
+      const testDB = await getTestDB();
+      const user = await insertUser();
+      const company = await insertCompany({
+        status: "active",
+      });
+      const allowedCurrency = await insertAllowedCurrency();
+      const workRole = await insertWorkRole();
+      const insertedConfirmationToken = await insertConfirmationToken({
+        source: "onboarding",
+        validUntil: new Date(Date.now() - 1000 * 60 * 60 * 24),
         userId: user.id,
         status: "expired",
         token: v4(),
