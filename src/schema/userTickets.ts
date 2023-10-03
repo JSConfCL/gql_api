@@ -7,7 +7,11 @@ import {
   userTicketsSchema,
 } from "~/datasources/db/schema";
 import { GraphQLError } from "graphql";
-import { canApproveTicket, canCancelUserTicket } from "~/validations";
+import {
+  canApproveTicket,
+  canCancelUserTicket,
+  canRedeemUserTicket,
+} from "~/validations";
 
 export const TicketStatus = builder.enumType("TicketStatus", {
   values: ["active", "cancelled"] as const,
@@ -149,8 +153,9 @@ builder.mutationFields((t) => ({
         if (!ctx.USER) {
           throw new Error("User not found");
         }
-        if (!(await canCancelUserTicket(ctx.USER?.id, userTicketId, ctx.DB)))
+        if (!(await canCancelUserTicket(ctx.USER?.id, userTicketId, ctx.DB))) {
           throw new Error("You can't cancel this ticket");
+        }
         let ticket = await ctx.DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
         });
@@ -173,9 +178,6 @@ builder.mutationFields((t) => ({
       }
     },
   }),
-}));
-
-builder.mutationFields((t) => ({
   approvalUserTicket: t.field({
     description: "Approve a ticket",
     type: UserTicketRef,
@@ -190,9 +192,12 @@ builder.mutationFields((t) => ({
     },
     resolve: async (root, { userTicketId }, { DB, USER }) => {
       try {
-        if (!USER) throw new Error("User not found");
-        if (!(await canApproveTicket(USER.id, userTicketId, DB)))
+        if (!USER) {
+          throw new Error("User not found");
+        }
+        if (!(await canApproveTicket(USER.id, userTicketId, DB))) {
           throw new Error("Unauthorized!");
+        }
         const ticket = await DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
           with: {
@@ -214,6 +219,55 @@ builder.mutationFields((t) => ({
         const updatedTicket = await DB.update(userTicketsSchema)
           .set({
             approvalStatus: "approved",
+          })
+          .where(eq(userTicketsSchema.id, userTicketId))
+          .returning()
+          .get();
+        return selectUserTicketsSchema.parse(updatedTicket);
+      } catch (e: unknown) {
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
+        );
+      }
+    },
+  }),
+  redeemUserTicket: t.field({
+    description: "Redeem a ticket",
+    type: UserTicketRef,
+    args: {
+      userTicketId: t.arg({
+        type: "String",
+        required: true,
+      }),
+    },
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, { userTicketId }, { USER, DB }) => {
+      try {
+        if (!USER) {
+          throw new Error("User not found");
+        }
+        if (!(await canRedeemUserTicket(USER?.id, userTicketId, DB))) {
+          throw new Error("You can't redeem this ticket");
+        }
+
+        const ticket = await DB.query.userTicketsSchema.findFirst({
+          where: (t, { eq }) => eq(t.id, userTicketId),
+        });
+        if (!ticket) {
+          throw new Error("Unauthorized!");
+        }
+
+        if (ticket.redemptionStatus === "redeemed") {
+          throw new Error("Ticket already redeemed");
+        }
+        if (ticket.status !== "active") {
+          throw new Error("Ticket is not active");
+        }
+        const updatedTicket = await DB.update(userTicketsSchema)
+          .set({
+            redemptionStatus: "redeemed",
           })
           .where(eq(userTicketsSchema.id, userTicketId))
           .returning()

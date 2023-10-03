@@ -1,3 +1,4 @@
+import { inArray } from "drizzle-orm";
 import { ORM_TYPE } from "~/datasources/db";
 import { EventStatus } from "~/generated/types";
 
@@ -55,7 +56,9 @@ export async function canCreateEvent(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
-  if (user?.isSuperAdmin) return true;
+  if (user?.isSuperAdmin) {
+    return true;
+  }
   const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
     where: (utc, { eq, and }) =>
       and(
@@ -80,7 +83,9 @@ export async function canCancelUserTicket(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
-  if (user?.isSuperAdmin) return true;
+  if (user?.isSuperAdmin) {
+    return true;
+  }
 
   const userTicket = await DB.query.userTicketsSchema.findFirst({
     where: (utc, { eq }) => eq(utc.id, userTicketId),
@@ -89,14 +94,20 @@ export async function canCancelUserTicket(
     },
   });
 
-  if (!userTicket) return false;
-  if (userId === userTicket.userId) return true;
+  if (!userTicket) {
+    return false;
+  }
+  if (userId === userTicket.userId) {
+    return true;
+  }
 
   const community = await DB.query.eventsToCommunitiesSchema.findFirst({
     where: (utc, { eq }) => eq(utc.eventId, userTicket?.ticketTemplate.eventId),
   });
 
-  if (!community) return false;
+  if (!community) {
+    return false;
+  }
 
   const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
     where: (utc, { eq, and }) =>
@@ -118,7 +129,9 @@ export async function canApproveTicket(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
-  if (user?.isSuperAdmin) return true;
+  if (user?.isSuperAdmin) {
+    return true;
+  }
 
   const userTicket = await DB.query.userTicketsSchema.findFirst({
     where: (utc, { eq }) => eq(utc.id, userTicketId),
@@ -150,7 +163,9 @@ export async function canUpdateUserRoleInCommunity(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
-  if (user?.isSuperAdmin) return true;
+  if (user?.isSuperAdmin) {
+    return true;
+  }
 
   const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
     where: (utc, { eq, and }) =>
@@ -172,16 +187,22 @@ export async function canEditTicket(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
-  if (user?.isSuperAdmin) return true;
+  if (user?.isSuperAdmin) {
+    return true;
+  }
 
   const ticket = await DB.query.ticketsSchema.findFirst({
     where: (t, { eq }) => eq(t.id, ticketId),
   });
-  if (!ticket) return false;
+  if (!ticket) {
+    return false;
+  }
   const eventToCommunitie = await DB.query.eventsToCommunitiesSchema.findFirst({
     where: (utc, { eq }) => eq(utc.eventId, ticket?.eventId),
   });
-  if (!eventToCommunitie) return false;
+  if (!eventToCommunitie) {
+    return false;
+  }
   const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
     where: (utc, { eq, and }) =>
       and(
@@ -191,4 +212,53 @@ export async function canEditTicket(
       ),
   });
   return Boolean(isCommunityAdmin);
+}
+
+export async function canRedeemUserTicket(
+  userId: string,
+  ticketId: string,
+  DB: ORM_TYPE,
+): Promise<boolean> {
+  const user = await DB.query.usersSchema.findFirst({
+    where: (u, { eq }) => eq(u.id, userId),
+  });
+  if (user?.isSuperAdmin) {
+    return true;
+  }
+  const userTicket = await DB.query.userTicketsSchema.findFirst({
+    where: (utc, { eq }) => eq(utc.id, ticketId),
+    with: {
+      ticketTemplate: true,
+    },
+  });
+  if (!userTicket) {
+    return false;
+  }
+  const eventToCommunitie = await DB.query.eventsToCommunitiesSchema.findFirst({
+    where: (utc, { eq }) => eq(utc.eventId, userTicket?.ticketTemplate.eventId),
+  });
+  if (!eventToCommunitie) {
+    return false;
+  }
+
+  const isCommunityAdminOrVolunteer =
+    await DB.query.usersToCommunitiesSchema.findFirst({
+      where: (utc, { eq, and }) =>
+        and(
+          eq(utc.userId, userId),
+          eq(utc.communityId, eventToCommunitie?.communityId),
+          inArray(utc.role, ["admin", "volunteer"]),
+        ),
+    });
+  const isEventAdminOrCollaborator =
+    await DB.query.eventsToUsersSchema.findFirst({
+      where: (utc, { eq, and }) =>
+        and(
+          eq(utc.userId, userId),
+          eq(utc.eventId, userTicket?.ticketTemplate.eventId),
+          inArray(utc.role, ["admin", "collaborator"]),
+        ),
+    });
+
+  return Boolean(isCommunityAdminOrVolunteer || isEventAdminOrCollaborator);
 }

@@ -18,7 +18,7 @@ afterEach(() => {
   clearDatabase();
 });
 
-describe("Approval user ticket test", () => {
+describe("Approval user ticket", () => {
   it("Should approve a user ticket if is superadmin", async () => {
     const event1 = await insertEvent();
     const user1 = await insertUser({

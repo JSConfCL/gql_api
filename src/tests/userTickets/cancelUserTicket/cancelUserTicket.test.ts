@@ -21,7 +21,7 @@ afterEach(() => {
   clearDatabase();
 });
 
-describe("User", () => {
+describe("Cancel User Ticket", () => {
   it("Should cancel a user ticket if user is the owner of the ticket", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
