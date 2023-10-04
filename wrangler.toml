@@ -14,15 +14,15 @@ _APP_ENV = "'development'"
 mode = "smart"
 
 [[queues.producers]]
-queue = "mail-queue-staging"
+queue = "mail-queue-dev"
 binding = "MAIL_QUEUE"
 
 [[queues.consumers]]
-queue = "mail-queue-staging"
+queue = "mail-queue-dev"
 max_batch_size = 10
 max_batch_timeout = 30
 max_retries = 10
-dead_letter_queue = "deadletter-mail-queue-staging"
+dead_letter_queue = "deadletter-mail-queue-dev"
 
 
 
