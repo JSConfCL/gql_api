@@ -1,5 +1,7 @@
 import { inArray } from "drizzle-orm";
+import { z } from "zod";
 import { ORM_TYPE } from "~/datasources/db";
+import { selectUsersSchema } from "~/datasources/db/users";
 import { EventStatus } from "~/generated/types";
 
 export type UserRoleEvent = "admin" | "member" | "collaborator";
@@ -261,4 +263,12 @@ export async function canRedeemUserTicket(
     });
 
   return Boolean(isCommunityAdminOrVolunteer || isEventAdminOrCollaborator);
+}
+export function canCreateCommunity(
+  user: z.infer<typeof selectUsersSchema> | null,
+): boolean {
+  if (!user) {
+    return false;
+  }
+  return user.isSuperAdmin || false;
 }

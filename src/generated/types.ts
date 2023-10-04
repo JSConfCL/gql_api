@@ -59,6 +59,12 @@ export type Community = {
   users: Array<User>;
 };
 
+export type CommunityCreateInput = {
+  description: Scalars["String"]["input"];
+  name: Scalars["String"]["input"];
+  slug: Scalars["String"]["input"];
+};
+
 /** Representation of a workEmail */
 export type Company = {
   __typename?: "Company";
@@ -194,6 +200,8 @@ export type Mutation = {
   approvalUserTicket: UserTicket;
   /** Cancel a ticket */
   cancelUserTicket: UserTicket;
+  /** Create an community */
+  createCommunity: Community;
   /** Create a company */
   createCompany: Company;
   /** Create an event */
@@ -224,6 +232,10 @@ export type MutationApprovalUserTicketArgs = {
 
 export type MutationCancelUserTicketArgs = {
   userTicketId: Scalars["String"]["input"];
+};
+
+export type MutationCreateCommunityArgs = {
+  input: CommunityCreateInput;
 };
 
 export type MutationCreateCompanyArgs = {

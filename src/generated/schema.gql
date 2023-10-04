@@ -23,6 +23,12 @@ type Community {
   users: [User!]!
 }
 
+input CommunityCreateInput {
+  description: String!
+  name: String!
+  slug: String!
+}
+
 """
 Representation of a workEmail
 """
@@ -175,6 +181,11 @@ type Mutation {
   Cancel a ticket
   """
   cancelUserTicket(userTicketId: String!): UserTicket!
+
+  """
+  Create an community
+  """
+  createCommunity(input: CommunityCreateInput!): Community!
 
   """
   Create a company
