@@ -165,8 +165,8 @@ builder.mutationFields((t) => ({
         const existSlug = await DB.query.communitySchema.findFirst({
           where: (c, { eq }) => eq(c.slug, input.slug),
         });
-        if(existSlug) {
-          throw new Error("This slug already exist")
+        if (existSlug) {
+          throw new Error("This slug already exist");
         }
         const id = v4();
         const newCommunity = insertCommunitySchema.parse({
@@ -179,7 +179,7 @@ builder.mutationFields((t) => ({
         const communities = await DB.insert(communitySchema)
           .values(newCommunity)
           .returning()
-          .get()
+          .get();
         return selectCommunitySchema.parse(communities);
       } catch (e) {
         throw new GraphQLError(

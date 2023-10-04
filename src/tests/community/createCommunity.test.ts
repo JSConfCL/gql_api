@@ -75,8 +75,8 @@ describe("Community", () => {
     it("If community slug already exist", async () => {
       await insertCommunity({
         name: "a",
-        slug: "c"
-      })
+        slug: "c",
+      });
       const fakeData = {
         name: faker.lorem.words(3),
         slug: "c",
@@ -85,14 +85,12 @@ describe("Community", () => {
       const response = await executeGraphqlOperationAsSuperAdmin<
         CreateCommunityMutation,
         CreateCommunityMutationVariables
-      >(
-        {
-          document: CreateCommunity,
-          variables: {
-            input: fakeData,
-          },
+      >({
+        document: CreateCommunity,
+        variables: {
+          input: fakeData,
         },
-      );
+      });
 
       assert.equal(response.errors?.length, 1);
       assert.equal(response.errors?.[0]?.message, "This slug already exist");
