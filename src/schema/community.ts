@@ -1,5 +1,6 @@
 import {
   communitySchema,
+  insertCommunitySchema,
   selectCommunitySchema,
   selectEventsSchema,
   selectUsersSchema,
@@ -7,6 +8,9 @@ import {
 import { SQL, eq, like } from "drizzle-orm";
 import { CommunityRef, EventRef, UserRef } from "~/schema/shared/refs";
 import { builder } from "~/builder";
+import { canCreateCommunity } from "~/validations";
+import { v4 } from "uuid";
+import { GraphQLError } from "graphql";
 
 export const CommnunityStatus = builder.enumType("CommnunityStatus", {
   values: ["active", "inactive"] as const,
@@ -126,6 +130,58 @@ builder.queryFields((t) => ({
         return null;
       }
       return selectCommunitySchema.parse(community);
+    },
+  }),
+}));
+
+const CommunityCreateInput = builder.inputType("CommunityCreateInput", {
+  fields: (t) => ({
+    name: t.string({ required: true }),
+    slug: t.string({ required: true }),
+    description: t.string({ required: true }),
+  }),
+});
+
+builder.mutationFields((t) => ({
+  createCommunity: t.field({
+    description: "Create an community",
+    type: CommunityRef,
+    nullable: false,
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    args: {
+      input: t.arg({ type: CommunityCreateInput, required: true }),
+    },
+    resolve: async (root, { input }, { USER, DB }) => {
+      try {
+        const { name, slug, description } = input;
+        if (!USER) {
+          throw new Error("User not found");
+        }
+        if (!canCreateCommunity(USER)) {
+          throw new Error("FORBIDDEN");
+        }
+
+        const id = v4();
+        const newCommunity = insertCommunitySchema.parse({
+          id,
+          name,
+          slug,
+          description,
+        });
+
+        const communities = await DB.insert(communitySchema)
+          .values(newCommunity)
+          .returning()
+          .get();
+
+        return selectCommunitySchema.parse(communities);
+      } catch (e) {
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
+        );
+      }
     },
   }),
 }));

@@ -1,0 +1,8 @@
+mutation CreateCommunity($input: CommunityCreateInput!) {
+  createCommunity(input: $input) {
+    id
+    name
+    description
+    status
+  }
+}
