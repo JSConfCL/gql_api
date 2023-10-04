@@ -2,6 +2,7 @@ import { it, describe, afterEach, assert } from "vitest";
 import {
   executeGraphqlOperationAsSuperAdmin,
   executeGraphqlOperationAsUser,
+  insertCommunity,
   insertUser,
 } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
@@ -17,7 +18,7 @@ afterEach(() => {
   clearDatabase();
 });
 
-describe("Event", () => {
+describe("Community", () => {
   describe("Should create an community", () => {
     it("As an super admin", async () => {
       const fakeData = {
@@ -70,6 +71,31 @@ describe("Event", () => {
 
       assert.equal(response.errors?.length, 1);
       assert.equal(response.errors?.[0]?.message, "FORBIDDEN");
+    });
+    it("If community slug already exist", async () => {
+      await insertCommunity({
+        name: "a",
+        slug: "c"
+      })
+      const fakeData = {
+        name: faker.lorem.words(3),
+        slug: "c",
+        description: faker.lorem.paragraph(3),
+      };
+      const response = await executeGraphqlOperationAsSuperAdmin<
+        CreateCommunityMutation,
+        CreateCommunityMutationVariables
+      >(
+        {
+          document: CreateCommunity,
+          variables: {
+            input: fakeData,
+          },
+        },
+      );
+
+      assert.equal(response.errors?.length, 1);
+      assert.equal(response.errors?.[0]?.message, "This slug already exist");
     });
   });
 });
