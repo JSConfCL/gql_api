@@ -5,12 +5,12 @@ import {
   Communities,
   CommunitiesQuery,
   CommunitiesQueryVariables,
-} from "~/tests/community/getCommunities.generated";
+} from "~/tests/community/getCommunities/getCommunities.generated";
 import {
   Community,
   CommunityQuery,
   CommunityQueryVariables,
-} from "~/tests/community/getCommunity.generated";
+} from "~/tests/community/getCommunity/getCommunity.generated";
 import { CommnunityStatus } from "~/generated/types";
 
 afterEach(() => {

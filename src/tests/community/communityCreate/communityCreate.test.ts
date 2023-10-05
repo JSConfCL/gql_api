@@ -12,7 +12,7 @@ import {
   CreateCommunity,
   CreateCommunityMutation,
   CreateCommunityMutationVariables,
-} from "./createCommunity.generated";
+} from "./communityCreate.generated";
 
 afterEach(() => {
   clearDatabase();

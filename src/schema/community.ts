@@ -8,7 +8,7 @@ import {
 import { SQL, eq, like } from "drizzle-orm";
 import { CommunityRef, EventRef, UserRef } from "~/schema/shared/refs";
 import { builder } from "~/builder";
-import { canCreateCommunity } from "~/validations";
+import { canCreateCommunity, canEditCommunity } from "~/validations";
 import { v4 } from "uuid";
 import { GraphQLError } from "graphql";
 
@@ -134,14 +134,22 @@ builder.queryFields((t) => ({
   }),
 }));
 
-const CommunityCreateInput = builder.inputType("CommunityCreateInput", {
+const CreateCommunityInput = builder.inputType("CreateCommunityInput", {
   fields: (t) => ({
     name: t.string({ required: true }),
     slug: t.string({ required: true }),
     description: t.string({ required: true }),
   }),
 });
-
+const UpdateCommunityInput = builder.inputType("UpdateCommunityInput", {
+  fields: (t) => ({
+    communityId: t.string({ required: true }),
+    status: t.field({
+      type: CommnunityStatus,
+      required: false,
+    }),
+  }),
+});
 builder.mutationFields((t) => ({
   createCommunity: t.field({
     description: "Create an community",
@@ -151,7 +159,7 @@ builder.mutationFields((t) => ({
       rules: ["IsAuthenticated"],
     },
     args: {
-      input: t.arg({ type: CommunityCreateInput, required: true }),
+      input: t.arg({ type: CreateCommunityInput, required: true }),
     },
     resolve: async (root, { input }, { USER, DB }) => {
       try {
@@ -181,6 +189,52 @@ builder.mutationFields((t) => ({
           .returning()
           .get();
         return selectCommunitySchema.parse(communities);
+      } catch (e) {
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
+        );
+      }
+    },
+  }),
+  editCommunity: t.field({
+    description: "Edit an community",
+    type: CommunityRef,
+    nullable: false,
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    args: {
+      input: t.arg({ type: UpdateCommunityInput, required: true }),
+    },
+    resolve: async (root, { input }, { USER, DB }) => {
+      try {
+        const { communityId, status } = input;
+        if (!USER) {
+          throw new Error("User not found");
+        }
+        if (!canEditCommunity(USER)) {
+          throw new Error("FORBIDDEN");
+        }
+
+        const foundCommunity = await DB.query.communitySchema.findFirst({
+          where: (c, { eq }) => eq(c.id, communityId),
+        });
+
+        if (!foundCommunity) {
+          throw new Error("Community not found");
+        }
+
+        const insertCommunity = insertCommunitySchema.parse({
+          id: communityId,
+          status,
+        });
+
+        const community = await DB.update(communitySchema)
+          .set(insertCommunity)
+          .where(eq(communitySchema.id, communityId))
+          .returning()
+          .get();
+        return selectCommunitySchema.parse(community);
       } catch (e) {
         throw new GraphQLError(
           e instanceof Error ? e.message : "Unknown error",

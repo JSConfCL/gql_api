@@ -272,3 +272,11 @@ export function canCreateCommunity(
   }
   return user.isSuperAdmin || false;
 }
+export function canEditCommunity(
+  user: z.infer<typeof selectUsersSchema> | null,
+): boolean {
+  if (!user) {
+    return false;
+  }
+  return user.isSuperAdmin || false;
+}
