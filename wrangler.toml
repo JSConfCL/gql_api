@@ -1,5 +1,5 @@
 # 🚨 DEFAULT CONFIG 🚨
-name = "graphql-api-dev"
+name = "graphql-api"
 compatibility_date = "2023-06-06"
 main = "src/index.ts"
 
@@ -34,7 +34,6 @@ dead_letter_queue = "deadletter-mail-queue-dev"
 # =====================================
 # =====================================
 [env.production]
-name = "graphql-api-prod"
 route = "api.jschile.org/*"
 
 [env.production.vars]
@@ -68,7 +67,6 @@ dead_letter_queue = "deadletter-mail-queue-production"
 # =====================================
 # =====================================
 [env.staging]
-name = "graphql-api-staging"
 route = "api.jsconf.dev/*"
 
 [env.staging.vars]
