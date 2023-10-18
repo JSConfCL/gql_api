@@ -92,7 +92,7 @@ export const yoga = createYoga<Env>({
     };
   },
   cors: {
-    origin: ["http://localhost:3000", "https://localhost:3000"],
+    origin: APP_ENV === "production" ? [] : ["*"],
     credentials: true,
     methods: ["POST"],
   },
