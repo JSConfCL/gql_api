@@ -1,3 +1,4 @@
+import "@sentry/tracing";
 import { createYoga } from "graphql-yoga";
 import { useCSRFPrevention } from "@graphql-yoga/plugin-csrf-prevention";
 import { useMaskedErrors } from "@envelop/core";
@@ -10,6 +11,7 @@ import { initContextCache } from "@pothos/core";
 import { useOpenTelemetry } from "@envelop/opentelemetry";
 import { provider } from "~/obs/exporter";
 import { verifyToken } from "@clerk/backend";
+import { useSentry } from "@envelop/sentry";
 import {
   ProfileInfoSchema,
   updateUserProfileInfo,
@@ -105,6 +107,11 @@ export const yoga = createYoga<Env>({
       }),
     APP_ENV === "production" && useMaskedErrors(),
     useImmediateIntrospection(),
+    useSentry({
+      includeRawResult: true,
+      includeResolverArgs: true,
+      includeExecuteVariables: true,
+    }),
     (APP_ENV === "production" || APP_ENV === "staging") &&
       useOpenTelemetry(
         {
