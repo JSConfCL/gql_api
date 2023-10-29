@@ -1,5 +1,5 @@
-import { queueConsumer } from "./consumer";
+import { scheduled } from "./scheduled";
 
 export default {
-  queue: queueConsumer,
+  scheduled,
 };

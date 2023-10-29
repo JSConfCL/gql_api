@@ -1,13 +1,19 @@
 import WorkEmailValidationEmail from "../../emails/invite-email";
 import * as React from "react";
-import { Env } from "../../worker-configuration";
 import {
   EmailMessageType,
   sendTransactionalEmail,
 } from "../../src/datasources/mail";
 import { render } from "@react-email/render";
 
-export const queueConsumer = async (batch: MessageBatch<any>, env: Env) => {
+type ENV = {
+  RESEND_EMAIL_KEY?: string;
+};
+
+export const queueConsumer: ExportedHandlerQueueHandler<ENV> = async (
+  batch,
+  env,
+) => {
   for await (const msg of batch.messages) {
     switch (batch.queue) {
       case "mail-queue-staging":
@@ -22,22 +28,31 @@ export const queueConsumer = async (batch: MessageBatch<any>, env: Env) => {
 
 const processEmailQueue = async (
   message: Message<EmailMessageType>,
-  env: Env,
+  env: ENV,
 ) => {
   try {
+    const { RESEND_EMAIL_KEY } = env;
+    if (!RESEND_EMAIL_KEY) {
+      throw new Error("RESEND_EMAIL_KEY is not defined");
+    }
     // TODO: Send azure email
-    await sendTransactionalEmail(env, {
-      from: "Javascript Chile <team@jschile.org>",
-      to: message.body.to,
-      subject: "Tu código de verificación",
-      html: render(
-        <WorkEmailValidationEmail
-          baseUrl=""
-          code={message.body.code}
-          userId={message.body.userId}
-        />,
-      ),
-    });
+    await sendTransactionalEmail(
+      {
+        RESEND_EMAIL_KEY,
+      },
+      {
+        from: "Javascript Chile <team@jschile.org>",
+        to: message.body.to,
+        subject: "Tu código de verificación",
+        html: render(
+          <WorkEmailValidationEmail
+            baseUrl=""
+            code={message.body.code}
+            userId={message.body.userId}
+          />,
+        ),
+      },
+    );
     message.ack();
   } catch (e) {
     message.retry();

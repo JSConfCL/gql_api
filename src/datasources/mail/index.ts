@@ -22,7 +22,7 @@ export const enqueueEmail = (
 };
 
 export const sendTransactionalEmail = async (
-  env: Env,
+  env: Pick<Env, "RESEND_EMAIL_KEY">,
   config: {
     from: string;
     to: string | [string, ...string[]];

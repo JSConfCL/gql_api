@@ -19,6 +19,7 @@
     "prettier:fix": "prettier ./src --cache --write",
     "typecheck": "tsc",
     "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info --port 50123",
+    "dev:wall-of-fame": "wrangler dev --test-scheduled --config ./workers/wall_of_fame_cron/wrangler.toml",
     "generate": "tsx ./src/generated/generate.ts && graphql-codegen --config codegen.ts && prettier ./src/generated --write",
     "email:dev": "email dev",
     "email:export": "email export"
@@ -56,7 +57,7 @@
     "react-email": "1.9.3",
     "sqlite3": "^5.1.6",
     "tsx": "^3.13.0",
-    "type-fest": "^4.0.0",
+    "type-fest": "^4.6.0",
     "typescript": "^4.9.5",
     "uuid": "^9.0.0",
     "vite-tsconfig-paths": "^4.2.0",
@@ -97,6 +98,7 @@
     "nexus": "^1.3.0",
     "react": "^18.2.0",
     "slugify": "^1.6.6",
+    "stripe": "^14.2.0",
     "zod": "^3.21.4"
   }
 }
