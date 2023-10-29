@@ -1,0 +1,42 @@
+# 🚨 DEFAULT CONFIG 🚨
+name = "auth-tokens"
+compatibility_date = "2023-06-06"
+main = "./index.ts"
+
+[placement]
+mode = "smart"
+
+[define]
+_APP_ENV = "'development'"
+
+
+
+
+
+
+# =====================================
+# =====================================
+# 🚨 PRODUCTION CONFIG 🚨
+# =====================================
+# =====================================
+[env.production.placement]
+mode = "smart"
+
+[env.production.define]
+_APP_ENV = "'production'"
+
+
+
+
+
+
+# =====================================
+# =====================================
+# 🚨 STAGING CONFIG 🚨
+# =====================================
+# =====================================
+[env.staging.placement]
+mode = "smart"
+
+[env.staging.define]
+_APP_ENV = "'staging'"
