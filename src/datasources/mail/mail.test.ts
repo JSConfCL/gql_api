@@ -31,8 +31,6 @@ describe("Test email library", () => {
       });
       global.fetch = spiedFetch;
       await sendTransactionalEmail(
-        // @ts-expect-error No usamos los otros valores de env, solo el que nos
-        // interesa para este test
         {
           RESEND_EMAIL_KEY: "123",
         },
@@ -51,8 +49,6 @@ describe("Test email library", () => {
       global.fetch = spiedFetch;
       try {
         await sendTransactionalEmail(
-          // @ts-expect-error No usamos los otros valores de env, solo el que nos
-          // interesa para este test
           {
             RESEND_EMAIL_KEY: "123",
           },
