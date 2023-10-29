@@ -29,7 +29,11 @@ jobs:
           key: CACHE-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
       - name: 📥 Install dependencies
         run: npm ci --prefer-offline --no-audit --legacy-peer-deps --cache ~/.npm
-      - name: 💀 Remove queue consumer
-        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler queues consumer remove mail-queue-staging graphql-api-staging
+      # Deploy the API
       - name: 🛳️ DEPLOY Cloudflare Workers
         run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=staging
+      # Redeploy the queue consumer
+      - name: 💀/🛳️ RE-DEPLOY queue consumer
+        run: |
+          CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler queues consumer remove mail-queue-staging mail-queue-consumer && \
+          CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=staging --config ./workers/email_queue/wrangler.toml
