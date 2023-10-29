@@ -33,7 +33,7 @@ module.exports = {
         // https://typescript-eslint.io/rules/no-non-null-assertion/
         "@typescript-eslint/no-unsafe-arguments": "off",
         "no-console": "error",
-        "curly": ["error", "all"],
+        curly: ["error", "all"],
       },
     },
     // PARA LOS TESTS
@@ -77,8 +77,8 @@ module.exports = {
       },
       node: {
         extensions: [".js", ".jsx", ".ts", ".tsx"],
-        moduleDirectory: ["node_modules", "src/"],
-        paths: ["./src"],
+        moduleDirectory: ["node_modules", "src/", "workers/"],
+        paths: ["./src", "./workers"],
       },
     },
   },

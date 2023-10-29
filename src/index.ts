@@ -16,7 +16,6 @@ import {
 } from "~/datasources/queries/users";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import * as rules from "~/authz";
-import { queueConsumer } from "./queue/consumer";
 
 const getUser = async ({
   request,
@@ -163,5 +162,4 @@ export const yoga = createYoga<Env>({
 
 export default {
   fetch: yoga.fetch,
-  queue: queueConsumer,
 };

@@ -1,11 +1,7 @@
 # 🚨 DEFAULT CONFIG 🚨
-name = "graphql-api"
+name = "wall-of-fame-cron"
 compatibility_date = "2023-06-06"
-main = "src/index.ts"
-
-[vars]
-GRAPHQL_BASE_ENDPOINT = "/"
-OTEL_SERVICE_NAME="graphql-api"
+main = "./index.ts"
 
 [define]
 _APP_ENV = "'development'"
@@ -13,9 +9,13 @@ _APP_ENV = "'development'"
 [placement]
 mode = "smart"
 
-[[queues.producers]]
+[[queues.consumers]]
 queue = "mail-queue-dev"
-binding = "MAIL_QUEUE"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 10
+dead_letter_queue = "deadletter-mail-queue-dev"
+
 
 
 
@@ -25,12 +25,6 @@ binding = "MAIL_QUEUE"
 # 🚨 PRODUCTION CONFIG 🚨
 # =====================================
 # =====================================
-[env.production]
-route = "api.jschile.org/*"
-
-[env.production.vars]
-GRAPHQL_BASE_ENDPOINT = "/"
-OTEL_SERVICE_NAME="graphql-api"
 
 [env.production.define]
 _APP_ENV = "'production'"
@@ -38,9 +32,12 @@ _APP_ENV = "'production'"
 [env.production.placement]
 mode = "smart"
 
-[[env.production.queues.producers]]
+[[env.production.queues.consumers]]
 queue = "mail-queue-production"
-binding = "MAIL_QUEUE"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 10
+dead_letter_queue = "deadletter-mail-queue-production"
 
 
 
@@ -51,19 +48,16 @@ binding = "MAIL_QUEUE"
 # 🚨 STAGING CONFIG 🚨
 # =====================================
 # =====================================
-[env.staging]
-route = "api.jsconf.dev/*"
-
-[env.staging.vars]
-GRAPHQL_BASE_ENDPOINT = "/"
-OTEL_SERVICE_NAME="graphql-api"
-
 [env.staging.define]
 _APP_ENV = "'staging'"
 
 [env.staging.placement]
 mode = "smart"
 
-[[env.staging.queues.producers]]
+[[env.staging.queues.consumers]]
 queue = "mail-queue-staging"
-binding = "MAIL_QUEUE"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 10
+dead_letter_queue = "deadletter-mail-queue-staging"
+

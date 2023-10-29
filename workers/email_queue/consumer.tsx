@@ -1,7 +1,10 @@
 import WorkEmailValidationEmail from "../../emails/invite-email";
 import * as React from "react";
 import { Env } from "../../worker-configuration";
-import { EmailMessageType, sendTransactionalEmail } from "../datasources/mail";
+import {
+  EmailMessageType,
+  sendTransactionalEmail,
+} from "../../src/datasources/mail";
 import { render } from "@react-email/render";
 
 export const queueConsumer = async (batch: MessageBatch<any>, env: Env) => {
