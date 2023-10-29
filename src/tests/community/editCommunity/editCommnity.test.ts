@@ -18,7 +18,7 @@ afterEach(() => {
   clearDatabase();
 });
 
-describe.only("Edit community", () => {
+describe("Edit community", () => {
   describe("Should edit an community", () => {
     it("As an super admin", async () => {
       const community1 = await insertCommunity();
