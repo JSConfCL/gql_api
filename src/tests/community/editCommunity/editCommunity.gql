@@ -1,0 +1,8 @@
+mutation EditCommunity($input: UpdateCommunityInput!) {
+  editCommunity(input: $input) {
+    description
+    id
+    name
+    status
+  }
+}

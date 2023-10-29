@@ -11,6 +11,7 @@ import { builder } from "~/builder";
 import { canCreateCommunity, canEditCommunity } from "~/validations";
 import { v4 } from "uuid";
 import { GraphQLError } from "graphql";
+import { CommnunityStatus as CommunityStatusEnum } from "~/generated/types";
 
 export const CommnunityStatus = builder.enumType("CommnunityStatus", {
   values: ["active", "inactive"] as const,
@@ -224,13 +225,10 @@ builder.mutationFields((t) => ({
           throw new Error("Community not found");
         }
 
-        const insertCommunity = insertCommunitySchema.parse({
-          id: communityId,
-          status,
-        });
-
         const community = await DB.update(communitySchema)
-          .set(insertCommunity)
+          .set({
+            status: status as CommunityStatusEnum,
+          })
           .where(eq(communitySchema.id, communityId))
           .returning()
           .get();
