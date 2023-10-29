@@ -1,5 +1,5 @@
 # 🚨 DEFAULT CONFIG 🚨
-name = "auth-tokens"
+name = "auth_tokens"
 compatibility_date = "2023-06-06"
 main = "./index.ts"
 
