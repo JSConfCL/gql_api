@@ -1,17 +1,17 @@
-name: Deploy to STAGING
+name: Deploy to PROD
 
 on:
   workflow_run:
     # Esto tiene q hacer match con los nombres de los workflows de tests
     workflows: ["Graphql and Database Tests", "Lint and Typecheck"]
-    branches: [main]
+    branches: [release]
     types:
       - completed
 
 jobs:
   deploy:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    name: Deploy to Cloudflare Workers — STAGING
+    name: Deploy to Cloudflare Workers PRODUCTION
     runs-on: ubuntu-latest
     steps:
       - name: ⏳ Cloning repo
@@ -30,10 +30,14 @@ jobs:
       - name: 📥 Install dependencies
         run: npm ci --prefer-offline --no-audit --legacy-peer-deps --cache ~/.npm
       # Deploy the API
-      - name: 🛳️ DEPLOY Cloudflare Workers
-        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=staging
+      - name: 🛳️ DEPLOY API WORKER
+        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production
+
+      - name: 🛳️ DEPLOY AUTH-TOKEN WORKER
+        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production --config ./workers/auth_tokens/wrangler.toml
       # Redeploy the queue consumer
+
       - name: 💀/🛳️ RE-DEPLOY queue consumer
         run: |
-          CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler queues consumer remove mail-queue-staging mail-queue-consumer-staging && \
-          CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=staging --config ./workers/email_queue/wrangler.toml
+          CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler queues consumer remove mail-queue-production mail-queue-consumer-production && \
+          CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production --config ./workers/email_queue/wrangler.toml
