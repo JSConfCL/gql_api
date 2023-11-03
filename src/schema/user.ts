@@ -22,6 +22,7 @@ builder.objectType(UserRef, {
     username: t.exposeString("username", { nullable: false }),
     lastName: t.exposeString("lastName", { nullable: true }),
     bio: t.exposeString("bio", { nullable: true }),
+    isSuperAdmin: t.exposeBoolean("isSuperAdmin", { nullable: true }),
     communities: t.field({
       type: [CommunityRef],
       resolve: async (root, args, ctx) => {
@@ -53,6 +54,22 @@ builder.objectType(UserRef, {
 });
 
 builder.queryFields((t) => ({
+  me: t.field({
+    description: "Get the current user",
+    type: UserRef,
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, args, { USER, DB }) => {
+      if (!USER) {
+        throw new Error("User not found");
+      }
+      const user = await DB.query.usersSchema.findFirst({
+        where: (u, { eq }) => eq(u.id, USER.id),
+      });
+      return selectUsersSchema.parse(user);
+    },
+  }),
   users: t.field({
     description: "Get a list of users",
     type: [UserRef],
