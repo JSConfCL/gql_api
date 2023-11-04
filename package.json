@@ -86,6 +86,7 @@
     "@opentelemetry/tracing": "^0.24.0",
     "@pothos/core": "^3.30.0",
     "@pothos/plugin-authz": "^3.5.8",
+    "@sanity/client": "^6.7.0",
     "@types/react": "^18.2.22",
     "cookie": "^0.5.0",
     "dbdocs": "^0.8.2",
