@@ -1,6 +1,24 @@
 import { it, describe, vi, expect } from "vitest";
 import { enqueueGooglePhotoImage, enqueueGooglePhotoImageBatch } from "./index";
 
+const googleMediaType = {
+  baseUrl: "some-base-url",
+  mimeType: "image/jpeg",
+  filename: "some-filename",
+  id: "some-id",
+  mediaMetadata: {
+    creationTime: "some-creation-time",
+    height: "some-height",
+    width: "some-width",
+    photo: {
+      apertureFNumber: 2,
+      cameraMake: "some-camera-make",
+      cameraModel: "some-camera-model",
+      focalLength: 1,
+      isoEquivalent: 2,
+    },
+  },
+};
 describe("Test email library", () => {
   describe("enqueueEmail", () => {
     it("Should enqueue an email", async () => {
@@ -11,22 +29,8 @@ describe("Test email library", () => {
         send: spy,
       } as unknown as Queue;
       await enqueueGooglePhotoImage(mockedQueue, {
-        baseUrl: "some-base-url",
-        mimeType: "image/jpeg",
-        filename: "some-filename",
-        id: "some-id",
-        mediaMetadata: {
-          creationTime: "some-creation-time",
-          height: "some-height",
-          width: "some-width",
-          photo: {
-            apertureFNumber: 2,
-            cameraMake: "some-camera-make",
-            cameraModel: "some-camera-model",
-            focalLength: 1,
-            isoEquivalent: 2,
-          },
-        },
+        token: "some-token",
+        googleMedia: googleMediaType,
       });
 
       expect(spy).toHaveBeenCalledTimes(1);
@@ -40,22 +44,12 @@ describe("Test email library", () => {
       } as unknown as Queue;
       await enqueueGooglePhotoImageBatch(mockedQueue, [
         {
-          baseUrl: "some-base-url",
-          mimeType: "image/jpeg",
-          filename: "some-filename",
-          id: "some-id",
-          mediaMetadata: {
-            creationTime: "some-creation-time",
-            height: "some-height",
-            width: "some-width",
-            photo: {
-              apertureFNumber: 2,
-              cameraMake: "some-camera-make",
-              cameraModel: "some-camera-model",
-              focalLength: 1,
-              isoEquivalent: 2,
-            },
-          },
+          token: "some-token",
+          googleMedia: googleMediaType,
+        },
+        {
+          token: "some-token",
+          googleMedia: googleMediaType,
         },
       ]);
 

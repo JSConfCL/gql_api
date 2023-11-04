@@ -1,5 +1,6 @@
 import { createClient } from "@sanity/client";
 import { ensureKeys } from "../utils";
+import { GoogleMediaItemType } from "../../src/datasources/google/photos";
 
 type ENV = {
   SANITY_PROJECT_ID: string;
@@ -17,15 +18,15 @@ const getSanityClient = (env: ENV) =>
     token: process.env.SANITY_SECRET_TOKEN, // Only if you want to update content with the client
   });
 
-export const queueConsumer: ExportedHandlerQueueHandler<ENV> = async (
-  batch,
-  env,
-) => {
+export const queueConsumer: ExportedHandlerQueueHandler<
+  ENV,
+  GoogleMediaItemType
+> = async (batch, env) => {
   ensureKeys(env);
   const sanityClient = getSanityClient(env);
   console.log("Processing queue", batch.queue);
   for await (const msg of batch.messages) {
-    sanityClient.assets.upload("image", msg.data);
+    sanityClient.assets.upload("image", msg);
     // console.log("Processing message", msg);
   }
 };
