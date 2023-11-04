@@ -5,6 +5,9 @@ yalc.lock
 # For emails
 .react-email
 
+# For workers cache
+.wrangler
+
 build
 src/@types/schema.generated.ts
 node_modules

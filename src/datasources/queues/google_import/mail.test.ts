@@ -1,5 +1,5 @@
 import { it, describe, vi, expect } from "vitest";
-import { enqueueEmail, sendTransactionalEmail } from "./index";
+import { enqueueGooglePhotoImage, enqueueGooglePhotoImageBatch } from "./index";
 
 describe("Test email library", () => {
   describe("enqueueEmail", () => {
@@ -9,59 +9,57 @@ describe("Test email library", () => {
       });
       const mockedQueue = {
         send: spy,
-      };
-      await enqueueEmail(
-        // @ts-expect-error Estamos mockeando la cola de cloudflare
-        mockedQueue,
-        {
-          code: "123",
-          userId: "123",
-          to: "",
+      } as unknown as Queue;
+      await enqueueGooglePhotoImage(mockedQueue, {
+        baseUrl: "some-base-url",
+        mimeType: "image/jpeg",
+        filename: "some-filename",
+        id: "some-id",
+        mediaMetadata: {
+          creationTime: "some-creation-time",
+          height: "some-height",
+          width: "some-width",
+          photo: {
+            apertureFNumber: 2,
+            cameraMake: "some-camera-make",
+            cameraModel: "some-camera-model",
+            focalLength: 1,
+            isoEquivalent: 2,
+          },
         },
-      );
+      });
 
       expect(spy).toHaveBeenCalledTimes(1);
     });
-  });
+    it("Should enqueue an email via BATCH api", async () => {
+      const spy = vi.fn().mockImplementation(() => {
+        // do nothing
+      });
+      const mockedQueue = {
+        sendBatch: spy,
+      } as unknown as Queue;
+      await enqueueGooglePhotoImageBatch(mockedQueue, [
+        {
+          baseUrl: "some-base-url",
+          mimeType: "image/jpeg",
+          filename: "some-filename",
+          id: "some-id",
+          mediaMetadata: {
+            creationTime: "some-creation-time",
+            height: "some-height",
+            width: "some-width",
+            photo: {
+              apertureFNumber: 2,
+              cameraMake: "some-camera-make",
+              cameraModel: "some-camera-model",
+              focalLength: 1,
+              isoEquivalent: 2,
+            },
+          },
+        },
+      ]);
 
-  describe("sendTransactionalEmail", () => {
-    it("Should consume an email", async () => {
-      const spiedFetch = vi.fn().mockImplementation(() => {
-        return { status: 200 };
-      });
-      global.fetch = spiedFetch;
-      await sendTransactionalEmail(
-        {
-          RESEND_EMAIL_KEY: "123",
-        },
-        {
-          from: "",
-          to: "",
-          subject: "",
-          html: "",
-        },
-      );
-    });
-    it("Should error if status is over 400", async () => {
-      const spiedFetch = vi.fn().mockImplementation(() => {
-        return { status: 400 };
-      });
-      global.fetch = spiedFetch;
-      try {
-        await sendTransactionalEmail(
-          {
-            RESEND_EMAIL_KEY: "123",
-          },
-          {
-            from: "",
-            to: "",
-            subject: "",
-            html: "",
-          },
-        );
-      } catch (e) {
-        expect((e as Error).message).toBe("Error sending email");
-      }
+      expect(spy).toHaveBeenCalledTimes(1);
     });
   });
 });
