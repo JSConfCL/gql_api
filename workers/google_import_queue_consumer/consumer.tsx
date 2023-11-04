@@ -32,7 +32,15 @@ export const queueConsumer: ExportedHandlerQueueHandler<
   console.log("Processing queue", batch.queue);
   for await (const msg of batch.messages) {
     console.log("Processing message", msg);
-    // sanityClient.assets.upload("image", msg.body);
-    // console.log("Processing message", msg);
+    const response = await fetch(msg.body.baseUrl);
+    const blob = await response.blob();
+    const formData = new FormData();
+    formData.append("file", blob);
+    const createdDocument = await sanityClient.create({
+      _type: "sanity.imageAsset",
+      asset: formData,
+    });
+    console.log("Image uploaded to Sanity:", createdDocument);
+    msg.ack();
   }
 };

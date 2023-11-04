@@ -4,7 +4,7 @@ export const ensureKeys = <T extends Record<string, any>>(
 ): T => {
   for (const key of keys) {
     if (!env[key]) {
-      throw new Error(`${key as string} is not defined`);
+      throw new Error(`${key as string} environment variable is not defined`);
     }
   }
   return env;
