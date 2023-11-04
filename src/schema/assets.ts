@@ -4,7 +4,10 @@ import {
   GoogleMediaItemType,
   getAlbumImages,
 } from "../datasources/google/photos";
-import { enqueueGooglePhotoImageBatch } from "../datasources/queues/google_import";
+import {
+  GoogleImportQueueElement,
+  enqueueGooglePhotoImageBatch,
+} from "../datasources/queues/google_import";
 
 builder.objectType(SanityAssetRef, {
   description: "Representation of a Sanity Asset",
@@ -23,6 +26,7 @@ const EnqueueGoogleAlbumImportInput = builder.inputType(
   {
     fields: (t) => ({
       albumId: t.string({ required: true }),
+      sanityEventInstanceId: t.string({ required: true }),
       token: t.string({ required: true }),
     }),
   },
@@ -44,16 +48,22 @@ builder.mutationFields((t) => ({
       input: t.arg({ type: EnqueueGoogleAlbumImportInput, required: true }),
     },
     resolve: async (_, { input }, { GOOGLE_PHOTOS_IMPORT_QUEUE }) => {
-      const { albumId, token } = input;
+      const { albumId, token, sanityEventInstanceId } = input;
       let shouldGetMore = true;
       let nextPageToken: string | undefined = undefined;
-      let allImages: GoogleMediaItemType[] = [];
+      const allImages: GoogleImportQueueElement[] = [];
       while (shouldGetMore) {
         const response: {
           mediaItems: Array<GoogleMediaItemType>;
           nextPageToken: string | undefined;
         } = await getAlbumImages(albumId, token, nextPageToken);
-        allImages = [...allImages, ...response.mediaItems];
+        response.mediaItems.forEach((mediaItem) => {
+          allImages.push({
+            googleMedia: mediaItem,
+            sanityEventInstanceId,
+          });
+        });
+
         if (response.nextPageToken) {
           nextPageToken = response.nextPageToken;
         } else {

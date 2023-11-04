@@ -1,8 +1,8 @@
 import { GoogleMediaItemType } from "../../google/photos";
 import pMap from "p-map";
 
-type QueueElement = {
-  token: string;
+export type GoogleImportQueueElement = {
+  sanityEventInstanceId: string;
   googleMedia: GoogleMediaItemType;
 };
 
@@ -19,7 +19,7 @@ const splitIntoChunks = <T>(array: T[], chunkSize: number) => {
 
 export const enqueueGooglePhotoImage = (
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue,
-  googlePhotoMessage: QueueElement,
+  googlePhotoMessage: GoogleImportQueueElement,
 ) => {
   // Solo hacemos esto porque en nuestros tests de graphql, no tenemos una cola
   // de cloudflare queues. Así que en ves de enviar el email, asumimos que se
@@ -35,7 +35,7 @@ export const enqueueGooglePhotoImage = (
 
 export const enqueueGooglePhotoImageBatch = async (
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue,
-  googlePhotoMessage: QueueElement[],
+  googlePhotoMessage: GoogleImportQueueElement[],
 ) => {
   // Solo hacemos esto porque en nuestros tests de graphql, no tenemos una cola
   // de cloudflare queues. Así que en ves de enviar el email, asumimos que se
