@@ -22,11 +22,17 @@ export const queueConsumer: ExportedHandlerQueueHandler<
   ENV,
   GoogleMediaItemType
 > = async (batch, env) => {
-  ensureKeys(env);
+  ensureKeys(env, [
+    "SANITY_PROJECT_ID",
+    "SANITY_DATASET",
+    "SANITY_API_VERSION",
+    "SANITY_SECRET_TOKEN",
+  ]);
   const sanityClient = getSanityClient(env);
   console.log("Processing queue", batch.queue);
   for await (const msg of batch.messages) {
-    sanityClient.assets.upload("image", msg);
+    console.log("Processing message", msg);
+    // sanityClient.assets.upload("image", msg.body);
     // console.log("Processing message", msg);
   }
 };
