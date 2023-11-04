@@ -1,4 +1,4 @@
-import { Env } from "../../../worker-configuration";
+import { Env } from "../../../../worker-configuration";
 
 export type EmailMessageType = {
   code: string;

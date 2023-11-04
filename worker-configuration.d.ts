@@ -8,6 +8,7 @@ export interface Env {
   CLERK_ISSUER_ID: string | undefined;
   ENFORCED_JWT_TOKEN: string | undefined;
   MAIL_QUEUE: Queue;
+  GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
   RESEND_EMAIL_KEY: string;
 }
 

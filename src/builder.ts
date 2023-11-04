@@ -11,6 +11,7 @@ type Context = {
   DB: ORM_TYPE;
   USER: z.infer<typeof selectUsersSchema> | null;
   MAIL_QUEUE: Queue;
+  GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
 };
 
 export type GraphqlContext = Context &

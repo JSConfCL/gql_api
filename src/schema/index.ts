@@ -1,3 +1,4 @@
+import "./assets";
 import "./allowedCurrency";
 import "./community";
 import "./company";

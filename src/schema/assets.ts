@@ -1,5 +1,10 @@
 import { builder } from "~/builder";
 import { SanityAssetRef } from "~/schema/shared/refs";
+import {
+  GoogleMediaItemType,
+  getAlbumImages,
+} from "../datasources/google/photos";
+import { enqueueGooglePhotoImageBatch } from "../datasources/queues/google_import";
 
 builder.objectType(SanityAssetRef, {
   description: "Representation of a Sanity Asset",
@@ -23,57 +28,14 @@ const EnqueueGoogleAlbumImportInput = builder.inputType(
   },
 );
 
-type GoogleMediaItemType = {
-  id: string;
-  baseUrl: string;
-  mimeType: string;
-  filename: string;
-  mediaMetadata: {
-    creationTime: string;
-    width: string;
-    height: string;
-    photo: {
-      cameraMake: string;
-      cameraModel: string;
-      focalLength: number;
-      apertureFNumber: number;
-      isoEquivalent: number;
-    };
-  };
-};
-
-const getAlbumImages = async (
-  albumId: string,
-  token: string,
-  pageToken?: string,
-) => {
-  const rawresponse = await fetch(
-    "https://photoslibrary.googleapis.com/v1/mediaItems:search",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        albumId: albumId,
-        pageSize: 100, // This specifies the number of items to return per page, maximum is 100
-        ...(pageToken ? { pageToken } : {}), // This specifies the page token of the next page to return
-      }),
-    },
-  );
-  const response = await rawresponse.json();
-  return response as {
-    mediaItems: Array<GoogleMediaItemType>;
-    nextPageToken: string | undefined;
-  };
-};
-
 builder.mutationFields((t) => ({
-  createCommunity: t.field({
+  enqueueGoogleAlbumImport: t.field({
+    // Recibimos un token de google, y un albumId. Esta mutación se encarga de
+    // obtener todas las imágenes del album, y encolarlas en una cola de
+    // cloudflare. Luego existe otro consumer, que se encarga de descargarlas y
+    // meterlas en sanity.
     description: "Enqueue images to import",
-    type: Boolean,
+    type: "Boolean",
     nullable: false,
     authz: {
       rules: ["IsAuthenticated", "IsSuperAdmin"],
@@ -81,7 +43,7 @@ builder.mutationFields((t) => ({
     args: {
       input: t.arg({ type: EnqueueGoogleAlbumImportInput, required: true }),
     },
-    resolve: async (root, { input }, { USER, DB }) => {
+    resolve: async (_, { input }, { GOOGLE_PHOTOS_IMPORT_QUEUE }) => {
       const { albumId, token } = input;
       let shouldGetMore = true;
       let nextPageToken: string | undefined = undefined;
@@ -98,9 +60,7 @@ builder.mutationFields((t) => ({
           shouldGetMore = false;
         }
       }
-      await getAlbumImages(albumId, token);
-      // eslint-disable-next-line no-console
-      console.log("allImages", allImages);
+      await enqueueGooglePhotoImageBatch(GOOGLE_PHOTOS_IMPORT_QUEUE, allImages);
       return true;
     },
   }),

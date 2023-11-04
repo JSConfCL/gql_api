@@ -1,15 +1,15 @@
 # 🚨 DEFAULT CONFIG 🚨
-name = "auth_tokens"
+name = "google-import-queue-consumer"
 compatibility_date = "2023-06-06"
 main = "./index.ts"
-
-[placement]
-mode = "smart"
 
 [define]
 _APP_ENV = "'development'"
 
-[[env.production.queues.consumers]]
+[placement]
+mode = "smart"
+
+[[queues.consumers]]
 queue = "google-photos-import-queue-dev"
 max_batch_size = 10
 max_batch_timeout = 30
@@ -25,14 +25,12 @@ dead_letter_queue = "deadletter-google-photos-import-queue-dev"
 # 🚨 PRODUCTION CONFIG 🚨
 # =====================================
 # =====================================
-[env.production]
-route = "auth-tokens.jschile.org/*"
-
-[env.production.placement]
-mode = "smart"
 
 [env.production.define]
 _APP_ENV = "'production'"
+
+[env.production.placement]
+mode = "smart"
 
 [[env.production.queues.consumers]]
 queue = "google-photos-import-queue-production"
@@ -50,18 +48,16 @@ dead_letter_queue = "deadletter-google-photos-import-queue-production"
 # 🚨 STAGING CONFIG 🚨
 # =====================================
 # =====================================
-[env.staging]
-route = "auth-tokens.jsconf.dev/*"
+[env.staging.define]
+_APP_ENV = "'staging'"
 
 [env.staging.placement]
 mode = "smart"
 
-[env.staging.define]
-_APP_ENV = "'staging'"
-
-[[env.production.queues.consumers]]
+[[env.staging.queues.consumers]]
 queue = "google-photos-import-queue-staging"
 max_batch_size = 10
 max_batch_timeout = 30
 max_retries = 10
 dead_letter_queue = "deadletter-google-photos-import-queue-staging"
+

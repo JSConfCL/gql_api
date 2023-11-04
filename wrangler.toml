@@ -17,6 +17,10 @@ mode = "smart"
 queue = "mail-queue-dev"
 binding = "MAIL_QUEUE"
 
+[[queues.producers]]
+queue = "google-photos-import-queue-dev"
+binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
+
 
 
 
@@ -42,6 +46,9 @@ mode = "smart"
 queue = "mail-queue-production"
 binding = "MAIL_QUEUE"
 
+[[queues.producers]]
+queue = "google-photos-import-queue-production"
+binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
 
 
 
@@ -67,3 +74,7 @@ mode = "smart"
 [[env.staging.queues.producers]]
 queue = "mail-queue-staging"
 binding = "MAIL_QUEUE"
+
+[[queues.producers]]
+queue = "google-photos-import-queue-staging"
+binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
