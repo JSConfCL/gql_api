@@ -9,13 +9,6 @@ mode = "smart"
 [define]
 _APP_ENV = "'development'"
 
-[[env.production.queues.consumers]]
-queue = "google-photos-import-queue-dev"
-max_batch_size = 10
-max_batch_timeout = 30
-max_retries = 10
-dead_letter_queue = "deadletter-google-photos-import-queue-dev"
-
 
 
 
@@ -34,12 +27,6 @@ mode = "smart"
 [env.production.define]
 _APP_ENV = "'production'"
 
-[[env.production.queues.consumers]]
-queue = "google-photos-import-queue-production"
-max_batch_size = 10
-max_batch_timeout = 30
-max_retries = 10
-dead_letter_queue = "deadletter-google-photos-import-queue-production"
 
 
 
@@ -59,9 +46,3 @@ mode = "smart"
 [env.staging.define]
 _APP_ENV = "'staging'"
 
-[[env.production.queues.consumers]]
-queue = "google-photos-import-queue-staging"
-max_batch_size = 10
-max_batch_timeout = 30
-max_retries = 10
-dead_letter_queue = "deadletter-google-photos-import-queue-staging"
