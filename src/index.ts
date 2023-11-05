@@ -125,6 +125,7 @@ export const yoga = createYoga<Env>({
     CLERK_PEM_PUBLIC_KEY,
     CLERK_ISSUER_ID,
     MAIL_QUEUE,
+    GOOGLE_PHOTOS_IMPORT_QUEUE,
   }) => {
     if (!CLERK_PEM_PUBLIC_KEY) {
       throw new Error("Missing CLERK_KEY");
@@ -140,6 +141,9 @@ export const yoga = createYoga<Env>({
     }
     if (!MAIL_QUEUE) {
       throw new Error("Missing MAIL_QUEUE");
+    }
+    if (!GOOGLE_PHOTOS_IMPORT_QUEUE) {
+      throw new Error("Missing GOOGLE_PHOTOS_IMPORT_QUEUE");
     }
     const DB = getDb({
       authToken: DATABASE_TOKEN,

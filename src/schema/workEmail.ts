@@ -11,7 +11,7 @@ import {
   workEmailSchema,
 } from "~/datasources/db/schema";
 import { WorkEmailRef } from "~/schema/shared/refs";
-import { enqueueEmail } from "../datasources/mail";
+import { enqueueEmail } from "../datasources/queues/mail";
 
 builder.objectType(WorkEmailRef, {
   description: "Representation of a workEmail",

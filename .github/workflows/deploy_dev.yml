@@ -29,8 +29,13 @@ jobs:
       # Deploy the API
       - name: 🛳️ DEPLOY Cloudflare Workers
         run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy
-      # Redeploy the queue consumer
-      - name: 💀/🛳️ RE-DEPLOY queue consumer
+      # Redeploy the EMAIL queue consumer
+      - name: 💀/🛳️ RE-DEPLOY MAIL queue consumer
         run: |
           CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler queues consumer remove mail-queue-dev mail-queue-consumer && \
           CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --config ./workers/email_queue/wrangler.toml
+      # Redeploy the Google Import consumer
+      - name: 💀/🛳️ RE-DEPLOY GOOGLE-IMPORT queue consumer
+        run: |
+          CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler queues consumer remove google-photos-import-queue-dev google-import-queue-consumer && \
+          CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --config ./workers/google_import_queue_consumer/wrangler.toml

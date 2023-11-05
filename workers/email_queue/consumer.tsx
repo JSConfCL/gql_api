@@ -3,7 +3,7 @@ import * as React from "react";
 import {
   EmailMessageType,
   sendTransactionalEmail,
-} from "../../src/datasources/mail";
+} from "../../src/datasources/queues/mail";
 import { render } from "@react-email/render";
 
 type ENV = {

@@ -13,7 +13,6 @@ _APP_ENV = "'development'"
 
 
 
-
 # =====================================
 # =====================================
 # 🚨 PRODUCTION CONFIG 🚨
@@ -46,3 +45,4 @@ mode = "smart"
 
 [env.staging.define]
 _APP_ENV = "'staging'"
+
