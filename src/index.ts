@@ -90,18 +90,18 @@ export const yoga = createYoga<Env>({
           : `{}`,
     };
   },
-  cors: {
-    origin: ["*"],
-    credentials: true,
-    methods: ["POST", "GET", "OPTIONS"],
-  },
+  // cors: {
+  //   origin: ["*"],
+  //   credentials: true,
+  //   methods: ["POST", "GET", "OPTIONS"],
+  // },
   schema,
   logging: "debug",
   plugins: [
-    APP_ENV === "production" &&
-      useCSRFPrevention({
-        requestHeaders: ["x-graphql-csrf-token"],
-      }),
+    // APP_ENV === "production" &&
+    //   useCSRFPrevention({
+    //     requestHeaders: ["x-graphql-csrf-token"],
+    //   }),
     APP_ENV === "production" && useMaskedErrors(),
     useImmediateIntrospection(),
     (APP_ENV === "production" || APP_ENV === "staging") &&
