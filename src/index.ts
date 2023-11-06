@@ -93,7 +93,7 @@ export const yoga = createYoga<Env>({
   cors: {
     origin: ["*"],
     credentials: true,
-    methods: ["POST"],
+    methods: ["POST", "GET", "OPTIONS"],
   },
   schema,
   logging: "debug",
