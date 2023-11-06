@@ -43,5 +43,5 @@ jobs:
       # Redeploy the Google Import consumer
       - name: 💀/🛳️ RE-DEPLOY GOOGLE-IMPORT queue consumer
         run: |
-          CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler queues consumer remove google-photos-import-queue-prod google-import-queue-consumer-prod && \
+          CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler queues consumer remove google-photos-import-queue-production google-import-queue-consumer-production && \
           CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --config ./workers/google_import_queue_consumer/wrangler.toml
