@@ -31,6 +31,7 @@ binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
 # =====================================
 [env.production]
 route = "api.jschile.org/*"
+logpush = true
 
 [env.production.vars]
 GRAPHQL_BASE_ENDPOINT = "/"
@@ -60,6 +61,7 @@ binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
 # =====================================
 [env.staging]
 route = "api.jsconf.dev/*"
+logpush = true
 
 [env.staging.vars]
 GRAPHQL_BASE_ENDPOINT = "/"
