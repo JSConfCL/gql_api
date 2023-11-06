@@ -91,7 +91,7 @@ export const yoga = createYoga<Env>({
     };
   },
   cors: {
-    origin: APP_ENV === "production" ? [] : ["*"],
+    origin: ["*"],
     credentials: true,
     methods: ["POST"],
   },
