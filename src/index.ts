@@ -74,22 +74,25 @@ const getUser = async ({
 export const yoga = createYoga<Env>({
   landingPage: APP_ENV !== "production",
   graphqlEndpoint: "/graphql",
-  graphiql: (_, { ENFORCED_JWT_TOKEN }) => {
-    return {
-      title: "JSChileORG GraphiQL",
-      // Aun debatiendo si SSE o WSS (no se si CF Workers/yoga soportará WSS bien)
-      subscriptionsProtocol: "SSE",
-      // Podríamos hacer un JSON stringify,
-      // pero quiero evitar acciones q bloqueen el eventloop para cuando se inicie el worker.
-      headers:
-        APP_ENV === "development"
-          ? `{
+  graphiql:
+    APP_ENV !== "production"
+      ? (_, { ENFORCED_JWT_TOKEN }) => {
+          return {
+            title: "JSChileORG GraphiQL",
+            // Aun debatiendo si SSE o WSS (no se si CF Workers/yoga soportará WSS bien)
+            subscriptionsProtocol: "SSE",
+            // Podríamos hacer un JSON stringify,
+            // pero quiero evitar acciones q bloqueen el eventloop para cuando se inicie el worker.
+            headers:
+              APP_ENV === "development"
+                ? `{
   "Authorization":"Bearer ${ENFORCED_JWT_TOKEN ?? "INSERT_TOKEN_HERE"}",
   "x-graphql-csrf-token": "your-csrf-token-in-production"
 }`
-          : `{}`,
-    };
-  },
+                : `{}`,
+          };
+        }
+      : undefined,
   cors: {
     origin: APP_ENV === "production" ? [] : ["*"],
     credentials: true,
