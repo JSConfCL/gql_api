@@ -1,5 +1,4 @@
-import { createYoga } from "graphql-yoga";
-import { useCSRFPrevention } from "@graphql-yoga/plugin-csrf-prevention";
+import { createYoga, maskError } from "graphql-yoga";
 import { useMaskedErrors } from "@envelop/core";
 import { APP_ENV } from "~/env";
 import { useImmediateIntrospection } from "@envelop/immediate-introspection";
@@ -90,19 +89,27 @@ export const yoga = createYoga<Env>({
           : `{}`,
     };
   },
-  // cors: {
-  //   origin: ["*"],
-  //   credentials: true,
-  //   methods: ["POST", "GET", "OPTIONS"],
-  // },
+  cors: (request) => {
+    const requestOrigin = request.headers.get("origin") ?? undefined;
+    return {
+      origin: requestOrigin,
+      credentials: true,
+      allowedHeaders: ["*"],
+      methods: ["POST", "GET", "OPTIONS"],
+    };
+  },
   schema,
   logging: "debug",
   plugins: [
-    // APP_ENV === "production" &&
-    //   useCSRFPrevention({
-    //     requestHeaders: ["x-graphql-csrf-token"],
-    //   }),
-    APP_ENV === "production" && useMaskedErrors(),
+    APP_ENV === "production" &&
+      useMaskedErrors({
+        errorMessage: "Internal Server Error",
+        maskError: (error, message) => {
+          // eslint-disable-next-line no-console
+          console.error("ERROR", error);
+          return maskError(error, message);
+        },
+      }),
     useImmediateIntrospection(),
     (APP_ENV === "production" || APP_ENV === "staging") &&
       useOpenTelemetry(
