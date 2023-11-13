@@ -1,5 +1,5 @@
 import { createYoga, maskError } from "graphql-yoga";
-import { useMaskedErrors } from "@envelop/core";
+import { isGraphQLError, useMaskedErrors } from "@envelop/core";
 import { APP_ENV } from "~/env";
 import { useImmediateIntrospection } from "@envelop/immediate-introspection";
 import { ORM_TYPE, getDb } from "~/datasources/db";
@@ -15,6 +15,9 @@ import {
 } from "~/datasources/queries/users";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import * as rules from "~/authz";
+import { trace } from "@opentelemetry/api";
+import { instrument, ResolveConfigFn } from "@microlabs/otel-cf-workers";
+import { v4 } from "uuid";
 
 const getUser = async ({
   request,
@@ -105,6 +108,12 @@ export const yoga = createYoga<Env>({
       useMaskedErrors({
         errorMessage: "Internal Server Error",
         maskError: (error, message) => {
+          const span = trace.getActiveSpan();
+          if (span) {
+            if (isGraphQLError(error)) {
+              span.recordException(error);
+            }
+          }
           // eslint-disable-next-line no-console
           console.error("ERROR", error);
           return maskError(error, message);
@@ -171,6 +180,34 @@ export const yoga = createYoga<Env>({
   },
 });
 
-export default {
-  fetch: yoga.fetch,
+const handler = {
+  async fetch(
+    request: Request,
+    env: Env,
+    ctx: ExecutionContext,
+  ): Promise<Response> {
+    const span = trace.getActiveSpan();
+    if (span) {
+      span.setAttributes({ id: v4() });
+    }
+    const response = await yoga.fetch(
+      // @ts-expect-error los tipos de yoga.fetch estan malos
+      request,
+      env,
+      ctx,
+    );
+    return response;
+  },
 };
+
+const config: ResolveConfigFn = (env: Env, _trigger) => {
+  return {
+    exporter: {
+      url: "https://api.honeycomb.io/v1/traces",
+      headers: { "x-honeycomb-team": env.HONEYCOMB_API_KEY ?? "" },
+    },
+    service: { name: env.OTEL_SERVICE_NAME },
+  };
+};
+
+export default instrument<Env, any, any>(handler, config);
