@@ -216,7 +216,7 @@ builder.mutationFields((t) => ({
         if (!USER) {
           throw new Error("User not found");
         }
-        if (!canEditCommunity(USER, communityId, DB)) {
+        if (!(await canEditCommunity(USER, communityId, DB))) {
           throw new Error("FORBIDDEN");
         }
         const dataToUpdate: Record<string, string | null | undefined> = {};
@@ -228,16 +228,16 @@ builder.mutationFields((t) => ({
         if (!foundCommunity) {
           throw new Error("Community not found");
         }
-        if(status) {
+        if (status) {
           dataToUpdate.status = status;
         }
-        if(description) {
+        if (description) {
           dataToUpdate.description = description;
         }
-        if(name) {
+        if (name) {
           dataToUpdate.name = name;
         }
-        if(slug) {
+        if (slug) {
           dataToUpdate.slug = slug;
         }
         const community = await DB.update(communitySchema)
