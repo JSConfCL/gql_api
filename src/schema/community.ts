@@ -149,6 +149,9 @@ const UpdateCommunityInput = builder.inputType("UpdateCommunityInput", {
       type: CommnunityStatus,
       required: false,
     }),
+    name: t.string({ required: false }),
+    slug: t.string({ required: false }),
+    description: t.string({ required: false }),
   }),
 });
 builder.mutationFields((t) => ({
@@ -209,13 +212,14 @@ builder.mutationFields((t) => ({
     },
     resolve: async (root, { input }, { USER, DB }) => {
       try {
-        const { communityId, status } = input;
+        const { communityId, status, description, name, slug } = input;
         if (!USER) {
           throw new Error("User not found");
         }
-        if (!canEditCommunity(USER)) {
+        if (!canEditCommunity(USER, communityId, DB)) {
           throw new Error("FORBIDDEN");
         }
+        const dataToUpdate: Record<string, string | null | undefined> = {};
 
         const foundCommunity = await DB.query.communitySchema.findFirst({
           where: (c, { eq }) => eq(c.id, communityId),
@@ -224,11 +228,20 @@ builder.mutationFields((t) => ({
         if (!foundCommunity) {
           throw new Error("Community not found");
         }
-
+        if(status) {
+          dataToUpdate.status = status;
+        }
+        if(description) {
+          dataToUpdate.description = description;
+        }
+        if(name) {
+          dataToUpdate.name = name;
+        }
+        if(slug) {
+          dataToUpdate.slug = slug;
+        }
         const community = await DB.update(communitySchema)
-          .set({
-            status: status as CommunityStatusEnum,
-          })
+          .set(dataToUpdate)
           .where(eq(communitySchema.id, communityId))
           .returning()
           .get();
