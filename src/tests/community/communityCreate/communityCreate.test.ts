@@ -7,7 +7,7 @@ import {
 } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { CommnunityStatus } from "~/generated/types";
-import { faker } from "@faker-js/faker";
+import { fa, faker } from "@faker-js/faker";
 import {
   CreateCommunity,
   CreateCommunityMutation,
@@ -94,6 +94,54 @@ describe("Community", () => {
 
       assert.equal(response.errors?.length, 1);
       assert.equal(response.errors?.[0]?.message, "This slug already exist");
+    });
+    it("If community name shorter than 2 characters", async () => {
+      const fakeData = {
+        name: "s",
+        slug: "c",
+        description: faker.lorem.paragraph(3),
+      };
+      const response = await executeGraphqlOperationAsSuperAdmin<
+        CreateCommunityMutation,
+        CreateCommunityMutationVariables
+      >({
+        document: CreateCommunity,
+        variables: {
+          input: fakeData,
+        },
+      });
+      const msg = JSON.parse(response.errors?.[0]?.message || "") as {
+        message: string;
+      }[];
+      assert.equal(response.errors?.length, 1);
+      assert.equal(
+        msg[0].message,
+        "String must contain at least 2 character(s)",
+      );
+    });
+    it.only("If community name shorter than 65 characters", async () => {
+      const fakeData = {
+        name: faker.lorem.words(65),
+        slug: "c",
+        description: faker.lorem.paragraph(3),
+      };
+      const response = await executeGraphqlOperationAsSuperAdmin<
+        CreateCommunityMutation,
+        CreateCommunityMutationVariables
+      >({
+        document: CreateCommunity,
+        variables: {
+          input: fakeData,
+        },
+      });
+      const msg = JSON.parse(response.errors?.[0]?.message || "") as {
+        message: string;
+      }[];
+      assert.equal(response.errors?.length, 1);
+      assert.equal(
+        msg[0].message,
+        "String must contain at most 64 character(s)",
+      );
     });
   });
 });
