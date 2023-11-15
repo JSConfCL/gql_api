@@ -39,30 +39,6 @@ export class IsTicketOwner extends PreExecutionRule {
     return Boolean(IsTicketOwner);
   }
 }
-export class CanEditCommunity extends PreExecutionRule {
-  error = new UnauthorizedError("User cannot edit community");
-
-  public async execute(
-    { USER, DB }: GraphqlContext,
-    fieldArgs: { id?: string },
-  ) {
-    if (!fieldArgs.id) {
-      return false;
-    }
-    if (!USER) {
-      return false;
-    }
-    const user = await DB.query.communitySchema.findFirst({
-      with: {
-        usersToCommunities: {
-          where: (utc, { eq, and }) =>
-            and(eq(utc.userId, USER.id), eq(utc.role, "admin")),
-        },
-      },
-    });
-    return Boolean(user);
-  }
-}
 
 export class IsSuperAdmin extends PreExecutionRule {
   public execute({ USER }: GraphqlContext, fieldArgs: { id?: string }) {
