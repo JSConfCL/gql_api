@@ -1,3 +1,4 @@
+import { H } from "@highlight-run/cloudflare";
 import { createYoga, maskError } from "graphql-yoga";
 import { useMaskedErrors } from "@envelop/core";
 import { APP_ENV } from "~/env";
@@ -15,6 +16,7 @@ import {
 } from "~/datasources/queries/users";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import * as rules from "~/authz";
+import { v4 } from "uuid";
 
 const getUser = async ({
   request,
@@ -107,6 +109,7 @@ export const yoga = createYoga<Env>({
         maskError: (error, message) => {
           // eslint-disable-next-line no-console
           console.error("ERROR", error);
+          H.consumeError(error as Error);
           return maskError(error, message);
         },
       }),
@@ -172,5 +175,20 @@ export const yoga = createYoga<Env>({
 });
 
 export default {
-  fetch: yoga.fetch,
+  fetch: async (req: Request, env: Env, ctx: ExecutionContext) => {
+    H.init(req, { HIGHLIGHT_PROJECT_ID: env.HIGHLIGHT_PROJECT_ID ?? "" }, ctx);
+    H.setAttributes({
+      TRACE_ID: v4(),
+    });
+    // eslint-disable-next-line no-console
+    console.log("Initialize Request");
+    const response = await yoga.fetch(
+      // @ts-expect-error Los tipos de yoga están mal
+      req,
+      env,
+      ctx,
+    );
+    H.sendResponse(response);
+    return response;
+  },
 };
