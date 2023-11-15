@@ -272,3 +272,24 @@ export function canCreateCommunity(
   }
   return user.isSuperAdmin || false;
 }
+export async function canEditCommunity(
+  user: z.infer<typeof selectUsersSchema> | null,
+  communityId: string,
+  DB: ORM_TYPE,
+): Promise<boolean> {
+  if (!user) {
+    return false;
+  }
+  if (user.isSuperAdmin) {
+    return true;
+  }
+  const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
+    where: (utc, { eq, and }) =>
+      and(
+        eq(utc.userId, user.id),
+        eq(utc.role, "admin"),
+        eq(utc.communityId, communityId),
+      ),
+  });
+  return Boolean(isCommunityAdmin);
+}

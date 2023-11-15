@@ -23,12 +23,6 @@ type Community {
   users: [User!]!
 }
 
-input CommunityCreateInput {
-  description: String!
-  name: String!
-  slug: String!
-}
-
 """
 Representation of a workEmail
 """
@@ -52,6 +46,12 @@ enum CompanyStatus {
   active
   draft
   inactive
+}
+
+input CreateCommunityInput {
+  description: String!
+  name: String!
+  slug: String!
 }
 
 input CreateCompanyInput {
@@ -185,7 +185,7 @@ type Mutation {
   """
   Create an community
   """
-  createCommunity(input: CommunityCreateInput!): Community!
+  createCommunity(input: CreateCommunityInput!): Community!
 
   """
   Create a company
@@ -201,6 +201,11 @@ type Mutation {
   Create a salary
   """
   createSalary(input: CreateSalaryInput!): Salary!
+
+  """
+  Edit an community
+  """
+  editCommunity(input: UpdateCommunityInput!): Community!
 
   """
   Edit a ticket
@@ -412,6 +417,11 @@ enum TypeOfEmployment {
   freelance
   fullTime
   partTime
+}
+
+input UpdateCommunityInput {
+  communityId: String!
+  status: CommnunityStatus
 }
 
 input UpdateCompanyInput {

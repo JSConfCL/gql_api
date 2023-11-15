@@ -1,4 +1,4 @@
-mutation CreateCommunity($input: CommunityCreateInput!) {
+mutation CreateCommunity($input: CreateCommunityInput!) {
   createCommunity(input: $input) {
     id
     name

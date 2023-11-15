@@ -59,12 +59,6 @@ export type Community = {
   users: Array<User>;
 };
 
-export type CommunityCreateInput = {
-  description: Scalars["String"]["input"];
-  name: Scalars["String"]["input"];
-  slug: Scalars["String"]["input"];
-};
-
 /** Representation of a workEmail */
 export type Company = {
   __typename?: "Company";
@@ -85,6 +79,12 @@ export enum CompanyStatus {
   Draft = "draft",
   Inactive = "inactive",
 }
+
+export type CreateCommunityInput = {
+  description: Scalars["String"]["input"];
+  name: Scalars["String"]["input"];
+  slug: Scalars["String"]["input"];
+};
 
 export type CreateCompanyInput = {
   description?: InputMaybe<Scalars["String"]["input"]>;
@@ -208,6 +208,8 @@ export type Mutation = {
   createEvent: Event;
   /** Create a salary */
   createSalary: Salary;
+  /** Edit an community */
+  editCommunity: Community;
   /** Edit a ticket */
   editTicket: Ticket;
   /** Redeem a ticket */
@@ -235,7 +237,7 @@ export type MutationCancelUserTicketArgs = {
 };
 
 export type MutationCreateCommunityArgs = {
-  input: CommunityCreateInput;
+  input: CreateCommunityInput;
 };
 
 export type MutationCreateCompanyArgs = {
@@ -248,6 +250,10 @@ export type MutationCreateEventArgs = {
 
 export type MutationCreateSalaryArgs = {
   input: CreateSalaryInput;
+};
+
+export type MutationEditCommunityArgs = {
+  input: UpdateCommunityInput;
 };
 
 export type MutationEditTicketArgs = {
@@ -463,6 +469,11 @@ export enum TypeOfEmployment {
   FullTime = "fullTime",
   PartTime = "partTime",
 }
+
+export type UpdateCommunityInput = {
+  communityId: Scalars["String"]["input"];
+  status?: InputMaybe<CommnunityStatus>;
+};
 
 export type UpdateCompanyInput = {
   companyId: Scalars["String"]["input"];
