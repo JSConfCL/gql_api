@@ -119,7 +119,7 @@ describe("Community", () => {
         "String must contain at least 2 character(s)",
       );
     });
-    it.only("If community name shorter than 65 characters", async () => {
+    it("If community name shorter than 65 characters", async () => {
       const fakeData = {
         name: faker.lorem.words(65),
         slug: "c",
