@@ -7,7 +7,6 @@ import { Env } from "worker-configuration";
 import { schema } from "~/schema";
 import { initContextCache } from "@pothos/core";
 import { useOpenTelemetry } from "@envelop/opentelemetry";
-import { provider } from "~/obs/exporter";
 import { verifyToken } from "@clerk/backend";
 import {
   ProfileInfoSchema,
@@ -15,6 +14,7 @@ import {
 } from "~/datasources/queries/users";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import * as rules from "~/authz";
+import { provider } from "./tracer";
 
 const getUser = async ({
   request,
@@ -111,18 +111,18 @@ export const yoga = createYoga<Env>({
         },
       }),
     useImmediateIntrospection(),
-    (APP_ENV === "production" || APP_ENV === "staging") &&
-      useOpenTelemetry(
-        {
-          resolvers: true, // Tracks resolvers calls, and tracks resolvers thrown errors
-          variables: true, // Includes the operation variables values as part of the metadata collected
-          result: true, // Includes execution result object as part of the metadata collected
-        },
-        provider,
-        0,
-        {},
-        "graphql-jschile",
-      ),
+    // (APP_ENV === "production" || APP_ENV === "staging") &&
+    useOpenTelemetry(
+      {
+        resolvers: true, // Tracks resolvers calls, and tracks resolvers thrown errors
+        variables: true, // Includes the operation variables values as part of the metadata collected
+        result: true, // Includes execution result object as part of the metadata collected
+      },
+      provider,
+      0,
+      // {},
+      // "graphql-jschile",
+    ),
     authZEnvelopPlugin({ rules }),
   ].filter(Boolean),
   context: async ({

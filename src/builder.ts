@@ -6,6 +6,14 @@ import AuthzPlugin from "@pothos/plugin-authz";
 import { selectUsersSchema } from "~/datasources/db/schema";
 import { z } from "zod";
 import { Env } from "worker-configuration";
+import TracingPlugin, { wrapResolver } from "@pothos/plugin-tracing";
+import { createOpenTelemetryWrapper } from "@pothos/tracing-opentelemetry";
+import { APP_ENV } from "./env";
+import { tracer } from "./tracer";
+
+const createSpan = createOpenTelemetryWrapper(tracer, {
+  includeSource: true,
+});
 
 type Context = {
   DB: ORM_TYPE;
@@ -33,7 +41,17 @@ export const builder = new SchemaBuilder<{
     };
   };
 }>({
-  plugins: [AuthzPlugin],
+  plugins: [TracingPlugin, AuthzPlugin],
+  tracing: {
+    default: () => APP_ENV !== "production",
+    wrap: (resolver, options, config) => createSpan(resolver, options),
+    // wrapResolver(resolver, (_error, duration) => {
+    //   // eslint-disable-next-line no-console
+    //   console.log(
+    //     `[tracing] ${config.parentType}.${config.name} took ${duration}ms`,
+    //   );
+    // }),
+  },
 });
 
 builder.queryType({});
