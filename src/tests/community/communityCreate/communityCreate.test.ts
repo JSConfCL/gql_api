@@ -74,7 +74,7 @@ describe("Community", () => {
     });
     it("If community slug already exist", async () => {
       await insertCommunity({
-        name: "a",
+        name: "aas",
         slug: "c",
       });
       const fakeData = {

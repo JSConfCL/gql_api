@@ -28,5 +28,5 @@ export const communityRelations = relations(communitySchema, ({ many }) => ({
 
 export const selectCommunitySchema = createSelectSchema(communitySchema);
 export const insertCommunitySchema = createInsertSchema(communitySchema, {
-  name: (schema) => schema.name.min(3).max(64),
+  name: (schema) => schema.name.min(2).max(64),
 });
