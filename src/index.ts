@@ -174,6 +174,9 @@ export const yoga = createYoga<Env>({
 export default {
   fetch: async (req: Request, env: Env, ctx: ExecutionContext) => {
     H.init(req, { HIGHLIGHT_PROJECT_ID: env.HIGHLIGHT_PROJECT_ID ?? "" }, ctx);
+    H.setAttributes({
+      APP_ENV: APP_ENV ?? "none",
+    });
     // eslint-disable-next-line no-console
     console.log("🏁 — Initialize Request");
     const response = await yoga.fetch(
