@@ -100,7 +100,7 @@ export const yoga = createYoga<Env>({
     };
   },
   schema,
-  logging: "debug",
+  logging: APP_ENV === "production" ? "info" : "debug",
   plugins: [
     APP_ENV === "production" &&
       useMaskedErrors({
