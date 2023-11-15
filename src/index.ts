@@ -106,8 +106,6 @@ export const yoga = createYoga<Env>({
       useMaskedErrors({
         errorMessage: "Internal Server Error",
         maskError: (error, message) => {
-          // eslint-disable-next-line no-console
-          console.error("ERROR", error);
           H.consumeError(error as Error);
           return maskError(error, message);
         },
@@ -177,7 +175,7 @@ export default {
   fetch: async (req: Request, env: Env, ctx: ExecutionContext) => {
     H.init(req, { HIGHLIGHT_PROJECT_ID: env.HIGHLIGHT_PROJECT_ID ?? "" }, ctx);
     // eslint-disable-next-line no-console
-    console.log("Initialize Request");
+    console.log("🏁 — Initialize Request");
     const response = await yoga.fetch(
       // @ts-expect-error Los tipos de yoga están mal
       req,
