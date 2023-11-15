@@ -16,7 +16,6 @@ import {
 } from "~/datasources/queries/users";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import * as rules from "~/authz";
-import { v4 } from "uuid";
 
 const getUser = async ({
   request,
@@ -177,9 +176,6 @@ export const yoga = createYoga<Env>({
 export default {
   fetch: async (req: Request, env: Env, ctx: ExecutionContext) => {
     H.init(req, { HIGHLIGHT_PROJECT_ID: env.HIGHLIGHT_PROJECT_ID ?? "" }, ctx);
-    H.setAttributes({
-      TRACE_ID: v4(),
-    });
     // eslint-disable-next-line no-console
     console.log("Initialize Request");
     const response = await yoga.fetch(
