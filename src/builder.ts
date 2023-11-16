@@ -6,6 +6,8 @@ import AuthzPlugin from "@pothos/plugin-authz";
 import { selectUsersSchema } from "~/datasources/db/schema";
 import { z } from "zod";
 import { Env } from "worker-configuration";
+import { H } from "@highlight-run/cloudflare";
+import TracingPlugin, { wrapResolver } from "@pothos/plugin-tracing";
 
 type Context = {
   DB: ORM_TYPE;
@@ -33,7 +35,17 @@ export const builder = new SchemaBuilder<{
     };
   };
 }>({
-  plugins: [AuthzPlugin],
+  plugins: [TracingPlugin, AuthzPlugin],
+  tracing: {
+    default: () => true,
+    wrap: (resolver, options, config) =>
+      wrapResolver(resolver, (error, duration) => {
+        // eslint-disable-next-line no-console
+        console.log(
+          `[TRACING] ${config.parentType}.${config.name} in ${duration}ms`,
+        );
+      }),
+  },
 });
 
 builder.queryType({});

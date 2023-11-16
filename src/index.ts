@@ -1,3 +1,4 @@
+import { H } from "@highlight-run/cloudflare";
 import { createYoga, maskError } from "graphql-yoga";
 import { useMaskedErrors } from "@envelop/core";
 import { APP_ENV } from "~/env";
@@ -99,14 +100,13 @@ export const yoga = createYoga<Env>({
     };
   },
   schema,
-  logging: "debug",
+  logging: APP_ENV === "production" ? "info" : "debug",
   plugins: [
     APP_ENV === "production" &&
       useMaskedErrors({
         errorMessage: "Internal Server Error",
         maskError: (error, message) => {
-          // eslint-disable-next-line no-console
-          console.error("ERROR", error);
+          H.consumeError(error as Error);
           return maskError(error, message);
         },
       }),
@@ -172,5 +172,20 @@ export const yoga = createYoga<Env>({
 });
 
 export default {
-  fetch: yoga.fetch,
+  fetch: async (req: Request, env: Env, ctx: ExecutionContext) => {
+    H.init(req, { HIGHLIGHT_PROJECT_ID: env.HIGHLIGHT_PROJECT_ID ?? "" }, ctx);
+    H.setAttributes({
+      APP_ENV: APP_ENV ?? "none",
+    });
+    // eslint-disable-next-line no-console
+    console.log("🏁 — Initialize Request");
+    const response = await yoga.fetch(
+      // @ts-expect-error Los tipos de yoga están mal
+      req,
+      env,
+      ctx,
+    );
+    H.sendResponse(response);
+    return response;
+  },
 };

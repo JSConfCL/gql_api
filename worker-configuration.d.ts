@@ -10,6 +10,7 @@ export interface Env {
   MAIL_QUEUE: Queue;
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
   RESEND_EMAIL_KEY: string;
+  HIGHLIGHT_PROJECT_ID: string;
 }
 
 declare global {

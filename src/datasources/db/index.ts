@@ -13,7 +13,15 @@ export const getDb = ({
 }) => {
   if (!db) {
     const client = createClient({ url, authToken });
-    db = drizzle(client, { schema: { ...schema }, logger: true });
+    db = drizzle(client, {
+      schema: { ...schema },
+      logger: {
+        logQuery(query, params) {
+          // eslint-disable-next-line no-console
+          console.log(query, params);
+        },
+      },
+    });
   }
   return db;
 };
