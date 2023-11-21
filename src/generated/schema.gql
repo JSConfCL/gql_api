@@ -91,6 +91,12 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+input EnqueueGoogleAlbumImportInput {
+  albumId: String!
+  sanityEventInstanceId: String!
+  token: String!
+}
+
 """
 Representation of an Event (Events and Users, is what tickets are linked to)
 """
@@ -213,6 +219,11 @@ type Mutation {
   editTicket(input: TicketEditInput!): Ticket!
 
   """
+  Enqueue images to import
+  """
+  enqueueGoogleAlbumImport(input: EnqueueGoogleAlbumImportInput!): Boolean!
+
+  """
   Redeem a ticket
   """
   redeemUserTicket(userTicketId: String!): UserTicket!
@@ -288,6 +299,11 @@ type Query {
   events(input: EventsSearchInput): [Event!]!
 
   """
+  Get the current user
+  """
+  me: User!
+
+  """
   Get a list of tickets for the current user
   """
   myTickets(input: MyTicketsSearchInput): [UserTicket!]!
@@ -324,6 +340,18 @@ type Salary {
   workMetodology: WorkMetodology!
   workRole: WorkRole!
   yearsOfExperience: Int!
+}
+
+"""
+Representation of a Sanity Asset
+"""
+type SanityAssetRef {
+  assetId: String!
+  id: String!
+  originalFilename: String!
+  path: String!
+  size: Int!
+  url: String!
 }
 
 input SearchCompaniesInput {
@@ -421,6 +449,9 @@ enum TypeOfEmployment {
 
 input UpdateCommunityInput {
   communityId: String!
+  description: String
+  name: String
+  slug: String
   status: CommnunityStatus
 }
 
@@ -455,6 +486,7 @@ type User {
   bio: String
   communities: [Community!]!
   id: String!
+  isSuperAdmin: Boolean
   lastName: String
   name: String
   username: String!
