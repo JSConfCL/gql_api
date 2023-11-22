@@ -72,7 +72,7 @@ const getUser = async ({
   return updateUserProfileInfo(DB, profileInfo);
 };
 
-const getPossibleUserIdFromJWT = (request: Request) => {
+const attachPossibleUserIdFromJWT = (request: Request) => {
   const JWT_TOKEN = (request.headers.get("Authorization") ?? "").split(" ")[1];
   if (!JWT_TOKEN) {
     console.info("No token present");
@@ -80,7 +80,10 @@ const getPossibleUserIdFromJWT = (request: Request) => {
   }
   try {
     const { payload } = jwt.decode(JWT_TOKEN);
-    console.log("paload", payload);
+    const userId = (payload as { id: string })?.id ?? "ANONYMOUS";
+    H.setAttributes({
+      userId: userId,
+    });
   } catch (error) {
     console.error("Could not parse token", error);
     return null;
@@ -194,7 +197,7 @@ export default {
       APP_ENV: APP_ENV ?? "none",
     });
 
-    getPossibleUserIdFromJWT(req);
+    attachPossibleUserIdFromJWT(req);
     // eslint-disable-next-line no-console
     console.log("🏁 — Initialize Request");
     const response = await yoga.fetch(
