@@ -10,6 +10,7 @@ import { initContextCache } from "@pothos/core";
 import { useOpenTelemetry } from "@envelop/opentelemetry";
 import { provider } from "~/obs/exporter";
 import { verifyToken } from "@clerk/backend";
+import jwt from "@tsndr/cloudflare-worker-jwt";
 import {
   ProfileInfoSchema,
   updateUserProfileInfo,
@@ -69,6 +70,24 @@ const getUser = async ({
     sub,
   });
   return updateUserProfileInfo(DB, profileInfo);
+};
+
+const attachPossibleUserIdFromJWT = (request: Request) => {
+  const JWT_TOKEN = (request.headers.get("Authorization") ?? "").split(" ")[1];
+  if (!JWT_TOKEN) {
+    console.info("No token present");
+    return null;
+  }
+  try {
+    const { payload } = jwt.decode(JWT_TOKEN);
+    const userId = (payload as { id: string })?.id ?? "ANONYMOUS";
+    H.setAttributes({
+      userId: userId,
+    });
+  } catch (error) {
+    console.error("Could not parse token", error);
+    return null;
+  }
 };
 
 export const yoga = createYoga<Env>({
@@ -177,6 +196,8 @@ export default {
     H.setAttributes({
       APP_ENV: APP_ENV ?? "none",
     });
+
+    attachPossibleUserIdFromJWT(req);
     // eslint-disable-next-line no-console
     console.log("🏁 — Initialize Request");
     const response = await yoga.fetch(
