@@ -126,7 +126,7 @@ export const yoga = createYoga<Env>({
         errorMessage: "Internal Server Error",
         maskError: (error, message) => {
           H.consumeError(error as Error);
-          return maskError(error, message);
+          return maskError(error, message, APP_ENV !== "production");
         },
       }),
     useImmediateIntrospection(),
