@@ -7,7 +7,7 @@ import {
 } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { CommnunityStatus } from "~/generated/types";
-import { fa, faker } from "@faker-js/faker";
+import { faker } from "@faker-js/faker";
 import {
   CreateCommunity,
   CreateCommunityMutation,
