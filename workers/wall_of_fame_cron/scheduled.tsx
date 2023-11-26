@@ -13,5 +13,9 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
     "MP_ACCESS_TOKEN",
     "MP_PUBLIC_KEY",
   ]);
-  await getSubscriptions(env);
+  try {
+    await getSubscriptions(env);
+  } catch (e) {
+    console.error(e);
+  }
 };

@@ -1,11 +1,14 @@
 /* eslint-disable no-console */
-import { v5 } from "uuid";
+import { v4 } from "uuid";
 import { getDb } from "../../src/datasources/db";
-import {
-  donorsSchema,
-  insertDonorsSchema,
-} from "../../src/datasources/db/donnors";
 import { ENV } from "./types";
+import {
+  insertUsersToTags,
+  insertTagsSchema,
+  tagsSchema,
+  usersTags,
+  AllowedUserTags,
+} from "../../src/datasources/db/schema";
 
 const externalReferences = {
   "1LUKA": "1LUKA",
@@ -29,7 +32,7 @@ type Result = {
   operation_type: string;
   payer: {
     id: string;
-    email: string;
+    email?: string | null;
     first_name: null | string;
     last_name: null | string;
   };
@@ -38,7 +41,6 @@ type Result = {
   };
 };
 
-const NAMESPACE = "280a6517-3d64-4236-b076-e357bff79f35";
 export const getSubscriptions = async (env: ENV) => {
   const DB = getDb({
     authToken: env.DATABASE_TOKEN,
@@ -55,39 +57,46 @@ export const getSubscriptions = async (env: ENV) => {
     )) as {
       results?: Result[];
     };
-
     results = [...results, ...(subscriptions?.results || [])];
+  }
+
+  const tagToInsert = insertTagsSchema.parse({
+    id: v4(),
+    name: AllowedUserTags.DONOR,
+    description: "Usuario Donador",
+  });
+
+  await DB.insert(tagsSchema).values(tagToInsert).onConflictDoNothing();
+
+  const tag = await DB.query.tagsSchema.findFirst({
+    where: (tags, { eq }) => eq(tags.name, AllowedUserTags.DONOR),
+  });
+  if (!tag) {
+    throw new Error(`Missing TAG: ${AllowedUserTags.DONOR}`);
   }
 
   console.log("Results", results.length);
   for await (const subscription of results) {
     try {
-      const donor = insertDonorsSchema.parse({
-        id: v5(subscription.id.toString(), NAMESPACE),
-        externalReference: subscription.id.toString(),
-        email: subscription.payer.email ?? "",
-        name: `${subscription.payer.first_name ?? ""} ${
-          subscription.payer.last_name ?? ""
-        }`,
-        amount: subscription.transaction_details.total_paid_amount,
-        operationType: subscription.operation_type,
-        // TODO: Add the rest of the fields
+      const email = subscription.payer.email;
+      if (!email) {
+        throw new Error("Email not found for subscription");
+      }
+      const searchEmail = `%${email}%`;
+      const user = await DB.query.usersSchema.findFirst({
+        where: (u, { like }) => like(u.name, searchEmail),
       });
-      console.info("Inserting donor", donor);
-      await DB.transaction(async (trx) => {
-        try {
-          const insertedDonor = await trx
-            .insert(donorsSchema)
-            .values(donor)
-            .returning()
-            .onConflictDoNothing()
-            .get();
-          console.log("Inserted", insertedDonor);
-        } catch (error) {
-          console.error("Error inserting", donor, error);
-          trx.rollback();
-        }
+      if (!user) {
+        throw new Error("User not found");
+      }
+      const userTag = insertUsersToTags.parse({
+        tagId: tag.id,
+        userId: user.id,
       });
+      await DB.insert(usersTags)
+        .values(userTag)
+        .returning()
+        .onConflictDoNothing();
     } catch (error) {
       console.error("Error processing", error);
     }

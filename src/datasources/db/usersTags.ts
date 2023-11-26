@@ -4,6 +4,12 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { usersSchema, tagsSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
+export enum AllowedUserTags {
+  "DONOR" = "DONOR",
+  "CORE_TEAM" = "CORE_TEAM",
+  "DEV_TEAM" = "DEV_TEAM",
+}
+
 // USERS-TAGS
 export const usersTags = sqliteTable(
   "users_tags",
