@@ -1,11 +1,13 @@
 import {
   communitySchema,
+  eventsSchema,
+  eventsToCommunitiesSchema,
   insertCommunitySchema,
   selectCommunitySchema,
   selectEventsSchema,
   selectUsersSchema,
 } from "~/datasources/db/schema";
-import { SQL, eq, like } from "drizzle-orm";
+import { SQL, eq, inArray, like } from "drizzle-orm";
 import { CommunityRef, EventRef, UserRef } from "~/schema/shared/refs";
 import { builder } from "~/builder";
 import { canCreateCommunity, canEditCommunity } from "~/validations";
@@ -32,15 +34,17 @@ builder.objectType(CommunityRef, {
       type: [EventRef],
       resolve: async (root, args, ctx) => {
         const events = await ctx.DB.query.eventsSchema.findMany({
-          with: {
-            eventsToCommunities: {
-              where: (etc, { eq }) => eq(etc.communityId, root.id),
-            },
-          },
+          where: inArray(
+            eventsSchema.id,
+            ctx.DB.select({ id: eventsToCommunitiesSchema.eventId })
+              .from(eventsToCommunitiesSchema)
+              .where(eq(eventsToCommunitiesSchema.communityId, root.id)),
+          ),
           orderBy(fields, operators) {
             return operators.desc(fields.createdAt);
           },
         });
+
         return events.map((e) => selectEventsSchema.parse(e));
       },
     }),
