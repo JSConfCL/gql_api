@@ -330,6 +330,8 @@ export type Query = {
   /** Get a list of tags */
   tags: Array<Tag>;
   /** Get a list of users */
+  userSearch: Array<User>;
+  /** Get a list of users */
   users: Array<User>;
   /** Get a workEmail and check if its validated for this user */
   workEmail: WorkEmail;
@@ -373,6 +375,10 @@ export type QueryTagsArgs = {
   input?: InputMaybe<TagSearchInput>;
 };
 
+export type QueryUserSearchArgs = {
+  input: UserSearchInput;
+};
+
 export type QueryWorkEmailArgs = {
   email: Scalars["String"]["input"];
 };
@@ -410,6 +416,12 @@ export type SearchCompaniesInput = {
   domain?: InputMaybe<Scalars["String"]["input"]>;
   website?: InputMaybe<Scalars["String"]["input"]>;
 };
+
+export enum SearchableUserTags {
+  CoreTeam = "CORE_TEAM",
+  DevTeam = "DEV_TEAM",
+  Donor = "DONOR",
+}
 
 /** Representation of a tag. Tags can be associated to many things. An event, a community, etc. */
 export type Tag = {
@@ -583,4 +595,9 @@ export type UserEditInput = {
   lastName?: InputMaybe<Scalars["String"]["input"]>;
   name?: InputMaybe<Scalars["String"]["input"]>;
   username?: InputMaybe<Scalars["String"]["input"]>;
+};
+
+export type UserSearchInput = {
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  tags?: InputMaybe<Array<SearchableUserTags>>;
 };

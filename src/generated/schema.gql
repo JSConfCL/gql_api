@@ -317,6 +317,11 @@ type Query {
   """
   Get a list of users
   """
+  userSearch(input: userSearchInput!): [User!]!
+
+  """
+  Get a list of users
+  """
   users: [User!]!
 
   """
@@ -359,6 +364,12 @@ input SearchCompaniesInput {
   description: String
   domain: String
   website: String
+}
+
+enum SearchableUserTags {
+  CORE_TEAM
+  DEV_TEAM
+  DONOR
 }
 
 """
@@ -539,4 +550,9 @@ input userEditInput {
   lastName: String
   name: String
   username: String
+}
+
+input userSearchInput {
+  name: String
+  tags: [SearchableUserTags!]
 }

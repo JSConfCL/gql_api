@@ -1,5 +1,6 @@
 import { CommunityRef, UserRef } from "~/schema/shared/refs";
 import {
+  AllowedUserTags,
   selectCommunitySchema,
   selectUsersSchema,
   usersSchema,
@@ -53,6 +54,17 @@ builder.objectType(UserRef, {
   }),
 });
 
+export const SearchableUserTags = builder.enumType("SearchableUserTags", {
+  values: Object.values(AllowedUserTags),
+});
+
+const userSearchInput = builder.inputRef("userSearchInput").implement({
+  fields: (t) => ({
+    name: t.string({ required: false }),
+    tags: t.field({ type: [SearchableUserTags], required: false }),
+  }),
+});
+
 builder.queryFields((t) => ({
   me: t.field({
     description: "Get the current user",
@@ -61,6 +73,7 @@ builder.queryFields((t) => ({
       rules: ["IsAuthenticated"],
     },
     resolve: async (root, args, { USER, DB }) => {
+      const s = t.arg;
       if (!USER) {
         throw new Error("User not found");
       }
@@ -73,6 +86,24 @@ builder.queryFields((t) => ({
   users: t.field({
     description: "Get a list of users",
     type: [UserRef],
+    resolve: async (root, args, ctx) => {
+      const users = await ctx.DB.query.usersSchema.findMany({
+        orderBy(fields, operators) {
+          return operators.desc(fields.createdAt);
+        },
+      });
+      return users.map((u) => selectUsersSchema.parse(u));
+    },
+  }),
+  userSearch: t.field({
+    description: "Get a list of users",
+    type: [UserRef],
+    authz: {
+      rules: ["IsSuperAdmin"],
+    },
+    args: {
+      input: t.arg({ type: userSearchInput, required: true }),
+    },
     resolve: async (root, args, ctx) => {
       const users = await ctx.DB.query.usersSchema.findMany({
         orderBy(fields, operators) {
