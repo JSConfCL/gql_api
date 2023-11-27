@@ -598,6 +598,5 @@ export type UserEditInput = {
 };
 
 export type UserSearchInput = {
-  name?: InputMaybe<Scalars["String"]["input"]>;
   tags?: InputMaybe<Array<SearchableUserTags>>;
 };

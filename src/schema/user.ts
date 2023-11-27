@@ -3,11 +3,12 @@ import {
   AllowedUserTags,
   selectCommunitySchema,
   selectUsersSchema,
+  tagsSchema,
   usersSchema,
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
 import { builder } from "~/builder";
-import { eq } from "drizzle-orm";
+import { SQL, eq, inArray } from "drizzle-orm";
 import {
   UserRoleCommunity,
   canUpdateUserRoleInCommunity,
@@ -58,12 +59,16 @@ export const SearchableUserTags = builder.enumType("SearchableUserTags", {
   values: Object.values(AllowedUserTags),
 });
 
-const userSearchInput = builder.inputRef("userSearchInput").implement({
-  fields: (t) => ({
-    name: t.string({ required: false }),
-    tags: t.field({ type: [SearchableUserTags], required: false }),
-  }),
-});
+const userSearchInput = builder
+  .inputRef<{
+    name?: string;
+    tags?: AllowedUserTags[];
+  }>("userSearchInput")
+  .implement({
+    fields: (t) => ({
+      tags: t.field({ type: [SearchableUserTags], required: false }),
+    }),
+  });
 
 builder.queryFields((t) => ({
   me: t.field({
@@ -73,7 +78,6 @@ builder.queryFields((t) => ({
       rules: ["IsAuthenticated"],
     },
     resolve: async (root, args, { USER, DB }) => {
-      const s = t.arg;
       if (!USER) {
         throw new Error("User not found");
       }
@@ -104,13 +108,26 @@ builder.queryFields((t) => ({
     args: {
       input: t.arg({ type: userSearchInput, required: true }),
     },
-    resolve: async (root, args, ctx) => {
-      const users = await ctx.DB.query.usersSchema.findMany({
-        orderBy(fields, operators) {
-          return operators.desc(fields.createdAt);
+    resolve: async (root, { input }, { DB }) => {
+      const { tags } = input;
+      const wheres: SQL[] = [];
+      if (!tags || !tags.length) {
+        return [];
+      }
+      if (tags && tags.length !== 0) {
+        wheres.push(inArray(tagsSchema.name, tags));
+      }
+      const tagsUsers = await DB.query.tagsSchema.findMany({
+        where: (_, { and }) => and(...wheres),
+        with: {
+          tagsToUsers: true,
         },
       });
-      return users.map((u) => selectUsersSchema.parse(u));
+      console.log({ tagsUsers });
+      return [];
+      // return tagsUsers.flatMap((tu) =>
+      //   tu.tagsToUsers.map((user) => selectUsersSchema.parse(user)),
+      // );
     },
   }),
 }));

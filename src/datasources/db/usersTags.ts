@@ -11,7 +11,7 @@ export enum AllowedUserTags {
 }
 
 // USERS-TAGS
-export const usersTags = sqliteTable(
+export const usersTagsSchema = sqliteTable(
   "users_tags",
   {
     tagId: text("tag_id").references(() => tagsSchema.id),
@@ -23,17 +23,17 @@ export const usersTags = sqliteTable(
   }),
 );
 
-export const usersToTagsRelations = relations(usersTags, ({ one }) => ({
-  community: one(usersSchema, {
-    fields: [usersTags.userId],
+export const usersToTagsRelations = relations(usersTagsSchema, ({ one }) => ({
+  user: one(usersSchema, {
+    fields: [usersTagsSchema.userId],
     references: [usersSchema.id],
   }),
   tag: one(tagsSchema, {
-    fields: [usersTags.tagId],
+    fields: [usersTagsSchema.tagId],
     references: [tagsSchema.id],
   }),
 }));
 
-export const selectUsersToTags = createSelectSchema(usersTags);
+export const selectUsersToTagsSchema = createSelectSchema(usersTagsSchema);
 
-export const insertUsersToTags = createInsertSchema(usersTags);
+export const insertUsersToTagsSchema = createInsertSchema(usersTagsSchema);

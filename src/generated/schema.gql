@@ -553,6 +553,5 @@ input userEditInput {
 }
 
 input userSearchInput {
-  name: String
   tags: [SearchableUserTags!]
 }

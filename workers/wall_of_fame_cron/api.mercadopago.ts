@@ -3,10 +3,10 @@ import { v4 } from "uuid";
 import { getDb } from "../../src/datasources/db";
 import { ENV } from "./types";
 import {
-  insertUsersToTags,
+  insertUsersToTagsSchema,
   insertTagsSchema,
   tagsSchema,
-  usersTags,
+  usersTagsSchema,
   AllowedUserTags,
 } from "../../src/datasources/db/schema";
 
@@ -89,11 +89,11 @@ export const getSubscriptions = async (env: ENV) => {
       if (!user) {
         throw new Error("User not found");
       }
-      const userTag = insertUsersToTags.parse({
+      const userTag = insertUsersToTagsSchema.parse({
         tagId: tag.id,
         userId: user.id,
       });
-      await DB.insert(usersTags)
+      await DB.insert(usersTagsSchema)
         .values(userTag)
         .returning()
         .onConflictDoNothing();

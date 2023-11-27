@@ -35,6 +35,7 @@ import {
   insertUserTicketsSchema,
   insertUsersSchema,
   insertUsersToCommunitiesSchema,
+  insertUsersToTagsSchema,
   insertWorkEmailSchema,
   insertWorkRoleSchema,
   salariesSchema,
@@ -52,12 +53,14 @@ import {
   selectUserTicketsSchema,
   selectUsersSchema,
   selectUsersToCommunitiesSchema,
+  selectUsersToTagsSchema,
   selectWorkEmailSchema,
   selectWorkRoleSchema,
   tagsSchema,
   ticketsSchema,
   userTicketsSchema,
   usersSchema,
+  usersTagsSchema,
   usersToCommunitiesSchema,
   workEmailSchema,
   workRoleSchema,
@@ -189,6 +192,24 @@ export const insertUser = async (
     insertUsersSchema,
     selectUsersSchema,
     usersSchema,
+    possibleInput,
+  );
+};
+
+export const insertUserTag = async (
+  partialInput: z.infer<typeof insertUsersToTagsSchema>,
+) => {
+  const possibleInput = {
+    tagId: partialInput?.tagId ?? faker.string.uuid(),
+    userId: partialInput?.tagId ?? faker.string.uuid(),
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.updatedAt,
+  } satisfies z.infer<typeof insertUsersToTagsSchema>;
+  return insertOne(
+    insertUsersToTagsSchema,
+    selectUsersToTagsSchema,
+    usersTagsSchema,
     possibleInput,
   );
 };
