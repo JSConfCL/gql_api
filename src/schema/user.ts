@@ -120,14 +120,18 @@ builder.queryFields((t) => ({
       const tagsUsers = await DB.query.tagsSchema.findMany({
         where: (_, { and }) => and(...wheres),
         with: {
-          tagsToUsers: true,
+          tagsToUsers: {
+            with: {
+              user: true,
+            },
+          },
         },
       });
-      console.log({ tagsUsers });
-      return [];
-      // return tagsUsers.flatMap((tu) =>
-      //   tu.tagsToUsers.map((user) => selectUsersSchema.parse(user)),
-      // );
+      return tagsUsers.flatMap((tu) =>
+        tu.tagsToUsers.map((tagsToUser) =>
+          selectUsersSchema.parse(tagsToUser?.user),
+        ),
+      );
     },
   }),
 }));

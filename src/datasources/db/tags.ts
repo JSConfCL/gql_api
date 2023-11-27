@@ -4,7 +4,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import {
   eventsToTagsSchema,
   tagsToCommunitiesSchema,
-  usersSchema,
+  usersTagsSchema,
 } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
@@ -19,7 +19,7 @@ export const tagsSchema = sqliteTable("tags", {
 export const tagsRelations = relations(tagsSchema, ({ many }) => ({
   tagsToCommunities: many(tagsToCommunitiesSchema),
   tagsToEvents: many(eventsToTagsSchema),
-  tagsToUsers: many(usersSchema),
+  tagsToUsers: many(usersTagsSchema),
 }));
 
 export const selectTagsSchema = createSelectSchema(tagsSchema);

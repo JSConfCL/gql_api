@@ -6,6 +6,7 @@ import {
   insertUser,
   insertUserTag,
   insertTag,
+  executeGraphqlOperationAsUser,
 } from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
@@ -20,25 +21,7 @@ afterEach(() => {
 });
 
 describe("Search users by tag", () => {
-  // it("Should return correct of users when passed one tag", async () => {
-  //   const user = await insertUser({
-  //     id: "1",
-  //   });
-  //   const user2 = await insertUser({
-  //     id: "2",
-  //   });
-  //   const response = await executeGraphqlOperation<
-  //     UsersQuery,
-  //     UsersQueryVariables
-  //   >({
-  //     document: Users,
-  //   });
-  //   assert.equal(response.errors, undefined);
-  //   assert.equal(response.data?.users.length, 2);
-  //   assert.equal(response.data?.users[0].id, user.id);
-  //   assert.equal(response.data?.users[1].id, user2.id);
-  // });
-  it.only("Should return correct of users when passed multiple tags", async () => {
+  it("Should return 1 user when passed 1 tag", async () => {
     const user = await insertUser();
     const user2 = await insertUser();
     const tag = await insertTag({
@@ -48,15 +31,76 @@ describe("Search users by tag", () => {
       name: SearchableUserTags.DevTeam,
     });
 
-    console.log("-------------------------", tag.id, user.id);
     const userTag = await insertUserTag({
       tagId: tag.id,
       userId: user.id,
     });
-    // const user2Tag = await insertUserTag({
-    //   tagId: tag2.id,
-    //   userId: user2.id,
-    // });
+    const user2Tag = await insertUserTag({
+      tagId: tag2.id,
+      userId: user2.id,
+    });
+    const response = await executeGraphqlOperationAsSuperAdmin<
+      UserSearchQuery,
+      UserSearchQueryVariables
+    >({
+      document: UserSearch,
+      variables: {
+        input: {
+          tags: [SearchableUserTags.CoreTeam],
+        },
+      },
+    });
+    assert.equal(response.errors, undefined);
+    assert.isArray(response.data?.userSearch);
+    assert.equal(response.data?.userSearch?.length, 1);
+  });
+  it("Should return correct of users when passed 1 tag", async () => {
+    const user = await insertUser();
+    const user2 = await insertUser();
+    const tag = await insertTag({
+      name: SearchableUserTags.CoreTeam,
+    });
+    const userTag = await insertUserTag({
+      tagId: tag.id,
+      userId: user.id,
+    });
+    const user2Tag = await insertUserTag({
+      tagId: tag.id,
+      userId: user2.id,
+    });
+    const response = await executeGraphqlOperationAsSuperAdmin<
+      UserSearchQuery,
+      UserSearchQueryVariables
+    >({
+      document: UserSearch,
+      variables: {
+        input: {
+          tags: [SearchableUserTags.CoreTeam],
+        },
+      },
+    });
+    assert.equal(response.errors, undefined);
+    assert.isArray(response.data?.userSearch);
+    assert.equal(response.data?.userSearch?.length, 2);
+  });
+  it("Should return correct of users when passed multiple tags", async () => {
+    const user = await insertUser();
+    const user2 = await insertUser();
+    const tag = await insertTag({
+      name: SearchableUserTags.CoreTeam,
+    });
+    const tag2 = await insertTag({
+      name: SearchableUserTags.DevTeam,
+    });
+
+    const userTag = await insertUserTag({
+      tagId: tag.id,
+      userId: user.id,
+    });
+    const user2Tag = await insertUserTag({
+      tagId: tag2.id,
+      userId: user2.id,
+    });
     const response = await executeGraphqlOperationAsSuperAdmin<
       UserSearchQuery,
       UserSearchQueryVariables
@@ -68,10 +112,9 @@ describe("Search users by tag", () => {
         },
       },
     });
-    console.log(response);
-    // assert.equal(response.errors, undefined);
-    // assert.isArray(response.data?.userSearch);
-    // assert.equal(response.data?.userSearch?.length, 0);
+    assert.equal(response.errors, undefined);
+    assert.isArray(response.data?.userSearch);
+    assert.equal(response.data?.userSearch?.length, 2);
   });
   it("Should return an empty list for no tags", async () => {
     const user = await insertUser();
@@ -85,7 +128,6 @@ describe("Search users by tag", () => {
         input: {},
       },
     });
-    console.log(response);
     assert.equal(response.errors, undefined);
     assert.isArray(response.data?.userSearch);
     assert.equal(response.data?.userSearch?.length, 0);
@@ -100,6 +142,23 @@ describe("Search users by tag", () => {
         input: {},
       },
     });
+    assert.equal(response.errors?.length, 1);
+    assert.equal(response.errors?.[0]?.message, "Unauthorized!");
+  });
+  it("Should fail if account is not superadmin", async () => {
+    const user = await insertUser();
+    const response = await executeGraphqlOperationAsUser<
+      UserSearchQuery,
+      UserSearchQueryVariables
+    >(
+      {
+        document: UserSearch,
+        variables: {
+          input: {},
+        },
+      },
+      user,
+    );
     assert.equal(response.errors?.length, 1);
     assert.equal(response.errors?.[0]?.message, "Unauthorized!");
   });

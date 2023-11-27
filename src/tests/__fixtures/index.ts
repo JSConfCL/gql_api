@@ -201,7 +201,7 @@ export const insertUserTag = async (
 ) => {
   const possibleInput = {
     tagId: partialInput?.tagId ?? faker.string.uuid(),
-    userId: partialInput?.tagId ?? faker.string.uuid(),
+    userId: partialInput?.userId ?? faker.string.uuid(),
     createdAt: partialInput?.createdAt,
     updatedAt: partialInput?.updatedAt,
     deletedAt: partialInput?.updatedAt,
