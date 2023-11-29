@@ -1,4 +1,4 @@
-import { it, describe, afterEach, assert, expect } from "vitest";
+import { it, describe, afterEach, expect } from "vitest";
 import {
   executeGraphqlOperation,
   executeGraphqlOperationAsSuperAdmin,

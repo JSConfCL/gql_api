@@ -129,7 +129,7 @@ describe("Salary creation", () => {
   });
   describe("Creation should fail", () => {
     it("With an annonymous user", async () => {
-      const { confirmationToken, salaryId, user } = await createSalary();
+      const { confirmationToken, salaryId } = await createSalary();
       const workRole2 = await insertWorkRole();
       const allowedCurrency2 = await insertAllowedCurrency();
       const company2 = await insertCompany({
@@ -161,7 +161,7 @@ describe("Salary creation", () => {
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
     it("For a SuperAdmin", async () => {
-      const { confirmationToken, salaryId, user } = await createSalary();
+      const { confirmationToken, salaryId } = await createSalary();
       const workRole2 = await insertWorkRole();
       const allowedCurrency2 = await insertAllowedCurrency();
       const company2 = await insertCompany({
@@ -237,7 +237,7 @@ describe("Salary creation", () => {
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
     it("With a wrong code", async () => {
-      const { confirmationToken, salaryId, user } = await createSalary();
+      const { salaryId, user } = await createSalary();
       const workRole2 = await insertWorkRole();
       const allowedCurrency2 = await insertAllowedCurrency();
       const company2 = await insertCompany({

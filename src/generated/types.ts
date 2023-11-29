@@ -110,6 +110,12 @@ export type CreateSalaryInput = {
   yearsOfExperience: Scalars["Int"]["input"];
 };
 
+export type EnqueueGoogleAlbumImportInput = {
+  albumId: Scalars["String"]["input"];
+  sanityEventInstanceId: Scalars["String"]["input"];
+  token: Scalars["String"]["input"];
+};
+
 /** Representation of an Event (Events and Users, is what tickets are linked to) */
 export type Event = {
   __typename?: "Event";
@@ -212,6 +218,8 @@ export type Mutation = {
   editCommunity: Community;
   /** Edit a ticket */
   editTicket: Ticket;
+  /** Enqueue images to import */
+  enqueueGoogleAlbumImport: Scalars["Boolean"]["output"];
   /** Redeem a ticket */
   redeemUserTicket: UserTicket;
   /** Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position */
@@ -258,6 +266,10 @@ export type MutationEditCommunityArgs = {
 
 export type MutationEditTicketArgs = {
   input: TicketEditInput;
+};
+
+export type MutationEnqueueGoogleAlbumImportArgs = {
+  input: EnqueueGoogleAlbumImportInput;
 };
 
 export type MutationRedeemUserTicketArgs = {
@@ -310,11 +322,15 @@ export type Query = {
   event?: Maybe<Event>;
   /** Get a list of events. Filter by name, id, status or date */
   events: Array<Event>;
+  /** Get the current user */
+  me: User;
   /** Get a list of tickets for the current user */
   myTickets: Array<UserTicket>;
   status: Scalars["String"]["output"];
   /** Get a list of tags */
   tags: Array<Tag>;
+  /** Get a list of users */
+  userSearch: Array<User>;
   /** Get a list of users */
   users: Array<User>;
   /** Get a workEmail and check if its validated for this user */
@@ -359,6 +375,10 @@ export type QueryTagsArgs = {
   input?: InputMaybe<TagSearchInput>;
 };
 
+export type QueryUserSearchArgs = {
+  input: UserSearchInput;
+};
+
 export type QueryWorkEmailArgs = {
   email: Scalars["String"]["input"];
 };
@@ -379,12 +399,29 @@ export type Salary = {
   yearsOfExperience: Scalars["Int"]["output"];
 };
 
+/** Representation of a Sanity Asset */
+export type SanityAssetRef = {
+  __typename?: "SanityAssetRef";
+  assetId: Scalars["String"]["output"];
+  id: Scalars["String"]["output"];
+  originalFilename: Scalars["String"]["output"];
+  path: Scalars["String"]["output"];
+  size: Scalars["Int"]["output"];
+  url: Scalars["String"]["output"];
+};
+
 export type SearchCompaniesInput = {
   companyName?: InputMaybe<Scalars["String"]["input"]>;
   description?: InputMaybe<Scalars["String"]["input"]>;
   domain?: InputMaybe<Scalars["String"]["input"]>;
   website?: InputMaybe<Scalars["String"]["input"]>;
 };
+
+export enum SearchableUserTags {
+  CoreTeam = "CORE_TEAM",
+  DevTeam = "DEV_TEAM",
+  Donor = "DONOR",
+}
 
 /** Representation of a tag. Tags can be associated to many things. An event, a community, etc. */
 export type Tag = {
@@ -472,6 +509,9 @@ export enum TypeOfEmployment {
 
 export type UpdateCommunityInput = {
   communityId: Scalars["String"]["input"];
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  slug?: InputMaybe<Scalars["String"]["input"]>;
   status?: InputMaybe<CommnunityStatus>;
 };
 
@@ -505,6 +545,7 @@ export type User = {
   bio?: Maybe<Scalars["String"]["output"]>;
   communities: Array<Community>;
   id: Scalars["String"]["output"];
+  isSuperAdmin?: Maybe<Scalars["Boolean"]["output"]>;
   lastName?: Maybe<Scalars["String"]["output"]>;
   name?: Maybe<Scalars["String"]["output"]>;
   username: Scalars["String"]["output"];
@@ -554,4 +595,8 @@ export type UserEditInput = {
   lastName?: InputMaybe<Scalars["String"]["input"]>;
   name?: InputMaybe<Scalars["String"]["input"]>;
   username?: InputMaybe<Scalars["String"]["input"]>;
+};
+
+export type UserSearchInput = {
+  tags?: InputMaybe<Array<SearchableUserTags>>;
 };

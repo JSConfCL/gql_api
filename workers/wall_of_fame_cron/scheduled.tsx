@@ -1,5 +1,5 @@
 import { ensureKeys } from "../utils";
-import { getSubscriptions } from "./api.stripe";
+import { getSubscriptions } from "./api.mercadopago";
 import { ENV } from "./types";
 
 export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
@@ -12,8 +12,10 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
     "DATABASE_TOKEN",
     "MP_ACCESS_TOKEN",
     "MP_PUBLIC_KEY",
-    "RV_KEY",
-    "ST_KEY",
   ]);
-  await getSubscriptions(env);
+  try {
+    await getSubscriptions(env);
+  } catch (e) {
+    console.error(e);
+  }
 };

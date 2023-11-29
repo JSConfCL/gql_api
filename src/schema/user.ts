@@ -1,12 +1,14 @@
 import { CommunityRef, UserRef } from "~/schema/shared/refs";
 import {
+  AllowedUserTags,
   selectCommunitySchema,
   selectUsersSchema,
+  tagsSchema,
   usersSchema,
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
 import { builder } from "~/builder";
-import { eq } from "drizzle-orm";
+import { SQL, eq, inArray } from "drizzle-orm";
 import {
   UserRoleCommunity,
   canUpdateUserRoleInCommunity,
@@ -53,6 +55,21 @@ builder.objectType(UserRef, {
   }),
 });
 
+export const SearchableUserTags = builder.enumType("SearchableUserTags", {
+  values: Object.values(AllowedUserTags),
+});
+
+const userSearchInput = builder
+  .inputRef<{
+    name?: string;
+    tags?: AllowedUserTags[];
+  }>("userSearchInput")
+  .implement({
+    fields: (t) => ({
+      tags: t.field({ type: [SearchableUserTags], required: false }),
+    }),
+  });
+
 builder.queryFields((t) => ({
   me: t.field({
     description: "Get the current user",
@@ -80,6 +97,41 @@ builder.queryFields((t) => ({
         },
       });
       return users.map((u) => selectUsersSchema.parse(u));
+    },
+  }),
+  userSearch: t.field({
+    description: "Get a list of users",
+    type: [UserRef],
+    authz: {
+      rules: ["IsSuperAdmin"],
+    },
+    args: {
+      input: t.arg({ type: userSearchInput, required: true }),
+    },
+    resolve: async (root, { input }, { DB }) => {
+      const { tags } = input;
+      const wheres: SQL[] = [];
+      if (!tags || !tags.length) {
+        return [];
+      }
+      if (tags && tags.length !== 0) {
+        wheres.push(inArray(tagsSchema.name, tags));
+      }
+      const tagsUsers = await DB.query.tagsSchema.findMany({
+        where: (_, { and }) => and(...wheres),
+        with: {
+          tagsToUsers: {
+            with: {
+              user: true,
+            },
+          },
+        },
+      });
+      return tagsUsers.flatMap((tu) =>
+        tu.tagsToUsers.map((tagsToUser) =>
+          selectUsersSchema.parse(tagsToUser?.user),
+        ),
+      );
     },
   }),
 }));

@@ -8,6 +8,13 @@
       "when": 1696303412275,
       "tag": "0000_premium_jack_power",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1700966562207,
+      "tag": "0001_brief_shaman",
+      "breakpoints": true
     }
   ]
 }

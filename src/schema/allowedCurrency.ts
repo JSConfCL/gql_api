@@ -1,10 +1,3 @@
-import {
-  communitySchema,
-  selectCommunitySchema,
-  selectEventsSchema,
-  selectUsersSchema,
-} from "~/datasources/db/schema";
-import { SQL, eq, like } from "drizzle-orm";
 import { AllowedCurrencyRef } from "~/schema/shared/refs";
 import { builder } from "~/builder";
 

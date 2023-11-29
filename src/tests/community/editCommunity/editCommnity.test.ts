@@ -6,7 +6,6 @@ import {
   insertUser,
   insertUserToCommunity,
 } from "~/tests/__fixtures";
-import { faker } from "@faker-js/faker";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   EditCommunity,

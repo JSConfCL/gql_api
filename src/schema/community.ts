@@ -11,7 +11,6 @@ import { builder } from "~/builder";
 import { canCreateCommunity, canEditCommunity } from "~/validations";
 import { v4 } from "uuid";
 import { GraphQLError } from "graphql";
-import { CommnunityStatus as CommunityStatusEnum } from "~/generated/types";
 
 export const CommnunityStatus = builder.enumType("CommnunityStatus", {
   values: ["active", "inactive"] as const,

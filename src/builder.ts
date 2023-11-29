@@ -6,7 +6,6 @@ import AuthzPlugin from "@pothos/plugin-authz";
 import { selectUsersSchema } from "~/datasources/db/schema";
 import { z } from "zod";
 import { Env } from "worker-configuration";
-import { H } from "@highlight-run/cloudflare";
 import TracingPlugin, { wrapResolver } from "@pothos/plugin-tracing";
 
 type Context = {

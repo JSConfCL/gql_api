@@ -14,5 +14,6 @@ export * from "~/datasources/db/tickets";
 export * from "~/datasources/db/users";
 export * from "~/datasources/db/usersCommunities";
 export * from "~/datasources/db/userTickets";
+export * from "~/datasources/db/usersTags";
 export * from "~/datasources/db/workEmail";
 export * from "~/datasources/db/workRoles";
