@@ -1,5 +1,10 @@
 import { it, describe, assert, afterEach } from "vitest";
-import { executeGraphqlOperation, insertCommunity } from "~/tests/__fixtures";
+import {
+  executeGraphqlOperation,
+  insertCommunity,
+  insertEvent,
+  insertEventToCommunity,
+} from "~/tests/__fixtures";
 import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   Communities,
@@ -150,6 +155,56 @@ describe("Communities", () => {
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.communities.length, 1);
     assert.equal(response.data?.communities[0].id, community3.id);
+  });
+  it("Should return only related events", async () => {
+    async function createCommunityWithEvents(numberOfEvents: number) {
+      const community = await insertCommunity();
+      const events = [];
+
+      for (let i = 0; i < numberOfEvents; i++) {
+        const event = await insertEvent();
+        await insertEventToCommunity({
+          communityId: community.id,
+          eventId: event.id,
+        });
+
+        events.push(event);
+      }
+
+      return { community, events };
+    }
+
+    const communitiesData = [
+      await createCommunityWithEvents(0),
+      await createCommunityWithEvents(1),
+      await createCommunityWithEvents(2),
+    ];
+
+    const response = await executeGraphqlOperation<
+      CommunitiesQuery,
+      CommunitiesQueryVariables
+    >({
+      document: Communities,
+    });
+
+    assert.equal(response.errors, undefined);
+    assert.equal(response.data?.communities.length, communitiesData.length);
+
+    const responseData = response.data;
+    if (!responseData) {
+      return;
+    }
+
+    communitiesData.forEach(({ community, events }, index) => {
+      const responseCommunity = responseData.communities[index];
+
+      assert.equal(responseCommunity.id, community.id);
+      assert.equal(responseCommunity.events.length, events.length);
+
+      events.forEach((event, eventIndex) => {
+        assert.equal(responseCommunity.events[eventIndex].id, event.id);
+      });
+    });
   });
 });
 
