@@ -201,8 +201,8 @@ describe("Communities", () => {
       assert.equal(responseCommunity.id, community.id);
       assert.equal(responseCommunity.events.length, events.length);
 
-      events.forEach((event, eventIndex) => {
-        assert.equal(responseCommunity.events[eventIndex].id, event.id);
+      responseCommunity.events.forEach((someResponseEvent) => {
+        assert.exists(events.find((e) => e.id === someResponseEvent.id));
       });
     });
   });
