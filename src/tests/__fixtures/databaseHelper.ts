@@ -2,21 +2,17 @@
 import { faker } from "@faker-js/faker";
 import { createClient } from "@libsql/client";
 import { exec } from "node:child_process";
-import { existsSync, mkdirSync } from "node:fs";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import * as schema from "~/datasources/db/schema";
 import { ORM_TYPE } from "~/datasources/db";
 
-const testDabasesFolder = `.test_dbs`;
-const migrationsFolder = `${process.cwd()}/drizzle/migrations`;
-/* c8 ignore next 3 */
-if (!existsSync(`./${testDabasesFolder}`)) {
-  mkdirSync(`./${testDabasesFolder}`);
-}
+export const testDatabasesFolder = `.test_dbs`;
+export const migrationsFolder = `${process.cwd()}/drizzle/migrations`;
+
 const createDatabase = () => {
   const databaseName = `${faker.string.uuid().replaceAll("-", "_")}.sqlite`;
-  const databasePath = `${process.cwd()}/${testDabasesFolder}/${databaseName}`;
+  const databasePath = `${process.cwd()}/${testDatabasesFolder}/${databaseName}`;
   const command = `echo "CREATE TABLE IF NOT EXISTS SOME_TABLE (id INTEGER PRIMARY KEY);" | sqlite3 ${databasePath}`;
   return new Promise<string>((resolve, reject) => {
     exec(command, (err, stdout, stderr) => {
