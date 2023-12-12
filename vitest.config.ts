@@ -13,9 +13,9 @@ dotenv.config({
 export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
+    globalSetup: "./src/tests/globalSetup.ts",
     coverage: {
       reporter: ["text", "json-summary", "json", "html"],
-      // "100": true, // TODO: Discutir con el equipo
     },
   },
 });
