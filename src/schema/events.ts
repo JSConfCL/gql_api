@@ -416,7 +416,7 @@ const EventEditInput = builder.inputType("EventEditInput", {
     meetingURL: t.string({ required: false }),
     maxAttendees: t.field({
       type: "Int",
-      required: true,
+      required: false,
     }),
   }),
 });
