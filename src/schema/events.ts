@@ -10,6 +10,7 @@ import {
   selectTagsSchema,
   selectUserTicketsSchema,
   selectUsersSchema,
+  updateEventsSchema,
   userTicketsSchema,
   usersSchema,
 } from "~/datasources/db/schema";
@@ -26,7 +27,7 @@ import {
   TicketRedemptionStatus,
   TicketStatus,
 } from "./userTickets";
-import { canCreateEvent } from "~/validations";
+import { canCreateEvent, canEditEvent } from "~/validations";
 import { GraphQLError } from "graphql";
 
 export const EventStatus = builder.enumType("EventStatus", {
@@ -387,6 +388,39 @@ const EventCreateInput = builder.inputType("EventCreateInput", {
   }),
 });
 
+const EventEditInput = builder.inputType("EventEditInput", {
+  fields: (t) => ({
+    eventId: t.string({ required: true }),
+    name: t.string({ required: false }),
+    description: t.string({ required: false }),
+    status: t.field({
+      type: EventStatus,
+      required: false,
+    }),
+    visibility: t.field({
+      type: EventVisibility,
+      required: false,
+    }),
+    startDateTime: t.field({
+      type: "DateTime",
+      required: false,
+    }),
+    endDateTime: t.field({
+      type: "DateTime",
+      required: false,
+    }),
+    timeZone: t.string({ required: false }),
+    latitude: t.string({ required: false }),
+    longitude: t.string({ required: false }),
+    address: t.string({ required: false }),
+    meetingURL: t.string({ required: false }),
+    maxAttendees: t.field({
+      type: "Int",
+      required: true,
+    }),
+  }),
+});
+
 builder.mutationFields((t) => ({
   createEvent: t.field({
     description: "Create an event",
@@ -468,6 +502,63 @@ builder.mutationFields((t) => ({
           e instanceof Error ? e.message : "Unknown error",
         );
       }
+    },
+  }),
+  editEvent: t.field({
+    description: "Edit an event",
+    type: EventRef,
+    nullable: false,
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    args: {
+      input: t.arg({ type: EventEditInput, required: true }),
+    },
+    resolve: async (root, { input }, ctx) => {
+      const {
+        eventId,
+        name,
+        description,
+        visibility,
+        startDateTime,
+        endDateTime,
+        maxAttendees,
+        address,
+        latitude,
+        longitude,
+        meetingURL,
+        status,
+        timeZone,
+      } = input;
+      if (!ctx.USER) {
+        throw new Error("User not found");
+      }
+      if (!(await canEditEvent(ctx.USER.id, eventId, ctx.DB))) {
+        throw new Error("FORBIDDEN");
+      }
+      const updateValues = updateEventsSchema.safeParse({
+        name,
+        description,
+        visibility,
+        startDateTime,
+        endDateTime,
+        maxAttendees,
+        geoAddressJSON: address,
+        geoLongitude: longitude,
+        geoLatitude: latitude,
+        meetingURL,
+        status,
+        timeZone,
+      });
+      if (!updateValues.success) {
+        throw new Error("Invalid input");
+      }
+      const event = await ctx.DB.update(eventsSchema)
+        .set(updateValues.data)
+        .where(eq(eventsSchema.id, eventId))
+        .returning()
+        .get();
+      return selectEventsSchema.parse(event);
     },
   }),
 }));

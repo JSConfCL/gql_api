@@ -42,3 +42,17 @@ export const eventsRelations = relations(eventsSchema, ({ many }) => ({
 
 export const selectEventsSchema = createSelectSchema(eventsSchema);
 export const insertEventsSchema = createInsertSchema(eventsSchema);
+export const updateEventsSchema = insertEventsSchema.pick({
+  name: true,
+  description: true,
+  status: true,
+  visibility: true,
+  startDateTime: true,
+  endDateTime: true,
+  timeZone: true,
+  geoLatitude: true,
+  geoLongitude: true,
+  geoAddressJSON: true,
+  meetingURL: true,
+  maxAttendees: true,
+});
