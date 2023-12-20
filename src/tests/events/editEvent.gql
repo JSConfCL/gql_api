@@ -1,0 +1,11 @@
+mutation EditEvent($input: EventEditInput!) {
+  editEvent(input: $input) {
+    id
+    name
+    description
+    visibility
+    status
+    startDateTime
+    endDateTime
+  }
+}

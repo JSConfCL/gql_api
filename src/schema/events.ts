@@ -515,50 +515,56 @@ builder.mutationFields((t) => ({
       input: t.arg({ type: EventEditInput, required: true }),
     },
     resolve: async (root, { input }, ctx) => {
-      const {
-        eventId,
-        name,
-        description,
-        visibility,
-        startDateTime,
-        endDateTime,
-        maxAttendees,
-        address,
-        latitude,
-        longitude,
-        meetingURL,
-        status,
-        timeZone,
-      } = input;
-      if (!ctx.USER) {
-        throw new Error("User not found");
+      try {
+        const {
+          eventId,
+          name,
+          description,
+          visibility,
+          startDateTime,
+          endDateTime,
+          maxAttendees,
+          address,
+          latitude,
+          longitude,
+          meetingURL,
+          status,
+          timeZone,
+        } = input;
+        if (!ctx.USER) {
+          throw new Error("User not found");
+        }
+        if (!(await canEditEvent(ctx.USER.id, eventId, ctx.DB))) {
+          throw new Error("FORBIDDEN");
+        }
+        const updateValues = updateEventsSchema.safeParse({
+          name,
+          description,
+          visibility,
+          startDateTime,
+          endDateTime,
+          maxAttendees,
+          geoAddressJSON: address,
+          geoLongitude: longitude,
+          geoLatitude: latitude,
+          meetingURL,
+          status,
+          timeZone,
+        });
+        if (!updateValues.success) {
+          throw new Error("Invalid input");
+        }
+        const event = await ctx.DB.update(eventsSchema)
+          .set(updateValues.data)
+          .where(eq(eventsSchema.id, eventId))
+          .returning()
+          .get();
+        return selectEventsSchema.parse(event);
+      } catch (e) {
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
+        );
       }
-      if (!(await canEditEvent(ctx.USER.id, eventId, ctx.DB))) {
-        throw new Error("FORBIDDEN");
-      }
-      const updateValues = updateEventsSchema.safeParse({
-        name,
-        description,
-        visibility,
-        startDateTime,
-        endDateTime,
-        maxAttendees,
-        geoAddressJSON: address,
-        geoLongitude: longitude,
-        geoLatitude: latitude,
-        meetingURL,
-        status,
-        timeZone,
-      });
-      if (!updateValues.success) {
-        throw new Error("Invalid input");
-      }
-      const event = await ctx.DB.update(eventsSchema)
-        .set(updateValues.data)
-        .where(eq(eventsSchema.id, eventId))
-        .returning()
-        .get();
-      return selectEventsSchema.parse(event);
     },
   }),
 }));
