@@ -12,5 +12,8 @@ query Communities(
     id
     name
     status
+    events {
+      id
+    }
   }
 }

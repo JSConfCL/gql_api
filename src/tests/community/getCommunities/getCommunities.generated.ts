@@ -13,7 +13,7 @@ export type CommunitiesQueryVariables = Types.Exact<{
 }>;
 
 
-export type CommunitiesQuery = { __typename?: 'Query', communities: Array<{ __typename?: 'Community', description: string | null, id: string, name: string | null, status: Types.CommnunityStatus }> };
+export type CommunitiesQuery = { __typename?: 'Query', communities: Array<{ __typename?: 'Community', description: string | null, id: string, name: string | null, status: Types.CommnunityStatus, events: Array<{ __typename?: 'Event', id: string }> }> };
 
 
 export const Communities = gql`
@@ -23,6 +23,9 @@ export const Communities = gql`
     id
     name
     status
+    events {
+      id
+    }
   }
 }
     `;
