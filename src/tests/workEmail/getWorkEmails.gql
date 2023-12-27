@@ -3,5 +3,7 @@ query WorkEmails {
     __typename
     id
     isValidated
+    status
+    workEmail
   }
 }

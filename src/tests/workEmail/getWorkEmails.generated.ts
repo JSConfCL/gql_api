@@ -9,7 +9,7 @@ import gql from 'graphql-tag';
 export type WorkEmailsQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type WorkEmailsQuery = { __typename?: 'Query', workEmails: Array<{ __typename: 'WorkEmail', id: string, isValidated: boolean }> };
+export type WorkEmailsQuery = { __typename?: 'Query', workEmails: Array<{ __typename: 'ValidatedWorkEmail', id: string, isValidated: boolean, status: Types.EmailStatus, workEmail: string }> };
 
 
 export const WorkEmails = gql`
@@ -18,6 +18,8 @@ export const WorkEmails = gql`
     __typename
     id
     isValidated
+    status
+    workEmail
   }
 }
     `;

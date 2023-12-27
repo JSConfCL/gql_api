@@ -99,7 +99,7 @@ builder.objectType(ValidatedWorkEmailRef, {
 builder.queryFields((t) => ({
   workEmails: t.field({
     description: "Get a list of validated work emails for the user",
-    type: [WorkEmailRef],
+    type: [ValidatedWorkEmailRef],
     authz: {
       rules: ["IsAuthenticated"],
     },

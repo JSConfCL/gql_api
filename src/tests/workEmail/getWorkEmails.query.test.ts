@@ -13,6 +13,7 @@ import {
   WorkEmailsQuery,
   WorkEmailsQueryVariables,
 } from "./getWorkEmails.generated";
+import { EmailStatus } from "../../generated/types";
 
 afterEach(() => {
   clearDatabase();
@@ -45,6 +46,11 @@ describe("test the work email query", () => {
 
     assert.equal(query.errors, undefined);
     assert.equal(query.data?.workEmails?.length, 1);
+    assert.equal(query.data?.workEmails?.[0]?.status, EmailStatus.Confirmed);
+    assert.equal(
+      query.data?.workEmails?.[0]?.workEmail,
+      insertedWorkEmail.workEmail,
+    );
     assert.equal(
       query.data?.workEmails?.[0].isValidated,
       Boolean(insertedWorkEmail.confirmationDate),

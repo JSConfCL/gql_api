@@ -359,7 +359,7 @@ type Query {
   """
   Get a list of validated work emails for the user
   """
-  workEmails: [WorkEmail!]!
+  workEmails: [ValidatedWorkEmail!]!
 }
 
 """
