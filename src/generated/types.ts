@@ -110,6 +110,12 @@ export type CreateSalaryInput = {
   yearsOfExperience: Scalars["Int"]["input"];
 };
 
+export enum EmailStatus {
+  Confirmed = "confirmed",
+  Pending = "pending",
+  Rejected = "rejected",
+}
+
 export type EnqueueGoogleAlbumImportInput = {
   albumId: Scalars["String"]["input"];
   sanityEventInstanceId: Scalars["String"]["input"];
@@ -357,6 +363,8 @@ export type Query = {
   users: Array<User>;
   /** Get a workEmail and check if its validated for this user */
   workEmail: WorkEmail;
+  /** Get a list of validated work emails for the user */
+  workEmails: Array<WorkEmail>;
 };
 
 export type QueryCommunitiesArgs = {
@@ -583,7 +591,18 @@ export type UserTicket = {
   status: TicketStatus;
 };
 
-/** Representation of a workEmail */
+/** Representation of a validated work email */
+export type ValidatedWorkEmail = {
+  __typename?: "ValidatedWorkEmail";
+  company?: Maybe<Company>;
+  confirmationDate?: Maybe<Scalars["DateTime"]["output"]>;
+  id: Scalars["String"]["output"];
+  isValidated: Scalars["Boolean"]["output"];
+  status: EmailStatus;
+  workEmail: Scalars["String"]["output"];
+};
+
+/** Representation of a (yet to validate) work email */
 export type WorkEmail = {
   __typename?: "WorkEmail";
   id: Scalars["String"]["output"];

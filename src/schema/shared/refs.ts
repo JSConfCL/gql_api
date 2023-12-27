@@ -39,6 +39,9 @@ type WorkEmailGraphqlSchema = z.infer<typeof selectWorkEmailSchema>;
 export const WorkEmailRef =
   builder.objectRef<WorkEmailGraphqlSchema>("WorkEmail");
 
+export const ValidatedWorkEmailRef =
+  builder.objectRef<WorkEmailGraphqlSchema>("ValidatedWorkEmail");
+
 type AllowedCurrencyGraphqlSchema = z.infer<typeof selectAllowedCurrencySchema>;
 export const AllowedCurrencyRef =
   builder.objectRef<AllowedCurrencyGraphqlSchema>("AllowedCurrency");

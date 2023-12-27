@@ -91,6 +91,12 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+enum EmailStatus {
+  confirmed
+  pending
+  rejected
+}
+
 input EnqueueGoogleAlbumImportInput {
   albumId: String!
   sanityEventInstanceId: String!
@@ -349,6 +355,11 @@ type Query {
   Get a workEmail and check if its validated for this user
   """
   workEmail(email: String!): WorkEmail!
+
+  """
+  Get a list of validated work emails for the user
+  """
+  workEmails: [WorkEmail!]!
 }
 
 """
@@ -536,7 +547,19 @@ type UserTicket {
 }
 
 """
-Representation of a workEmail
+Representation of a validated work email
+"""
+type ValidatedWorkEmail {
+  company: Company
+  confirmationDate: DateTime
+  id: String!
+  isValidated: Boolean!
+  status: EmailStatus!
+  workEmail: String!
+}
+
+"""
+Representation of a (yet to validate) work email
 """
 type WorkEmail {
   id: String!

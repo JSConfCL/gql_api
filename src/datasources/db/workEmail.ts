@@ -1,6 +1,6 @@
 import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, statusEnumOptions } from "./shared";
 import {
   usersSchema,
   companiesSchema,
@@ -19,7 +19,7 @@ export const workEmailSchema = sqliteTable("work_email", {
     () => confirmationTokenSchema.id,
   ),
   status: text("status", {
-    enum: ["pending", "confirmed", "rejected"],
+    enum: statusEnumOptions,
   }).default("pending"),
   confirmationDate: int("confirmation_date", {
     mode: "timestamp_ms",
