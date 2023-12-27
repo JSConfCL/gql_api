@@ -3,6 +3,8 @@ name = "mail-queue-consumer"
 compatibility_date = "2023-06-06"
 main = "./index.ts"
 
+[vars]
+
 [define]
 _APP_ENV = "'development'"
 
@@ -26,6 +28,8 @@ dead_letter_queue = "deadletter-mail-queue-dev"
 # =====================================
 # =====================================
 
+[env.production.vars]
+
 [env.production.define]
 _APP_ENV = "'production'"
 
@@ -48,6 +52,9 @@ dead_letter_queue = "deadletter-mail-queue-production"
 # 🚨 STAGING CONFIG 🚨
 # =====================================
 # =====================================
+
+[env.staging.vars]
+
 [env.staging.define]
 _APP_ENV = "'staging'"
 
