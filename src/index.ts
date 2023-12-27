@@ -74,6 +74,11 @@ const getUser = async ({
 
 const attachPossibleUserIdFromJWT = (request: Request) => {
   const JWT_TOKEN = (request.headers.get("Authorization") ?? "").split(" ")[1];
+  const isOptions = request.method === "OPTIONS";
+  if (isOptions) {
+    return null;
+  }
+
   if (!JWT_TOKEN) {
     console.info("No token present");
     return null;

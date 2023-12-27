@@ -81,144 +81,155 @@ builder.mutationFields((t) => ({
         throw new Error("Invalid email");
       }
 
-      const result = await DB.transaction(async (trx) => {
-        try {
-          // We get the company id from the email domain, or create it if it doesn't exist
-          const possibleCompany = await trx.query.companiesSchema.findFirst({
-            where: (c, { eq }) => eq(c.domain, emailDomain),
-          });
-
-          let companyId = possibleCompany?.id;
-          if (!companyId) {
-            const insertCompany = insertCompaniesSchema.parse({
-              id: v4(),
-              domain: emailDomain,
-            });
-
-            const newCompany = await trx
-              .insert(companiesSchema)
-              .values(insertCompany)
-              .returning()
-              .get();
-            companyId = newCompany.id;
-          }
-
-          // Find the work email, if it exists we update it and retrigger the flow, if not, create the work email and trigger the flow
-          const workEmail = await trx.query.workEmailSchema.findFirst({
-            where: (wes, { like, and, eq }) =>
-              and(
-                like(wes.workEmail, email.toLowerCase()),
-                eq(wes.userId, USER.id),
-              ),
-            with: {
-              confirmationToken: true,
-            },
-          });
-
-          if (workEmail) {
-            const currentDate = new Date();
-            currentDate.setHours(currentDate.getHours() + 1);
-            if (workEmail.confirmationToken) {
-              if (workEmail.confirmationToken.validUntil > currentDate) {
-                throw new Error(
-                  "You can only request a new confirmation email once per hour",
-                );
-              } else {
-                await trx
-                  .update(confirmationTokenSchema)
-                  .set({
-                    status: "expired",
-                    validUntil: currentDate,
-                    confirmationDate: null,
-                  })
-                  .where(
-                    eq(
-                      confirmationTokenSchema.id,
-                      workEmail.confirmationToken.id,
-                    ),
-                  )
-                  .execute();
-              }
-            }
-            const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
-              id: v4(),
-              source: "onboarding",
-              sourceId: workEmail.id,
-              userId: USER.id,
-              token: v4(),
-              // by default, the token is valid for 1 hour
-              validUntil: new Date(Date.now() + 1000 * 60 * 60),
-            });
-            const insertedToken = await trx
-              .insert(confirmationTokenSchema)
-              .values(insertWorkEmailToken)
-              .returning()
-              .get();
-
-            const updatedWorkEmail = await trx
-              .update(workEmailSchema)
-              .set({
-                confirmationTokenId: insertedToken.id,
-                companyId,
-              })
-              .returning()
-              .get();
-            await enqueueEmail(MAIL_QUEUE, {
-              code: insertedToken.token,
-              userId: USER.id,
-              to: email.toLowerCase(),
-            });
-            return updatedWorkEmail;
-          } else {
-            const insertWorkEmail = insertWorkEmailSchema.parse({
-              id: v4(),
-              userId: USER.id,
-              workEmail: email.toLowerCase(),
-              companyId,
-            });
-
-            const insertedWorkEmail = await trx
-              .insert(workEmailSchema)
-              .values(insertWorkEmail)
-              .returning()
-              .get();
-
-            const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
-              id: v4(),
-              source: "onboarding",
-              sourceId: insertedWorkEmail.id,
-              userId: USER.id,
-              token: v4(),
-              // by default, the token is valid for 1 hour
-              validUntil: new Date(Date.now() + 1000 * 60 * 60),
-            });
-            const insertedToken = await trx
-              .insert(confirmationTokenSchema)
-              .values(insertWorkEmailToken)
-              .returning()
-              .get();
-            await trx
-              .update(workEmailSchema)
-              .set({
-                confirmationTokenId: insertedToken.id,
-              })
-              .where(eq(workEmailSchema.id, insertedWorkEmail.id))
-              .returning()
-              .get();
-
-            await enqueueEmail(MAIL_QUEUE, {
-              userId: USER.id,
-              code: insertedToken.token,
-              to: email.toLowerCase(),
-            });
-            return insertedWorkEmail;
-          }
-        } catch (e) {
-          trx.rollback();
-          throw e;
-        }
+      console.log("Validation for if a Company for this email exists");
+      const possibleCompany = await DB.query.companiesSchema.findFirst({
+        where: (c, { eq }) => eq(c.domain, emailDomain),
       });
-      return selectWorkEmailSchema.parse(result);
+      let companyId = possibleCompany?.id;
+      // We need the get the company id via the email domain, (or we create a company if it doesn't exist)
+      if (!companyId) {
+        console.log(
+          "No company exists, creating company for domain",
+          emailDomain,
+        );
+        const insertCompany = insertCompaniesSchema.parse({
+          id: v4(),
+          domain: emailDomain,
+        });
+
+        const newCompany = await DB.insert(companiesSchema)
+          .values(insertCompany)
+          .returning()
+          .get();
+        companyId = newCompany.id;
+      } else {
+        console.log(
+          "Company exists for domain ",
+          emailDomain,
+          " won't create a new one",
+        );
+      }
+
+      console.log("Checking if the user has added this work email");
+      // Find the work email, if it exists we update it and retrigger the flow, if not, create the work email and trigger the flow
+      const workEmail = await DB.query.workEmailSchema.findFirst({
+        where: (wes, { like, and, eq }) =>
+          and(
+            like(wes.workEmail, email.toLowerCase()),
+            eq(wes.userId, USER.id),
+          ),
+        with: {
+          confirmationToken: true,
+        },
+      });
+      if (workEmail) {
+        console.log("Validation for this work email already exists");
+        const currentDate = new Date();
+        currentDate.setHours(currentDate.getHours() + 1);
+        if (workEmail.confirmationToken) {
+          console.log("There is a token also for this work email");
+          if (workEmail.confirmationToken.validUntil > currentDate) {
+            throw new Error(
+              "You can only request a new confirmation email once per hour",
+            );
+          } else {
+            console.log(
+              "Updating the expiration date for the validation token",
+            );
+            await DB.update(confirmationTokenSchema)
+              .set({
+                status: "expired",
+                validUntil: currentDate,
+                confirmationDate: null,
+              })
+              .where(
+                eq(confirmationTokenSchema.id, workEmail.confirmationToken.id),
+              )
+              .execute();
+          }
+        } else {
+          console.log("There is a valid validation token");
+        }
+        const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
+          id: v4(),
+          source: "onboarding",
+          sourceId: workEmail.id,
+          userId: USER.id,
+          token: v4(),
+          // by default, the token is valid for 1 hour
+          validUntil: new Date(Date.now() + 1000 * 60 * 60),
+        });
+        const insertedToken = await DB.insert(confirmationTokenSchema)
+          .values(insertWorkEmailToken)
+          .returning()
+          .get();
+
+        const updatedWorkEmail = await DB.update(workEmailSchema)
+          .set({
+            confirmationTokenId: insertedToken.id,
+            companyId,
+          })
+          .returning()
+          .get();
+
+        await enqueueEmail(MAIL_QUEUE, {
+          code: insertedToken.token,
+          userId: USER.id,
+          to: email.toLowerCase(),
+        });
+        return selectWorkEmailSchema.parse(updatedWorkEmail);
+      } else {
+        console.log(
+          "There is no validation request for this work email. Creating the email and the token",
+        );
+        const insertWorkEmail = insertWorkEmailSchema.parse({
+          id: v4(),
+          userId: USER.id,
+          workEmail: email.toLowerCase(),
+          companyId,
+        });
+
+        const insertedWorkEmail = await DB.insert(workEmailSchema)
+          .values(insertWorkEmail)
+          .returning()
+          .get();
+
+        console.log("Inserting the email");
+        const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
+          id: v4(),
+          source: "onboarding",
+          sourceId: insertedWorkEmail.id,
+          userId: USER.id,
+          token: v4(),
+          // by default, the token is valid for 1 hour
+          validUntil: new Date(Date.now() + 1000 * 60 * 60),
+        });
+
+        console.log("Inserting the token");
+        const insertedToken = await DB.insert(confirmationTokenSchema)
+          .values(insertWorkEmailToken)
+          .returning()
+          .get();
+
+        console.log("Ataching the token to the email");
+        await DB.update(workEmailSchema)
+          .set({
+            confirmationTokenId: insertedToken.id,
+          })
+          .where(eq(workEmailSchema.id, insertedWorkEmail.id))
+          .returning()
+          .get();
+
+        console.log("Enqueuing the email");
+        await enqueueEmail(MAIL_QUEUE, {
+          userId: USER.id,
+          code: insertedToken.token,
+          to: email.toLowerCase(),
+        });
+
+        console.log("Enqueued email to send");
+        return selectWorkEmailSchema.parse(insertedWorkEmail);
+      }
     },
   }),
   validateWorkEmail: t.field({
@@ -288,6 +299,7 @@ builder.mutationFields((t) => ({
             throw new Error("No email found for that token");
           }
         } catch (e) {
+          console.error(e);
           trx.rollback();
           throw e;
         }
