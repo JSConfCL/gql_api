@@ -160,43 +160,39 @@ const UpdateSalaryInput = builder.inputType("UpdateSalaryInput", {
     }),
     amount: t.field({
       type: "Int",
-      required: true,
-    }),
-    companyId: t.field({
-      type: "String",
-      required: true,
+      required: false,
     }),
     currencyId: t.field({
       type: "String",
-      required: true,
+      required: false,
     }),
     countryCode: t.field({
       type: "String",
-      required: true,
+      required: false,
     }),
     workRoleId: t.field({
       type: "String",
-      required: true,
+      required: false,
     }),
     yearsOfExperience: t.field({
       type: "Int",
-      required: true,
+      required: false,
     }),
     gender: t.field({
       type: GenderEnum,
-      required: true,
+      required: false,
     }),
     genderOtherText: t.field({
       type: "String",
-      required: true,
+      required: false,
     }),
     typeOfEmployment: t.field({
       type: TypeOfEmployment,
-      required: true,
+      required: false,
     }),
     workMetodology: t.field({
       type: WorkMetodology,
-      required: true,
+      required: false,
     }),
   }),
 });
@@ -313,7 +309,6 @@ builder.mutationFields((t) => ({
       const {
         salaryId,
         confirmationToken,
-        companyId,
         amount,
         currencyId,
         workRoleId,
@@ -354,7 +349,6 @@ builder.mutationFields((t) => ({
 
       const insertSalary = insertSalariesSchema.parse({
         id: salaryId,
-        companyId,
         amount,
         currencyId,
         workRoleId,

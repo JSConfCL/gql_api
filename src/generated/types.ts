@@ -354,6 +354,8 @@ export type Query = {
   me: User;
   /** Get a list of tickets for the current user */
   myTickets: Array<UserTicket>;
+  /** Get a list of salaries associated to the user */
+  salaries: Array<Salary>;
   status: Scalars["String"]["output"];
   /** Get a list of tags */
   tags: Array<Tag>;
@@ -555,18 +557,17 @@ export type UpdateCompanyInput = {
 };
 
 export type UpdateSalaryInput = {
-  amount: Scalars["Int"]["input"];
-  companyId: Scalars["String"]["input"];
+  amount?: InputMaybe<Scalars["Int"]["input"]>;
   confirmationToken: Scalars["String"]["input"];
-  countryCode: Scalars["String"]["input"];
-  currencyId: Scalars["String"]["input"];
-  gender: Gender;
-  genderOtherText: Scalars["String"]["input"];
+  countryCode?: InputMaybe<Scalars["String"]["input"]>;
+  currencyId?: InputMaybe<Scalars["String"]["input"]>;
+  gender?: InputMaybe<Gender>;
+  genderOtherText?: InputMaybe<Scalars["String"]["input"]>;
   salaryId: Scalars["String"]["input"];
-  typeOfEmployment: TypeOfEmployment;
-  workMetodology: WorkMetodology;
-  workRoleId: Scalars["String"]["input"];
-  yearsOfExperience: Scalars["Int"]["input"];
+  typeOfEmployment?: InputMaybe<TypeOfEmployment>;
+  workMetodology?: InputMaybe<WorkMetodology>;
+  workRoleId?: InputMaybe<Scalars["String"]["input"]>;
+  yearsOfExperience?: InputMaybe<Scalars["Int"]["input"]>;
 };
 
 /** Representation of a user */
@@ -591,7 +592,7 @@ export type UserTicket = {
   status: TicketStatus;
 };
 
-/** Representation of a validated work email */
+/** Representation of a work email associated to the current user */
 export type ValidatedWorkEmail = {
   __typename?: "ValidatedWorkEmail";
   company?: Maybe<Company>;

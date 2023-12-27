@@ -334,6 +334,11 @@ type Query {
   Get a list of tickets for the current user
   """
   myTickets(input: MyTicketsSearchInput): [UserTicket!]!
+
+  """
+  Get a list of salaries associated to the user
+  """
+  salaries: [Salary!]!
   status(name: String): String!
 
   """
@@ -508,18 +513,17 @@ input UpdateCompanyInput {
 }
 
 input UpdateSalaryInput {
-  amount: Int!
-  companyId: String!
+  amount: Int
   confirmationToken: String!
-  countryCode: String!
-  currencyId: String!
-  gender: Gender!
-  genderOtherText: String!
+  countryCode: String
+  currencyId: String
+  gender: Gender
+  genderOtherText: String
   salaryId: String!
-  typeOfEmployment: TypeOfEmployment!
-  workMetodology: WorkMetodology!
-  workRoleId: String!
-  yearsOfExperience: Int!
+  typeOfEmployment: TypeOfEmployment
+  workMetodology: WorkMetodology
+  workRoleId: String
+  yearsOfExperience: Int
 }
 
 """
@@ -547,7 +551,7 @@ type UserTicket {
 }
 
 """
-Representation of a validated work email
+Representation of a work email associated to the current user
 """
 type ValidatedWorkEmail {
   company: Company

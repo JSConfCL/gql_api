@@ -75,9 +75,6 @@ describe("Salary creation", () => {
         const { confirmationToken, salaryId, user } = await createSalary();
         const workRole2 = await insertWorkRole();
         const allowedCurrency2 = await insertAllowedCurrency();
-        const company2 = await insertCompany({
-          status: "active",
-        });
 
         const UpdateWorkEmail = await executeGraphqlOperationAsUser<
           UpdateSalaryMutation,
@@ -93,7 +90,6 @@ describe("Salary creation", () => {
                 countryCode: "CLP",
                 gender: Gender.Female,
                 typeOfEmployment: TypeOfEmployment.PartTime,
-                companyId: company2.id,
                 currencyId: allowedCurrency2.id,
                 workMetodology: WorkMetodology.Office,
                 workRoleId: workRole2.id,
@@ -132,9 +128,6 @@ describe("Salary creation", () => {
       const { confirmationToken, salaryId } = await createSalary();
       const workRole2 = await insertWorkRole();
       const allowedCurrency2 = await insertAllowedCurrency();
-      const company2 = await insertCompany({
-        status: "active",
-      });
 
       const UpdateWorkEmail = await executeGraphqlOperation<
         UpdateSalaryMutation,
@@ -149,7 +142,6 @@ describe("Salary creation", () => {
             countryCode: "CLP",
             gender: Gender.Female,
             typeOfEmployment: TypeOfEmployment.PartTime,
-            companyId: company2.id,
             currencyId: allowedCurrency2.id,
             workMetodology: WorkMetodology.Office,
             workRoleId: workRole2.id,
@@ -181,7 +173,6 @@ describe("Salary creation", () => {
             countryCode: "CLP",
             gender: Gender.Female,
             typeOfEmployment: TypeOfEmployment.PartTime,
-            companyId: company2.id,
             currencyId: allowedCurrency2.id,
             workMetodology: WorkMetodology.Office,
             workRoleId: workRole2.id,
@@ -223,7 +214,6 @@ describe("Salary creation", () => {
               countryCode: "CLP",
               gender: Gender.Female,
               typeOfEmployment: TypeOfEmployment.PartTime,
-              companyId: company2.id,
               currencyId: allowedCurrency2.id,
               workMetodology: WorkMetodology.Office,
               workRoleId: workRole2.id,
@@ -240,9 +230,6 @@ describe("Salary creation", () => {
       const { salaryId, user } = await createSalary();
       const workRole2 = await insertWorkRole();
       const allowedCurrency2 = await insertAllowedCurrency();
-      const company2 = await insertCompany({
-        status: "active",
-      });
 
       const UpdateWorkEmail = await executeGraphqlOperationAsUser<
         UpdateSalaryMutation,
@@ -258,7 +245,6 @@ describe("Salary creation", () => {
               countryCode: "CLP",
               gender: Gender.Female,
               typeOfEmployment: TypeOfEmployment.PartTime,
-              companyId: company2.id,
               currencyId: allowedCurrency2.id,
               workMetodology: WorkMetodology.Office,
               workRoleId: workRole2.id,
@@ -283,9 +269,6 @@ describe("Salary creation", () => {
       });
       const workRole2 = await insertWorkRole();
       const allowedCurrency2 = await insertAllowedCurrency();
-      const company2 = await insertCompany({
-        status: "active",
-      });
 
       const UpdateWorkEmail = await executeGraphqlOperationAsUser<
         UpdateSalaryMutation,
@@ -301,7 +284,6 @@ describe("Salary creation", () => {
               countryCode: "CLP",
               gender: Gender.Female,
               typeOfEmployment: TypeOfEmployment.PartTime,
-              companyId: company2.id,
               currencyId: allowedCurrency2.id,
               workMetodology: WorkMetodology.Office,
               workRoleId: workRole2.id,
@@ -326,9 +308,6 @@ describe("Salary creation", () => {
       });
       const workRole2 = await insertWorkRole();
       const allowedCurrency2 = await insertAllowedCurrency();
-      const company2 = await insertCompany({
-        status: "active",
-      });
 
       const UpdateWorkEmail = await executeGraphqlOperationAsUser<
         UpdateSalaryMutation,
@@ -344,7 +323,6 @@ describe("Salary creation", () => {
               countryCode: "CLP",
               gender: Gender.Female,
               typeOfEmployment: TypeOfEmployment.PartTime,
-              companyId: company2.id,
               currencyId: allowedCurrency2.id,
               workMetodology: WorkMetodology.Office,
               workRoleId: workRole2.id,
@@ -369,9 +347,6 @@ describe("Salary creation", () => {
       });
       const workRole2 = await insertWorkRole();
       const allowedCurrency2 = await insertAllowedCurrency();
-      const company2 = await insertCompany({
-        status: "active",
-      });
 
       const UpdateWorkEmail = await executeGraphqlOperationAsUser<
         UpdateSalaryMutation,
@@ -387,7 +362,6 @@ describe("Salary creation", () => {
               countryCode: "CLP",
               gender: Gender.Female,
               typeOfEmployment: TypeOfEmployment.PartTime,
-              companyId: company2.id,
               currencyId: allowedCurrency2.id,
               workMetodology: WorkMetodology.Office,
               workRoleId: workRole2.id,
@@ -412,9 +386,6 @@ describe("Salary creation", () => {
       });
       const workRole2 = await insertWorkRole();
       const allowedCurrency2 = await insertAllowedCurrency();
-      const company2 = await insertCompany({
-        status: "active",
-      });
 
       const UpdateWorkEmail = await executeGraphqlOperationAsUser<
         UpdateSalaryMutation,
@@ -430,7 +401,6 @@ describe("Salary creation", () => {
               countryCode: "CLP",
               gender: Gender.Female,
               typeOfEmployment: TypeOfEmployment.PartTime,
-              companyId: company2.id,
               currencyId: allowedCurrency2.id,
               workMetodology: WorkMetodology.Office,
               workRoleId: workRole2.id,
