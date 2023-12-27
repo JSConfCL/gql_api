@@ -249,62 +249,50 @@ builder.mutationFields((t) => ({
         throw new Error("confirmationToken is required");
       }
 
-      const result = await DB.transaction(async (trx) => {
-        try {
-          const foundConfirmationToken =
-            await trx.query.confirmationTokenSchema.findFirst({
-              where: (c, { eq, and, inArray }) =>
-                and(
-                  eq(c.token, confirmationToken),
-                  inArray(c.status, ["pending"]),
-                  inArray(c.source, ["onboarding", "work_email"]),
-                ),
-            });
-          if (!foundConfirmationToken) {
-            throw new Error("Invalid token");
-          }
+      const foundConfirmationToken =
+        await DB.query.confirmationTokenSchema.findFirst({
+          where: (c, { eq, and, inArray }) =>
+            and(
+              eq(c.token, confirmationToken),
+              inArray(c.status, ["pending"]),
+              inArray(c.source, ["onboarding", "work_email"]),
+            ),
+        });
+      if (!foundConfirmationToken) {
+        throw new Error("Invalid token");
+      }
 
-          if (
-            foundConfirmationToken.validUntil <= new Date() ||
-            foundConfirmationToken.userId !== USER.id
-          ) {
-            throw new Error("Invalid token");
-          }
-
-          const possibleWorkSchema = await trx.query.workEmailSchema.findFirst({
-            where: (wes, { eq, and }) =>
-              and(
-                eq(wes.confirmationTokenId, foundConfirmationToken.id),
-                eq(wes.userId, USER.id),
-              ),
-          });
-
-          if (possibleWorkSchema) {
-            // TODO: Consider also checking if the confirmationDate is over a year old.
-            if (possibleWorkSchema.status === "confirmed") {
-              throw new Error("Email is already validated");
-            }
-            const updatedWorkEmail = await trx
-              .update(workEmailSchema)
-              .set({
-                status: "confirmed",
-                confirmationTokenId: null,
-                confirmationDate: new Date(),
-              })
-              .where(eq(workEmailSchema.id, possibleWorkSchema.id))
-              .returning()
-              .get();
-            return updatedWorkEmail;
-          } else {
-            throw new Error("No email found for that token");
-          }
-        } catch (e) {
-          console.error(e);
-          trx.rollback();
-          throw e;
-        }
+      if (
+        foundConfirmationToken.validUntil <= new Date() ||
+        foundConfirmationToken.userId !== USER.id
+      ) {
+        throw new Error("Invalid token");
+      }
+      const possibleWorkSchema = await DB.query.workEmailSchema.findFirst({
+        where: (wes, { eq, and }) =>
+          and(
+            eq(wes.confirmationTokenId, foundConfirmationToken.id),
+            eq(wes.userId, USER.id),
+          ),
       });
-      return selectWorkEmailSchema.parse(result);
+      if (possibleWorkSchema) {
+        // TODO: Consider also checking if the confirmationDate is over a year old.
+        if (possibleWorkSchema.status === "confirmed") {
+          throw new Error("Email is already validated");
+        }
+        const updatedWorkEmail = await DB.update(workEmailSchema)
+          .set({
+            status: "confirmed",
+            confirmationTokenId: null,
+            confirmationDate: new Date(),
+          })
+          .where(eq(workEmailSchema.id, possibleWorkSchema.id))
+          .returning()
+          .get();
+        return selectWorkEmailSchema.parse(updatedWorkEmail);
+      } else {
+        throw new Error("No email found for that token");
+      }
     },
   }),
 }));
