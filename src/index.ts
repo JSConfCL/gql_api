@@ -121,14 +121,13 @@ export const yoga = createYoga<Env>({
   schema,
   logging: APP_ENV === "production" ? "info" : "debug",
   plugins: [
-    APP_ENV === "production" &&
-      useMaskedErrors({
-        errorMessage: "Internal Server Error",
-        maskError: (error, message) => {
-          H.consumeError(error as Error);
-          return maskError(error, message, APP_ENV !== "production");
-        },
-      }),
+    useMaskedErrors({
+      errorMessage: "Internal Server Error",
+      maskError: (error, message) => {
+        H.consumeError(error as Error);
+        return maskError(error, message, APP_ENV !== "production");
+      },
+    }),
     useImmediateIntrospection(),
     (APP_ENV === "production" || APP_ENV === "staging") &&
       useOpenTelemetry(
