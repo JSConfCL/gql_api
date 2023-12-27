@@ -51,10 +51,7 @@ describe("test the work email query", () => {
       query.data?.workEmails?.[0]?.workEmail,
       insertedWorkEmail.workEmail,
     );
-    assert.equal(
-      query.data?.workEmails?.[0].isValidated,
-      Boolean(insertedWorkEmail.confirmationDate),
-    );
+    assert.equal(query.data?.workEmails?.[0].isValidated, true);
   });
 
   it("Should fail for not authenticated users", async () => {

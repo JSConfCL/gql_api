@@ -30,41 +30,19 @@ builder.objectType(WorkEmailRef, {
     isValidated: t.field({
       type: "Boolean",
       nullable: false,
-      resolve: async (root, args, { USER, DB }) => {
-        // TODO: Consider also  checking if the confirmationDate is over a year old.
-        /* c8 ignore next 3 */
-        if (!USER) {
-          return false;
-        }
-        const workEmailSchema = await DB.query.workEmailSchema.findFirst({
-          where: (wes, { eq, and }) =>
-            and(eq(wes.id, root.id), eq(wes.userId, USER.id)),
-        });
-        return Boolean(workEmailSchema?.confirmationDate) || false;
-      },
+      resolve: (root) => root.status === "confirmed",
     }),
   }),
 });
 builder.objectType(ValidatedWorkEmailRef, {
-  description: "Representation of a validated work email",
+  description: "Representation of a work email associated to the current user",
   fields: (t) => ({
     // ID and isValidated are the same from WorkEmailRef.
     id: t.exposeString("id", { nullable: false }),
     isValidated: t.field({
       type: "Boolean",
       nullable: false,
-      resolve: async (root, args, { USER, DB }) => {
-        // TODO: Consider also  checking if the confirmationDate is over a year old.
-        /* c8 ignore next 3 */
-        if (!USER) {
-          return false;
-        }
-        const workEmailSchema = await DB.query.workEmailSchema.findFirst({
-          where: (wes, { eq, and }) =>
-            and(eq(wes.id, root.id), eq(wes.userId, USER.id)),
-        });
-        return Boolean(workEmailSchema?.confirmationDate) || false;
-      },
+      resolve: (root) => root.status === "confirmed",
     }),
     workEmail: t.exposeString("workEmail", { nullable: false }),
     status: t.field({
