@@ -542,7 +542,7 @@ export const insertSalary = async (
     workRoleId: partialInput?.workRoleId,
 
     createdAt: partialInput?.createdAt,
-    currencyId: partialInput?.currencyId,
+    currencyCode: partialInput?.currencyCode ?? faker.finance.currencyCode(),
     updatedAt: partialInput?.updatedAt,
     deletedAt: partialInput?.deletedAt,
   } satisfies z.infer<typeof insertSalariesSchema>;

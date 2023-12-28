@@ -6,15 +6,9 @@ import {
   insertSalariesSchema,
   selectSalariesSchema,
   selectCompaniesSchema,
-  selectAllowedCurrencySchema,
   selectWorkRoleSchema,
 } from "~/datasources/db/schema";
-import {
-  AllowedCurrencyRef,
-  CompanyRef,
-  SalaryRef,
-  WorkRoleRef,
-} from "~/schema/shared/refs";
+import { CompanyRef, SalaryRef, WorkRoleRef } from "~/schema/shared/refs";
 import { GenderEnum } from "./shared/enums";
 
 const TypeOfEmployment = builder.enumType("TypeOfEmployment", {
@@ -46,22 +40,6 @@ builder.objectType(SalaryRef, {
       },
     }),
     amount: t.exposeInt("amount", { nullable: false }),
-    currency: t.field({
-      type: AllowedCurrencyRef,
-      nullable: false,
-      resolve: async (root, args, { DB }) => {
-        const salaryWithCurrency = await DB.query.salariesSchema.findFirst({
-          where: (c, { eq }) => eq(c.id, root.id),
-          with: {
-            currency: true,
-          },
-        });
-        if (!salaryWithCurrency || !salaryWithCurrency?.currency) {
-          throw new Error("Currency not found");
-        }
-        return selectAllowedCurrencySchema.parse(salaryWithCurrency.currency);
-      },
-    }),
     workRole: t.field({
       type: WorkRoleRef,
       nullable: false,
@@ -95,6 +73,7 @@ builder.objectType(SalaryRef, {
       resolve: (root) => root.gender,
     }),
     genderOtherText: t.exposeString("genderOtherText", { nullable: true }),
+    currencyCode: t.exposeString("currencyCode", { nullable: false }),
     countryCode: t.exposeString("countryCode", { nullable: false }),
   }),
 });
@@ -113,7 +92,7 @@ const CreateSalaryInput = builder.inputType("CreateSalaryInput", {
       type: "String",
       required: true,
     }),
-    currencyId: t.field({
+    currencyCode: t.field({
       type: "String",
       required: true,
     }),
@@ -162,7 +141,7 @@ const UpdateSalaryInput = builder.inputType("UpdateSalaryInput", {
       type: "Int",
       required: false,
     }),
-    currencyId: t.field({
+    currencyCode: t.field({
       type: "String",
       required: false,
     }),
@@ -237,7 +216,7 @@ builder.mutationFields((t) => ({
         confirmationToken,
         companyId,
         amount,
-        currencyId,
+        currencyCode,
         workRoleId,
         countryCode,
         typeOfEmployment,
@@ -271,7 +250,7 @@ builder.mutationFields((t) => ({
         id: salaryId,
         companyId,
         amount,
-        currencyId,
+        currencyCode,
         workRoleId,
         countryCode,
         typeOfEmployment,
@@ -310,7 +289,7 @@ builder.mutationFields((t) => ({
         salaryId,
         confirmationToken,
         amount,
-        currencyId,
+        currencyCode,
         workRoleId,
         countryCode,
         typeOfEmployment,
@@ -350,7 +329,7 @@ builder.mutationFields((t) => ({
       const insertSalary = insertSalariesSchema.parse({
         id: salaryId,
         amount,
-        currencyId,
+        currencyCode,
         workRoleId,
         countryCode,
         typeOfEmployment,

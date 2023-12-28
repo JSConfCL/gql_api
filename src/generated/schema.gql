@@ -72,7 +72,7 @@ input CreateSalaryInput {
   companyId: String!
   confirmationToken: String!
   countryCode: String!
-  currencyId: String!
+  currencyCode: String!
   gender: Gender!
   genderOtherText: String!
   typeOfEmployment: TypeOfEmployment!
@@ -374,7 +374,7 @@ type Salary {
   amount: Int!
   company: Company!
   countryCode: String!
-  currency: AllowedCurrency!
+  currencyCode: String!
   gender: Gender
   genderOtherText: String
   id: String!
@@ -516,7 +516,7 @@ input UpdateSalaryInput {
   amount: Int
   confirmationToken: String!
   countryCode: String
-  currencyId: String
+  currencyCode: String
   gender: Gender
   genderOtherText: String
   salaryId: String!

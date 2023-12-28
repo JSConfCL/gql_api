@@ -101,7 +101,7 @@ export type CreateSalaryInput = {
   companyId: Scalars["String"]["input"];
   confirmationToken: Scalars["String"]["input"];
   countryCode: Scalars["String"]["input"];
-  currencyId: Scalars["String"]["input"];
+  currencyCode: Scalars["String"]["input"];
   gender: Gender;
   genderOtherText: Scalars["String"]["input"];
   typeOfEmployment: TypeOfEmployment;
@@ -421,7 +421,7 @@ export type Salary = {
   amount: Scalars["Int"]["output"];
   company: Company;
   countryCode: Scalars["String"]["output"];
-  currency: AllowedCurrency;
+  currencyCode: Scalars["String"]["output"];
   gender?: Maybe<Gender>;
   genderOtherText?: Maybe<Scalars["String"]["output"]>;
   id: Scalars["String"]["output"];
@@ -560,7 +560,7 @@ export type UpdateSalaryInput = {
   amount?: InputMaybe<Scalars["Int"]["input"]>;
   confirmationToken: Scalars["String"]["input"];
   countryCode?: InputMaybe<Scalars["String"]["input"]>;
-  currencyId?: InputMaybe<Scalars["String"]["input"]>;
+  currencyCode?: InputMaybe<Scalars["String"]["input"]>;
   gender?: InputMaybe<Gender>;
   genderOtherText?: InputMaybe<Scalars["String"]["input"]>;
   salaryId: Scalars["String"]["input"];
