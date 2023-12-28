@@ -3,7 +3,6 @@ import { afterEach, assert, describe, expect, it } from "vitest";
 import {
   executeGraphqlOperation,
   executeGraphqlOperationAsUser,
-  insertAllowedCurrency,
   insertCompany,
   insertConfirmationToken,
   insertUser,
@@ -34,7 +33,6 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const allowedCurrency = await insertAllowedCurrency();
       const workRole = await insertWorkRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
@@ -62,7 +60,7 @@ describe("Salary creation", () => {
                 amount: 1000,
                 companyId: company.id,
                 countryCode: "US",
-                currencyId: allowedCurrency.id,
+                currencyCode: "US",
                 gender: Gender.Agender,
                 typeOfEmployment: TypeOfEmployment.FullTime,
                 workMetodology: WorkMetodology.Hybrid,
@@ -91,7 +89,6 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const allowedCurrency = await insertAllowedCurrency();
       const workRole = await insertWorkRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
@@ -117,7 +114,7 @@ describe("Salary creation", () => {
             amount: 1000,
             companyId: company.id,
             countryCode: "US",
-            currencyId: allowedCurrency.id,
+            currencyCode: "US",
             gender: Gender.Agender,
             typeOfEmployment: TypeOfEmployment.FullTime,
             workMetodology: WorkMetodology.Hybrid,
@@ -143,7 +140,6 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const allowedCurrency = await insertAllowedCurrency();
       const workRole = await insertWorkRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
@@ -171,7 +167,7 @@ describe("Salary creation", () => {
                 amount: 1000,
                 companyId: company.id,
                 countryCode: "US",
-                currencyId: allowedCurrency.id,
+                currencyCode: "US",
                 gender: Gender.Agender,
                 typeOfEmployment: TypeOfEmployment.FullTime,
                 workMetodology: WorkMetodology.Hybrid,
@@ -199,7 +195,6 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const allowedCurrency = await insertAllowedCurrency();
       const workRole = await insertWorkRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
@@ -227,7 +222,7 @@ describe("Salary creation", () => {
                 amount: 1000,
                 companyId: company.id,
                 countryCode: "US",
-                currencyId: allowedCurrency.id,
+                currencyCode: "US",
                 gender: Gender.Agender,
                 typeOfEmployment: TypeOfEmployment.FullTime,
                 workMetodology: WorkMetodology.Hybrid,
@@ -254,7 +249,6 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const allowedCurrency = await insertAllowedCurrency();
       const workRole = await insertWorkRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
@@ -282,7 +276,7 @@ describe("Salary creation", () => {
                 amount: 1000,
                 companyId: company.id,
                 countryCode: "US",
-                currencyId: allowedCurrency.id,
+                currencyCode: "US",
                 gender: Gender.Agender,
                 typeOfEmployment: TypeOfEmployment.FullTime,
                 workMetodology: WorkMetodology.Hybrid,
@@ -309,7 +303,6 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const allowedCurrency = await insertAllowedCurrency();
       const workRole = await insertWorkRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
@@ -337,7 +330,7 @@ describe("Salary creation", () => {
                 amount: 1000,
                 companyId: company.id,
                 countryCode: "US",
-                currencyId: allowedCurrency.id,
+                currencyCode: "US",
                 gender: Gender.Agender,
                 typeOfEmployment: TypeOfEmployment.FullTime,
                 workMetodology: WorkMetodology.Hybrid,
@@ -364,7 +357,6 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const allowedCurrency = await insertAllowedCurrency();
       const workRole = await insertWorkRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
@@ -392,7 +384,7 @@ describe("Salary creation", () => {
                 amount: 1000,
                 companyId: company.id,
                 countryCode: "US",
-                currencyId: allowedCurrency.id,
+                currencyCode: "US",
                 gender: Gender.Agender,
                 typeOfEmployment: TypeOfEmployment.FullTime,
                 workMetodology: WorkMetodology.Hybrid,
@@ -419,7 +411,6 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const allowedCurrency = await insertAllowedCurrency();
       const workRole = await insertWorkRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
@@ -447,7 +438,7 @@ describe("Salary creation", () => {
                 amount: 1000,
                 companyId: company.id,
                 countryCode: "US",
-                currencyId: allowedCurrency.id,
+                currencyCode: "US",
                 gender: Gender.Agender,
                 typeOfEmployment: TypeOfEmployment.FullTime,
                 workMetodology: WorkMetodology.Hybrid,

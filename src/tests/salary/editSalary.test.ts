@@ -73,7 +73,6 @@ describe("Salary creation", () => {
       it("For a user with a correct code", async () => {
         const { confirmationToken, salaryId, user } = await createSalary();
         const workRole2 = await insertWorkRole();
-        const allowedCurrency2 = await insertAllowedCurrency();
 
         const UpdateWorkEmail = await executeGraphqlOperationAsUser<
           UpdateSalaryMutation,
@@ -105,10 +104,6 @@ describe("Salary creation", () => {
           amount: 100000,
           countryCode: "CLP",
           currencyCode: "CLP",
-          currency: {
-            currency: allowedCurrency2.currency,
-            id: allowedCurrency2.id,
-          },
           gender: Gender.Female,
           genderOtherText: "something",
           id: salaryId,

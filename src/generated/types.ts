@@ -367,6 +367,8 @@ export type Query = {
   workEmail: WorkEmail;
   /** Get a list of validated work emails for the user */
   workEmails: Array<ValidatedWorkEmail>;
+  /** Get a list of possible work roles */
+  workRoles: Array<WorkRole>;
 };
 
 export type QueryCommunitiesArgs = {
