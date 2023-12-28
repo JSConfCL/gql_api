@@ -524,7 +524,8 @@
       },
       "compositePrimaryKeys": {
         "events_communities_event_id_community_id_pk": {
-          "columns": ["community_id", "event_id"]
+          "columns": ["community_id", "event_id"],
+          "name": "events_communities_event_id_community_id_pk"
         }
       },
       "uniqueConstraints": {}
@@ -592,7 +593,8 @@
       },
       "compositePrimaryKeys": {
         "events_tags_event_id_tag_id_pk": {
-          "columns": ["event_id", "tag_id"]
+          "columns": ["event_id", "tag_id"],
+          "name": "events_tags_event_id_tag_id_pk"
         }
       },
       "uniqueConstraints": {}
@@ -964,7 +966,8 @@
       },
       "compositePrimaryKeys": {
         "tags_communities_tag_id_community_id_pk": {
-          "columns": ["community_id", "tag_id"]
+          "columns": ["community_id", "tag_id"],
+          "name": "tags_communities_tag_id_community_id_pk"
         }
       },
       "uniqueConstraints": {}
