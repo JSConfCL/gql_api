@@ -101,7 +101,7 @@ export type CreateSalaryInput = {
   companyId: Scalars["String"]["input"];
   confirmationToken: Scalars["String"]["input"];
   countryCode: Scalars["String"]["input"];
-  currencyId: Scalars["String"]["input"];
+  currencyCode: Scalars["String"]["input"];
   gender: Gender;
   genderOtherText: Scalars["String"]["input"];
   typeOfEmployment: TypeOfEmployment;
@@ -109,6 +109,12 @@ export type CreateSalaryInput = {
   workRoleId: Scalars["String"]["input"];
   yearsOfExperience: Scalars["Int"]["input"];
 };
+
+export enum EmailStatus {
+  Confirmed = "confirmed",
+  Pending = "pending",
+  Rejected = "rejected",
+}
 
 export type EnqueueGoogleAlbumImportInput = {
   albumId: Scalars["String"]["input"];
@@ -348,6 +354,8 @@ export type Query = {
   me: User;
   /** Get a list of tickets for the current user */
   myTickets: Array<UserTicket>;
+  /** Get a list of salaries associated to the user */
+  salaries: Array<Salary>;
   status: Scalars["String"]["output"];
   /** Get a list of tags */
   tags: Array<Tag>;
@@ -357,6 +365,10 @@ export type Query = {
   users: Array<User>;
   /** Get a workEmail and check if its validated for this user */
   workEmail: WorkEmail;
+  /** Get a list of validated work emails for the user */
+  workEmails: Array<ValidatedWorkEmail>;
+  /** Get a list of possible work roles */
+  workRoles: Array<WorkRole>;
 };
 
 export type QueryCommunitiesArgs = {
@@ -411,7 +423,7 @@ export type Salary = {
   amount: Scalars["Int"]["output"];
   company: Company;
   countryCode: Scalars["String"]["output"];
-  currency: AllowedCurrency;
+  currencyCode: Scalars["String"]["output"];
   gender?: Maybe<Gender>;
   genderOtherText?: Maybe<Scalars["String"]["output"]>;
   id: Scalars["String"]["output"];
@@ -547,18 +559,17 @@ export type UpdateCompanyInput = {
 };
 
 export type UpdateSalaryInput = {
-  amount: Scalars["Int"]["input"];
-  companyId: Scalars["String"]["input"];
+  amount?: InputMaybe<Scalars["Int"]["input"]>;
   confirmationToken: Scalars["String"]["input"];
-  countryCode: Scalars["String"]["input"];
-  currencyId: Scalars["String"]["input"];
-  gender: Gender;
-  genderOtherText: Scalars["String"]["input"];
+  countryCode?: InputMaybe<Scalars["String"]["input"]>;
+  currencyCode?: InputMaybe<Scalars["String"]["input"]>;
+  gender?: InputMaybe<Gender>;
+  genderOtherText?: InputMaybe<Scalars["String"]["input"]>;
   salaryId: Scalars["String"]["input"];
-  typeOfEmployment: TypeOfEmployment;
-  workMetodology: WorkMetodology;
-  workRoleId: Scalars["String"]["input"];
-  yearsOfExperience: Scalars["Int"]["input"];
+  typeOfEmployment?: InputMaybe<TypeOfEmployment>;
+  workMetodology?: InputMaybe<WorkMetodology>;
+  workRoleId?: InputMaybe<Scalars["String"]["input"]>;
+  yearsOfExperience?: InputMaybe<Scalars["Int"]["input"]>;
 };
 
 /** Representation of a user */
@@ -583,7 +594,18 @@ export type UserTicket = {
   status: TicketStatus;
 };
 
-/** Representation of a workEmail */
+/** Representation of a work email associated to the current user */
+export type ValidatedWorkEmail = {
+  __typename?: "ValidatedWorkEmail";
+  company?: Maybe<Company>;
+  confirmationDate?: Maybe<Scalars["DateTime"]["output"]>;
+  id: Scalars["String"]["output"];
+  isValidated: Scalars["Boolean"]["output"];
+  status: EmailStatus;
+  workEmail: Scalars["String"]["output"];
+};
+
+/** Representation of a (yet to validate) work email */
 export type WorkEmail = {
   __typename?: "WorkEmail";
   id: Scalars["String"]["output"];

@@ -15,6 +15,13 @@
       "when": 1700966562207,
       "tag": "0001_brief_shaman",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1703735142210,
+      "tag": "0002_brave_the_santerians",
+      "breakpoints": true
     }
   ]
 }

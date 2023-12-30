@@ -2,10 +2,7 @@ mutation CreateSalary($input: CreateSalaryInput!) {
   createSalary(input: $input) {
     id
     amount
-    currency {
-      id
-      currency
-    }
+    currencyCode
     yearsOfExperience
     countryCode
     gender
@@ -23,10 +20,7 @@ mutation UpdateSalary($input: UpdateSalaryInput!) {
   updateSalary(input: $input) {
     id
     amount
-    currency {
-      id
-      currency
-    }
+    currencyCode
     yearsOfExperience
     countryCode
     gender

@@ -3,6 +3,7 @@ import { v4 } from "uuid";
 import { builder } from "~/builder";
 import {
   companiesSchema,
+  selectCompaniesSchema,
   confirmationTokenSchema,
   insertCompaniesSchema,
   insertConfirmationTokenSchema,
@@ -10,33 +11,86 @@ import {
   selectWorkEmailSchema,
   workEmailSchema,
 } from "~/datasources/db/schema";
-import { WorkEmailRef } from "~/schema/shared/refs";
+import {
+  WorkEmailRef,
+  ValidatedWorkEmailRef,
+  CompanyRef,
+} from "~/schema/shared/refs";
 import { enqueueEmail } from "../datasources/queues/mail";
+import { statusEnumOptions } from "../datasources/db/shared";
+
+const EmailStatusEnum = builder.enumType("EmailStatus", {
+  values: statusEnumOptions,
+});
 
 builder.objectType(WorkEmailRef, {
-  description: "Representation of a workEmail",
+  description: "Representation of a (yet to validate) work email",
   fields: (t) => ({
     id: t.exposeString("id", { nullable: false }),
     isValidated: t.field({
       type: "Boolean",
       nullable: false,
-      resolve: async (root, args, { USER, DB }) => {
-        // TODO: Consider also  checking if the confirmationDate is over a year old.
-        /* c8 ignore next 3 */
-        if (!USER) {
-          return false;
+      resolve: (root) => root.status === "confirmed",
+    }),
+  }),
+});
+builder.objectType(ValidatedWorkEmailRef, {
+  description: "Representation of a work email associated to the current user",
+  fields: (t) => ({
+    // ID and isValidated are the same from WorkEmailRef.
+    id: t.exposeString("id", { nullable: false }),
+    isValidated: t.field({
+      type: "Boolean",
+      nullable: false,
+      resolve: (root) => root.status === "confirmed",
+    }),
+    workEmail: t.exposeString("workEmail", { nullable: false }),
+    status: t.field({
+      type: EmailStatusEnum,
+      nullable: false,
+      resolve: (root) => root.status || "pending",
+    }),
+    confirmationDate: t.expose("confirmationDate", {
+      type: "DateTime",
+      nullable: true,
+    }),
+    company: t.field({
+      type: CompanyRef,
+      nullable: true,
+      resolve: async (root, args, { DB }) => {
+        const { companyId } = root;
+        if (!companyId) {
+          return null;
         }
-        const workEmailSchema = await DB.query.workEmailSchema.findFirst({
-          where: (wes, { eq, and }) =>
-            and(eq(wes.id, root.id), eq(wes.userId, USER.id)),
+        const company = await DB.query.companiesSchema.findFirst({
+          where: (c, { eq }) => eq(c.id, companyId),
         });
-        return Boolean(workEmailSchema?.confirmationDate) || false;
+        if (!company) {
+          return null;
+        }
+        return selectCompaniesSchema.parse(company);
       },
     }),
   }),
 });
 
 builder.queryFields((t) => ({
+  workEmails: t.field({
+    description: "Get a list of validated work emails for the user",
+    type: [ValidatedWorkEmailRef],
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, _, { DB, USER }) => {
+      if (!USER) {
+        throw new Error("No user present");
+      }
+      const workEmail = await DB.query.workEmailSchema.findMany({
+        where: (wes, { eq }) => eq(wes.userId, USER.id),
+      });
+      return workEmail.map((we) => selectWorkEmailSchema.parse(we));
+    },
+  }),
   workEmail: t.field({
     description: "Get a workEmail and check if its validated for this user",
     type: WorkEmailRef,
