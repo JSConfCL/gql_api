@@ -1,0 +1,9 @@
+query WorkEmails {
+  workEmails {
+    __typename
+    id
+    isValidated
+    status
+    workEmail
+  }
+}

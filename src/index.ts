@@ -74,6 +74,11 @@ const getUser = async ({
 
 const attachPossibleUserIdFromJWT = (request: Request) => {
   const JWT_TOKEN = (request.headers.get("Authorization") ?? "").split(" ")[1];
+  const isOptions = request.method === "OPTIONS";
+  if (isOptions) {
+    return null;
+  }
+
   if (!JWT_TOKEN) {
     console.info("No token present");
     return null;
@@ -121,14 +126,13 @@ export const yoga = createYoga<Env>({
   schema,
   logging: APP_ENV === "production" ? "info" : "debug",
   plugins: [
-    APP_ENV === "production" &&
-      useMaskedErrors({
-        errorMessage: "Internal Server Error",
-        maskError: (error, message) => {
-          H.consumeError(error as Error);
-          return maskError(error, message, APP_ENV !== "production");
-        },
-      }),
+    useMaskedErrors({
+      errorMessage: "Internal Server Error",
+      maskError: (error, message) => {
+        H.consumeError(error as Error);
+        return maskError(error, message, APP_ENV !== "production");
+      },
+    }),
     useImmediateIntrospection(),
     (APP_ENV === "production" || APP_ENV === "staging") &&
       useOpenTelemetry(

@@ -6,15 +6,9 @@ import {
   insertSalariesSchema,
   selectSalariesSchema,
   selectCompaniesSchema,
-  selectAllowedCurrencySchema,
   selectWorkRoleSchema,
 } from "~/datasources/db/schema";
-import {
-  AllowedCurrencyRef,
-  CompanyRef,
-  SalaryRef,
-  WorkRoleRef,
-} from "~/schema/shared/refs";
+import { CompanyRef, SalaryRef, WorkRoleRef } from "~/schema/shared/refs";
 import { GenderEnum } from "./shared/enums";
 
 const TypeOfEmployment = builder.enumType("TypeOfEmployment", {
@@ -46,22 +40,6 @@ builder.objectType(SalaryRef, {
       },
     }),
     amount: t.exposeInt("amount", { nullable: false }),
-    currency: t.field({
-      type: AllowedCurrencyRef,
-      nullable: false,
-      resolve: async (root, args, { DB }) => {
-        const salaryWithCurrency = await DB.query.salariesSchema.findFirst({
-          where: (c, { eq }) => eq(c.id, root.id),
-          with: {
-            currency: true,
-          },
-        });
-        if (!salaryWithCurrency || !salaryWithCurrency?.currency) {
-          throw new Error("Currency not found");
-        }
-        return selectAllowedCurrencySchema.parse(salaryWithCurrency.currency);
-      },
-    }),
     workRole: t.field({
       type: WorkRoleRef,
       nullable: false,
@@ -95,6 +73,7 @@ builder.objectType(SalaryRef, {
       resolve: (root) => root.gender,
     }),
     genderOtherText: t.exposeString("genderOtherText", { nullable: true }),
+    currencyCode: t.exposeString("currencyCode", { nullable: false }),
     countryCode: t.exposeString("countryCode", { nullable: false }),
   }),
 });
@@ -113,7 +92,7 @@ const CreateSalaryInput = builder.inputType("CreateSalaryInput", {
       type: "String",
       required: true,
     }),
-    currencyId: t.field({
+    currencyCode: t.field({
       type: "String",
       required: true,
     }),
@@ -160,46 +139,61 @@ const UpdateSalaryInput = builder.inputType("UpdateSalaryInput", {
     }),
     amount: t.field({
       type: "Int",
-      required: true,
+      required: false,
     }),
-    companyId: t.field({
+    currencyCode: t.field({
       type: "String",
-      required: true,
-    }),
-    currencyId: t.field({
-      type: "String",
-      required: true,
+      required: false,
     }),
     countryCode: t.field({
       type: "String",
-      required: true,
+      required: false,
     }),
     workRoleId: t.field({
       type: "String",
-      required: true,
+      required: false,
     }),
     yearsOfExperience: t.field({
       type: "Int",
-      required: true,
+      required: false,
     }),
     gender: t.field({
       type: GenderEnum,
-      required: true,
+      required: false,
     }),
     genderOtherText: t.field({
       type: "String",
-      required: true,
+      required: false,
     }),
     typeOfEmployment: t.field({
       type: TypeOfEmployment,
-      required: true,
+      required: false,
     }),
     workMetodology: t.field({
       type: WorkMetodology,
-      required: true,
+      required: false,
     }),
   }),
 });
+
+builder.queryFields((t) => ({
+  salaries: t.field({
+    description: "Get a list of salaries associated to the user",
+    type: [SalaryRef],
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, _, { DB, USER }) => {
+      if (!USER) {
+        throw new Error("No user present");
+      }
+      const salaries = await DB.query.salariesSchema.findMany({
+        where: (salary, { eq }) => eq(salary.userId, USER.id),
+      });
+      return salaries.map((salary) => selectSalariesSchema.parse(salary));
+    },
+  }),
+}));
 
 builder.mutationFields((t) => ({
   createSalary: t.field({
@@ -222,7 +216,7 @@ builder.mutationFields((t) => ({
         confirmationToken,
         companyId,
         amount,
-        currencyId,
+        currencyCode,
         workRoleId,
         countryCode,
         typeOfEmployment,
@@ -256,7 +250,7 @@ builder.mutationFields((t) => ({
         id: salaryId,
         companyId,
         amount,
-        currencyId,
+        currencyCode,
         workRoleId,
         countryCode,
         typeOfEmployment,
@@ -294,9 +288,8 @@ builder.mutationFields((t) => ({
       const {
         salaryId,
         confirmationToken,
-        companyId,
         amount,
-        currencyId,
+        currencyCode,
         workRoleId,
         countryCode,
         typeOfEmployment,
@@ -335,9 +328,8 @@ builder.mutationFields((t) => ({
 
       const insertSalary = insertSalariesSchema.parse({
         id: salaryId,
-        companyId,
         amount,
-        currencyId,
+        currencyCode,
         workRoleId,
         countryCode,
         typeOfEmployment,

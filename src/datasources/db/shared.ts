@@ -22,3 +22,5 @@ export const genderOptions = [
   "other",
   "prefer_not_to_say",
 ] as const;
+
+export const statusEnumOptions = ["pending", "confirmed", "rejected"] as const;

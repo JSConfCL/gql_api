@@ -1,6 +1,5 @@
 import { it, describe, afterEach, assert, expect } from "vitest";
 import {
-  executeGraphqlOperation,
   executeGraphqlOperationAsSuperAdmin,
   executeGraphqlOperationAsUser,
   findEventById,
@@ -16,7 +15,7 @@ import {
   EditEventMutation,
   EditEventMutationVariables,
 } from "./editEvent.generated";
-import { EventStatus, EventVisibility } from "~/generated/types";
+import { EventVisibility } from "~/generated/types";
 import { faker } from "@faker-js/faker";
 
 afterEach(() => {
