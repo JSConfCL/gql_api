@@ -45,6 +45,7 @@ export const getSubscriptions = async (env: ENV) => {
   const DB = getDb({
     authToken: env.DATABASE_TOKEN,
     url: env.DATABASE_URL,
+    neonUrl: env.NEON_URL,
   });
   const meliFetch = getFetch(env);
   let results: Result[] = [];

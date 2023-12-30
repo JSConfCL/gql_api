@@ -521,7 +521,7 @@ export enum TicketRedemptionStatus {
 
 export enum TicketStatus {
   Active = "active",
-  Cancelled = "cancelled",
+  Inactive = "inactive",
 }
 
 export enum TicketTemplateStatus {

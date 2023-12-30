@@ -1,4 +1,4 @@
-import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { createdAndUpdatedAtFields, statusEnumOptions } from "./shared";
 import {
@@ -9,7 +9,7 @@ import {
 import { relations } from "drizzle-orm";
 
 // WORK-EMAILS-TABLE
-export const workEmailSchema = sqliteTable("work_email", {
+export const workEmailSchema = pgTable("work_email", {
   id: text("id").primaryKey().unique(),
   userId: text("user_id")
     .references(() => usersSchema.id)
@@ -21,8 +21,9 @@ export const workEmailSchema = sqliteTable("work_email", {
   status: text("status", {
     enum: statusEnumOptions,
   }).default("pending"),
-  confirmationDate: int("confirmation_date", {
-    mode: "timestamp_ms",
+  confirmationDate: timestamp("confirmation_date", {
+    mode: "date",
+    withTimezone: true,
   }),
   companyId: text("company_id").references(() => companiesSchema.id),
   ...createdAndUpdatedAtFields,

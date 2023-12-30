@@ -41,8 +41,8 @@ export const updateUserProfileInfo = async (
         publicMetadata: parsedProfileInfo.public_metadata ?? {},
         updatedAt: sql`current_timestamp`,
       })
-      .returning()
-      .get();
+      .returning();
+
     return selectUsersSchema.parse(createdUser);
   } else {
     // we update the user
@@ -59,8 +59,7 @@ export const updateUserProfileInfo = async (
         updatedAt: sql`current_timestamp`,
       })
       .where(eq(usersSchema.id, parsedProfileInfo.sub))
-      .returning()
-      .get();
+      .returning();
     return selectUsersSchema.parse(createdUser);
   }
 };

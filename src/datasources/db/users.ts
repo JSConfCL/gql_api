@@ -1,27 +1,27 @@
 import { relations } from "drizzle-orm";
-import { blob, int, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { jsonb, boolean, pgTable, text } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { createdAndUpdatedAtFields, genderOptions } from "./shared";
 import { userTicketsSchema, usersToCommunitiesSchema } from "./schema";
 
 // USERS
-export const usersSchema = sqliteTable("users", {
+export const usersSchema = pgTable("users", {
   id: text("id").primaryKey().notNull(),
   name: text("name"),
   lastName: text("lastName"),
-  bio: text("bio", { length: 1024 }).default(""),
+  bio: text("bio").default(""),
   email: text("email"),
   gender: text("gender", {
     enum: genderOptions,
   }),
   genderOtherText: text("gender_other_text"),
-  isSuperAdmin: int("isSuperAdmin", { mode: "boolean" }).default(false),
-  emailVerified: int("emailVerified", { mode: "boolean" }),
+  isSuperAdmin: boolean("isSuperAdmin").default(false),
+  emailVerified: boolean("emailVerified"),
   imageUrl: text("imageUrl"),
-  username: text("username", { length: 64 }).unique().notNull(),
-  twoFactorEnabled: int("twoFactorEnabled", { mode: "boolean" }),
-  unsafeMetadata: blob("unsafeMetadata"),
-  publicMetadata: blob("publicMetadata"),
+  username: text("username").unique().notNull(),
+  twoFactorEnabled: boolean("twoFactorEnabled"),
+  unsafeMetadata: jsonb("unsafeMetadata"),
+  publicMetadata: jsonb("publicMetadata"),
   ...createdAndUpdatedAtFields,
 });
 

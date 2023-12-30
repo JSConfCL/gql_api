@@ -262,8 +262,8 @@ builder.mutationFields((t) => ({
       });
       const salary = await DB.insert(salariesSchema)
         .values(insertSalary)
-        .returning()
-        .get();
+        .returning();
+
       return selectSalariesSchema.parse(salary);
     },
   }),
@@ -343,8 +343,8 @@ builder.mutationFields((t) => ({
       const salary = await DB.update(salariesSchema)
         .set(insertSalary)
         .where(eq(salariesSchema.id, salaryId))
-        .returning()
-        .get();
+        .returning();
+
       return selectSalariesSchema.parse(salary);
     },
   }),

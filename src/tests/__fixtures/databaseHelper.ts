@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 import { faker } from "@faker-js/faker";
-import { createClient } from "@libsql/client";
 import { exec } from "node:child_process";
-import { drizzle } from "drizzle-orm/libsql";
-import { migrate } from "drizzle-orm/libsql/migrator";
+import { migrate } from "drizzle-orm/neon-http/migrator";
 import * as schema from "~/datasources/db/schema";
 import { ORM_TYPE } from "~/datasources/db";
 
@@ -42,9 +42,7 @@ export const getTestDB = async () => {
   }
   const databaseName = await createDatabase();
   const url = `file:///${databaseName}`;
-  const client = createClient({
-    url,
-  });
+  const client = neon(url);
   db = drizzle(client, { schema: { ...schema } });
   await migrate(db, {
     migrationsFolder,

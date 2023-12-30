@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { timestamp, pgTable, text, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import {
   eventsToCommunitiesSchema,
@@ -8,29 +8,36 @@ import {
 } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
+export const eventStatusEnum = ["active", "inactive"] as const;
+export const eventVisibilityEnum = ["public", "private", "unlisted"] as const;
+
 // EVENTS-TABLE
-export const eventsSchema = sqliteTable("events", {
+export const eventsSchema = pgTable("events", {
   id: text("id").primaryKey().notNull(),
-  name: text("name", { length: 1024 }).notNull().unique(),
-  description: text("description", { length: 4096 }),
-  status: text("status", { enum: ["active", "inactive"] })
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  status: text("status", { enum: eventStatusEnum })
     .notNull()
     .default("inactive"),
   visibility: text("visibility", {
-    enum: ["public", "private", "unlisted"],
+    enum: eventVisibilityEnum,
   })
     .notNull()
     .default("unlisted"),
-  startDateTime: int("start_date_time", {
-    mode: "timestamp_ms",
+  startDateTime: timestamp("start_date_time", {
+    mode: "date",
+    withTimezone: true,
   }).notNull(),
-  endDateTime: int("end_date_time", { mode: "timestamp_ms" }),
-  timeZone: text("timezone", { length: 64 }),
+  endDateTime: timestamp("end_date_time", {
+    mode: "date",
+    withTimezone: true,
+  }),
+  timeZone: text("timezone"),
   geoLatitude: text("geo_latitude"),
   geoLongitude: text("geo_longitude"),
   geoAddressJSON: text("geo_address_json"),
   meetingURL: text("meeting_url"),
-  maxAttendees: int("max_attendees"),
+  maxAttendees: integer("max_attendees"),
   ...createdAndUpdatedAtFields,
 });
 

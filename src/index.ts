@@ -151,6 +151,7 @@ export const yoga = createYoga<Env>({
   context: async ({
     request,
     DATABASE_URL,
+    NEON_URL,
     DATABASE_TOKEN,
     CLERK_PEM_PUBLIC_KEY,
     CLERK_ISSUER_ID,
@@ -175,9 +176,13 @@ export const yoga = createYoga<Env>({
     if (!GOOGLE_PHOTOS_IMPORT_QUEUE) {
       throw new Error("Missing GOOGLE_PHOTOS_IMPORT_QUEUE");
     }
+    if (!NEON_URL) {
+      throw new Error("Missing NEON_URL");
+    }
     const DB = getDb({
       authToken: DATABASE_TOKEN,
       url: DATABASE_URL,
+      neonUrl: NEON_URL,
     });
     const USER = await getUser({
       request,

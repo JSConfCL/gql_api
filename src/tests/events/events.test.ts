@@ -816,7 +816,7 @@ describe("Event tickets filter", () => {
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      status: TicketStatus.Cancelled,
+      status: TicketStatus.Inactive,
     });
 
     const response = await executeGraphqlOperationAsUser<

@@ -5,7 +5,7 @@ import { buildHTTPExecutor } from "@graphql-tools/executor-http";
 import { ExecutionRequest } from "@graphql-tools/utils";
 import { initContextCache } from "@pothos/core";
 import { eq } from "drizzle-orm";
-import { SQLiteTableWithColumns } from "drizzle-orm/sqlite-core";
+import { PgTable } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { type ExecutionResult } from "graphql";
 import { createYoga } from "graphql-yoga";
@@ -131,7 +131,7 @@ export const executeGraphqlOperationAsSuperAdmin = async <
 async function insertOne<
   I extends ZodType<any, any, any>,
   S extends ZodType<any, any, any>,
-  D extends SQLiteTableWithColumns<any>,
+  D extends PgTable<any>,
 >(
   insertZod: I,
   selectZod: S,
@@ -145,13 +145,13 @@ async function insertOne<
     .insert(dbSchema)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     .values(newInput)
-    .returning()
-    .get();
+    .returning();
+
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return selectZod.parse(data);
 }
 
-async function findById<D extends SQLiteTableWithColumns<any>>(
+async function findById<D extends PgTable<any>>(
   dbSchema: D,
   id: string | undefined,
 ) {
@@ -162,8 +162,8 @@ async function findById<D extends SQLiteTableWithColumns<any>>(
   const data = await testDB
     .select()
     .from(dbSchema)
-    .where((t) => eq(t.id, id))
-    .get();
+    .where((t) => eq(t.id, id));
+
   return createSelectSchema(dbSchema).parse(data);
 }
 
@@ -345,7 +345,7 @@ export const insertTicket = async (
     paymentStatus: partialInput?.paymentStatus ?? TicketPaymentStatus.Unpaid,
     redemptionStatus:
       partialInput?.redemptionStatus ?? TicketRedemptionStatus.Pending,
-    status: partialInput?.status ?? TicketStatus.Cancelled,
+    status: partialInput?.status ?? TicketStatus.Inactive,
     createdAt: partialInput?.createdAt,
     updatedAt: partialInput?.updatedAt,
     deletedAt: partialInput?.deletedAt,

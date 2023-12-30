@@ -197,8 +197,8 @@ builder.mutationFields((t) => ({
         const user = await ctx.DB.update(usersSchema)
           .set(updateFields)
           .where(eq(usersSchema.id, id))
-          .returning()
-          .get();
+          .returning();
+
         return selectUsersSchema.parse(user);
       } catch (e) {
         throw new GraphQLError(

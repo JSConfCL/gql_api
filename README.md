@@ -236,12 +236,12 @@ Este archivo define la estructura de las tablas en la BDD.
 > Las relaciones entre tablas, se definen en `./src/datasources/db/schema/relations.ts`.
 > Los esquemas de query/update se definen en `./src/datasources/db/schema/CRUD.ts`.
 
-Para definir una tabla, utilizas la función `sqliteTable()`, donde el primer argumento es el nombre de la tabla y el segundo es un objeto que define los campos de la tabla.
+Para definir una tabla, utilizas la función `pgTable()`, donde el primer argumento es el nombre de la tabla y el segundo es un objeto que define los campos de la tabla.
 
 Por ejemplo:
 
 ```TS
-export const usersSchema = sqliteTable("users", {
+export const usersSchema = pgTable("users", {
   id: text("id").unique().notNull(),
   name: text("name"),
   bio: text("bio", { length: 1024 }),

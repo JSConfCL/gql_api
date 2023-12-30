@@ -480,7 +480,7 @@ enum TicketRedemptionStatus {
 
 enum TicketStatus {
   active
-  cancelled
+  inactive
 }
 
 enum TicketTemplateStatus {

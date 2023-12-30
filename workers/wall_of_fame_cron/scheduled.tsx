@@ -9,6 +9,7 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
 ) => {
   ensureKeys(env, [
     "DATABASE_URL",
+    "NEON_URL",
     "DATABASE_TOKEN",
     "MP_ACCESS_TOKEN",
     "MP_PUBLIC_KEY",

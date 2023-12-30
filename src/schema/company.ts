@@ -253,8 +253,7 @@ builder.mutationFields((t) => ({
       const updatedCompany = await DB.update(companiesSchema)
         .set(dataToUpdate)
         .where(eq(companiesSchema.id, companyId))
-        .returning()
-        .get();
+        .returning();
 
       return selectCompaniesSchema.parse(updatedCompany);
     },
@@ -300,8 +299,7 @@ builder.mutationFields((t) => ({
       const updateCompanyData = insertCompaniesSchema.parse(dataToCreate);
       const createCompany = await DB.insert(companiesSchema)
         .values(updateCompanyData)
-        .returning()
-        .get();
+        .returning();
 
       return selectCompaniesSchema.parse(createCompany);
     },

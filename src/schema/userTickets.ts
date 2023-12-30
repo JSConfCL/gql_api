@@ -5,6 +5,10 @@ import {
   selectUserTicketsSchema,
   eventsSchema,
   userTicketsSchema,
+  userTicketsStatusEnum,
+  userTicketsPaymentStatusEnum,
+  userTicketsApprovalStatusEnum,
+  userTicketsRedemptionStatusEnum,
 } from "~/datasources/db/schema";
 import { GraphQLError } from "graphql";
 import {
@@ -14,18 +18,18 @@ import {
 } from "~/validations";
 
 export const TicketStatus = builder.enumType("TicketStatus", {
-  values: ["active", "cancelled"] as const,
+  values: userTicketsStatusEnum,
 });
 export const TicketPaymentStatus = builder.enumType("TicketPaymentStatus", {
-  values: ["paid", "unpaid"] as const,
+  values: userTicketsPaymentStatusEnum,
 });
 export const TicketApprovalStatus = builder.enumType("TicketApprovalStatus", {
-  values: ["approved", "pending"] as const,
+  values: userTicketsApprovalStatusEnum,
 });
 export const TicketRedemptionStatus = builder.enumType(
   "TicketRedemptionStatus",
   {
-    values: ["redeemed", "pending"] as const,
+    values: userTicketsRedemptionStatusEnum,
   },
 );
 
@@ -159,17 +163,19 @@ builder.mutationFields((t) => ({
         let ticket = await ctx.DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
         });
-        if (ticket?.status === "cancelled") {
+        if (ticket?.status === "inactive") {
           throw new Error("Ticket already cancelled");
         }
-        ticket = await ctx.DB.update(userTicketsSchema)
-          .set({
-            status: "cancelled",
-            deletedAt: new Date(),
-          })
-          .where(eq(userTicketsSchema.id, userTicketId))
-          .returning()
-          .get();
+        ticket = (
+          await ctx.DB.update(userTicketsSchema)
+            .set({
+              status: "inactive",
+              deletedAt: new Date(),
+            })
+            .where(eq(userTicketsSchema.id, userTicketId))
+            .returning()
+        )?.[0];
+
         return selectUserTicketsSchema.parse(ticket);
       } catch (e: unknown) {
         throw new GraphQLError(
@@ -221,8 +227,8 @@ builder.mutationFields((t) => ({
             approvalStatus: "approved",
           })
           .where(eq(userTicketsSchema.id, userTicketId))
-          .returning()
-          .get();
+          .returning();
+
         return selectUserTicketsSchema.parse(updatedTicket);
       } catch (e: unknown) {
         throw new GraphQLError(
@@ -270,8 +276,8 @@ builder.mutationFields((t) => ({
             redemptionStatus: "redeemed",
           })
           .where(eq(userTicketsSchema.id, userTicketId))
-          .returning()
-          .get();
+          .returning();
+
         return selectUserTicketsSchema.parse(updatedTicket);
       } catch (e: unknown) {
         throw new GraphQLError(

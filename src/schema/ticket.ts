@@ -164,8 +164,7 @@ builder.mutationFields((t) => ({
         const ticket = await ctx.DB.update(ticketsSchema)
           .set(updateFields)
           .where(eq(ticketsSchema.id, ticketId))
-          .returning()
-          .get();
+          .returning();
 
         return selectTicketSchema.parse(ticket);
       } catch (e) {

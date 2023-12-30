@@ -1,18 +1,20 @@
-import { createClient } from "@libsql/client/web";
-import { LibSQLDatabase, drizzle } from "drizzle-orm/libsql";
+import { neon, neonConfig } from "@neondatabase/serverless";
+import { NeonHttpDatabase, drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
 
-export type ORM_TYPE = LibSQLDatabase<typeof schema>;
+neonConfig.fetchConnectionCache = true;
+
+export type ORM_TYPE = NeonHttpDatabase<typeof schema>;
 let db: ORM_TYPE | null = null;
 export const getDb = ({
-  url,
-  authToken,
+  neonUrl,
 }: {
   url: string;
   authToken: string;
+  neonUrl: string;
 }) => {
   if (!db) {
-    const client = createClient({ url, authToken });
+    const client = neon(neonUrl);
     db = drizzle(client, {
       schema: { ...schema },
       logger: {

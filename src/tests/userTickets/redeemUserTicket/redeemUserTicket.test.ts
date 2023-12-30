@@ -64,7 +64,7 @@ describe("Redeem user ticket", () => {
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.redeemUserTicket?.redemptionStatus, "redeemed");
   });
-  it("Should redeem a user ticket if user is volunteer of community", async () => {
+  it("Should redeem a user ticket if user is collaborator of community", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
     await insertEventToCommunity({
@@ -75,7 +75,7 @@ describe("Redeem user ticket", () => {
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
-      role: "volunteer",
+      role: "collaborator",
     });
     await insertUserToEvent({
       eventId: event1.id,
@@ -302,7 +302,7 @@ describe("Redeem user ticket", () => {
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      status: "cancelled",
+      status: "inactive",
     });
     const response = await executeGraphqlOperationAsUser<
       RedeemUserTicketMutation,

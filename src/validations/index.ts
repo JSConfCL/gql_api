@@ -5,7 +5,7 @@ import { selectUsersSchema } from "~/datasources/db/users";
 import { EventStatus } from "~/generated/types";
 
 export type UserRoleEvent = "admin" | "member" | "collaborator";
-export type UserRoleCommunity = "admin" | "member" | "volunteer";
+export type UserRoleCommunity = "admin" | "member" | "collaborator";
 
 export async function eventIsActive(
   eventId: string,
@@ -271,13 +271,13 @@ export async function canRedeemUserTicket(
     return false;
   }
 
-  const isCommunityAdminOrVolunteer =
+  const isCommunityAdminOrCollaborator =
     await DB.query.usersToCommunitiesSchema.findFirst({
       where: (utc, { eq, and }) =>
         and(
           eq(utc.userId, userId),
           eq(utc.communityId, eventToCommunitie?.communityId),
-          inArray(utc.role, ["admin", "volunteer"]),
+          inArray(utc.role, ["admin", "collaborator"]),
         ),
     });
   const isEventAdminOrCollaborator =
@@ -290,7 +290,7 @@ export async function canRedeemUserTicket(
         ),
     });
 
-  return Boolean(isCommunityAdminOrVolunteer || isEventAdminOrCollaborator);
+  return Boolean(isCommunityAdminOrCollaborator || isEventAdminOrCollaborator);
 }
 export function canCreateCommunity(
   user: z.infer<typeof selectUsersSchema> | null,

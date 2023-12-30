@@ -193,7 +193,7 @@ describe("Event", () => {
       assert.equal(response.errors?.length, 1);
       assert.equal(response.errors?.[0]?.message, "FORBIDDEN");
     });
-    it("As volunteer", async () => {
+    it("As collaborator", async () => {
       const user1 = await insertUser();
       const community = await insertCommunity();
       const event = await insertEvent({
@@ -203,7 +203,7 @@ describe("Event", () => {
       await insertUserToCommunity({
         communityId: community.id,
         userId: user1.id,
-        role: "volunteer",
+        role: "collaborator",
       });
       await insertEventToCommunity({
         communityId: community.id,

@@ -146,7 +146,7 @@ describe("Event", () => {
       assert.equal(response.errors?.length, 1);
       assert.equal(response.errors?.[0]?.message, "FORBIDDEN");
     });
-    it("As volunteer", async () => {
+    it("As collaborator", async () => {
       const startDate = faker.date
         .future({
           years: 1,
@@ -157,7 +157,7 @@ describe("Event", () => {
       await insertUserToCommunity({
         communityId: community.id,
         userId: user1.id,
-        role: "volunteer",
+        role: "collaborator",
       });
       const response = await executeGraphqlOperationAsUser<
         CreateEventMutation,

@@ -1,11 +1,11 @@
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { pgTable, text } from "drizzle-orm/pg-core";
 import { createdAndUpdatedAtFields } from "./shared";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { salariesSchema } from "./schema";
 
 // WORK-ROLES-TABLE
-export const workRoleSchema = sqliteTable("work_role", {
+export const workRoleSchema = pgTable("work_role", {
   id: text("id").primaryKey().unique(),
   name: text("name").notNull(),
   seniority: text("seniority").notNull(),

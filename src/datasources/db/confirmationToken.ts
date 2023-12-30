@@ -1,8 +1,20 @@
-import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { timestamp, pgTable, text, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { createdAndUpdatedAtFields } from "./shared";
 import { usersSchema } from "./users";
 import { relations } from "drizzle-orm";
+
+const confirmationTokenStatusEnum = [
+  "pending",
+  "confirmed",
+  "rejected",
+  "expired",
+] as const;
+const confirmationTokenSourceEnum = [
+  "work_email",
+  "onboarding",
+  "salary_submission",
+] as const;
 
 // CONFIRMATION-TOKEN-TABLE
 // Usada para validar emails, resetear passwords, etc.
@@ -11,24 +23,26 @@ import { relations } from "drizzle-orm";
 // Por ejemplo, si source es "workEmail" y sourceId es el id de un workEmailSchema
 // entonces sabes que esta validando un email
 // validUntil es el timestamp en el que el token deja de ser valido
-export const confirmationTokenSchema = sqliteTable("confirmation_token", {
+export const confirmationTokenSchema = pgTable("confirmation_token", {
   id: text("id").primaryKey().unique(),
   source: text("source", {
-    enum: ["work_email", "onboarding", "salary_submission"],
+    enum: confirmationTokenSourceEnum,
   }).notNull(),
   userId: text("user_id")
     .references(() => usersSchema.id)
     .notNull(),
   sourceId: text("source_id").notNull(),
-  token: text("token").notNull().unique(),
+  token: varchar("token").notNull().unique(),
   status: text("status", {
-    enum: ["pending", "confirmed", "rejected", "expired"],
+    enum: confirmationTokenStatusEnum,
   }).default("pending"),
-  validUntil: int("valid_until", {
-    mode: "timestamp_ms",
+  validUntil: timestamp("valid_until", {
+    mode: "date",
+    withTimezone: true,
   }).notNull(),
-  confirmationDate: int("confirmation_date", {
-    mode: "timestamp_ms",
+  confirmationDate: timestamp("confirmation_date", {
+    mode: "date",
+    withTimezone: true,
   }),
   ...createdAndUpdatedAtFields,
 });

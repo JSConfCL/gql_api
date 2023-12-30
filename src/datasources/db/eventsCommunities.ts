@@ -1,11 +1,11 @@
 import { relations } from "drizzle-orm";
-import { primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { primaryKey, pgTable, text } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { communitySchema, eventsSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
 // EVENTS—COMMUNITIES-TABLE
-export const eventsToCommunitiesSchema = sqliteTable(
+export const eventsToCommunitiesSchema = pgTable(
   "events_communities",
   {
     eventId: text("event_id")
@@ -17,7 +17,7 @@ export const eventsToCommunitiesSchema = sqliteTable(
     ...createdAndUpdatedAtFields,
   },
   (t) => ({
-    primary_key: primaryKey(t.eventId, t.communityId),
+    primary_key: primaryKey({ columns: [t.eventId, t.communityId] }),
   }),
 );
 

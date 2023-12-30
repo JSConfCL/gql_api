@@ -477,16 +477,15 @@ builder.mutationFields((t) => ({
             const events = await trx
               .insert(eventsSchema)
               .values(newEvent)
-              .returning()
-              .get();
+              .returning();
+
             await trx
               .insert(eventsToCommunitiesSchema)
               .values({
                 eventId: id,
                 communityId: communityId,
               })
-              .returning()
-              .get();
+              .returning();
 
             return events;
           } catch (e) {
@@ -557,8 +556,8 @@ builder.mutationFields((t) => ({
         const event = await ctx.DB.update(eventsSchema)
           .set(updateValues.data)
           .where(eq(eventsSchema.id, eventId))
-          .returning()
-          .get();
+          .returning();
+
         return selectEventsSchema.parse(event);
       } catch (e) {
         throw new GraphQLError(

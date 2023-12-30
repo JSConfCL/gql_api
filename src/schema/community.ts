@@ -193,8 +193,8 @@ builder.mutationFields((t) => ({
 
         const communities = await DB.insert(communitySchema)
           .values(newCommunity)
-          .returning()
-          .get();
+          .returning();
+
         return selectCommunitySchema.parse(communities);
       } catch (e) {
         throw new GraphQLError(
@@ -246,8 +246,8 @@ builder.mutationFields((t) => ({
         const community = await DB.update(communitySchema)
           .set(dataToUpdate)
           .where(eq(communitySchema.id, communityId))
-          .returning()
-          .get();
+          .returning();
+
         return selectCommunitySchema.parse(community);
       } catch (e) {
         throw new GraphQLError(

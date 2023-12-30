@@ -151,10 +151,10 @@ builder.mutationFields((t) => ({
           domain: emailDomain,
         });
 
-        const newCompany = await DB.insert(companiesSchema)
-          .values(insertCompany)
-          .returning()
-          .get();
+        const newCompany = (
+          await DB.insert(companiesSchema).values(insertCompany).returning()
+        )?.[0];
+
         companyId = newCompany.id;
       } else {
         console.log(
@@ -213,18 +213,21 @@ builder.mutationFields((t) => ({
           // by default, the token is valid for 1 hour
           validUntil: new Date(Date.now() + 1000 * 60 * 60),
         });
-        const insertedToken = await DB.insert(confirmationTokenSchema)
-          .values(insertWorkEmailToken)
-          .returning()
-          .get();
+        const insertedToken = (
+          await DB.insert(confirmationTokenSchema)
+            .values(insertWorkEmailToken)
+            .returning()
+        )?.[0];
 
-        const updatedWorkEmail = await DB.update(workEmailSchema)
-          .set({
-            confirmationTokenId: insertedToken.id,
-            companyId,
-          })
-          .returning()
-          .get();
+        const updatedWorkEmail = (
+          await DB.update(workEmailSchema)
+            .set({
+              confirmationTokenId: insertedToken.id,
+              companyId,
+            })
+            .where(eq(workEmailSchema.id, workEmail.id))
+            .returning()
+        )?.[0];
 
         await enqueueEmail(MAIL_QUEUE, {
           code: insertedToken.token,
@@ -243,10 +246,9 @@ builder.mutationFields((t) => ({
           companyId,
         });
 
-        const insertedWorkEmail = await DB.insert(workEmailSchema)
-          .values(insertWorkEmail)
-          .returning()
-          .get();
+        const insertedWorkEmail = (
+          await DB.insert(workEmailSchema).values(insertWorkEmail).returning()
+        )?.[0];
 
         console.log("Inserting the email");
         const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
@@ -260,10 +262,11 @@ builder.mutationFields((t) => ({
         });
 
         console.log("Inserting the token");
-        const insertedToken = await DB.insert(confirmationTokenSchema)
-          .values(insertWorkEmailToken)
-          .returning()
-          .get();
+        const insertedToken = (
+          await DB.insert(confirmationTokenSchema)
+            .values(insertWorkEmailToken)
+            .returning()
+        )?.[0];
 
         console.log("Ataching the token to the email");
         await DB.update(workEmailSchema)
@@ -271,8 +274,7 @@ builder.mutationFields((t) => ({
             confirmationTokenId: insertedToken.id,
           })
           .where(eq(workEmailSchema.id, insertedWorkEmail.id))
-          .returning()
-          .get();
+          .returning();
 
         console.log("Enqueuing the email");
         await enqueueEmail(MAIL_QUEUE, {
@@ -341,8 +343,8 @@ builder.mutationFields((t) => ({
             confirmationDate: new Date(),
           })
           .where(eq(workEmailSchema.id, possibleWorkSchema.id))
-          .returning()
-          .get();
+          .returning();
+
         return selectWorkEmailSchema.parse(updatedWorkEmail);
       } else {
         throw new Error("No email found for that token");
