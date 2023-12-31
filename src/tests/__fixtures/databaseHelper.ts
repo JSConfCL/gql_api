@@ -9,7 +9,9 @@ import { v4 } from "uuid";
 export const testDatabasesFolder = `.test_dbs`;
 export const migrationsFolder = `${process.cwd()}/drizzle/migrations`;
 
-const dbUrl = "postgres://postgres:postgres@0.0.0.0:5432";
+const dbUrl = `postgres://postgres:postgres@${
+  process.env.POSTGRES_HOST || "localhost"
+}:${process.env.POSTGRES_PORT || 5432}`;
 
 const ensureDBIsClean = async (databaseName: string) => {
   const pgClient = postgres(dbUrl);
@@ -28,10 +30,7 @@ export const getTestDB = async (maybeDatabaseName?: string) => {
   }
   console.log("🆕 Creando una nueva BDD");
   await ensureDBIsClean(databaseName);
-  const migrationClient = postgres(
-    `postgres://postgres:ftorres@0.0.0.0:5432/${databaseName}`,
-    { max: 1 },
-  );
+  const migrationClient = postgres(`${dbUrl}/${databaseName}`, { max: 1 });
   db = drizzle(migrationClient, { schema: { ...schema } });
   await migrate(db, {
     migrationsFolder,
