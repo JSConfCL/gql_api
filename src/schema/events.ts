@@ -1,4 +1,4 @@
-import { SQL, eq, gte, like, lte, inArray } from "drizzle-orm";
+import { SQL, eq, gte, ilike, lte, inArray } from "drizzle-orm";
 import { v4 } from "uuid";
 import { builder } from "~/builder";
 import {
@@ -29,6 +29,7 @@ import {
 } from "./userTickets";
 import { canCreateEvent, canEditEvent } from "~/validations";
 import { GraphQLError } from "graphql";
+import { sanitizeForLikeSearch } from "./shared/helpers";
 
 export const EventStatus = builder.enumType("EventStatus", {
   values: ["active", "inactive"] as const,
@@ -306,9 +307,7 @@ builder.queryFields((t) => ({
         wheres.push(eq(eventsSchema.id, id));
       }
       if (name) {
-        const sanitizedName = name.replace(/[%_]/g, "\\$&");
-        const searchName = `%${sanitizedName}%`;
-        wheres.push(like(eventsSchema.name, searchName));
+        wheres.push(ilike(eventsSchema.name, sanitizeForLikeSearch(name)));
       }
       if (status) {
         wheres.push(eq(eventsSchema.status, status));

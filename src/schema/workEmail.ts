@@ -108,12 +108,9 @@ builder.queryFields((t) => ({
       }
       const userId = USER.id;
       const workEmail = await DB.query.workEmailSchema.findFirst({
-        where: (wes, { and, sql }) =>
+        where: (wes, { and, ilike }) =>
           and(
-            eq(
-              sql`lower(${wes.workEmail})`,
-              sql`lower(${email.toLowerCase()})`,
-            ),
+            ilike(wes.workEmail, email.toLowerCase()),
             eq(wes.userId, userId),
           ),
       });
@@ -178,9 +175,9 @@ builder.mutationFields((t) => ({
       console.log("Checking if the user has added this work email");
       // Find the work email, if it exists we update it and retrigger the flow, if not, create the work email and trigger the flow
       const workEmail = await DB.query.workEmailSchema.findFirst({
-        where: (wes, { like, and, eq }) =>
+        where: (wes, { ilike, and, eq }) =>
           and(
-            like(wes.workEmail, email.toLowerCase()),
+            ilike(wes.workEmail, email.toLowerCase()),
             eq(wes.userId, USER.id),
           ),
         with: {

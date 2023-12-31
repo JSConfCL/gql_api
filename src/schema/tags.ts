@@ -2,7 +2,7 @@ import { TagRef } from "~/schema/shared/refs";
 import { selectTagsSchema, tagsSchema } from "~/datasources/db/schema";
 import { builder } from "~/builder";
 import slugify from "slugify";
-import { SQL, eq, like } from "drizzle-orm";
+import { SQL, eq, ilike } from "drizzle-orm";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 
 builder.objectType(TagRef, {
@@ -44,11 +44,11 @@ builder.queryFields((t) => ({
         wheres.push(eq(tagsSchema.id, id));
       }
       if (name) {
-        wheres.push(like(tagsSchema.name, sanitizeForLikeSearch(name)));
+        wheres.push(ilike(tagsSchema.name, sanitizeForLikeSearch(name)));
       }
       if (description) {
         wheres.push(
-          like(tagsSchema.description, sanitizeForLikeSearch(description)),
+          ilike(tagsSchema.description, sanitizeForLikeSearch(description)),
         );
       }
       const query = ctx.DB.query.tagsSchema.findMany({

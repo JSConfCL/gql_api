@@ -1,4 +1,4 @@
-import { SQL, eq, like } from "drizzle-orm";
+import { SQL, eq, ilike } from "drizzle-orm";
 import { v4 } from "uuid";
 import { builder } from "~/builder";
 import {
@@ -7,6 +7,7 @@ import {
   selectCompaniesSchema,
 } from "~/datasources/db/schema";
 import { CompanyRef } from "~/schema/shared/refs";
+import { sanitizeForLikeSearch } from "./shared/helpers";
 
 const CompanyStatus = builder.enumType("CompanyStatus", {
   values: ["active", "inactive", "draft"],
@@ -104,20 +105,27 @@ builder.queryFields((t) => ({
       const { companyName, description, domain, website } = input;
       const wheres: SQL[] = [];
       if (companyName) {
-        const searchName = `%${companyName}%`;
-        wheres.push(like(companiesSchema.name, searchName));
+        wheres.push(
+          ilike(companiesSchema.name, sanitizeForLikeSearch(companyName)),
+        );
       }
       if (description) {
-        const searchDescription = `%${description}%`;
-        wheres.push(like(companiesSchema.description, searchDescription));
+        wheres.push(
+          ilike(
+            companiesSchema.description,
+            sanitizeForLikeSearch(description),
+          ),
+        );
       }
       if (domain) {
-        const searchDomain = `%${domain}%`;
-        wheres.push(like(companiesSchema.domain, searchDomain));
+        wheres.push(
+          ilike(companiesSchema.domain, sanitizeForLikeSearch(domain)),
+        );
       }
       if (website) {
-        const searchWebsite = `%${website}%`;
-        wheres.push(like(companiesSchema.website, searchWebsite));
+        wheres.push(
+          ilike(companiesSchema.website, sanitizeForLikeSearch(website)),
+        );
       }
       const companies = await DB.query.companiesSchema.findMany({
         where: (_, { and }) => and(...wheres),

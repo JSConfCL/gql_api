@@ -7,12 +7,13 @@ import {
   selectEventsSchema,
   selectUsersSchema,
 } from "~/datasources/db/schema";
-import { SQL, eq, inArray, like } from "drizzle-orm";
+import { SQL, eq, inArray, ilike } from "drizzle-orm";
 import { CommunityRef, EventRef, UserRef } from "~/schema/shared/refs";
 import { builder } from "~/builder";
 import { canCreateCommunity, canEditCommunity } from "~/validations";
 import { v4 } from "uuid";
 import { GraphQLError } from "graphql";
+import { sanitizeForLikeSearch } from "./shared/helpers";
 
 export const CommnunityStatus = builder.enumType("CommnunityStatus", {
   values: ["active", "inactive"] as const,
@@ -99,9 +100,7 @@ builder.queryFields((t) => ({
         wheres.push(eq(communitySchema.id, id));
       }
       if (name) {
-        const sanitizedName = name.replace(/[%_]/g, "\\$&");
-        const searchName = `%${sanitizedName}%`;
-        wheres.push(like(communitySchema.name, searchName));
+        wheres.push(ilike(communitySchema.name, sanitizeForLikeSearch(name)));
       }
       if (status) {
         wheres.push(eq(communitySchema.status, status));

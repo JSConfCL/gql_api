@@ -9,6 +9,7 @@ import {
   usersTagsSchema,
   AllowedUserTags,
 } from "../../src/datasources/db/schema";
+import { sanitizeForLikeSearch } from "../../src/schema/shared/helpers";
 
 const externalReferences = {
   "1LUKA": "1LUKA",
@@ -83,9 +84,8 @@ export const getSubscriptions = async (env: ENV) => {
       if (!email) {
         throw new Error("Email not found for subscription");
       }
-      const searchEmail = `%${email}%`;
       const user = await DB.query.usersSchema.findFirst({
-        where: (u, { like }) => like(u.name, searchEmail),
+        where: (u, { ilike }) => ilike(u.name, sanitizeForLikeSearch(email)),
       });
       if (!user) {
         throw new Error("User not found");
