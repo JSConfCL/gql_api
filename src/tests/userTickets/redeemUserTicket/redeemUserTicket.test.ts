@@ -1,4 +1,4 @@
-import { it, describe, afterEach, assert } from "vitest";
+import { it, describe, assert } from "vitest";
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -10,16 +10,11 @@ import {
   insertUserToCommunity,
   insertUserToEvent,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   RedeemUserTicket,
   RedeemUserTicketMutation,
   RedeemUserTicketMutationVariables,
 } from "./redeemUserTicket.generated";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("Redeem user ticket", () => {
   it("Should redeem a user ticket if user is admin of community", async () => {

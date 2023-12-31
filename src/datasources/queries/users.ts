@@ -26,40 +26,44 @@ export const updateUserProfileInfo = async (
   });
   if (!result) {
     // we create the user
-    const createdUser = await db
-      .insert(usersSchema)
-      .values({
-        id: parsedProfileInfo.sub,
-        email: parsedProfileInfo.email,
-        username: getUsername(),
-        name: parsedProfileInfo.name,
-        lastName: parsedProfileInfo.surname,
-        twoFactorEnabled: parsedProfileInfo.two_factor_enabled,
-        imageUrl: parsedProfileInfo.image_url,
-        emailVerified: parsedProfileInfo.email_verified,
-        unsafeMetadata: parsedProfileInfo.unsafe_metadata ?? {},
-        publicMetadata: parsedProfileInfo.public_metadata ?? {},
-        updatedAt: sql`current_timestamp`,
-      })
-      .returning();
+    const createdUser = (
+      await db
+        .insert(usersSchema)
+        .values({
+          id: parsedProfileInfo.sub,
+          email: parsedProfileInfo.email,
+          username: getUsername(),
+          name: parsedProfileInfo.name,
+          lastName: parsedProfileInfo.surname,
+          twoFactorEnabled: parsedProfileInfo.two_factor_enabled,
+          imageUrl: parsedProfileInfo.image_url,
+          emailVerified: parsedProfileInfo.email_verified,
+          unsafeMetadata: parsedProfileInfo.unsafe_metadata ?? {},
+          publicMetadata: parsedProfileInfo.public_metadata ?? {},
+          updatedAt: sql`current_timestamp`,
+        })
+        .returning()
+    )?.[0];
 
     return selectUsersSchema.parse(createdUser);
   } else {
     // we update the user
-    const createdUser = await db
-      .update(usersSchema)
-      .set({
-        name: parsedProfileInfo.name,
-        lastName: parsedProfileInfo.surname,
-        twoFactorEnabled: parsedProfileInfo.two_factor_enabled,
-        imageUrl: parsedProfileInfo.image_url,
-        emailVerified: parsedProfileInfo.email_verified,
-        unsafeMetadata: parsedProfileInfo.unsafe_metadata ?? {},
-        publicMetadata: parsedProfileInfo.public_metadata ?? {},
-        updatedAt: sql`current_timestamp`,
-      })
-      .where(eq(usersSchema.id, parsedProfileInfo.sub))
-      .returning();
+    const createdUser = (
+      await db
+        .update(usersSchema)
+        .set({
+          name: parsedProfileInfo.name,
+          lastName: parsedProfileInfo.surname,
+          twoFactorEnabled: parsedProfileInfo.two_factor_enabled,
+          imageUrl: parsedProfileInfo.image_url,
+          emailVerified: parsedProfileInfo.email_verified,
+          unsafeMetadata: parsedProfileInfo.unsafe_metadata ?? {},
+          publicMetadata: parsedProfileInfo.public_metadata ?? {},
+          updatedAt: sql`current_timestamp`,
+        })
+        .where(eq(usersSchema.id, parsedProfileInfo.sub))
+        .returning()
+    )?.[0];
     return selectUsersSchema.parse(createdUser);
   }
 };

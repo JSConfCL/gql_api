@@ -1,12 +1,17 @@
-import { sql } from "drizzle-orm";
 import { timestamp } from "drizzle-orm/pg-core";
 
 export const createdAndUpdatedAtFields = {
-  createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
-    .default(sql`current_timestamp`)
-    .notNull(),
-  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }),
-  deletedAt: timestamp("deleted_at", { mode: "date", withTimezone: true }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+  deletedAt: timestamp("deleted_at"),
+};
+
+import { z } from "zod";
+
+export const createdAndUpdatedAtFieldsSelectZodSchema = {
+  createdAt: z.date(),
+  updatedAt: z.date().optional(),
+  deletedAt: z.date().optional(),
 };
 
 export const genderOptions = [

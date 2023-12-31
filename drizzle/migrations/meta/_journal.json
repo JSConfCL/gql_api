@@ -1,26 +1,12 @@
 {
   "version": "5",
-  "dialect": "sqlite",
+  "dialect": "pg",
   "entries": [
     {
       "idx": 0,
       "version": "5",
-      "when": 1696303412275,
-      "tag": "0000_premium_jack_power",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1700966562207,
-      "tag": "0001_brief_shaman",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1703735142210,
-      "tag": "0002_brave_the_santerians",
+      "when": 1704012825387,
+      "tag": "0000_sour_lionheart",
       "breakpoints": true
     }
   ]

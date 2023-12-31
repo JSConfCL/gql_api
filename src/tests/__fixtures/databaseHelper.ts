@@ -1,54 +1,35 @@
 /* eslint-disable no-console */
-import { neon } from "@neondatabase/serverless";
 import { PostgresJsDatabase, drizzle } from "drizzle-orm/postgres-js";
-import { faker } from "@faker-js/faker";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import * as schema from "~/datasources/db/schema";
 import { ORM_TYPE } from "~/datasources/db";
 import postgres from "postgres";
+import { v4 } from "uuid";
 
 export const testDatabasesFolder = `.test_dbs`;
 export const migrationsFolder = `${process.cwd()}/drizzle/migrations`;
 
-const pgClient = postgres(process.env.POSTGRES_URL!);
+const dbUrl = "postgres://postgres:postgres@0.0.0.0:5432";
 
-const createDatabase = async () => {
-  const databaseName = `${faker.string.uuid().replaceAll("-", "_")}`;
-  await pgClient.unsafe(`DROP DATABASE IF EXISTS ${databaseName};`);
-  await pgClient.unsafe(`CREATE DATABASE ${databaseName}`);
+const ensureDBIsClean = async (databaseName: string) => {
+  const pgClient = postgres(dbUrl);
+  await pgClient.unsafe(`DROP DATABASE IF EXISTS "${databaseName}";`);
+  await pgClient.unsafe(`CREATE DATABASE "${databaseName}"`);
+  await pgClient.end();
   return databaseName;
-
-  // const databasePath = `${process.cwd()}/${testDatabasesFolder}/${databaseName}`;
-  // const command = `echo "CREATE TABLE IF NOT EXISTS SOME_TABLE (id INTEGER PRIMARY KEY);" | sqlite3 ${databasePath}`;
-  // return new Promise<string>((resolve, reject) => {
-  //   exec(command, (err, stdout, stderr) => {
-  //     /* c8 ignore next 4 */
-  //     if (err) {
-  //       console.error("ERROR CREATING DB", err);
-  //       return reject(err);
-  //     }
-  //     /* c8 ignore next 4 */
-  //     if (stderr) {
-  //       console.error("STDERR", stderr);
-  //       return reject(stderr);
-  //     }
-  //     return resolve(`${databasePath}`);
-  //   });
-  // });
 };
 
 let db: PostgresJsDatabase<typeof schema> | null = null;
-export const getTestDB = async () => {
+export const getTestDB = async (maybeDatabaseName?: string) => {
+  const databaseName = maybeDatabaseName || `test_${v4()}`;
   if (db) {
     console.log("Retornando BDD previa");
-    console.log("( Si quieres una nueva BDD, llama a clearDatabase() )");
     return db;
-  } else {
-    console.log("🆕 Creando una nueva BDD");
   }
-  const databaseName = await createDatabase();
+  console.log("🆕 Creando una nueva BDD");
+  await ensureDBIsClean(databaseName);
   const migrationClient = postgres(
-    `postgres://postgres:postgres@0.0.0.0:5432/${databaseName}`,
+    `postgres://postgres:ftorres@0.0.0.0:5432/${databaseName}`,
     { max: 1 },
   );
   db = drizzle(migrationClient, { schema: { ...schema } });

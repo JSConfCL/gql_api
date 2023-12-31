@@ -24,14 +24,8 @@ export const eventsSchema = pgTable("events", {
   })
     .notNull()
     .default("unlisted"),
-  startDateTime: timestamp("start_date_time", {
-    mode: "date",
-    withTimezone: true,
-  }).notNull(),
-  endDateTime: timestamp("end_date_time", {
-    mode: "date",
-    withTimezone: true,
-  }),
+  startDateTime: timestamp("start_date_time").notNull(),
+  endDateTime: timestamp("end_date_time"),
   timeZone: text("timezone"),
   geoLatitude: text("geo_latitude"),
   geoLongitude: text("geo_longitude"),

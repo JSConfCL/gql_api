@@ -14,6 +14,7 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
     globalSetup: "./src/tests/globalSetup.ts",
+    setupFiles: "./src/tests/setupFiles.ts",
     coverage: {
       reporter: ["text", "json-summary", "json", "html"],
     },

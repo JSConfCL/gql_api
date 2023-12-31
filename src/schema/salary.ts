@@ -242,7 +242,7 @@ builder.mutationFields((t) => ({
       if (!foundConfirmationToken) {
         throw new Error("Invalid token");
       }
-      if (foundConfirmationToken.validUntil <= new Date()) {
+      if (new Date(foundConfirmationToken.validUntil) <= new Date()) {
         throw new Error("Invalid token");
       }
 
@@ -260,9 +260,9 @@ builder.mutationFields((t) => ({
         gender,
         genderOtherText,
       });
-      const salary = await DB.insert(salariesSchema)
-        .values(insertSalary)
-        .returning();
+      const salary = (
+        await DB.insert(salariesSchema).values(insertSalary).returning()
+      )?.[0];
 
       return selectSalariesSchema.parse(salary);
     },
@@ -313,7 +313,7 @@ builder.mutationFields((t) => ({
         throw new Error("Invalid token");
       }
       if (
-        foundConfirmationToken.validUntil <= new Date() ||
+        new Date(foundConfirmationToken.validUntil) <= new Date() ||
         foundConfirmationToken.userId !== USER.id
       ) {
         throw new Error("Invalid token");
@@ -340,10 +340,12 @@ builder.mutationFields((t) => ({
         genderOtherText,
       });
 
-      const salary = await DB.update(salariesSchema)
-        .set(insertSalary)
-        .where(eq(salariesSchema.id, salaryId))
-        .returning();
+      const salary = (
+        await DB.update(salariesSchema)
+          .set(insertSalary)
+          .where(eq(salariesSchema.id, salaryId))
+          .returning()
+      )?.[0];
 
       return selectSalariesSchema.parse(salary);
     },

@@ -1,4 +1,4 @@
-import { it, describe, assert, afterEach } from "vitest";
+import { it, describe, assert } from "vitest";
 import {
   executeGraphqlOperation,
   insertEvent,
@@ -13,8 +13,8 @@ import {
   insertUserToCommunity,
   insertUserToEvent,
   executeGraphqlOperationAsUser,
+  toISODateWithoutMilliseconds,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { Event, EventQuery, EventQueryVariables } from "./event.generated";
 import { Events, EventsQuery, EventsQueryVariables } from "./events.generated";
 import {
@@ -25,10 +25,6 @@ import {
   TicketRedemptionStatus,
   TicketStatus,
 } from "~/generated/types";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("Event", () => {
   it("Should find an event by ID", async () => {
@@ -50,8 +46,8 @@ describe("Event", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
       community: null,
       tags: [],
       users: [],
@@ -92,8 +88,8 @@ describe("Event", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
       community: null,
       users: [],
       tags: [
@@ -158,8 +154,8 @@ describe("Event", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
       community: {
         id: community1.id,
       },
@@ -212,8 +208,8 @@ describe("Event", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
       users: [],
       community: {
         id: community1.id,
@@ -241,8 +237,8 @@ describe("Event", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
       users: [],
       community: null,
       tags: [],
@@ -291,8 +287,8 @@ describe("Events", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
     } as EventsQuery["events"][0]);
     assert.deepEqual(response.data?.events?.at(1), {
       id: event2.id,
@@ -300,8 +296,8 @@ describe("Events", () => {
       description: event2.description,
       status: event2.status,
       visibility: event2.visibility,
-      startDateTime: event2.startDateTime.toISOString(),
-      endDateTime: event2.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event2.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event2.endDateTime),
     } as EventsQuery["events"][0]);
     assert.deepEqual(response.data?.events?.at(2), {
       id: event3.id,
@@ -309,8 +305,8 @@ describe("Events", () => {
       description: event3.description,
       status: event3.status,
       visibility: event3.visibility,
-      startDateTime: event3.startDateTime.toISOString(),
-      endDateTime: event3.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event3.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event3.endDateTime),
     } as EventsQuery["events"][0]);
   });
   it("Should Filter by ID", async () => {
@@ -343,8 +339,8 @@ describe("Events", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
     } as EventsQuery["events"][0]);
   });
   it("Should Filter by Visibility", async () => {
@@ -377,8 +373,8 @@ describe("Events", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
     } as EventsQuery["events"][0]);
   });
   it("Should Filter by Status", async () => {
@@ -408,8 +404,8 @@ describe("Events", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
     } as EventsQuery["events"][0]);
   });
   it("Should Filter by Date", async () => {
@@ -442,8 +438,8 @@ describe("Events", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
     } as EventsQuery["events"][0]);
   });
   it("Should Filter by Name", async () => {
@@ -473,8 +469,8 @@ describe("Events", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
     } as EventsQuery["events"][0]);
   });
 });
@@ -532,8 +528,8 @@ describe("Event tickets filter", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
       community: {
         id: community1.id,
       },
@@ -609,8 +605,8 @@ describe("Event tickets filter", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
       community: {
         id: community1.id,
       },
@@ -686,8 +682,8 @@ describe("Event tickets filter", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
       community: {
         id: community1.id,
       },
@@ -763,8 +759,8 @@ describe("Event tickets filter", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
       community: {
         id: community1.id,
       },
@@ -842,8 +838,10 @@ describe("Event tickets filter", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: event1.startDateTime.toISOString(),
-      endDateTime: event1.endDateTime?.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: event1.endDateTime
+        ? toISODateWithoutMilliseconds(event1.endDateTime)
+        : null,
       community: {
         id: community1.id,
       },

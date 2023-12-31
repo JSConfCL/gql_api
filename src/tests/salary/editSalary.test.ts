@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   executeGraphqlOperation,
   executeGraphqlOperationAsSuperAdmin,
@@ -12,7 +12,6 @@ import {
   insertWorkEmail,
   insertWorkRole,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   Gender,
   TypeOfEmployment,
@@ -23,10 +22,6 @@ import {
   UpdateSalaryMutation,
   UpdateSalaryMutationVariables,
 } from "./mutations.generated";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 const createSalary = async () => {
   const user = await insertUser();

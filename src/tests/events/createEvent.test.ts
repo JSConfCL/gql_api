@@ -1,4 +1,4 @@
-import { it, describe, afterEach, assert, expect } from "vitest";
+import { it, describe, assert, expect } from "vitest";
 import {
   executeGraphqlOperation,
   executeGraphqlOperationAsSuperAdmin,
@@ -8,7 +8,6 @@ import {
   insertUser,
   insertUserToCommunity,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   CreateEvent,
   CreateEventMutation,
@@ -19,10 +18,6 @@ import {
 } from "./createEvent.generated";
 import { EventStatus, EventVisibility } from "~/generated/types";
 import { faker } from "@faker-js/faker";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("Event", () => {
   describe("Should create an event", () => {

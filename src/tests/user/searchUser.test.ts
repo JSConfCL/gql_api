@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { it, describe, assert, afterEach } from "vitest";
+import { it, describe, assert } from "vitest";
 import {
   executeGraphqlOperation,
   executeGraphqlOperationAsSuperAdmin,
@@ -8,17 +8,12 @@ import {
   insertTag,
   executeGraphqlOperationAsUser,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   UserSearch,
   UserSearchQuery,
   UserSearchQueryVariables,
 } from "~/tests/user/searchUser.generated";
 import { SearchableUserTags } from "../../generated/types";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("Search users by tag", () => {
   it("Should return 1 user when passed 1 tag", async () => {
@@ -132,7 +127,7 @@ describe("Search users by tag", () => {
     assert.isArray(response.data?.userSearch);
     assert.equal(response.data?.userSearch?.length, 0);
   });
-  it("Should fail if account is not superadmin", async () => {
+  it("Should fail if query is anonymous", async () => {
     const response = await executeGraphqlOperation<
       UserSearchQuery,
       UserSearchQueryVariables
@@ -145,7 +140,7 @@ describe("Search users by tag", () => {
     assert.equal(response.errors?.length, 1);
     assert.equal(response.errors?.[0]?.message, "Unauthorized!");
   });
-  it("Should fail if account is not superadmin", async () => {
+  it("Should fail if account is normal user ", async () => {
     const user = await insertUser();
     const response = await executeGraphqlOperationAsUser<
       UserSearchQuery,

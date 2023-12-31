@@ -30,14 +30,8 @@ export const ticketsSchema = pgTable("tickets", {
   })
     .notNull()
     .default("unlisted"),
-  startDateTime: timestamp("start_date_time", {
-    mode: "date",
-    withTimezone: true,
-  }).notNull(),
-  endDateTime: timestamp("end_date_time", {
-    mode: "date",
-    withTimezone: true,
-  }),
+  startDateTime: timestamp("start_date_time").notNull(),
+  endDateTime: timestamp("end_date_time"),
   requiresApproval: boolean("requires_approval").default(false),
   price: integer("price"),
   quantity: integer("quantity"),

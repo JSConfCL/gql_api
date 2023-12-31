@@ -1,4 +1,4 @@
-import { it, describe, afterEach, assert } from "vitest";
+import { it, describe, assert } from "vitest";
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -8,16 +8,11 @@ import {
   insertUserToCommunity,
   insertUserToEvent,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   UpdateUserRoleInCommunity,
   UpdateUserRoleInCommunityMutation,
   UpdateUserRoleInCommunityMutationVariables,
 } from "./updateUserRoleInCommunity.generated";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("User update role in communities", () => {
   it("It should a error, if has a member role", async () => {

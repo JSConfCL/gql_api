@@ -1,11 +1,10 @@
-import { it, describe, assert, afterEach } from "vitest";
+import { it, describe, assert } from "vitest";
 import {
   executeGraphqlOperation,
   insertCommunity,
   insertUser,
   insertUserToCommunity,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   UsersAndCommunities,
   UsersAndCommunitiesQuery,
@@ -19,10 +18,6 @@ import {
   SingleCommunityUsersQuery,
   SingleCommunityUsersQueryVariables,
 } from "~/tests/userCommunities/getCommunitiesUsers.generated";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("Users Graphql Tests", () => {
   it("Should return a list of users with their communities", async () => {

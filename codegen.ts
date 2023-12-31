@@ -21,6 +21,12 @@ const config: CodegenConfig = {
   generates: {
     "src/generated/types.ts": {
       plugins: ["typescript", codeInjection],
+      config: {
+        scalars: {
+          Date: "string",
+          DateTime: "string",
+        },
+      },
     },
     "src/generated/": {
       preset: "near-operation-file",

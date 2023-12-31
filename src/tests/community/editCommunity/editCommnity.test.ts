@@ -1,4 +1,4 @@
-import { it, describe, afterEach, assert } from "vitest";
+import { it, describe, assert } from "vitest";
 import {
   executeGraphqlOperationAsSuperAdmin,
   executeGraphqlOperationAsUser,
@@ -6,17 +6,12 @@ import {
   insertUser,
   insertUserToCommunity,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   EditCommunity,
   EditCommunityMutation,
   EditCommunityMutationVariables,
 } from "./editCommunity.generated";
 import { CommnunityStatus } from "~/generated/types";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("Edit community", () => {
   describe("Should edit an community", () => {

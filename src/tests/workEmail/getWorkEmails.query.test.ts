@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterEach, assert, describe, it } from "vitest";
+import { assert, describe, it } from "vitest";
 import {
   executeGraphqlOperation,
   executeGraphqlOperationAsUser,
@@ -7,17 +7,12 @@ import {
   insertUser,
   insertWorkEmail,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   WorkEmails,
   WorkEmailsQuery,
   WorkEmailsQueryVariables,
 } from "./getWorkEmails.generated";
 import { EmailStatus } from "../../generated/types";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("test the work email query", () => {
   it("Should fetch the workEmail", async () => {

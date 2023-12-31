@@ -1,4 +1,4 @@
-import { it, describe, afterEach, expect } from "vitest";
+import { it, describe, expect } from "vitest";
 import {
   executeGraphqlOperation,
   executeGraphqlOperationAsSuperAdmin,
@@ -6,16 +6,11 @@ import {
   insertUser,
 } from "~/tests/__fixtures";
 import { faker } from "@faker-js/faker";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   CreateCompany,
   CreateCompanyMutation,
   CreateCompanyMutationVariables,
 } from "./mutations.generated";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("Company", () => {
   describe("As a Superadmin", () => {

@@ -141,11 +141,13 @@ async function insertOne<
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const newInput = insertZod.parse(possibleInput);
   const testDB = await getTestDB();
-  const data = await testDB
-    .insert(dbSchema)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    .values(newInput)
-    .returning();
+  const data = (
+    await testDB
+      .insert(dbSchema)
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      .values(newInput)
+      .returning()
+  )?.[0];
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return selectZod.parse(data);
@@ -164,13 +166,12 @@ async function findById<D extends PgTable<any>>(
     .from(dbSchema)
     .where((t) => eq(t.id, id));
 
-  return createSelectSchema(dbSchema).parse(data);
+  return createSelectSchema(dbSchema).parse(data[0]);
 }
 
 export const insertUser = async (
   partialInput?: Partial<z.infer<typeof insertUserRequest>>,
 ) => {
-  // ads
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     username: partialInput?.username ?? faker.internet.userName(),
@@ -552,4 +553,17 @@ export const insertSalary = async (
     salariesSchema,
     possibleInput,
   );
+};
+
+export const toISODateWithoutMilliseconds = <T extends Date | null>(
+  date: T,
+): T extends Date ? string : null => {
+  if (!date) {
+    return null as T extends Date ? string : null;
+  }
+  const dateWithoutMilliseconds = new Date(date);
+  dateWithoutMilliseconds.setMilliseconds(0);
+  return dateWithoutMilliseconds.toISOString() as T extends Date
+    ? string
+    : null;
 };

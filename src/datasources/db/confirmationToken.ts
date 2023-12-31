@@ -36,14 +36,8 @@ export const confirmationTokenSchema = pgTable("confirmation_token", {
   status: text("status", {
     enum: confirmationTokenStatusEnum,
   }).default("pending"),
-  validUntil: timestamp("valid_until", {
-    mode: "date",
-    withTimezone: true,
-  }).notNull(),
-  confirmationDate: timestamp("confirmation_date", {
-    mode: "date",
-    withTimezone: true,
-  }),
+  validUntil: timestamp("valid_until").notNull(),
+  confirmationDate: timestamp("confirmation_date"),
   ...createdAndUpdatedAtFields,
 });
 

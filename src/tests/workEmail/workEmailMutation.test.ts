@@ -1,4 +1,4 @@
-import { it, describe, assert, afterEach } from "vitest";
+import { it, describe, assert } from "vitest";
 import {
   executeGraphqlOperation,
   executeGraphqlOperationAsUser,
@@ -16,10 +16,6 @@ import {
   StartWorkEmailValidationMutationVariables,
 } from "./startWorkEmailValidation.generated";
 import { faker } from "@faker-js/faker";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("test the email validation process", () => {
   describe("Test should pass", () => {

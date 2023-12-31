@@ -250,10 +250,12 @@ builder.mutationFields((t) => ({
       if (Object.keys(dataToUpdate).length === 0) {
         throw new Error("Nothing to update");
       }
-      const updatedCompany = await DB.update(companiesSchema)
-        .set(dataToUpdate)
-        .where(eq(companiesSchema.id, companyId))
-        .returning();
+      const updatedCompany = (
+        await DB.update(companiesSchema)
+          .set(dataToUpdate)
+          .where(eq(companiesSchema.id, companyId))
+          .returning()
+      )?.[0];
 
       return selectCompaniesSchema.parse(updatedCompany);
     },
@@ -297,9 +299,9 @@ builder.mutationFields((t) => ({
       }
       dataToCreate.id = v4();
       const updateCompanyData = insertCompaniesSchema.parse(dataToCreate);
-      const createCompany = await DB.insert(companiesSchema)
-        .values(updateCompanyData)
-        .returning();
+      const createCompany = (
+        await DB.insert(companiesSchema).values(updateCompanyData).returning()
+      )?.[0];
 
       return selectCompaniesSchema.parse(createCompany);
     },

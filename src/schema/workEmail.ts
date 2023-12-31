@@ -50,9 +50,11 @@ builder.objectType(ValidatedWorkEmailRef, {
       nullable: false,
       resolve: (root) => root.status || "pending",
     }),
-    confirmationDate: t.expose("confirmationDate", {
+    confirmationDate: t.field({
       type: "DateTime",
       nullable: true,
+      resolve: (root) =>
+        root.confirmationDate ? new Date(root.confirmationDate) : null,
     }),
     company: t.field({
       type: CompanyRef,
@@ -101,13 +103,22 @@ builder.queryFields((t) => ({
       email: t.arg.string({ required: true }),
     },
     resolve: async (root, { email }, { DB, USER }) => {
+      if (!USER) {
+        throw new Error("No user present");
+      }
+      const userId = USER.id;
       const workEmail = await DB.query.workEmailSchema.findFirst({
-        where: (wes, { like }) => like(wes.workEmail, email.toLowerCase()),
-        with: {
-          user: true,
-        },
+        where: (wes, { and, sql }) =>
+          and(
+            eq(
+              sql`lower(${wes.workEmail})`,
+              sql`lower(${email.toLowerCase()})`,
+            ),
+            eq(wes.userId, userId),
+          ),
       });
-      if (workEmail?.user?.id !== USER?.id) {
+
+      if (!workEmail) {
         throw new Error("You don't have access");
       }
       return selectWorkEmailSchema.parse(workEmail);
@@ -182,7 +193,7 @@ builder.mutationFields((t) => ({
         currentDate.setHours(currentDate.getHours() + 1);
         if (workEmail.confirmationToken) {
           console.log("There is a token also for this work email");
-          if (workEmail.confirmationToken.validUntil > currentDate) {
+          if (new Date(workEmail.confirmationToken.validUntil) > currentDate) {
             throw new Error(
               "You can only request a new confirmation email once per hour",
             );
@@ -273,8 +284,7 @@ builder.mutationFields((t) => ({
           .set({
             confirmationTokenId: insertedToken.id,
           })
-          .where(eq(workEmailSchema.id, insertedWorkEmail.id))
-          .returning();
+          .where(eq(workEmailSchema.id, insertedWorkEmail.id));
 
         console.log("Enqueuing the email");
         await enqueueEmail(MAIL_QUEUE, {
@@ -319,7 +329,7 @@ builder.mutationFields((t) => ({
       }
 
       if (
-        foundConfirmationToken.validUntil <= new Date() ||
+        new Date(foundConfirmationToken.validUntil) <= new Date() ||
         foundConfirmationToken.userId !== USER.id
       ) {
         throw new Error("Invalid token");
@@ -336,14 +346,16 @@ builder.mutationFields((t) => ({
         if (possibleWorkSchema.status === "confirmed") {
           throw new Error("Email is already validated");
         }
-        const updatedWorkEmail = await DB.update(workEmailSchema)
-          .set({
-            status: "confirmed",
-            confirmationTokenId: null,
-            confirmationDate: new Date(),
-          })
-          .where(eq(workEmailSchema.id, possibleWorkSchema.id))
-          .returning();
+        const updatedWorkEmail = (
+          await DB.update(workEmailSchema)
+            .set({
+              status: "confirmed",
+              confirmationTokenId: null,
+              confirmationDate: new Date(),
+            })
+            .where(eq(workEmailSchema.id, possibleWorkSchema.id))
+            .returning()
+        )?.[0];
 
         return selectWorkEmailSchema.parse(updatedWorkEmail);
       } else {

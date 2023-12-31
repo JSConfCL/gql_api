@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import { afterEach, assert, describe, expect, it } from "vitest";
+import { assert, describe, expect, it } from "vitest";
 import {
   executeGraphqlOperation,
   executeGraphqlOperationAsUser,
@@ -9,7 +9,7 @@ import {
   insertWorkEmail,
   insertWorkRole,
 } from "~/tests/__fixtures";
-import { clearDatabase, getTestDB } from "~/tests/__fixtures/databaseHelper";
+import { getTestDB } from "~/tests/__fixtures/databaseHelper";
 import {
   Gender,
   TypeOfEmployment,
@@ -20,10 +20,6 @@ import {
   CreateSalaryMutation,
   CreateSalaryMutationVariables,
 } from "./mutations.generated";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("Salary creation", () => {
   describe("User has a valid token", () => {

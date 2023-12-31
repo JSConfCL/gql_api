@@ -222,12 +222,14 @@ builder.mutationFields((t) => ({
         if (!ticket.ticketTemplate?.requiresApproval) {
           throw new Error("Ticket does not require approval");
         }
-        const updatedTicket = await DB.update(userTicketsSchema)
-          .set({
-            approvalStatus: "approved",
-          })
-          .where(eq(userTicketsSchema.id, userTicketId))
-          .returning();
+        const updatedTicket = (
+          await DB.update(userTicketsSchema)
+            .set({
+              approvalStatus: "approved",
+            })
+            .where(eq(userTicketsSchema.id, userTicketId))
+            .returning()
+        )?.[0];
 
         return selectUserTicketsSchema.parse(updatedTicket);
       } catch (e: unknown) {
@@ -271,12 +273,14 @@ builder.mutationFields((t) => ({
         if (ticket.status !== "active") {
           throw new Error("Ticket is not active");
         }
-        const updatedTicket = await DB.update(userTicketsSchema)
-          .set({
-            redemptionStatus: "redeemed",
-          })
-          .where(eq(userTicketsSchema.id, userTicketId))
-          .returning();
+        const updatedTicket = (
+          await DB.update(userTicketsSchema)
+            .set({
+              redemptionStatus: "redeemed",
+            })
+            .where(eq(userTicketsSchema.id, userTicketId))
+            .returning()
+        )?.[0];
 
         return selectUserTicketsSchema.parse(updatedTicket);
       } catch (e: unknown) {

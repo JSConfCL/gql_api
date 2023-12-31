@@ -1,11 +1,10 @@
-import { it, describe, afterEach, assert } from "vitest";
+import { it, describe, assert } from "vitest";
 import {
   executeGraphqlOperationAsSuperAdmin,
   executeGraphqlOperationAsUser,
   insertCommunity,
   insertUser,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { CommnunityStatus } from "~/generated/types";
 import { faker } from "@faker-js/faker";
 import {
@@ -13,10 +12,6 @@ import {
   CreateCommunityMutation,
   CreateCommunityMutationVariables,
 } from "./communityCreate.generated";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("Community", () => {
   describe("Should create an community", () => {

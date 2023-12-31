@@ -1,13 +1,8 @@
-import { it, describe, assert, afterAll } from "vitest";
+import { it, describe, assert } from "vitest";
 import { executeGraphqlOperation, insertTag } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { Tags, TagsQuery, TagsQueryVariables } from "./getTags.generated";
 
-afterAll(() => {
-  clearDatabase();
-});
-
-describe("Tags", async () => {
+const createTags = async () => {
   const tag1 = await insertTag({
     description: "description tag1 with some text",
   });
@@ -17,7 +12,15 @@ describe("Tags", async () => {
   const tag3 = await insertTag({
     description: "description tag3 with some text",
   });
+  return {
+    tag1,
+    tag2,
+    tag3,
+  };
+};
+describe("Tags", () => {
   it("Should return an unfiltered list", async () => {
+    const { tag1, tag2, tag3 } = await createTags();
     const response = await executeGraphqlOperation<
       TagsQuery,
       TagsQueryVariables
@@ -32,6 +35,7 @@ describe("Tags", async () => {
   });
 
   it("Should filter by ID", async () => {
+    const { tag2 } = await createTags();
     const response = await executeGraphqlOperation<
       TagsQuery,
       TagsQueryVariables
@@ -48,6 +52,7 @@ describe("Tags", async () => {
     assert.equal(response.data?.tags[0].id, tag2.id);
   });
   it("Should filter by name", async () => {
+    const { tag2 } = await createTags();
     const response = await executeGraphqlOperation<
       TagsQuery,
       TagsQueryVariables
@@ -64,6 +69,7 @@ describe("Tags", async () => {
     assert.equal(response.data?.tags[0].id, tag2.id);
   });
   it("Should filter by description", async () => {
+    const { tag2 } = await createTags();
     const response = await executeGraphqlOperation<
       TagsQuery,
       TagsQueryVariables

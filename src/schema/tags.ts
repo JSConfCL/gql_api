@@ -51,12 +51,15 @@ builder.queryFields((t) => ({
           like(tagsSchema.description, sanitizeForLikeSearch(description)),
         );
       }
-      const users = await ctx.DB.query.tagsSchema.findMany({
+      const query = ctx.DB.query.tagsSchema.findMany({
         where: (c, { and }) => and(...wheres),
         orderBy(fields, operators) {
-          return operators.desc(fields.createdAt);
+          return operators.asc(fields.createdAt);
         },
       });
+
+      console.log("QUERY -> ", query.toSQL());
+      const users = await query;
       return users.map((u) => selectTagsSchema.parse(u));
     },
   }),

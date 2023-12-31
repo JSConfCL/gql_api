@@ -40,7 +40,7 @@ builder.objectType(CommunityRef, {
               .where(eq(eventsToCommunitiesSchema.communityId, root.id)),
           ),
           orderBy(fields, operators) {
-            return operators.desc(fields.createdAt);
+            return operators.asc(fields.createdAt);
           },
         });
 
@@ -60,7 +60,7 @@ builder.objectType(CommunityRef, {
             },
           },
           orderBy(fields, operators) {
-            return operators.desc(fields.createdAt);
+            return operators.asc(fields.createdAt);
           },
         });
         if (
@@ -109,7 +109,7 @@ builder.queryFields((t) => ({
       const communities = await ctx.DB.query.communitySchema.findMany({
         where: (c, { and }) => and(...wheres),
         orderBy(fields, operators) {
-          return operators.desc(fields.createdAt);
+          return operators.asc(fields.createdAt);
         },
       });
       return communities.map((u) => selectCommunitySchema.parse(u));
@@ -127,7 +127,7 @@ builder.queryFields((t) => ({
       const community = await ctx.DB.query.communitySchema.findFirst({
         where: (c, { eq }) => eq(c.id, id),
         orderBy(fields, operators) {
-          return operators.desc(fields.createdAt);
+          return operators.asc(fields.createdAt);
         },
       });
       if (!community) {
@@ -191,9 +191,9 @@ builder.mutationFields((t) => ({
           description,
         });
 
-        const communities = await DB.insert(communitySchema)
-          .values(newCommunity)
-          .returning();
+        const communities = (
+          await DB.insert(communitySchema).values(newCommunity).returning()
+        )?.[0];
 
         return selectCommunitySchema.parse(communities);
       } catch (e) {
@@ -243,10 +243,12 @@ builder.mutationFields((t) => ({
         if (slug) {
           dataToUpdate.slug = slug;
         }
-        const community = await DB.update(communitySchema)
-          .set(dataToUpdate)
-          .where(eq(communitySchema.id, communityId))
-          .returning();
+        const community = (
+          await DB.update(communitySchema)
+            .set(dataToUpdate)
+            .where(eq(communitySchema.id, communityId))
+            .returning()
+        )?.[0];
 
         return selectCommunitySchema.parse(community);
       } catch (e) {

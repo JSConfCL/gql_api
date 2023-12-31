@@ -5,7 +5,7 @@ import { GraphqlContext } from "~/builder";
 
 export class IsAuthenticated extends PreExecutionRule {
   error = new UnauthorizedError("User is not authenticated");
-  public execute({ USER, DB }: GraphqlContext, fieldArgs: { id?: string }) {
+  public execute({ USER }: GraphqlContext) {
     return !!USER;
   }
 }

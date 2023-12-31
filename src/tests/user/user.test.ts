@@ -1,15 +1,10 @@
-import { it, describe, assert, afterEach } from "vitest";
+import { it, describe, assert } from "vitest";
 import { executeGraphqlOperation, insertUser } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   Users,
   UsersQuery,
   UsersQueryVariables,
 } from "~/tests/user/getUsers.generated";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("Users Graphql Tests", () => {
   it("Should return a list of users", async () => {

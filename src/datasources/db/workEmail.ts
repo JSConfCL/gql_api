@@ -21,10 +21,7 @@ export const workEmailSchema = pgTable("work_email", {
   status: text("status", {
     enum: statusEnumOptions,
   }).default("pending"),
-  confirmationDate: timestamp("confirmation_date", {
-    mode: "date",
-    withTimezone: true,
-  }),
+  confirmationDate: timestamp("confirmation_date"),
   companyId: text("company_id").references(() => companiesSchema.id),
   ...createdAndUpdatedAtFields,
 });
