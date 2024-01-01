@@ -11,7 +11,7 @@ import { relations } from "drizzle-orm";
 // WORK-EMAILS-TABLE
 export const workEmailSchema = pgTable("work_email", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
-  userId: uuid("user_id")
+  userId: text("user_id")
     .references(() => usersSchema.id)
     .notNull(),
   workEmail: text("work_email").notNull(),

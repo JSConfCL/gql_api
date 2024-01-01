@@ -28,7 +28,7 @@ export const confirmationTokenSchema = pgTable("confirmation_token", {
   source: text("source", {
     enum: confirmationTokenSourceEnum,
   }).notNull(),
-  userId: uuid("user_id")
+  userId: text("user_id")
     .references(() => usersSchema.id)
     .notNull(),
   sourceId: text("source_id").notNull(),

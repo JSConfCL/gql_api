@@ -3,13 +3,9 @@
 - Asegurate de tener el archivo .dev.vars (Pídele al equipo los valores correspondientes.)
   - Puedes correr una BDD local si te parece.
   - Para correr el proyecto con las BDD de desarrollo, tienes que agregar un archivo `.dev.vars` con los valores de las mismas.
-- Crear una base de datos en turso.tech
-  - Instala el CLI de turso [acá](https://github.com/tursodatabase/turso-cli)
-  - Authentícate con `turso auth login`
-  - Crea una base de datos con `turso db create NOMBRE_DE_TU_BDD`
-  - Obten la TOKEN de tu DB con `turso db tokens create NOMBRE_DE_TU_BDD`
-  - Obten la URL de tu DB con `turso db tokens list`
-  - Guarda la URL de tu BDD y la token en el archivo .dev.vars bajo `DATABASE_URL` y `DATABASE_TOKEN`
+- Crear una base de datos en postgres.
+  - Nosotros usamos [Neon.tech](https://neon.tech/)
+  - Guarda el string de conexión a tu BDD en el archivo .dev.vars bajo `NEON_URL`
 - Finalmente, `npm i` & `num run dev`
 - Listo! Tu servidor GraphQL está corriendo en http://127.0.0.1:8787
 
@@ -221,7 +217,7 @@ Por ejemplo, puedes escribir un test que pase datos incorrectos a tu mutación y
 
 # Migraciones
 
-Nuestra BDD es `turso` en produccion/qa y development, usando `libsql` en local.
+Nuestra BDD es postgres, en produccion/qa y development, usando `libsql` en local.
 Usamos `drizzle` y `drizzle-kit` para manejar conexiones a la BDD, que genera automaticamente archivos de migraciones cuando cambias tus modelos, lo que hace muchisimo más facil es escribrlas.
 
 ## Cómo escribir migraciones?
@@ -266,28 +262,11 @@ Puedes hacer esto corriendo todos los tests. Estos geeneran una BDD desde 0, y c
 Finalmente, ejecuta las migraciones con `npm run db:migrate`.
 Estos comandos utilizan las variables de entorno definidas en el archivo .dev.vars para conectarse a las BDD de desarrollo.
 
-### 5. Como limpiar tu base de datos:
-
-- conectate a tu bdd con `turso db shell NOMBRE_DE_TU_BDD`
-- ejecuta `select 'drop table ' || name || ';' from sqlite_master where type = 'table';` para obtener todas las tablas de tu bdd
-  - Esto te devolverá un resultado como el siguiente:
-    ```txt
-    drop table users;
-    drop table events;
-    drop table event_attendees;
-    drop table event_invitations;
-    drop table event_invitation_tokens;
-    ```
-- copia y pega el resultado en tu terminal para eliminar todas las tablas de tu bdd.
-- sal de la shell con `.quit`
-- Listo! Tu bdd está 100% limpia. 😊
-
 # Requisitos
 
 - Tener un archivo `.dev.vars` con el siguiente contenido
   ```txt
-  DATABASE_URL="PREGUNTALE AL EQUIPO POR ESTO"
-  DATABASE_TOKEN="PREGUNTALE AL EQUIPO POR ESTO"
+  NEON_URL="PREGUNTALE AL EQUIPO POR ESTO"
   CLERK_PEM_PUBLIC_KEY="PREGUNTALE AL EQUIPO POR ESTO"
   CLERK_ISSUER_ID="PREGUNTALE AL EQUIPO POR ESTO"
   ```
@@ -297,8 +276,8 @@ Estos comandos utilizan las variables de entorno definidas en el archivo .dev.va
 
 # STACK
 
-- Turso:
-  Una BDD on-edge, que usa libsql (un fork de sqlite) lo que nos entrega velocidad en producción, y nos permite correr tests en paralelo facilmente.
+- Neon Tech:
+  Servicio de Postgres Serverless, manejando el pool de conexiones mediante [cloudflare hyperdrive](https://developers.cloudflare.com/hyperdrive/), lo que permite mejorar la latencia de las consultas a la base de datos a nivel global.
 
 - GraphQL Yoga:
   Un servidor GraphQL fácil de configurar que se apoya en Express.js. Proporciona una forma sencilla de crear servidores GraphQL que se pueden conectar a cualquier fuente de datos.

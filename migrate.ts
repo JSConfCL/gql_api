@@ -5,14 +5,6 @@ import { neon } from "@neondatabase/serverless";
 
 config({ path: process.cwd() + "/.dev.vars", override: true });
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is not defined");
-}
-
-if (!process.env.DATABASE_TOKEN) {
-  throw new Error("DATABASE_URL is not defined");
-}
-
 if (!process.env.NEON_URL) {
   throw new Error("NEON_URL is not defined");
 }

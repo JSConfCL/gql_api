@@ -7,13 +7,7 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   env,
   ctx,
 ) => {
-  ensureKeys(env, [
-    "DATABASE_URL",
-    "NEON_URL",
-    "DATABASE_TOKEN",
-    "MP_ACCESS_TOKEN",
-    "MP_PUBLIC_KEY",
-  ]);
+  ensureKeys(env, ["NEON_URL", "MP_ACCESS_TOKEN", "MP_PUBLIC_KEY"]);
   try {
     await getSubscriptions(env);
   } catch (e) {

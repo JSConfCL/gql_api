@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS "companies" (
 CREATE TABLE IF NOT EXISTS "confirmation_token" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"source" text NOT NULL,
-	"user_id" uuid NOT NULL,
+	"user_id" text NOT NULL,
 	"source_id" text NOT NULL,
 	"token" uuid DEFAULT gen_random_uuid() NOT NULL,
 	"status" text DEFAULT 'pending',
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS "events_tags" (
 CREATE TABLE IF NOT EXISTS "events_users" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"event_id" uuid,
-	"user_id" uuid,
+	"user_id" text,
 	"role" text DEFAULT 'member',
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS "events_users" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "salaries" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid NOT NULL,
+	"user_id" text NOT NULL,
 	"amount" integer NOT NULL,
 	"company_id" uuid,
 	"currency_code" text NOT NULL,
@@ -164,7 +164,7 @@ CREATE TABLE IF NOT EXISTS "tickets" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "users" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"name" text,
 	"lastName" text,
 	"bio" text DEFAULT '',
@@ -181,12 +181,13 @@ CREATE TABLE IF NOT EXISTS "users" (
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
 	"deleted_at" timestamp,
+	CONSTRAINT "users_id_unique" UNIQUE("id"),
 	CONSTRAINT "users_username_unique" UNIQUE("username")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "users_communities" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid,
+	"user_id" text,
 	"community_id" uuid,
 	"role" text DEFAULT 'member',
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -196,7 +197,7 @@ CREATE TABLE IF NOT EXISTS "users_communities" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "user_tickets" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid,
+	"user_id" text,
 	"ticket_template_id" uuid NOT NULL,
 	"status" text DEFAULT 'inactive' NOT NULL,
 	"payment_status" text DEFAULT 'unpaid' NOT NULL,
@@ -210,7 +211,7 @@ CREATE TABLE IF NOT EXISTS "user_tickets" (
 CREATE TABLE IF NOT EXISTS "users_tags" (
 	"id" uuid DEFAULT gen_random_uuid() NOT NULL,
 	"tag_id" uuid,
-	"user_id" uuid,
+	"user_id" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
 	"deleted_at" timestamp,
@@ -220,7 +221,7 @@ CREATE TABLE IF NOT EXISTS "users_tags" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "work_email" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid NOT NULL,
+	"user_id" text NOT NULL,
 	"work_email" text NOT NULL,
 	"confirmation_token_id" uuid,
 	"status" text DEFAULT 'pending',

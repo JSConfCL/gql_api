@@ -6,13 +6,7 @@ neonConfig.fetchConnectionCache = true;
 
 export type ORM_TYPE = NeonHttpDatabase<typeof schema>;
 let db: ORM_TYPE | null = null;
-export const getDb = ({
-  neonUrl,
-}: {
-  url: string;
-  authToken: string;
-  neonUrl: string;
-}) => {
+export const getDb = ({ neonUrl }: { neonUrl: string }) => {
   if (!db) {
     const client = neon(neonUrl);
     db = drizzle(client, {
