@@ -1,5 +1,4 @@
 import { SQL, eq, ilike } from "drizzle-orm";
-import { v4 } from "uuid";
 import { builder } from "~/builder";
 import {
   companiesSchema,
@@ -305,7 +304,6 @@ builder.mutationFields((t) => ({
       if (Object.keys(dataToCreate).length === 0) {
         throw new Error("No data to create a company");
       }
-      dataToCreate.id = v4();
       const updateCompanyData = insertCompaniesSchema.parse(dataToCreate);
       const createCompany = (
         await DB.insert(companiesSchema).values(updateCompanyData).returning()

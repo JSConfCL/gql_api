@@ -1,4 +1,4 @@
-import { integer, pgTable, text } from "drizzle-orm/pg-core";
+import { integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { createdAndUpdatedAtFields } from "./shared";
 import { usersSchema } from "./users";
@@ -13,15 +13,15 @@ const workMetodologyEnum = ["remote", "office", "hybrid"] as const;
 
 // SALARIES-TABLE
 export const salariesSchema = pgTable("salaries", {
-  id: text("id").primaryKey().unique(),
-  userId: text("user_id")
+  id: uuid("id").primaryKey().unique().defaultRandom(),
+  userId: uuid("user_id")
     .references(() => usersSchema.id)
     .notNull(),
   amount: integer("amount").notNull(),
-  companyId: text("company_id").references(() => companiesSchema.id),
+  companyId: uuid("company_id").references(() => companiesSchema.id),
   currencyCode: text("currency_code").notNull(),
-  workRoleId: text("work_role_id").references(() => workRoleSchema.id),
-  workEmailId: text("work_email_id").references(() => workEmailSchema.id),
+  workRoleId: uuid("work_role_id").references(() => workRoleSchema.id),
+  workEmailId: uuid("work_email_id").references(() => workEmailSchema.id),
   yearsOfExperience: integer("years_of_experience").notNull(),
   gender: text("gender", {
     enum: genderOptions,

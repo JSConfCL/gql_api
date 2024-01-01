@@ -1,5 +1,5 @@
 {
-  "id": "91360e5b-5b00-403c-92ee-fce84465e681",
+  "id": "78847302-9fdb-40f9-8cde-9933c3ed7ff6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -10,9 +10,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "currency": {
           "name": "currency",
@@ -63,9 +64,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
@@ -127,11 +129,12 @@
       "name": "companies",
       "schema": "",
       "columns": {
-        "company_id": {
-          "name": "company_id",
-          "type": "text",
+        "id": {
+          "name": "id",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
@@ -193,13 +196,7 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "companies_company_id_unique": {
-          "name": "companies_company_id_unique",
-          "nullsNotDistinct": false,
-          "columns": ["company_id"]
-        }
-      }
+      "uniqueConstraints": {}
     },
     "confirmation_token": {
       "name": "confirmation_token",
@@ -207,9 +204,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "source": {
           "name": "source",
@@ -219,7 +217,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -231,9 +229,10 @@
         },
         "token": {
           "name": "token",
-          "type": "varchar",
+          "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "status": {
           "name": "status",
@@ -306,9 +305,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
@@ -419,15 +419,22 @@
       "name": "events_communities",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
         "event_id": {
           "name": "event_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
         "community_id": {
           "name": "community_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -478,21 +485,34 @@
           "columns": ["event_id", "community_id"]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "events_communities_id_unique": {
+          "name": "events_communities_id_unique",
+          "nullsNotDistinct": false,
+          "columns": ["id"]
+        }
+      }
     },
     "events_tags": {
       "name": "events_tags",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
         "event_id": {
           "name": "event_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
         "tag_id": {
           "name": "tag_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -543,21 +563,34 @@
           "columns": ["event_id", "tag_id"]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "events_tags_id_unique": {
+          "name": "events_tags_id_unique",
+          "nullsNotDistinct": false,
+          "columns": ["id"]
+        }
+      }
     },
     "events_users": {
       "name": "events_users",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
         "event_id": {
           "name": "event_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -618,13 +651,14 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -636,7 +670,7 @@
         },
         "company_id": {
           "name": "company_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -648,13 +682,13 @@
         },
         "work_role_id": {
           "name": "work_role_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
         "work_email_id": {
           "name": "work_email_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -725,12 +759,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "salaries_company_id_companies_company_id_fk": {
-          "name": "salaries_company_id_companies_company_id_fk",
+        "salaries_company_id_companies_id_fk": {
+          "name": "salaries_company_id_companies_id_fk",
           "tableFrom": "salaries",
           "tableTo": "companies",
           "columnsFrom": ["company_id"],
-          "columnsTo": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -768,9 +802,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
@@ -819,15 +854,22 @@
       "name": "tags_communities",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
         "tag_id": {
           "name": "tag_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
         "community_id": {
           "name": "community_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -878,7 +920,13 @@
           "columns": ["tag_id", "community_id"]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "tags_communities_id_unique": {
+          "name": "tags_communities_id_unique",
+          "nullsNotDistinct": false,
+          "columns": ["id"]
+        }
+      }
     },
     "tickets": {
       "name": "tickets",
@@ -886,9 +934,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
@@ -949,13 +998,13 @@
         },
         "event_id": {
           "name": "event_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
         "currency": {
           "name": "currency",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -1015,9 +1064,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
@@ -1134,15 +1184,22 @@
       "name": "users_communities",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
         "community_id": {
           "name": "community_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -1203,19 +1260,20 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
         "ticket_template_id": {
           "name": "ticket_template_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -1295,15 +1353,22 @@
       "name": "users_tags",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
         "tag_id": {
           "name": "tag_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -1354,7 +1419,13 @@
           "columns": ["tag_id", "user_id"]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "users_tags_id_unique": {
+          "name": "users_tags_id_unique",
+          "nullsNotDistinct": false,
+          "columns": ["id"]
+        }
+      }
     },
     "work_email": {
       "name": "work_email",
@@ -1362,13 +1433,14 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -1380,7 +1452,7 @@
         },
         "confirmation_token_id": {
           "name": "confirmation_token_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -1399,7 +1471,7 @@
         },
         "company_id": {
           "name": "company_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -1443,24 +1515,18 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "work_email_company_id_companies_company_id_fk": {
-          "name": "work_email_company_id_companies_company_id_fk",
+        "work_email_company_id_companies_id_fk": {
+          "name": "work_email_company_id_companies_id_fk",
           "tableFrom": "work_email",
           "tableTo": "companies",
           "columnsFrom": ["company_id"],
-          "columnsTo": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "work_email_id_unique": {
-          "name": "work_email_id_unique",
-          "nullsNotDistinct": false,
-          "columns": ["id"]
-        }
-      }
+      "uniqueConstraints": {}
     },
     "work_role": {
       "name": "work_role",
@@ -1468,9 +1534,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",

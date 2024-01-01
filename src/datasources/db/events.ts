@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { timestamp, pgTable, text, integer } from "drizzle-orm/pg-core";
+import { timestamp, pgTable, text, integer, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import {
   eventsToCommunitiesSchema,
@@ -13,7 +13,7 @@ export const eventVisibilityEnum = ["public", "private", "unlisted"] as const;
 
 // EVENTS-TABLE
 export const eventsSchema = pgTable("events", {
-  id: text("id").primaryKey().notNull(),
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
   name: text("name").notNull().unique(),
   description: text("description"),
   status: text("status", { enum: eventStatusEnum })

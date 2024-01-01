@@ -63,7 +63,6 @@ export const getSubscriptions = async (env: ENV) => {
   }
 
   const tagToInsert = insertTagsSchema.parse({
-    id: v4(),
     name: AllowedUserTags.DONOR,
     description: "Usuario Donador",
   });

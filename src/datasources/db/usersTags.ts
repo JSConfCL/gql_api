@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { primaryKey, pgTable, text } from "drizzle-orm/pg-core";
+import { primaryKey, pgTable, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { usersSchema, tagsSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
@@ -14,8 +14,9 @@ export enum AllowedUserTags {
 export const usersTagsSchema = pgTable(
   "users_tags",
   {
-    tagId: text("tag_id").references(() => tagsSchema.id),
-    userId: text("user_id").references(() => usersSchema.id),
+    id: uuid("id").notNull().defaultRandom().unique(),
+    tagId: uuid("tag_id").references(() => tagsSchema.id),
+    userId: uuid("user_id").references(() => usersSchema.id),
     ...createdAndUpdatedAtFields,
   },
   (t) => ({

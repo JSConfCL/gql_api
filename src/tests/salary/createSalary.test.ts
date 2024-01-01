@@ -1,4 +1,3 @@
-import { v4 } from "uuid";
 import { assert, describe, expect, it } from "vitest";
 import {
   executeGraphqlOperation,
@@ -35,7 +34,6 @@ describe("Salary creation", () => {
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
         userId: user.id,
         status: "pending",
-        token: v4(),
         sourceId: "123",
       });
       await insertWorkEmail({
@@ -91,7 +89,6 @@ describe("Salary creation", () => {
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
         userId: user.id,
         status: "pending",
-        token: v4(),
         sourceId: "123",
       });
       await insertWorkEmail({
@@ -142,7 +139,6 @@ describe("Salary creation", () => {
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
         userId: user2.id,
         status: "pending",
-        token: v4(),
         sourceId: "123",
       });
       await insertWorkEmail({
@@ -197,7 +193,6 @@ describe("Salary creation", () => {
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
         userId: user2.id,
         status: "pending",
-        token: v4(),
         sourceId: "123",
       });
       await insertWorkEmail({
@@ -251,7 +246,6 @@ describe("Salary creation", () => {
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
         userId: user.id,
         status: "confirmed",
-        token: v4(),
         sourceId: "123",
       });
       await insertWorkEmail({
@@ -305,7 +299,6 @@ describe("Salary creation", () => {
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
         userId: user.id,
         status: "rejected",
-        token: v4(),
         sourceId: "123",
       });
       await insertWorkEmail({
@@ -359,7 +352,6 @@ describe("Salary creation", () => {
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
         userId: user.id,
         status: "expired",
-        token: v4(),
         sourceId: "123",
       });
       await insertWorkEmail({
@@ -413,7 +405,6 @@ describe("Salary creation", () => {
         validUntil: new Date(Date.now() - 1000 * 60 * 60 * 24),
         userId: user.id,
         status: "expired",
-        token: v4(),
         sourceId: "123",
       });
       await insertWorkEmail({

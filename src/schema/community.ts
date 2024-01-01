@@ -11,7 +11,6 @@ import { SQL, eq, inArray, ilike } from "drizzle-orm";
 import { CommunityRef, EventRef, UserRef } from "~/schema/shared/refs";
 import { builder } from "~/builder";
 import { canCreateCommunity, canEditCommunity } from "~/validations";
-import { v4 } from "uuid";
 import { GraphQLError } from "graphql";
 import { sanitizeForLikeSearch } from "./shared/helpers";
 
@@ -182,9 +181,7 @@ builder.mutationFields((t) => ({
         if (existSlug) {
           throw new Error("This slug already exist");
         }
-        const id = v4();
         const newCommunity = insertCommunitySchema.parse({
-          id,
           name,
           slug,
           description,

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text } from "drizzle-orm/pg-core";
+import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { ticketsSchema, usersSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
@@ -10,9 +10,9 @@ export const userTicketsApprovalStatusEnum = ["approved", "pending"] as const;
 export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;
 // USER-TICKETS-TABLE
 export const userTicketsSchema = pgTable("user_tickets", {
-  id: text("id").primaryKey().notNull(),
-  userId: text("user_id").references(() => usersSchema.id),
-  ticketTemplateId: text("ticket_template_id")
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  userId: uuid("user_id").references(() => usersSchema.id),
+  ticketTemplateId: uuid("ticket_template_id")
     .references(() => ticketsSchema.id)
     .notNull(),
   status: text("status", { enum: userTicketsStatusEnum })

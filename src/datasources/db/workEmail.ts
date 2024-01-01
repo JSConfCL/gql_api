@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { createdAndUpdatedAtFields, statusEnumOptions } from "./shared";
 import {
@@ -10,19 +10,19 @@ import { relations } from "drizzle-orm";
 
 // WORK-EMAILS-TABLE
 export const workEmailSchema = pgTable("work_email", {
-  id: text("id").primaryKey().unique(),
-  userId: text("user_id")
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  userId: uuid("user_id")
     .references(() => usersSchema.id)
     .notNull(),
   workEmail: text("work_email").notNull(),
-  confirmationTokenId: text("confirmation_token_id").references(
+  confirmationTokenId: uuid("confirmation_token_id").references(
     () => confirmationTokenSchema.id,
   ),
   status: text("status", {
     enum: statusEnumOptions,
   }).default("pending"),
   confirmationDate: timestamp("confirmation_date"),
-  companyId: text("company_id").references(() => companiesSchema.id),
+  companyId: uuid("company_id").references(() => companiesSchema.id),
   ...createdAndUpdatedAtFields,
 });
 

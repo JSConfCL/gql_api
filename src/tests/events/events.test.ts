@@ -25,6 +25,7 @@ import {
   TicketRedemptionStatus,
   TicketStatus,
 } from "~/generated/types";
+import { v4 } from "uuid";
 
 describe("Event", () => {
   it("Should find an event by ID", async () => {
@@ -252,7 +253,7 @@ describe("Event", () => {
     >({
       document: Event,
       variables: {
-        eventId: "FAKE_ID_NUMBER_7",
+        eventId: v4(),
         eventTickets: {},
       },
     });

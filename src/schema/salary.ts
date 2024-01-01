@@ -1,5 +1,4 @@
 import { eq } from "drizzle-orm";
-import { v4 } from "uuid";
 import { builder } from "~/builder";
 import {
   salariesSchema,
@@ -227,7 +226,6 @@ builder.mutationFields((t) => ({
       } = input;
 
       const userId = USER.id;
-      const salaryId = v4();
 
       const foundConfirmationToken =
         await DB.query.confirmationTokenSchema.findFirst({
@@ -247,7 +245,6 @@ builder.mutationFields((t) => ({
       }
 
       const insertSalary = insertSalariesSchema.parse({
-        id: salaryId,
         companyId,
         amount,
         currencyCode,

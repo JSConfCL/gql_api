@@ -12,6 +12,7 @@ import {
   ApprovalUserTicketMutation,
   ApprovalUserTicketMutationVariables,
 } from "./approvalUserTicket.generated";
+import { v4 } from "uuid";
 
 describe("Approval user ticket", () => {
   it("Should approve a user ticket if is superadmin", async () => {
@@ -192,7 +193,7 @@ describe("Approval user ticket", () => {
       {
         document: ApprovalUserTicket,
         variables: {
-          userTicketId: "123",
+          userTicketId: v4(),
         },
       },
       user1,

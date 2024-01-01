@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text } from "drizzle-orm/pg-core";
+import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { communitySchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
@@ -8,8 +8,9 @@ import { usersSchema } from "./users";
 const usersToCommunitiesRoleEnum = ["admin", "member", "collaborator"] as const;
 // USERS—COMMUNITIES—TABLE
 export const usersToCommunitiesSchema = pgTable("users_communities", {
-  userId: text("user_id").references(() => usersSchema.id),
-  communityId: text("community_id").references(() => communitySchema.id),
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  userId: uuid("user_id").references(() => usersSchema.id),
+  communityId: uuid("community_id").references(() => communitySchema.id),
   role: text("role", { enum: usersToCommunitiesRoleEnum }).default("member"),
   ...createdAndUpdatedAtFields,
 });

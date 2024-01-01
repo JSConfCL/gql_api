@@ -19,7 +19,7 @@ import {
   SingleCommunityUsersQueryVariables,
 } from "~/tests/userCommunities/getCommunitiesUsers.generated";
 
-describe("Users Graphql Tests", () => {
+describe("Users Communities Graphql Tests", () => {
   it("Should return a list of users with their communities", async () => {
     const user = await insertUser();
     const user2 = await insertUser();

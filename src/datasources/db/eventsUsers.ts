@@ -1,4 +1,4 @@
-import { pgTable, text } from "drizzle-orm/pg-core";
+import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { eventsSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 import { usersSchema } from "./users";
@@ -8,8 +8,9 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 const eventsToUsersRoleEnum = ["admin", "member", "collaborator"] as const;
 // EVENT—USER
 export const eventsToUsersSchema = pgTable("events_users", {
-  eventId: text("event_id").references(() => eventsSchema.id),
-  userId: text("user_id").references(() => usersSchema.id),
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  eventId: uuid("event_id").references(() => eventsSchema.id),
+  userId: uuid("user_id").references(() => usersSchema.id),
   role: text("role", { enum: eventsToUsersRoleEnum }).default("member"),
   ...createdAndUpdatedAtFields,
 });

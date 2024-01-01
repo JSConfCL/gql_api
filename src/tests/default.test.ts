@@ -6,7 +6,7 @@ import {
   StatusQueryVariables,
 } from "~/tests/status.generated";
 
-describe("Users Graphql Tests", () => {
+describe("Default Tests", () => {
   it("Should do a basic test", async () => {
     const response = await executeGraphqlOperation<
       StatusQuery,

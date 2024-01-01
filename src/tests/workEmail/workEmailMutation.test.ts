@@ -4,7 +4,7 @@ import {
   executeGraphqlOperationAsUser,
   insertUser,
 } from "~/tests/__fixtures";
-import { clearDatabase, getTestDB } from "~/tests/__fixtures/databaseHelper";
+import { getTestDB } from "~/tests/__fixtures/databaseHelper";
 import {
   ValidateWorkEmail,
   ValidateWorkEmailMutation,

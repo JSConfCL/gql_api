@@ -1,5 +1,4 @@
 import { SQL, eq, gte, ilike, lte, inArray } from "drizzle-orm";
-import { v4 } from "uuid";
 import { builder } from "~/builder";
 import {
   eventsSchema,
@@ -456,9 +455,7 @@ builder.mutationFields((t) => ({
         }
         const result = await ctx.DB.transaction(async (trx) => {
           try {
-            const id = v4();
             const newEvent = insertEventsSchema.parse({
-              id,
               name,
               description,
               visibility,
@@ -478,7 +475,7 @@ builder.mutationFields((t) => ({
             )?.[0];
 
             await trx.insert(eventsToCommunitiesSchema).values({
-              eventId: id,
+              eventId: events.id,
               communityId: communityId,
             });
 

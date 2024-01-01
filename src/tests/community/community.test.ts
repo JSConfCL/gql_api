@@ -16,6 +16,7 @@ import {
   CommunityQueryVariables,
 } from "~/tests/community/getCommunity/getCommunity.generated";
 import { CommnunityStatus } from "~/generated/types";
+import { v4 } from "uuid";
 
 describe("Communities", () => {
   it("Should return an unfiltered list", async () => {
@@ -246,7 +247,7 @@ describe("Community search", () => {
     >({
       document: Community,
       variables: {
-        communityID: "some-non-existing-id",
+        communityID: v4(),
       },
     });
 

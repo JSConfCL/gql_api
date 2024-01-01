@@ -22,6 +22,7 @@ const ensureDBIsClean = async (databaseName: string) => {
 };
 
 let db: PostgresJsDatabase<typeof schema> | null = null;
+let client: postgres.Sql<Record<string, unknown>> | null = null;
 export const getTestDB = async (maybeDatabaseName?: string) => {
   const databaseName = maybeDatabaseName || `test_${v4()}`;
   if (db) {
@@ -31,6 +32,7 @@ export const getTestDB = async (maybeDatabaseName?: string) => {
   console.log("🆕 Creando una nueva BDD");
   await ensureDBIsClean(databaseName);
   const migrationClient = postgres(`${dbUrl}/${databaseName}`, { max: 1 });
+  client = migrationClient;
   db = drizzle(migrationClient, { schema: { ...schema } });
   await migrate(db, {
     migrationsFolder,
@@ -39,6 +41,8 @@ export const getTestDB = async (maybeDatabaseName?: string) => {
   return db as unknown as ORM_TYPE;
 };
 
-export const clearDatabase = () => {
+export const closeConnection = async () => {
+  await client?.end();
   db = null;
+  client = null;
 };

@@ -1,4 +1,4 @@
-import { pgTable, text } from "drizzle-orm/pg-core";
+import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createdAndUpdatedAtFields } from "./shared";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
@@ -6,7 +6,7 @@ import { salariesSchema } from "./schema";
 
 // WORK-ROLES-TABLE
 export const workRoleSchema = pgTable("work_role", {
-  id: text("id").primaryKey().unique(),
+  id: uuid("id").primaryKey().unique().defaultRandom(),
   name: text("name").notNull(),
   seniority: text("seniority").notNull(),
   description: text("description").notNull(),

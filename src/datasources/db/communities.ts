@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text } from "drizzle-orm/pg-core";
+import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import {
   eventsToCommunitiesSchema,
@@ -11,7 +11,7 @@ import { createdAndUpdatedAtFields } from "./shared";
 const communityStatusEnum = ["active", "inactive"] as const;
 // COMMUNITY-TABLE
 export const communitySchema = pgTable("communities", {
-  id: text("id").primaryKey().notNull(),
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
   name: text("name").notNull(),
   slug: text("slug").unique(),
   description: text("description"),

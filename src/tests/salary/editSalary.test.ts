@@ -1,4 +1,3 @@
-import { v4 } from "uuid";
 import { describe, expect, it } from "vitest";
 import {
   executeGraphqlOperation,
@@ -34,7 +33,6 @@ const createSalary = async () => {
     validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
     userId: user.id,
     status: "pending",
-    token: v4(),
     sourceId: "123",
   });
   const workEmail = await insertWorkEmail({
@@ -175,7 +173,6 @@ describe("Salary creation", () => {
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
         userId: user2.id,
         status: "pending",
-        token: v4(),
         sourceId: "123",
       });
       const { salaryId, user } = await createSalary();
@@ -243,7 +240,6 @@ describe("Salary creation", () => {
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
         userId: user.id,
         status: "confirmed",
-        token: v4(),
         sourceId: "123",
       });
       const workRole2 = await insertWorkRole();
@@ -281,7 +277,6 @@ describe("Salary creation", () => {
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
         userId: user.id,
         status: "rejected",
-        token: v4(),
         sourceId: "123",
       });
       const workRole2 = await insertWorkRole();
@@ -319,7 +314,6 @@ describe("Salary creation", () => {
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
         userId: user.id,
         status: "expired",
-        token: v4(),
         sourceId: "123",
       });
       const workRole2 = await insertWorkRole();
@@ -358,7 +352,6 @@ describe("Salary creation", () => {
         validUntil: new Date(Date.now() - 1000 * 60 * 60 * 24),
         userId: user.id,
         status: "pending",
-        token: v4(),
         sourceId: "123",
       });
       const workRole2 = await insertWorkRole();

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { primaryKey, pgTable, text } from "drizzle-orm/pg-core";
+import { primaryKey, pgTable, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { communitySchema, eventsSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
@@ -8,10 +8,11 @@ import { createdAndUpdatedAtFields } from "./shared";
 export const eventsToCommunitiesSchema = pgTable(
   "events_communities",
   {
-    eventId: text("event_id")
+    id: uuid("id").notNull().defaultRandom().unique(),
+    eventId: uuid("event_id")
       .references(() => eventsSchema.id)
       .notNull(),
-    communityId: text("community_id")
+    communityId: uuid("community_id")
       .references(() => communitySchema.id)
       .notNull(),
     ...createdAndUpdatedAtFields,

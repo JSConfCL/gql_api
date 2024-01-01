@@ -5,6 +5,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uuid,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import {
@@ -19,7 +20,7 @@ const ticketStatusEnum = ["active", "inactive"] as const;
 const ticketVisibilityEnum = ["public", "private", "unlisted"] as const;
 // TICKETS-TABLE
 export const ticketsSchema = pgTable("tickets", {
-  id: text("id").primaryKey().notNull(),
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
   name: text("name").notNull().unique(),
   description: text("description"),
   status: text("status", { enum: ticketStatusEnum })
@@ -35,10 +36,10 @@ export const ticketsSchema = pgTable("tickets", {
   requiresApproval: boolean("requires_approval").default(false),
   price: integer("price"),
   quantity: integer("quantity"),
-  eventId: text("event_id")
+  eventId: uuid("event_id")
     .references(() => eventsSchema.id)
     .notNull(),
-  currencyId: text("currency").references(() => allowedCurrencySchema.id),
+  currencyId: uuid("currency").references(() => allowedCurrencySchema.id),
   ...createdAndUpdatedAtFields,
 });
 

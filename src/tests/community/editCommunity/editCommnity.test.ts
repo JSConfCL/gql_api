@@ -12,6 +12,7 @@ import {
   EditCommunityMutationVariables,
 } from "./editCommunity.generated";
 import { CommnunityStatus } from "~/generated/types";
+import { v4 } from "uuid";
 
 describe("Edit community", () => {
   describe("Should edit an community", () => {
@@ -116,7 +117,7 @@ describe("Edit community", () => {
         document: EditCommunity,
         variables: {
           input: {
-            communityId: "1",
+            communityId: v4(),
             status: CommnunityStatus.Active,
           },
         },

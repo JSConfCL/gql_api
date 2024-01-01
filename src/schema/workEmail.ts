@@ -1,5 +1,4 @@
 import { eq } from "drizzle-orm";
-import { v4 } from "uuid";
 import { builder } from "~/builder";
 import {
   companiesSchema,
@@ -155,7 +154,6 @@ builder.mutationFields((t) => ({
           emailDomain,
         );
         const insertCompany = insertCompaniesSchema.parse({
-          id: v4(),
           domain: emailDomain,
         });
 
@@ -213,11 +211,9 @@ builder.mutationFields((t) => ({
           console.log("There is a valid validation token");
         }
         const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
-          id: v4(),
           source: "onboarding",
           sourceId: workEmail.id,
           userId: USER.id,
-          token: v4(),
           // by default, the token is valid for 1 hour
           validUntil: new Date(Date.now() + 1000 * 60 * 60),
         });
@@ -248,7 +244,6 @@ builder.mutationFields((t) => ({
           "There is no validation request for this work email. Creating the email and the token",
         );
         const insertWorkEmail = insertWorkEmailSchema.parse({
-          id: v4(),
           userId: USER.id,
           workEmail: email.toLowerCase(),
           companyId,
@@ -260,11 +255,9 @@ builder.mutationFields((t) => ({
 
         console.log("Inserting the email");
         const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
-          id: v4(),
           source: "onboarding",
           sourceId: insertedWorkEmail.id,
           userId: USER.id,
-          token: v4(),
           // by default, the token is valid for 1 hour
           validUntil: new Date(Date.now() + 1000 * 60 * 60),
         });

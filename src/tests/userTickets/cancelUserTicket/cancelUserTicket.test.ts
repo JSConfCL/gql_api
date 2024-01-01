@@ -16,6 +16,7 @@ import {
   CancelUserTicketMutationVariables,
 } from "./cancelUserTicket.generated";
 import { TicketStatus } from "../../../generated/types";
+import { v4 } from "uuid";
 
 describe("Cancel User Ticket", () => {
   it("Should cancel a user ticket if user is the owner of the ticket", async () => {
@@ -135,7 +136,7 @@ describe("Cancel User Ticket", () => {
       {
         document: CancelUserTicket,
         variables: {
-          userTicketId: "2",
+          userTicketId: v4(),
         },
       },
       user1,
