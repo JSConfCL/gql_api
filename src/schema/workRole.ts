@@ -16,14 +16,14 @@ builder.objectType(WorkRoleRef, {
       resolve: async (root, _, { DB }) => {
         const workSenioritiesAndRoles =
           await DB.query.workSeniorityAndRoleSchema.findMany({
-            where: (t, { eq }) => eq(t.id, root.id),
+            where: (t, { eq }) => eq(t.workRoleId, root.id),
             with: {
               seniority: true,
             },
           });
 
         return workSenioritiesAndRoles.map((workSeniorityAndRole) =>
-          selectWorkSenioritySchema.parse(workSeniorityAndRole),
+          selectWorkSenioritySchema.parse(workSeniorityAndRole.seniority),
         );
       },
     }),

@@ -367,6 +367,11 @@ type Query {
   workEmails: [ValidatedWorkEmail!]!
 
   """
+  Get a a work role's seniorities
+  """
+  workRoleSeniorities(input: WorkRoleSenioritiesInput!): [WorkSeniority!]!
+
+  """
   Get a list of possible work roles
   """
   workRoles: [WorkRole!]!
@@ -589,6 +594,11 @@ type WorkRole {
   description: String
   id: String!
   name: String!
+  seniorities: [WorkSeniority!]!
+}
+
+input WorkRoleSenioritiesInput {
+  workRoleId: String!
 }
 
 """

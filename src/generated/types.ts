@@ -367,6 +367,8 @@ export type Query = {
   workEmail: WorkEmail;
   /** Get a list of validated work emails for the user */
   workEmails: Array<ValidatedWorkEmail>;
+  /** Get a a work role's seniorities */
+  workRoleSeniorities: Array<WorkSeniority>;
   /** Get a list of possible work roles */
   workRoles: Array<WorkRole>;
 };
@@ -415,6 +417,10 @@ export type QueryUserSearchArgs = {
 
 export type QueryWorkEmailArgs = {
   email: Scalars["String"]["input"];
+};
+
+export type QueryWorkRoleSenioritiesArgs = {
+  input: WorkRoleSenioritiesInput;
 };
 
 /** Representation of a workEmail */
@@ -625,6 +631,11 @@ export type WorkRole = {
   description?: Maybe<Scalars["String"]["output"]>;
   id: Scalars["String"]["output"];
   name: Scalars["String"]["output"];
+  seniorities: Array<WorkSeniority>;
+};
+
+export type WorkRoleSenioritiesInput = {
+  workRoleId: Scalars["String"]["input"];
 };
 
 /** Representation of a work seniority */
