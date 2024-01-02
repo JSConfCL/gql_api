@@ -572,7 +572,6 @@ input UpdateSalaryInput {
   salaryId: String!
   typeOfEmployment: TypeOfEmployment
   workMetodology: WorkMetodology
-  workRoleId: String
   workSeniorityAndRoleId: String
   yearsOfExperience: Int
 }

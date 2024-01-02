@@ -6,7 +6,6 @@ import {
   selectSalariesSchema,
   selectCompaniesSchema,
   selectWorkRoleSchema,
-  selectWorkSeniorityAndRoleSchema,
   selectWorkSenioritySchema,
 } from "~/datasources/db/schema";
 import {
@@ -183,10 +182,6 @@ const UpdateSalaryInput = builder.inputType("UpdateSalaryInput", {
       required: false,
     }),
     countryCode: t.field({
-      type: "String",
-      required: false,
-    }),
-    workSeniorityAndRoleId: t.field({
       type: "String",
       required: false,
     }),
