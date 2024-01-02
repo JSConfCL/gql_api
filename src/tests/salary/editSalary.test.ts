@@ -10,6 +10,7 @@ import {
   insertUser,
   insertWorkEmail,
   insertWorkRole,
+  insertWorkSeniorityAndRole,
 } from "~/tests/__fixtures";
 import {
   Gender,
@@ -27,7 +28,7 @@ const createSalary = async () => {
   const company = await insertCompany({
     status: "active",
   });
-  const workRole = await insertWorkRole();
+  const workSeniorityAndRole = await insertWorkSeniorityAndRole();
   const insertedConfirmationToken = await insertConfirmationToken({
     source: "onboarding",
     validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
@@ -48,7 +49,7 @@ const createSalary = async () => {
     gender: Gender.Agender,
     typeOfEmployment: TypeOfEmployment.FullTime,
     workMetodology: WorkMetodology.Hybrid,
-    workRoleId: workRole.id,
+    workSeniorityAndRoleId: workSeniorityAndRole.id,
     genderOtherText: "",
     yearsOfExperience: 1,
     userId: user.id,

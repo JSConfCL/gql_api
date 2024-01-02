@@ -3,12 +3,11 @@ import { WorkRoleRef } from "./shared/refs";
 import { selectWorkRoleSchema } from "../datasources/db/schema";
 
 builder.objectType(WorkRoleRef, {
-  description: "Representation of a workEmail",
+  description: "Representation of a work role",
   fields: (t) => ({
     id: t.exposeString("id", { nullable: false }),
     name: t.exposeString("name", { nullable: false }),
-    seniority: t.exposeString("seniority", { nullable: false }),
-    description: t.exposeString("description", { nullable: false }),
+    description: t.exposeString("description", { nullable: true }),
   }),
 });
 

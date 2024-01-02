@@ -45,7 +45,7 @@ export const salairesRelations = relations(salariesSchema, ({ one }) => ({
     fields: [salariesSchema.companyId],
     references: [companiesSchema.id],
   }),
-  workRole: one(workSeniorityAndRoleSchema, {
+  workSeniorityAndRole: one(workSeniorityAndRoleSchema, {
     fields: [salariesSchema.workSeniorityAndRoleId],
     references: [workSeniorityAndRoleSchema.id],
   }),

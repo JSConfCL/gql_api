@@ -38,6 +38,8 @@ import {
   insertUsersToTagsSchema,
   insertWorkEmailSchema,
   insertWorkRoleSchema,
+  insertWorkSenioritySchema,
+  insertWorkSeniorityAndRoleSchema,
   salariesSchema,
   selectAllowedCurrencySchema,
   selectCommunitySchema,
@@ -55,6 +57,8 @@ import {
   selectUsersToCommunitiesSchema,
   selectUsersToTagsSchema,
   selectWorkEmailSchema,
+  selectWorkSeniorityAndRoleSchema,
+  selectWorkSenioritySchema,
   selectWorkRoleSchema,
   tagsSchema,
   ticketsSchema,
@@ -64,6 +68,8 @@ import {
   usersToCommunitiesSchema,
   workEmailSchema,
   workRoleSchema,
+  workSeniorityAndRoleSchema,
+  workSenioritySchema,
 } from "~/datasources/db/schema";
 import {
   TicketApprovalStatus,
@@ -485,7 +491,6 @@ export const insertWorkRole = async (
     id: partialInput?.id ?? faker.string.uuid(),
     name: partialInput?.name ?? faker.person.jobTitle(),
     description: partialInput?.description ?? faker.person.jobDescriptor(),
-    seniority: partialInput?.seniority ?? faker.lorem.word(),
     createdAt: partialInput?.createdAt,
     updatedAt: partialInput?.updatedAt,
     deletedAt: partialInput?.deletedAt,
@@ -494,6 +499,48 @@ export const insertWorkRole = async (
     insertWorkRoleSchema,
     selectWorkRoleSchema,
     workRoleSchema,
+    possibleInput,
+  );
+};
+
+export const insertWorkSeniority = async (
+  partialInput?: Partial<z.infer<typeof insertWorkSenioritySchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    name: partialInput?.name ?? faker.person.jobTitle(),
+    description: partialInput?.description ?? faker.person.jobDescriptor(),
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
+  } satisfies z.infer<typeof insertWorkSenioritySchema>;
+  return insertOne(
+    insertWorkSenioritySchema,
+    selectWorkSenioritySchema,
+    workSenioritySchema,
+    possibleInput,
+  );
+};
+
+export const insertWorkSeniorityAndRole = async (
+  partialInput?: Partial<z.infer<typeof insertWorkSeniorityAndRoleSchema>>,
+) => {
+  const workRoleId = partialInput?.workRoleId ?? (await insertWorkRole()).id;
+  const workSeniorityId =
+    partialInput?.workSeniorityId ?? (await insertWorkSeniority()).id;
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    description: partialInput?.description ?? faker.person.jobDescriptor(),
+    workRoleId,
+    workSeniorityId,
+    createdAt: partialInput?.createdAt,
+    updatedAt: partialInput?.updatedAt,
+    deletedAt: partialInput?.deletedAt,
+  } satisfies z.infer<typeof insertWorkSeniorityAndRoleSchema>;
+  return insertOne(
+    insertWorkSeniorityAndRoleSchema,
+    selectWorkSeniorityAndRoleSchema,
+    workSeniorityAndRoleSchema,
     possibleInput,
   );
 };
@@ -540,8 +587,7 @@ export const insertSalary = async (
     genderOtherText: partialInput?.genderOtherText,
     companyId: partialInput?.companyId,
     workEmailId: partialInput?.workEmailId,
-    workRoleId: partialInput?.workRoleId,
-
+    workSeniorityAndRoleId: partialInput?.workSeniorityAndRoleId,
     createdAt: partialInput?.createdAt,
     currencyCode: partialInput?.currencyCode ?? faker.finance.currencyCode(),
     updatedAt: partialInput?.updatedAt,

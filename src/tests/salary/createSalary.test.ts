@@ -7,6 +7,8 @@ import {
   insertUser,
   insertWorkEmail,
   insertWorkRole,
+  insertWorkSeniority,
+  insertWorkSeniorityAndRole,
 } from "~/tests/__fixtures";
 import { getTestDB } from "~/tests/__fixtures/databaseHelper";
 import {
@@ -28,7 +30,8 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const workRole = await insertWorkRole();
+      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
+
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
@@ -58,7 +61,7 @@ describe("Salary creation", () => {
                 gender: Gender.Agender,
                 typeOfEmployment: TypeOfEmployment.FullTime,
                 workMetodology: WorkMetodology.Hybrid,
-                workRoleId: workRole.id,
+                workSeniorityAndRoleId: workSeniorityAndRole.id,
                 genderOtherText: "",
                 yearsOfExperience: 1,
               },
@@ -83,7 +86,7 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const workRole = await insertWorkRole();
+      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
@@ -111,7 +114,7 @@ describe("Salary creation", () => {
             gender: Gender.Agender,
             typeOfEmployment: TypeOfEmployment.FullTime,
             workMetodology: WorkMetodology.Hybrid,
-            workRoleId: workRole.id,
+            workSeniorityAndRoleId: workSeniorityAndRole.id,
             genderOtherText: "",
             yearsOfExperience: 1,
           },
@@ -133,7 +136,7 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const workRole = await insertWorkRole();
+      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
@@ -163,7 +166,7 @@ describe("Salary creation", () => {
                 gender: Gender.Agender,
                 typeOfEmployment: TypeOfEmployment.FullTime,
                 workMetodology: WorkMetodology.Hybrid,
-                workRoleId: workRole.id,
+                workSeniorityAndRoleId: workSeniorityAndRole.id,
                 genderOtherText: "",
                 yearsOfExperience: 1,
               },
@@ -187,7 +190,7 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const workRole = await insertWorkRole();
+      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
@@ -217,7 +220,7 @@ describe("Salary creation", () => {
                 gender: Gender.Agender,
                 typeOfEmployment: TypeOfEmployment.FullTime,
                 workMetodology: WorkMetodology.Hybrid,
-                workRoleId: workRole.id,
+                workSeniorityAndRoleId: workSeniorityAndRole.id,
                 genderOtherText: "",
                 yearsOfExperience: 1,
               },
@@ -240,7 +243,7 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const workRole = await insertWorkRole();
+      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
@@ -270,7 +273,7 @@ describe("Salary creation", () => {
                 gender: Gender.Agender,
                 typeOfEmployment: TypeOfEmployment.FullTime,
                 workMetodology: WorkMetodology.Hybrid,
-                workRoleId: workRole.id,
+                workSeniorityAndRoleId: workSeniorityAndRole.id,
                 genderOtherText: "",
                 yearsOfExperience: 1,
               },
@@ -293,7 +296,7 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const workRole = await insertWorkRole();
+      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
@@ -323,7 +326,7 @@ describe("Salary creation", () => {
                 gender: Gender.Agender,
                 typeOfEmployment: TypeOfEmployment.FullTime,
                 workMetodology: WorkMetodology.Hybrid,
-                workRoleId: workRole.id,
+                workSeniorityAndRoleId: workSeniorityAndRole.id,
                 genderOtherText: "",
                 yearsOfExperience: 1,
               },
@@ -346,7 +349,7 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const workRole = await insertWorkRole();
+      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
@@ -376,7 +379,7 @@ describe("Salary creation", () => {
                 gender: Gender.Agender,
                 typeOfEmployment: TypeOfEmployment.FullTime,
                 workMetodology: WorkMetodology.Hybrid,
-                workRoleId: workRole.id,
+                workSeniorityAndRoleId: workSeniorityAndRole.id,
                 genderOtherText: "",
                 yearsOfExperience: 1,
               },
@@ -399,7 +402,7 @@ describe("Salary creation", () => {
       const company = await insertCompany({
         status: "active",
       });
-      const workRole = await insertWorkRole();
+      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() - 1000 * 60 * 60 * 24),
@@ -429,7 +432,7 @@ describe("Salary creation", () => {
                 gender: Gender.Agender,
                 typeOfEmployment: TypeOfEmployment.FullTime,
                 workMetodology: WorkMetodology.Hybrid,
-                workRoleId: workRole.id,
+                workSeniorityAndRoleId: workSeniorityAndRole.id,
                 genderOtherText: "",
                 yearsOfExperience: 1,
               },
