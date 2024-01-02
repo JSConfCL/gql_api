@@ -6,6 +6,8 @@ import {
   insertConfirmationToken,
   insertUser,
   insertWorkEmail,
+  insertWorkRole,
+  insertWorkSeniority,
   insertWorkSeniorityAndRole,
 } from "~/tests/__fixtures";
 import { getTestDB } from "~/tests/__fixtures/databaseHelper";
