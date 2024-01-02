@@ -1,5 +1,4 @@
-import { SQL, eq, like } from "drizzle-orm";
-import { v4 } from "uuid";
+import { SQL, eq, ilike } from "drizzle-orm";
 import { builder } from "~/builder";
 import {
   companiesSchema,
@@ -7,6 +6,7 @@ import {
   selectCompaniesSchema,
 } from "~/datasources/db/schema";
 import { CompanyRef } from "~/schema/shared/refs";
+import { sanitizeForLikeSearch } from "./shared/helpers";
 
 const CompanyStatus = builder.enumType("CompanyStatus", {
   values: ["active", "inactive", "draft"],
@@ -104,20 +104,27 @@ builder.queryFields((t) => ({
       const { companyName, description, domain, website } = input;
       const wheres: SQL[] = [];
       if (companyName) {
-        const searchName = `%${companyName}%`;
-        wheres.push(like(companiesSchema.name, searchName));
+        wheres.push(
+          ilike(companiesSchema.name, sanitizeForLikeSearch(companyName)),
+        );
       }
       if (description) {
-        const searchDescription = `%${description}%`;
-        wheres.push(like(companiesSchema.description, searchDescription));
+        wheres.push(
+          ilike(
+            companiesSchema.description,
+            sanitizeForLikeSearch(description),
+          ),
+        );
       }
       if (domain) {
-        const searchDomain = `%${domain}%`;
-        wheres.push(like(companiesSchema.domain, searchDomain));
+        wheres.push(
+          ilike(companiesSchema.domain, sanitizeForLikeSearch(domain)),
+        );
       }
       if (website) {
-        const searchWebsite = `%${website}%`;
-        wheres.push(like(companiesSchema.website, searchWebsite));
+        wheres.push(
+          ilike(companiesSchema.website, sanitizeForLikeSearch(website)),
+        );
       }
       const companies = await DB.query.companiesSchema.findMany({
         where: (_, { and }) => and(...wheres),
@@ -250,11 +257,12 @@ builder.mutationFields((t) => ({
       if (Object.keys(dataToUpdate).length === 0) {
         throw new Error("Nothing to update");
       }
-      const updatedCompany = await DB.update(companiesSchema)
-        .set(dataToUpdate)
-        .where(eq(companiesSchema.id, companyId))
-        .returning()
-        .get();
+      const updatedCompany = (
+        await DB.update(companiesSchema)
+          .set(dataToUpdate)
+          .where(eq(companiesSchema.id, companyId))
+          .returning()
+      )?.[0];
 
       return selectCompaniesSchema.parse(updatedCompany);
     },
@@ -296,12 +304,10 @@ builder.mutationFields((t) => ({
       if (Object.keys(dataToCreate).length === 0) {
         throw new Error("No data to create a company");
       }
-      dataToCreate.id = v4();
       const updateCompanyData = insertCompaniesSchema.parse(dataToCreate);
-      const createCompany = await DB.insert(companiesSchema)
-        .values(updateCompanyData)
-        .returning()
-        .get();
+      const createCompany = (
+        await DB.insert(companiesSchema).values(updateCompanyData).returning()
+      )?.[0];
 
       return selectCompaniesSchema.parse(createCompany);
     },

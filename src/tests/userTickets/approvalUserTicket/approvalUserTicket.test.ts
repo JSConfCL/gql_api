@@ -1,4 +1,4 @@
-import { it, describe, afterEach, assert } from "vitest";
+import { it, describe, assert } from "vitest";
 import {
   executeGraphqlOperationAsUser,
   insertEvent,
@@ -7,16 +7,12 @@ import {
   insertUser,
   insertUserToEvent,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   ApprovalUserTicket,
   ApprovalUserTicketMutation,
   ApprovalUserTicketMutationVariables,
 } from "./approvalUserTicket.generated";
-
-afterEach(() => {
-  clearDatabase();
-});
+import { v4 } from "uuid";
 
 describe("Approval user ticket", () => {
   it("Should approve a user ticket if is superadmin", async () => {
@@ -197,7 +193,7 @@ describe("Approval user ticket", () => {
       {
         document: ApprovalUserTicket,
         variables: {
-          userTicketId: "123",
+          userTicketId: v4(),
         },
       },
       user1,

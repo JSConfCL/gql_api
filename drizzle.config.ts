@@ -6,16 +6,13 @@ dotenv.config({
   override: true,
 });
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is not defined");
-}
-if (!process.env.DATABASE_TOKEN) {
-  throw new Error("DATABASE_TOKEN is not defined");
+if (!process.env.NEON_URL) {
+  throw new Error("NEON_URL is not defined");
 }
 
 export default {
   schema: "./src/datasources/db/schema.ts",
-  driver: "turso",
+  driver: "pg",
   out: "./drizzle/migrations",
   breakpoints: true,
   strict: true,
@@ -24,7 +21,6 @@ export default {
   },
   verbose: true,
   dbCredentials: {
-    url: process.env.DATABASE_URL,
-    authToken: process.env.DATABASE_TOKEN,
+    connectionString: process.env.NEON_URL,
   },
 } satisfies Config;

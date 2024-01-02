@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm";
-import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+  boolean,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import {
   userTicketsSchema,
@@ -8,32 +15,31 @@ import {
 } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
+const ticketStatusEnum = ["active", "inactive"] as const;
+
+const ticketVisibilityEnum = ["public", "private", "unlisted"] as const;
 // TICKETS-TABLE
-export const ticketsSchema = sqliteTable("tickets", {
-  id: text("id").primaryKey().notNull(),
-  name: text("name", { length: 1024 }).notNull().unique(),
-  description: text("description", { length: 4096 }),
-  status: text("status", { enum: ["active", "inactive"] })
+export const ticketsSchema = pgTable("tickets", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  status: text("status", { enum: ticketStatusEnum })
     .notNull()
     .default("inactive"),
   visibility: text("visibility", {
-    enum: ["public", "private", "unlisted"],
+    enum: ticketVisibilityEnum,
   })
     .notNull()
     .default("unlisted"),
-  startDateTime: int("start_date_time", {
-    mode: "timestamp_ms",
-  }).notNull(),
-  endDateTime: int("end_date_time", { mode: "timestamp_ms" }),
-  requiresApproval: int("requires_approval", { mode: "boolean" }).default(
-    false,
-  ),
-  price: int("price"),
-  quantity: int("quantity"),
-  eventId: text("event_id")
+  startDateTime: timestamp("start_date_time").notNull(),
+  endDateTime: timestamp("end_date_time"),
+  requiresApproval: boolean("requires_approval").default(false),
+  price: integer("price"),
+  quantity: integer("quantity"),
+  eventId: uuid("event_id")
     .references(() => eventsSchema.id)
     .notNull(),
-  currencyId: text("currency").references(() => allowedCurrencySchema.id),
+  currencyId: uuid("currency").references(() => allowedCurrencySchema.id),
   ...createdAndUpdatedAtFields,
 });
 

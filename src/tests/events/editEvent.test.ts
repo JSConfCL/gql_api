@@ -1,4 +1,4 @@
-import { it, describe, afterEach, assert, expect } from "vitest";
+import { it, describe, assert, expect } from "vitest";
 import {
   executeGraphqlOperationAsSuperAdmin,
   executeGraphqlOperationAsUser,
@@ -8,8 +8,8 @@ import {
   insertEventToCommunity,
   insertUser,
   insertUserToCommunity,
+  toISODateWithoutMilliseconds,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   EditEvent,
   EditEventMutation,
@@ -17,10 +17,6 @@ import {
 } from "./editEvent.generated";
 import { EventVisibility } from "~/generated/types";
 import { faker } from "@faker-js/faker";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("Event", () => {
   describe("Should edit an event", () => {
@@ -42,17 +38,13 @@ describe("Event", () => {
       });
       const newDescription = faker.lorem.paragraph(3);
       const newName = faker.lorem.paragraph(3);
-      const newStartDateTime = faker.date
-        .future({
-          years: 1,
-        })
-        .toISOString();
-      const newEndDateTime = faker.date
-        .future({
-          refDate: newStartDateTime,
-          years: 1,
-        })
-        .toISOString();
+      const newStartDateTime = faker.date.future({
+        years: 1,
+      });
+      const newEndDateTime = faker.date.future({
+        refDate: newStartDateTime,
+        years: 1,
+      });
 
       const response = await executeGraphqlOperationAsUser<
         EditEventMutation,
@@ -65,10 +57,10 @@ describe("Event", () => {
               eventId: event.id,
               description: newDescription,
               name: newName,
-              startDateTime: newStartDateTime,
+              startDateTime: newStartDateTime.toISOString(),
               visibility: EventVisibility.Public,
               maxAttendees: 10,
-              endDateTime: newEndDateTime,
+              endDateTime: newEndDateTime.toISOString(),
             },
           },
         },
@@ -79,8 +71,14 @@ describe("Event", () => {
       assert.equal(response.data?.editEvent.id, event.id);
       assert.equal(response.data?.editEvent.description, newDescription);
       assert.equal(response.data?.editEvent.name, newName);
-      assert.equal(response.data?.editEvent.startDateTime, newStartDateTime);
-      assert.equal(response.data?.editEvent.endDateTime, newEndDateTime);
+      assert.equal(
+        response.data?.editEvent.startDateTime,
+        toISODateWithoutMilliseconds(newStartDateTime),
+      );
+      assert.equal(
+        response.data?.editEvent.endDateTime,
+        toISODateWithoutMilliseconds(newEndDateTime),
+      );
     });
     it("As a super-admin", async () => {
       const user1 = await insertUser();
@@ -100,17 +98,13 @@ describe("Event", () => {
       });
       const newDescription = faker.lorem.paragraph(3);
       const newName = faker.lorem.paragraph(3);
-      const newStartDateTime = faker.date
-        .future({
-          years: 1,
-        })
-        .toISOString();
-      const newEndDateTime = faker.date
-        .future({
-          refDate: newStartDateTime,
-          years: 1,
-        })
-        .toISOString();
+      const newStartDateTime = faker.date.future({
+        years: 1,
+      });
+      const newEndDateTime = faker.date.future({
+        refDate: newStartDateTime,
+        years: 1,
+      });
 
       const response = await executeGraphqlOperationAsSuperAdmin<
         EditEventMutation,
@@ -122,10 +116,10 @@ describe("Event", () => {
             eventId: event.id,
             description: newDescription,
             name: newName,
-            startDateTime: newStartDateTime,
+            startDateTime: newStartDateTime.toISOString(),
             visibility: EventVisibility.Public,
             maxAttendees: 10,
-            endDateTime: newEndDateTime,
+            endDateTime: newEndDateTime.toISOString(),
           },
         },
       });
@@ -134,8 +128,14 @@ describe("Event", () => {
       assert.equal(response.data?.editEvent.id, event.id);
       assert.equal(response.data?.editEvent.description, newDescription);
       assert.equal(response.data?.editEvent.name, newName);
-      assert.equal(response.data?.editEvent.startDateTime, newStartDateTime);
-      assert.equal(response.data?.editEvent.endDateTime, newEndDateTime);
+      assert.equal(
+        response.data?.editEvent.startDateTime,
+        toISODateWithoutMilliseconds(newStartDateTime),
+      );
+      assert.equal(
+        response.data?.editEvent.endDateTime,
+        toISODateWithoutMilliseconds(newEndDateTime),
+      );
     });
   });
   describe("Should fail to edit an event", () => {
@@ -193,7 +193,7 @@ describe("Event", () => {
       assert.equal(response.errors?.length, 1);
       assert.equal(response.errors?.[0]?.message, "FORBIDDEN");
     });
-    it("As volunteer", async () => {
+    it("As collaborator", async () => {
       const user1 = await insertUser();
       const community = await insertCommunity();
       const event = await insertEvent({
@@ -203,7 +203,7 @@ describe("Event", () => {
       await insertUserToCommunity({
         communityId: community.id,
         userId: user1.id,
-        role: "volunteer",
+        role: "collaborator",
       });
       await insertEventToCommunity({
         communityId: community.id,

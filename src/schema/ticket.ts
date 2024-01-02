@@ -33,12 +33,12 @@ builder.objectType(TicketRef, {
     startDateTime: t.field({
       type: "DateTime",
       nullable: false,
-      resolve: (root) => root.startDateTime,
+      resolve: (root) => new Date(root.startDateTime),
     }),
     endDateTime: t.field({
       type: "DateTime",
       nullable: true,
-      resolve: (root) => root.endDateTime,
+      resolve: (root) => (root.endDateTime ? new Date(root.endDateTime) : null),
     }),
     requiresApproval: t.exposeBoolean("requiresApproval", {
       nullable: true,
@@ -161,11 +161,12 @@ builder.mutationFields((t) => ({
           input.currencyId,
         );
 
-        const ticket = await ctx.DB.update(ticketsSchema)
-          .set(updateFields)
-          .where(eq(ticketsSchema.id, ticketId))
-          .returning()
-          .get();
+        const ticket = (
+          await ctx.DB.update(ticketsSchema)
+            .set(updateFields)
+            .where(eq(ticketsSchema.id, ticketId))
+            .returning()
+        )?.[0];
 
         return selectTicketSchema.parse(ticket);
       } catch (e) {

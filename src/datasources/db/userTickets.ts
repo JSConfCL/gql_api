@@ -1,29 +1,33 @@
 import { relations } from "drizzle-orm";
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { ticketsSchema, usersSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
+export const userTicketsStatusEnum = ["active", "inactive"] as const;
+export const userTicketsPaymentStatusEnum = ["paid", "unpaid"] as const;
+export const userTicketsApprovalStatusEnum = ["approved", "pending"] as const;
+export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;
 // USER-TICKETS-TABLE
-export const userTicketsSchema = sqliteTable("user_tickets", {
-  id: text("id").primaryKey().notNull(),
+export const userTicketsSchema = pgTable("user_tickets", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
   userId: text("user_id").references(() => usersSchema.id),
-  ticketTemplateId: text("ticket_template_id")
+  ticketTemplateId: uuid("ticket_template_id")
     .references(() => ticketsSchema.id)
     .notNull(),
-  status: text("status", { enum: ["active", "cancelled"] })
-    .default("cancelled")
+  status: text("status", { enum: userTicketsStatusEnum })
+    .default("inactive")
     .notNull(),
-  paymentStatus: text("payment_status", { enum: ["paid", "unpaid"] })
+  paymentStatus: text("payment_status", { enum: userTicketsPaymentStatusEnum })
     .default("unpaid")
     .notNull(),
   approvalStatus: text("approval_status", {
-    enum: ["approved", "pending"],
+    enum: userTicketsApprovalStatusEnum,
   })
     .default("pending")
     .notNull(),
   redemptionStatus: text("redemption_status", {
-    enum: ["redeemed", "pending"],
+    enum: userTicketsRedemptionStatusEnum,
   })
     .default("pending")
     .notNull(),

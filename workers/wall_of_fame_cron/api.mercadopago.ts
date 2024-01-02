@@ -9,6 +9,7 @@ import {
   usersTagsSchema,
   AllowedUserTags,
 } from "../../src/datasources/db/schema";
+import { sanitizeForLikeSearch } from "../../src/schema/shared/helpers";
 
 const externalReferences = {
   "1LUKA": "1LUKA",
@@ -43,8 +44,7 @@ type Result = {
 
 export const getSubscriptions = async (env: ENV) => {
   const DB = getDb({
-    authToken: env.DATABASE_TOKEN,
-    url: env.DATABASE_URL,
+    neonUrl: env.NEON_URL,
   });
   const meliFetch = getFetch(env);
   let results: Result[] = [];
@@ -61,7 +61,6 @@ export const getSubscriptions = async (env: ENV) => {
   }
 
   const tagToInsert = insertTagsSchema.parse({
-    id: v4(),
     name: AllowedUserTags.DONOR,
     description: "Usuario Donador",
   });
@@ -82,9 +81,8 @@ export const getSubscriptions = async (env: ENV) => {
       if (!email) {
         throw new Error("Email not found for subscription");
       }
-      const searchEmail = `%${email}%`;
       const user = await DB.query.usersSchema.findFirst({
-        where: (u, { like }) => like(u.name, searchEmail),
+        where: (u, { ilike }) => ilike(u.name, sanitizeForLikeSearch(email)),
       });
       if (!user) {
         throw new Error("User not found");

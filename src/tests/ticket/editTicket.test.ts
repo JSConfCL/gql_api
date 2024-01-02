@@ -1,4 +1,4 @@
-import { it, describe, afterEach, assert } from "vitest";
+import { it, describe, assert } from "vitest";
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -7,8 +7,8 @@ import {
   insertTicketTemplate,
   insertUser,
   insertUserToCommunity,
+  toISODateWithoutMilliseconds,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { faker } from "@faker-js/faker";
 import {
   EditTicket,
@@ -19,10 +19,6 @@ import {
   TicketTemplateStatus,
   TicketTemplateVisibility,
 } from "~/generated/types";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("User", () => {
   it("Should update a ticket, all fields", async () => {
@@ -44,11 +40,14 @@ describe("User", () => {
       eventId: event1.id,
     });
 
+    const startDateTime = faker.date.future();
+    const endDateTime = faker.date.future();
+
     const fakeInput = {
       name: faker.word.words(3),
       description: faker.lorem.paragraph(3),
-      startDateTime: faker.date.future(),
-      endDateTime: faker.date.future(),
+      startDateTime: startDateTime.toISOString(),
+      endDateTime: endDateTime.toISOString(),
       requiresApproval: false,
       price: faker.number.int({
         min: 1,
@@ -84,8 +83,8 @@ describe("User", () => {
       id: ticket.id,
       name: fakeInput.name,
       description: fakeInput.description,
-      startDateTime: fakeInput.startDateTime.toISOString(),
-      endDateTime: fakeInput.endDateTime.toISOString(),
+      startDateTime: toISODateWithoutMilliseconds(startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(endDateTime),
       requiresApproval: fakeInput.requiresApproval,
       price: fakeInput.price,
       quantity: fakeInput.quantity,

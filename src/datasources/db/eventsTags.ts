@@ -1,19 +1,20 @@
 import { relations } from "drizzle-orm";
-import { primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { primaryKey, pgTable, uuid } from "drizzle-orm/pg-core";
 import { eventsSchema, tagsSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 // EVENTS—TAGS-TABLE
-export const eventsToTagsSchema = sqliteTable(
+export const eventsToTagsSchema = pgTable(
   "events_tags",
   {
-    eventId: text("event_id").references(() => eventsSchema.id),
-    tagId: text("tag_id").references(() => tagsSchema.id),
+    id: uuid("id").notNull().defaultRandom().unique(),
+    eventId: uuid("event_id").references(() => eventsSchema.id),
+    tagId: uuid("tag_id").references(() => tagsSchema.id),
     ...createdAndUpdatedAtFields,
   },
   (t) => ({
-    primary_key: primaryKey(t.eventId, t.tagId),
+    primary_key: primaryKey({ columns: [t.eventId, t.tagId] }),
   }),
 );
 

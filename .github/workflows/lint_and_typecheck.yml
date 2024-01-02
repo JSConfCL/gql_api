@@ -14,7 +14,9 @@ jobs:
     # Considerar Mover clone/setup/caches a un composite action 🙏
     steps:
       - name: ⏳ Cloning repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          show-progress: false
 
       - name: ⬢ Setup Node
         uses: actions/setup-node@v3

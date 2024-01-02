@@ -1,16 +1,11 @@
-import { it, describe, afterEach, assert } from "vitest";
+import { it, describe, assert } from "vitest";
 import { executeGraphqlOperationAsUser, insertUser } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import { faker } from "@faker-js/faker";
 import {
   UpdateUser,
   UpdateUserMutation,
   UpdateUserMutationVariables,
 } from "./updateUser.generated";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("User", () => {
   it("Should update a user, all fields", async () => {

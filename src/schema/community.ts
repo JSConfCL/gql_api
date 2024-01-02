@@ -7,12 +7,12 @@ import {
   selectEventsSchema,
   selectUsersSchema,
 } from "~/datasources/db/schema";
-import { SQL, eq, inArray, like } from "drizzle-orm";
+import { SQL, eq, inArray, ilike } from "drizzle-orm";
 import { CommunityRef, EventRef, UserRef } from "~/schema/shared/refs";
 import { builder } from "~/builder";
 import { canCreateCommunity, canEditCommunity } from "~/validations";
-import { v4 } from "uuid";
 import { GraphQLError } from "graphql";
+import { sanitizeForLikeSearch } from "./shared/helpers";
 
 export const CommnunityStatus = builder.enumType("CommnunityStatus", {
   values: ["active", "inactive"] as const,
@@ -40,7 +40,7 @@ builder.objectType(CommunityRef, {
               .where(eq(eventsToCommunitiesSchema.communityId, root.id)),
           ),
           orderBy(fields, operators) {
-            return operators.desc(fields.createdAt);
+            return operators.asc(fields.createdAt);
           },
         });
 
@@ -60,7 +60,7 @@ builder.objectType(CommunityRef, {
             },
           },
           orderBy(fields, operators) {
-            return operators.desc(fields.createdAt);
+            return operators.asc(fields.createdAt);
           },
         });
         if (
@@ -99,9 +99,7 @@ builder.queryFields((t) => ({
         wheres.push(eq(communitySchema.id, id));
       }
       if (name) {
-        const sanitizedName = name.replace(/[%_]/g, "\\$&");
-        const searchName = `%${sanitizedName}%`;
-        wheres.push(like(communitySchema.name, searchName));
+        wheres.push(ilike(communitySchema.name, sanitizeForLikeSearch(name)));
       }
       if (status) {
         wheres.push(eq(communitySchema.status, status));
@@ -109,7 +107,7 @@ builder.queryFields((t) => ({
       const communities = await ctx.DB.query.communitySchema.findMany({
         where: (c, { and }) => and(...wheres),
         orderBy(fields, operators) {
-          return operators.desc(fields.createdAt);
+          return operators.asc(fields.createdAt);
         },
       });
       return communities.map((u) => selectCommunitySchema.parse(u));
@@ -127,7 +125,7 @@ builder.queryFields((t) => ({
       const community = await ctx.DB.query.communitySchema.findFirst({
         where: (c, { eq }) => eq(c.id, id),
         orderBy(fields, operators) {
-          return operators.desc(fields.createdAt);
+          return operators.asc(fields.createdAt);
         },
       });
       if (!community) {
@@ -183,18 +181,16 @@ builder.mutationFields((t) => ({
         if (existSlug) {
           throw new Error("This slug already exist");
         }
-        const id = v4();
         const newCommunity = insertCommunitySchema.parse({
-          id,
           name,
           slug,
           description,
         });
 
-        const communities = await DB.insert(communitySchema)
-          .values(newCommunity)
-          .returning()
-          .get();
+        const communities = (
+          await DB.insert(communitySchema).values(newCommunity).returning()
+        )?.[0];
+
         return selectCommunitySchema.parse(communities);
       } catch (e) {
         throw new GraphQLError(
@@ -243,11 +239,13 @@ builder.mutationFields((t) => ({
         if (slug) {
           dataToUpdate.slug = slug;
         }
-        const community = await DB.update(communitySchema)
-          .set(dataToUpdate)
-          .where(eq(communitySchema.id, communityId))
-          .returning()
-          .get();
+        const community = (
+          await DB.update(communitySchema)
+            .set(dataToUpdate)
+            .where(eq(communitySchema.id, communityId))
+            .returning()
+        )?.[0];
+
         return selectCommunitySchema.parse(community);
       } catch (e) {
         throw new GraphQLError(

@@ -1,11 +1,10 @@
-import { it, describe, assert, afterEach } from "vitest";
+import { it, describe, assert } from "vitest";
 import {
   executeGraphqlOperation,
   insertCommunity,
   insertEvent,
   insertEventToCommunity,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   Communities,
   CommunitiesQuery,
@@ -17,10 +16,7 @@ import {
   CommunityQueryVariables,
 } from "~/tests/community/getCommunity/getCommunity.generated";
 import { CommnunityStatus } from "~/generated/types";
-
-afterEach(() => {
-  clearDatabase();
-});
+import { v4 } from "uuid";
 
 describe("Communities", () => {
   it("Should return an unfiltered list", async () => {
@@ -251,7 +247,7 @@ describe("Community search", () => {
     >({
       document: Community,
       variables: {
-        communityID: "some-non-existing-id",
+        communityID: v4(),
       },
     });
 

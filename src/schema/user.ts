@@ -38,7 +38,7 @@ builder.objectType(UserRef, {
             },
           },
           orderBy(fields, operators) {
-            return operators.desc(fields.createdAt);
+            return operators.asc(fields.createdAt);
           },
         });
         if (
@@ -93,7 +93,7 @@ builder.queryFields((t) => ({
     resolve: async (root, args, ctx) => {
       const users = await ctx.DB.query.usersSchema.findMany({
         orderBy(fields, operators) {
-          return operators.desc(fields.createdAt);
+          return operators.asc(fields.createdAt);
         },
       });
       return users.map((u) => selectUsersSchema.parse(u));
@@ -194,11 +194,13 @@ builder.mutationFields((t) => ({
         if (username) {
           updateFields.username = username;
         }
-        const user = await ctx.DB.update(usersSchema)
-          .set(updateFields)
-          .where(eq(usersSchema.id, id))
-          .returning()
-          .get();
+        const user = (
+          await ctx.DB.update(usersSchema)
+            .set(updateFields)
+            .where(eq(usersSchema.id, id))
+            .returning()
+        )?.[0];
+
         return selectUsersSchema.parse(user);
       } catch (e) {
         throw new GraphQLError(

@@ -1,12 +1,17 @@
-import { sql } from "drizzle-orm";
-import { integer } from "drizzle-orm/sqlite-core";
+import { timestamp } from "drizzle-orm/pg-core";
 
 export const createdAndUpdatedAtFields = {
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .default(sql`current_timestamp`)
-    .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" }),
-  deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+  deletedAt: timestamp("deleted_at"),
+};
+
+import { z } from "zod";
+
+export const createdAndUpdatedAtFieldsSelectZodSchema = {
+  createdAt: z.date(),
+  updatedAt: z.date().optional(),
+  deletedAt: z.date().optional(),
 };
 
 export const genderOptions = [

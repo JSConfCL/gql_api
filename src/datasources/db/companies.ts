@@ -1,20 +1,19 @@
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { createdAndUpdatedAtFields } from "./shared";
 import { relations } from "drizzle-orm";
 import { salariesSchema, workEmailSchema } from "./schema";
 
+const companiesStatusEnum = ["active", "inactive", "draft"] as const;
 // COMPANIES-TABLE
-export const companiesSchema = sqliteTable("companies", {
-  id: text("company_id").primaryKey().unique(),
-  name: text("name", { length: 512 }),
-  description: text("description", { length: 4096 }),
+export const companiesSchema = pgTable("companies", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  name: text("name"),
+  description: text("description"),
   domain: text("domain").notNull(),
   logo: text("logo"),
   website: text("website"),
-  status: text("status", { enum: ["active", "inactive", "draft"] }).default(
-    "draft",
-  ),
+  status: text("status", { enum: companiesStatusEnum }).default("draft"),
   ...createdAndUpdatedAtFields,
 });
 

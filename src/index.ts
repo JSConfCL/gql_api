@@ -150,8 +150,7 @@ export const yoga = createYoga<Env>({
   ].filter(Boolean),
   context: async ({
     request,
-    DATABASE_URL,
-    DATABASE_TOKEN,
+    NEON_URL,
     CLERK_PEM_PUBLIC_KEY,
     CLERK_ISSUER_ID,
     MAIL_QUEUE,
@@ -163,21 +162,17 @@ export const yoga = createYoga<Env>({
     if (!CLERK_ISSUER_ID) {
       throw new Error("Missing CLERK_ISSUER_ID");
     }
-    if (!DATABASE_URL) {
-      throw new Error("Missing DATABASE_URL");
-    }
-    if (!DATABASE_TOKEN) {
-      throw new Error("Missing DATABASE_TOKEN");
-    }
     if (!MAIL_QUEUE) {
       throw new Error("Missing MAIL_QUEUE");
     }
     if (!GOOGLE_PHOTOS_IMPORT_QUEUE) {
       throw new Error("Missing GOOGLE_PHOTOS_IMPORT_QUEUE");
     }
+    if (!NEON_URL) {
+      throw new Error("Missing NEON_URL");
+    }
     const DB = getDb({
-      authToken: DATABASE_TOKEN,
-      url: DATABASE_URL,
+      neonUrl: NEON_URL,
     });
     const USER = await getUser({
       request,

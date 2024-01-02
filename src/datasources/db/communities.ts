@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import {
   eventsToCommunitiesSchema,
@@ -8,13 +8,14 @@ import {
 } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
+const communityStatusEnum = ["active", "inactive"] as const;
 // COMMUNITY-TABLE
-export const communitySchema = sqliteTable("communities", {
-  id: text("id").primaryKey().notNull(),
+export const communitySchema = pgTable("communities", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
   name: text("name").notNull(),
-  slug: text("slug", { length: 64 }).unique(),
-  description: text("description", { length: 1024 }),
-  status: text("status", { enum: ["active", "inactive"] })
+  slug: text("slug").unique(),
+  description: text("description"),
+  status: text("status", { enum: communityStatusEnum })
     .default("inactive")
     .notNull(),
   ...createdAndUpdatedAtFields,

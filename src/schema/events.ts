@@ -1,5 +1,4 @@
-import { SQL, eq, gte, like, lte, inArray } from "drizzle-orm";
-import { v4 } from "uuid";
+import { SQL, eq, gte, ilike, lte, inArray } from "drizzle-orm";
 import { builder } from "~/builder";
 import {
   eventsSchema,
@@ -29,6 +28,7 @@ import {
 } from "./userTickets";
 import { canCreateEvent, canEditEvent } from "~/validations";
 import { GraphQLError } from "graphql";
+import { sanitizeForLikeSearch } from "./shared/helpers";
 
 export const EventStatus = builder.enumType("EventStatus", {
   values: ["active", "inactive"] as const,
@@ -58,12 +58,12 @@ builder.objectType(EventRef, {
     startDateTime: t.field({
       type: "DateTime",
       nullable: false,
-      resolve: (root) => root.startDateTime,
+      resolve: (root) => new Date(root.startDateTime),
     }),
     endDateTime: t.field({
       type: "DateTime",
       nullable: true,
-      resolve: (root) => root.endDateTime,
+      resolve: (root) => (root.endDateTime ? new Date(root.endDateTime) : null),
     }),
     meetingURL: t.exposeString("meetingURL", { nullable: true }),
     maxAttendees: t.exposeInt("maxAttendees", { nullable: true }),
@@ -119,7 +119,7 @@ builder.objectType(EventRef, {
         const users = await ctx.DB.query.usersSchema.findMany({
           where: (c, { and }) => and(...wheres),
           orderBy(fields, operators) {
-            return operators.desc(fields.username);
+            return operators.asc(fields.username);
           },
         });
         return users.map((u) => selectUsersSchema.parse(u));
@@ -230,7 +230,7 @@ builder.objectType(EventRef, {
         const tickets = await DB.query.userTicketsSchema.findMany({
           where: (c, { and }) => and(...wheres),
           orderBy(fields, operators) {
-            return operators.desc(fields.createdAt);
+            return operators.asc(fields.createdAt);
           },
         });
 
@@ -306,9 +306,7 @@ builder.queryFields((t) => ({
         wheres.push(eq(eventsSchema.id, id));
       }
       if (name) {
-        const sanitizedName = name.replace(/[%_]/g, "\\$&");
-        const searchName = `%${sanitizedName}%`;
-        wheres.push(like(eventsSchema.name, searchName));
+        wheres.push(ilike(eventsSchema.name, sanitizeForLikeSearch(name)));
       }
       if (status) {
         wheres.push(eq(eventsSchema.status, status));
@@ -326,7 +324,7 @@ builder.queryFields((t) => ({
       const events = await ctx.DB.query.eventsSchema.findMany({
         where: (c, { and }) => and(...wheres),
         orderBy(fields, operators) {
-          return operators.desc(fields.createdAt);
+          return operators.asc(fields.createdAt);
         },
       });
       return events.map((u) => selectEventsSchema.parse(u));
@@ -344,7 +342,7 @@ builder.queryFields((t) => ({
       const event = await ctx.DB.query.eventsSchema.findFirst({
         where: (c, { eq }) => eq(c.id, id),
         orderBy(fields, operators) {
-          return operators.desc(fields.createdAt);
+          return operators.asc(fields.createdAt);
         },
       });
       if (!event) {
@@ -457,9 +455,7 @@ builder.mutationFields((t) => ({
         }
         const result = await ctx.DB.transaction(async (trx) => {
           try {
-            const id = v4();
             const newEvent = insertEventsSchema.parse({
-              id,
               name,
               description,
               visibility,
@@ -474,19 +470,14 @@ builder.mutationFields((t) => ({
               timeZone,
             });
 
-            const events = await trx
-              .insert(eventsSchema)
-              .values(newEvent)
-              .returning()
-              .get();
-            await trx
-              .insert(eventsToCommunitiesSchema)
-              .values({
-                eventId: id,
-                communityId: communityId,
-              })
-              .returning()
-              .get();
+            const events = (
+              await trx.insert(eventsSchema).values(newEvent).returning()
+            )?.[0];
+
+            await trx.insert(eventsToCommunitiesSchema).values({
+              eventId: events.id,
+              communityId: communityId,
+            });
 
             return events;
           } catch (e) {
@@ -554,11 +545,13 @@ builder.mutationFields((t) => ({
         if (!updateValues.success) {
           throw new Error("Invalid input");
         }
-        const event = await ctx.DB.update(eventsSchema)
-          .set(updateValues.data)
-          .where(eq(eventsSchema.id, eventId))
-          .returning()
-          .get();
+        const event = (
+          await ctx.DB.update(eventsSchema)
+            .set(updateValues.data)
+            .where(eq(eventsSchema.id, eventId))
+            .returning()
+        )?.[0];
+
         return selectEventsSchema.parse(event);
       } catch (e) {
         throw new GraphQLError(

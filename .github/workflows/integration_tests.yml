@@ -12,18 +12,21 @@ jobs:
     runs-on: ubuntu-latest
     name: Integration Tests
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432/tcp
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
-      - name: Setup SQLite environment
-        uses: ccorsi/setup-sqlite@v1.0.1
-        with:
-          sqlite-version: 3.40.0
-          sqlite-year: 2022
-
-      - run: sqlite3 --version
-
       - name: ⏳ Cloning repo
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v4
+        with:
+          show-progress: false
       - name: ⬢ Setup Node
         uses: actions/setup-node@v3
         with:
@@ -42,6 +45,10 @@ jobs:
 
       - name: Run tests
         run: npm run test:ci
+        env:
+          # The hostname used to communicate with the PostgreSQL service container
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }} # get randomly assigned published port
 
       - name: "Report Coverage"
         if: always() # Also generate the report if tests are failing

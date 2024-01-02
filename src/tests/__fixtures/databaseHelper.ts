@@ -1,58 +1,48 @@
 /* eslint-disable no-console */
-import { faker } from "@faker-js/faker";
-import { createClient } from "@libsql/client";
-import { exec } from "node:child_process";
-import { drizzle } from "drizzle-orm/libsql";
-import { migrate } from "drizzle-orm/libsql/migrator";
+import { PostgresJsDatabase, drizzle } from "drizzle-orm/postgres-js";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
 import * as schema from "~/datasources/db/schema";
 import { ORM_TYPE } from "~/datasources/db";
+import postgres from "postgres";
+import { v4 } from "uuid";
 
 export const testDatabasesFolder = `.test_dbs`;
 export const migrationsFolder = `${process.cwd()}/drizzle/migrations`;
 
-const createDatabase = () => {
-  const databaseName = `${faker.string.uuid().replaceAll("-", "_")}.sqlite`;
-  const databasePath = `${process.cwd()}/${testDatabasesFolder}/${databaseName}`;
-  const command = `echo "CREATE TABLE IF NOT EXISTS SOME_TABLE (id INTEGER PRIMARY KEY);" | sqlite3 ${databasePath}`;
-  return new Promise<string>((resolve, reject) => {
-    exec(command, (err, stdout, stderr) => {
-      /* c8 ignore next 4 */
-      if (err) {
-        console.error("ERROR CREATING DB", err);
-        return reject(err);
-      }
-      /* c8 ignore next 4 */
-      if (stderr) {
-        console.error("STDERR", stderr);
-        return reject(stderr);
-      }
-      return resolve(`${databasePath}`);
-    });
-  });
+const dbUrl = `postgres://postgres:postgres@${
+  process.env.POSTGRES_HOST || "localhost"
+}:${process.env.POSTGRES_PORT || 5432}`;
+
+const ensureDBIsClean = async (databaseName: string) => {
+  const pgClient = postgres(dbUrl);
+  await pgClient.unsafe(`DROP DATABASE IF EXISTS "${databaseName}";`);
+  await pgClient.unsafe(`CREATE DATABASE "${databaseName}"`);
+  await pgClient.end();
+  return databaseName;
 };
 
-let db: ORM_TYPE | null = null;
-export const getTestDB = async () => {
+let db: PostgresJsDatabase<typeof schema> | null = null;
+let client: postgres.Sql<Record<string, unknown>> | null = null;
+export const getTestDB = async (maybeDatabaseName?: string) => {
+  const databaseName = maybeDatabaseName || `test_${v4()}`;
   if (db) {
     console.log("Retornando BDD previa");
-    console.log("( Si quieres una nueva BDD, llama a clearDatabase() )");
     return db;
-  } else {
-    console.log("🆕 Creando una nueva BDD");
   }
-  const databaseName = await createDatabase();
-  const url = `file:///${databaseName}`;
-  const client = createClient({
-    url,
-  });
-  db = drizzle(client, { schema: { ...schema } });
+  console.log("🆕 Creando una nueva BDD");
+  await ensureDBIsClean(databaseName);
+  const migrationClient = postgres(`${dbUrl}/${databaseName}`, { max: 1 });
+  client = migrationClient;
+  db = drizzle(migrationClient, { schema: { ...schema } });
   await migrate(db, {
     migrationsFolder,
     migrationsTable: "migrations",
   });
-  return db;
+  return db as unknown as ORM_TYPE;
 };
 
-export const clearDatabase = () => {
+export const closeConnection = async () => {
+  await client?.end();
   db = null;
+  client = null;
 };

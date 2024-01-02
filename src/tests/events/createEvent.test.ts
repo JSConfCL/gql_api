@@ -1,4 +1,4 @@
-import { it, describe, afterEach, assert, expect } from "vitest";
+import { it, describe, assert, expect } from "vitest";
 import {
   executeGraphqlOperation,
   executeGraphqlOperationAsSuperAdmin,
@@ -8,7 +8,6 @@ import {
   insertUser,
   insertUserToCommunity,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   CreateEvent,
   CreateEventMutation,
@@ -19,10 +18,6 @@ import {
 } from "./createEvent.generated";
 import { EventStatus, EventVisibility } from "~/generated/types";
 import { faker } from "@faker-js/faker";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("Event", () => {
   describe("Should create an event", () => {
@@ -146,7 +141,7 @@ describe("Event", () => {
       assert.equal(response.errors?.length, 1);
       assert.equal(response.errors?.[0]?.message, "FORBIDDEN");
     });
-    it("As volunteer", async () => {
+    it("As collaborator", async () => {
       const startDate = faker.date
         .future({
           years: 1,
@@ -157,7 +152,7 @@ describe("Event", () => {
       await insertUserToCommunity({
         communityId: community.id,
         userId: user1.id,
-        role: "volunteer",
+        role: "collaborator",
       });
       const response = await executeGraphqlOperationAsUser<
         CreateEventMutation,

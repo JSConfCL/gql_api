@@ -1,4 +1,4 @@
-import { it, describe, afterEach, assert } from "vitest";
+import { it, describe, assert } from "vitest";
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -10,16 +10,13 @@ import {
   insertUserToCommunity,
   insertUserToEvent,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   CancelUserTicket,
   CancelUserTicketMutation,
   CancelUserTicketMutationVariables,
 } from "./cancelUserTicket.generated";
-
-afterEach(() => {
-  clearDatabase();
-});
+import { TicketStatus } from "../../../generated/types";
+import { v4 } from "uuid";
 
 describe("Cancel User Ticket", () => {
   it("Should cancel a user ticket if user is the owner of the ticket", async () => {
@@ -62,7 +59,10 @@ describe("Cancel User Ticket", () => {
     );
 
     assert.equal(response.errors, undefined);
-    assert.equal(response.data?.cancelUserTicket?.status, "cancelled");
+    assert.equal(
+      response.data?.cancelUserTicket?.status,
+      TicketStatus.Inactive,
+    );
   });
   it("Should cancel a user ticket with role superadmin", async () => {
     const community1 = await insertCommunity();
@@ -106,7 +106,10 @@ describe("Cancel User Ticket", () => {
     );
 
     assert.equal(response.errors, undefined);
-    assert.equal(response.data?.cancelUserTicket?.status, "cancelled");
+    assert.equal(
+      response.data?.cancelUserTicket?.status,
+      TicketStatus.Inactive,
+    );
   });
   it("It should throw an error, if ticket does not exist", async () => {
     const community1 = await insertCommunity();
@@ -133,7 +136,7 @@ describe("Cancel User Ticket", () => {
       {
         document: CancelUserTicket,
         variables: {
-          userTicketId: "2",
+          userTicketId: v4(),
         },
       },
       user1,

@@ -1,4 +1,4 @@
-import { it, describe, afterEach, assert } from "vitest";
+import { it, describe, assert } from "vitest";
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -8,16 +8,11 @@ import {
   insertUserToCommunity,
   insertUserToEvent,
 } from "~/tests/__fixtures";
-import { clearDatabase } from "~/tests/__fixtures/databaseHelper";
 import {
   UpdateUserRoleInCommunity,
   UpdateUserRoleInCommunityMutation,
   UpdateUserRoleInCommunityMutationVariables,
 } from "./updateUserRoleInCommunity.generated";
-
-afterEach(() => {
-  clearDatabase();
-});
 
 describe("User update role in communities", () => {
   it("It should a error, if has a member role", async () => {
@@ -60,7 +55,7 @@ describe("User update role in communities", () => {
     assert.equal(response.errors?.length, 1);
     assert.equal(response.errors?.[0].message, "Not authorized");
   });
-  it("It should a error, if has a volunteer role", async () => {
+  it("It should a error, if has a collaborator role", async () => {
     const user1 = await insertUser();
     const user2 = await insertUser();
     const community1 = await insertCommunity();
@@ -72,7 +67,7 @@ describe("User update role in communities", () => {
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
-      role: "volunteer",
+      role: "collaborator",
     });
     await insertUserToEvent({
       eventId: event1.id,
