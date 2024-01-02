@@ -39,15 +39,6 @@ const WorkRoleSenioritiesInput = builder.inputType("WorkRoleSenioritiesInput", {
   }),
 });
 
-const WorkRoleSenioritiesInput = builder.inputType("WorkRoleSenioritiesInput", {
-  fields: (t) => ({
-    workRoleId: t.field({
-      type: "String",
-      required: true,
-    }),
-  }),
-});
-
 builder.queryFields((t) => ({
   workRoles: t.field({
     description: "Get a list of possible work roles",
