@@ -6,7 +6,6 @@ import {
   selectSalariesSchema,
   selectCompaniesSchema,
   selectWorkRoleSchema,
-  selectWorkSeniorityAndRoleSchema,
   selectWorkSenioritySchema,
 } from "~/datasources/db/schema";
 import {
@@ -186,10 +185,6 @@ const UpdateSalaryInput = builder.inputType("UpdateSalaryInput", {
       type: "String",
       required: false,
     }),
-    workRoleId: t.field({
-      type: "String",
-      required: false,
-    }),
     workSeniorityAndRoleId: t.field({
       type: "String",
       required: false,
@@ -329,7 +324,7 @@ builder.mutationFields((t) => ({
         confirmationToken,
         amount,
         currencyCode,
-        workRoleId,
+        workSeniorityAndRoleId,
         countryCode,
         typeOfEmployment,
         workMetodology,
@@ -369,7 +364,7 @@ builder.mutationFields((t) => ({
         id: salaryId,
         amount,
         currencyCode,
-        workRoleId,
+        workSeniorityAndRoleId,
         countryCode,
         typeOfEmployment,
         userId,

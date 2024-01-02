@@ -2,7 +2,6 @@ import { integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { createdAndUpdatedAtFields } from "./shared";
 import { usersSchema } from "./users";
-import { workRoleSchema } from "./workRole";
 import { relations } from "drizzle-orm";
 import { companiesSchema } from "./companies";
 import { genderOptions } from "./shared";

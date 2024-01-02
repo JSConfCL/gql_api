@@ -18,7 +18,7 @@ export type UpdateSalaryMutationVariables = Types.Exact<{
 }>;
 
 
-export type UpdateSalaryMutation = { __typename?: 'Mutation', updateSalary: { __typename?: 'Salary', id: string, amount: number, currencyCode: string, yearsOfExperience: number, countryCode: string, gender: Types.Gender | null, genderOtherText: string | null, typeOfEmployment: Types.TypeOfEmployment, workMetodology: Types.WorkMetodology, workRole: { __typename?: 'WorkRole', id: string, name: string } } };
+export type UpdateSalaryMutation = { __typename?: 'Mutation', updateSalary: { __typename?: 'Salary', id: string, amount: number, currencyCode: string, yearsOfExperience: number, countryCode: string, gender: Types.Gender | null, genderOtherText: string | null, typeOfEmployment: Types.TypeOfEmployment, workMetodology: Types.WorkMetodology, workRole: { __typename?: 'WorkRole', id: string, name: string }, workSeniority: { __typename?: 'WorkSeniority', id: string, name: string } } };
 
 
 export const CreateSalary = gql`
@@ -52,6 +52,10 @@ export const UpdateSalary = gql`
     genderOtherText
     typeOfEmployment
     workRole {
+      id
+      name
+    }
+    workSeniority {
       id
       name
     }

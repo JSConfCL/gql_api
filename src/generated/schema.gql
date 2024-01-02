@@ -386,6 +386,7 @@ type Salary {
   typeOfEmployment: TypeOfEmployment!
   workMetodology: WorkMetodology!
   workRole: WorkRole!
+  workSeniority: WorkSeniority!
   yearsOfExperience: Int!
 }
 
@@ -527,7 +528,6 @@ input UpdateSalaryInput {
   salaryId: String!
   typeOfEmployment: TypeOfEmployment
   workMetodology: WorkMetodology
-  workRoleId: String
   workSeniorityAndRoleId: String
   yearsOfExperience: Int
 }
@@ -583,13 +583,21 @@ enum WorkMetodology {
 }
 
 """
-Representation of a workEmail
+Representation of a work role
 """
 type WorkRole {
-  description: String!
+  description: String
   id: String!
   name: String!
-  seniority: String!
+}
+
+"""
+Representation of a work seniority
+"""
+type WorkSeniority {
+  description: String
+  id: String!
+  name: String!
 }
 
 input updateUserRoleInCommunityInput {
