@@ -30,6 +30,10 @@ mutation UpdateSalary($input: UpdateSalaryInput!) {
       id
       name
     }
+    workSeniority {
+      id
+      name
+    }
     workMetodology
   }
 }

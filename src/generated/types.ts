@@ -106,7 +106,7 @@ export type CreateSalaryInput = {
   genderOtherText: Scalars["String"]["input"];
   typeOfEmployment: TypeOfEmployment;
   workMetodology: WorkMetodology;
-  workRoleId: Scalars["String"]["input"];
+  workSeniorityAndRoleId: Scalars["String"]["input"];
   yearsOfExperience: Scalars["Int"]["input"];
 };
 
@@ -430,6 +430,7 @@ export type Salary = {
   typeOfEmployment: TypeOfEmployment;
   workMetodology: WorkMetodology;
   workRole: WorkRole;
+  workSeniority: WorkSeniority;
   yearsOfExperience: Scalars["Int"]["output"];
 };
 
@@ -568,7 +569,7 @@ export type UpdateSalaryInput = {
   salaryId: Scalars["String"]["input"];
   typeOfEmployment?: InputMaybe<TypeOfEmployment>;
   workMetodology?: InputMaybe<WorkMetodology>;
-  workRoleId?: InputMaybe<Scalars["String"]["input"]>;
+  workSeniorityAndRoleId?: InputMaybe<Scalars["String"]["input"]>;
   yearsOfExperience?: InputMaybe<Scalars["Int"]["input"]>;
 };
 
@@ -618,13 +619,20 @@ export enum WorkMetodology {
   Remote = "remote",
 }
 
-/** Representation of a workEmail */
+/** Representation of a work role */
 export type WorkRole = {
   __typename?: "WorkRole";
-  description: Scalars["String"]["output"];
+  description?: Maybe<Scalars["String"]["output"]>;
   id: Scalars["String"]["output"];
   name: Scalars["String"]["output"];
-  seniority: Scalars["String"]["output"];
+};
+
+/** Representation of a work seniority */
+export type WorkSeniority = {
+  __typename?: "WorkSeniority";
+  description?: Maybe<Scalars["String"]["output"]>;
+  id: Scalars["String"]["output"];
+  name: Scalars["String"]["output"];
 };
 
 export type UpdateUserRoleInCommunityInput = {

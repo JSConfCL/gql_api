@@ -2,11 +2,11 @@ import { integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { createdAndUpdatedAtFields } from "./shared";
 import { usersSchema } from "./users";
-import { workRoleSchema } from "./workRoles";
 import { relations } from "drizzle-orm";
 import { companiesSchema } from "./companies";
 import { genderOptions } from "./shared";
 import { workEmailSchema } from "./workEmail";
+import { workSeniorityAndRoleSchema } from "./workSeniorityAndRole";
 
 const typeOfEmploymentEnum = ["fullTime", "partTime", "freelance"] as const;
 const workMetodologyEnum = ["remote", "office", "hybrid"] as const;
@@ -20,7 +20,9 @@ export const salariesSchema = pgTable("salaries", {
   amount: integer("amount").notNull(),
   companyId: uuid("company_id").references(() => companiesSchema.id),
   currencyCode: text("currency_code").notNull(),
-  workRoleId: uuid("work_role_id").references(() => workRoleSchema.id),
+  workSeniorityAndRoleId: uuid("work_seniority_and_role_id").references(
+    () => workSeniorityAndRoleSchema.id,
+  ),
   workEmailId: uuid("work_email_id").references(() => workEmailSchema.id),
   yearsOfExperience: integer("years_of_experience").notNull(),
   gender: text("gender", {
@@ -42,9 +44,9 @@ export const salairesRelations = relations(salariesSchema, ({ one }) => ({
     fields: [salariesSchema.companyId],
     references: [companiesSchema.id],
   }),
-  workRole: one(workRoleSchema, {
-    fields: [salariesSchema.workRoleId],
-    references: [workRoleSchema.id],
+  workSeniorityAndRole: one(workSeniorityAndRoleSchema, {
+    fields: [salariesSchema.workSeniorityAndRoleId],
+    references: [workSeniorityAndRoleSchema.id],
   }),
   workEmail: one(workEmailSchema, {
     fields: [salariesSchema.workEmailId],

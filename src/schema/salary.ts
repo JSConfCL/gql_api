@@ -6,8 +6,14 @@ import {
   selectSalariesSchema,
   selectCompaniesSchema,
   selectWorkRoleSchema,
+  selectWorkSenioritySchema,
 } from "~/datasources/db/schema";
-import { CompanyRef, SalaryRef, WorkRoleRef } from "~/schema/shared/refs";
+import {
+  CompanyRef,
+  SalaryRef,
+  WorkSeniorityRef,
+  WorkRoleRef,
+} from "~/schema/shared/refs";
 import { GenderEnum } from "./shared/enums";
 
 const TypeOfEmployment = builder.enumType("TypeOfEmployment", {
@@ -46,13 +52,44 @@ builder.objectType(SalaryRef, {
         const salaryWithRole = await DB.query.salariesSchema.findFirst({
           where: (c, { eq }) => eq(c.id, root.id),
           with: {
-            workRole: true,
+            workSeniorityAndRole: {
+              with: {
+                role: true,
+              },
+            },
           },
         });
-        if (!salaryWithRole || !salaryWithRole?.workRole) {
+        if (!salaryWithRole || !salaryWithRole?.workSeniorityAndRole?.role) {
           throw new Error("Role not found");
         }
-        return selectWorkRoleSchema.parse(salaryWithRole.workRole);
+        return selectWorkRoleSchema.parse(
+          salaryWithRole.workSeniorityAndRole?.role,
+        );
+      },
+    }),
+    workSeniority: t.field({
+      type: WorkSeniorityRef,
+      nullable: false,
+      resolve: async (root, args, { DB }) => {
+        const salaryWithRole = await DB.query.salariesSchema.findFirst({
+          where: (c, { eq }) => eq(c.id, root.id),
+          with: {
+            workSeniorityAndRole: {
+              with: {
+                seniority: true,
+              },
+            },
+          },
+        });
+        if (
+          !salaryWithRole ||
+          !salaryWithRole?.workSeniorityAndRole?.seniority
+        ) {
+          throw new Error("Role not found");
+        }
+        return selectWorkSenioritySchema.parse(
+          salaryWithRole.workSeniorityAndRole?.seniority,
+        );
       },
     }),
     typeOfEmployment: t.field({
@@ -99,7 +136,7 @@ const CreateSalaryInput = builder.inputType("CreateSalaryInput", {
       type: "String",
       required: true,
     }),
-    workRoleId: t.field({
+    workSeniorityAndRoleId: t.field({
       type: "String",
       required: true,
     }),
@@ -148,7 +185,7 @@ const UpdateSalaryInput = builder.inputType("UpdateSalaryInput", {
       type: "String",
       required: false,
     }),
-    workRoleId: t.field({
+    workSeniorityAndRoleId: t.field({
       type: "String",
       required: false,
     }),
@@ -216,7 +253,7 @@ builder.mutationFields((t) => ({
         companyId,
         amount,
         currencyCode,
-        workRoleId,
+        workSeniorityAndRoleId,
         countryCode,
         typeOfEmployment,
         workMetodology,
@@ -248,7 +285,7 @@ builder.mutationFields((t) => ({
         companyId,
         amount,
         currencyCode,
-        workRoleId,
+        workSeniorityAndRoleId,
         countryCode,
         typeOfEmployment,
         userId,
@@ -287,7 +324,7 @@ builder.mutationFields((t) => ({
         confirmationToken,
         amount,
         currencyCode,
-        workRoleId,
+        workSeniorityAndRoleId,
         countryCode,
         typeOfEmployment,
         workMetodology,
@@ -327,7 +364,7 @@ builder.mutationFields((t) => ({
         id: salaryId,
         amount,
         currencyCode,
-        workRoleId,
+        workSeniorityAndRoleId,
         countryCode,
         typeOfEmployment,
         userId,

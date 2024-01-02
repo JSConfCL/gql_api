@@ -12,6 +12,7 @@ import {
   selectSalariesSchema,
   selectAllowedCurrencySchema,
   selectWorkRoleSchema,
+  selectWorkSenioritySchema,
 } from "~/datasources/db/schema";
 import { SanityAsset } from "../../datasources/sanity/types";
 
@@ -54,5 +55,9 @@ export const SalaryRef = builder.objectRef<SalaryGraphqlSchema>("Salary");
 
 type WorkRoleGraphqlSchema = z.infer<typeof selectWorkRoleSchema>;
 export const WorkRoleRef = builder.objectRef<WorkRoleGraphqlSchema>("WorkRole");
+
+type WorkSeniorityGraphqlSchema = z.infer<typeof selectWorkSenioritySchema>;
+export const WorkSeniorityRef =
+  builder.objectRef<WorkSeniorityGraphqlSchema>("WorkSeniority");
 
 export const SanityAssetRef = builder.objectRef<SanityAsset>("SanityAssetRef");

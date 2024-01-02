@@ -11,6 +11,7 @@ import "./user";
 import "./userTickets";
 import "./workEmail";
 import "./workRole";
+import "./workSeniority";
 import { builder } from "~/builder";
 
 export const schema = builder.toSchema();
