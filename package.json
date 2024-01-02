@@ -8,6 +8,7 @@
     "db:up": "drizzle-kit up:pg",
     "db:studio": "drizzle-kit studio --verbose",
     "db:migrate": "tsx migrate.ts",
+    "db:seed": "tsx seed.ts",
     "db:model": "tsx ./drizzle/dbml.ts",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
