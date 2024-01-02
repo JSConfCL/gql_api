@@ -29,7 +29,12 @@ const createSalary = async () => {
   const company = await insertCompany({
     status: "active",
   });
-  const workSeniorityAndRole = await insertWorkSeniorityAndRole();
+  const workSeniority = await insertWorkSeniority();
+  const workRole = await insertWorkRole();
+  const workSeniorityAndRole = await insertWorkSeniorityAndRole({
+    workRoleId: workRole.id,
+    workSeniorityId: workSeniority.id,
+  });
   const insertedConfirmationToken = await insertConfirmationToken({
     source: "onboarding",
     validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
@@ -128,7 +133,12 @@ describe("Salary creation", () => {
   describe("Creation should fail", () => {
     it("With an annonymous user", async () => {
       const { confirmationToken, salaryId } = await createSalary();
-      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
+      const workSeniority = await insertWorkSeniority();
+      const workRole = await insertWorkRole();
+      await insertWorkSeniorityAndRole({
+        workRoleId: workRole.id,
+        workSeniorityId: workSeniority.id,
+      });
 
       const UpdateWorkEmail = await executeGraphqlOperation<
         UpdateSalaryMutation,
@@ -145,7 +155,8 @@ describe("Salary creation", () => {
             gender: Gender.Female,
             typeOfEmployment: TypeOfEmployment.PartTime,
             workMetodology: WorkMetodology.Office,
-            workSeniorityAndRoleId: workSeniorityAndRole.id,
+            workRoleId: workRole.id,
+            workSeniorityId: workSeniority.id,
             genderOtherText: "something",
             yearsOfExperience: 2,
           },
@@ -155,7 +166,12 @@ describe("Salary creation", () => {
     });
     it("For a SuperAdmin", async () => {
       const { confirmationToken, salaryId } = await createSalary();
-      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
+      const workSeniority = await insertWorkSeniority();
+      const workRole = await insertWorkRole();
+      await insertWorkSeniorityAndRole({
+        workRoleId: workRole.id,
+        workSeniorityId: workSeniority.id,
+      });
       const UpdateWorkEmail = await executeGraphqlOperationAsSuperAdmin<
         UpdateSalaryMutation,
         UpdateSalaryMutationVariables
@@ -172,7 +188,8 @@ describe("Salary creation", () => {
             typeOfEmployment: TypeOfEmployment.PartTime,
 
             workMetodology: WorkMetodology.Office,
-            workSeniorityAndRoleId: workSeniorityAndRole.id,
+            workRoleId: workRole.id,
+            workSeniorityId: workSeniority.id,
             genderOtherText: "something",
             yearsOfExperience: 2,
           },
@@ -190,7 +207,12 @@ describe("Salary creation", () => {
         sourceId: "123",
       });
       const { salaryId, user } = await createSalary();
-      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
+      const workSeniority = await insertWorkSeniority();
+      const workRole = await insertWorkRole();
+      await insertWorkSeniorityAndRole({
+        workRoleId: workRole.id,
+        workSeniorityId: workSeniority.id,
+      });
       const UpdateWorkEmail = await executeGraphqlOperationAsUser<
         UpdateSalaryMutation,
         UpdateSalaryMutationVariables
@@ -207,7 +229,8 @@ describe("Salary creation", () => {
               gender: Gender.Female,
               typeOfEmployment: TypeOfEmployment.PartTime,
               workMetodology: WorkMetodology.Office,
-              workSeniorityAndRoleId: workSeniorityAndRole.id,
+              workRoleId: workRole.id,
+              workSeniorityId: workSeniority.id,
               genderOtherText: "something",
               yearsOfExperience: 2,
             },
@@ -219,7 +242,12 @@ describe("Salary creation", () => {
     });
     it("With a wrong code", async () => {
       const { salaryId, user } = await createSalary();
-      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
+      const workSeniority = await insertWorkSeniority();
+      const workRole = await insertWorkRole();
+      await insertWorkSeniorityAndRole({
+        workRoleId: workRole.id,
+        workSeniorityId: workSeniority.id,
+      });
 
       const UpdateWorkEmail = await executeGraphqlOperationAsUser<
         UpdateSalaryMutation,
@@ -237,7 +265,8 @@ describe("Salary creation", () => {
               gender: Gender.Female,
               typeOfEmployment: TypeOfEmployment.PartTime,
               workMetodology: WorkMetodology.Office,
-              workSeniorityAndRoleId: workSeniorityAndRole.id,
+              workRoleId: workRole.id,
+              workSeniorityId: workSeniority.id,
               genderOtherText: "something",
               yearsOfExperience: 2,
             },
@@ -256,7 +285,12 @@ describe("Salary creation", () => {
         status: "confirmed",
         sourceId: "123",
       });
-      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
+      const workSeniority = await insertWorkSeniority();
+      const workRole = await insertWorkRole();
+      await insertWorkSeniorityAndRole({
+        workRoleId: workRole.id,
+        workSeniorityId: workSeniority.id,
+      });
 
       const UpdateWorkEmail = await executeGraphqlOperationAsUser<
         UpdateSalaryMutation,
@@ -274,7 +308,8 @@ describe("Salary creation", () => {
               gender: Gender.Female,
               typeOfEmployment: TypeOfEmployment.PartTime,
               workMetodology: WorkMetodology.Office,
-              workSeniorityAndRoleId: workSeniorityAndRole.id,
+              workRoleId: workRole.id,
+              workSeniorityId: workSeniority.id,
               genderOtherText: "something",
               yearsOfExperience: 2,
             },
@@ -293,7 +328,12 @@ describe("Salary creation", () => {
         status: "rejected",
         sourceId: "123",
       });
-      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
+      const workSeniority = await insertWorkSeniority();
+      const workRole = await insertWorkRole();
+      await insertWorkSeniorityAndRole({
+        workRoleId: workRole.id,
+        workSeniorityId: workSeniority.id,
+      });
 
       const UpdateWorkEmail = await executeGraphqlOperationAsUser<
         UpdateSalaryMutation,
@@ -311,7 +351,8 @@ describe("Salary creation", () => {
               gender: Gender.Female,
               typeOfEmployment: TypeOfEmployment.PartTime,
               workMetodology: WorkMetodology.Office,
-              workSeniorityAndRoleId: workSeniorityAndRole.id,
+              workRoleId: workRole.id,
+              workSeniorityId: workSeniority.id,
               genderOtherText: "something",
               yearsOfExperience: 2,
             },
@@ -330,7 +371,12 @@ describe("Salary creation", () => {
         status: "expired",
         sourceId: "123",
       });
-      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
+      const workSeniority = await insertWorkSeniority();
+      const workRole = await insertWorkRole();
+      await insertWorkSeniorityAndRole({
+        workRoleId: workRole.id,
+        workSeniorityId: workSeniority.id,
+      });
       const allowedCurrency2 = await insertAllowedCurrency();
 
       const UpdateWorkEmail = await executeGraphqlOperationAsUser<
@@ -349,7 +395,8 @@ describe("Salary creation", () => {
               typeOfEmployment: TypeOfEmployment.PartTime,
               currencyCode: allowedCurrency2.id,
               workMetodology: WorkMetodology.Office,
-              workSeniorityAndRoleId: workSeniorityAndRole.id,
+              workRoleId: workRole.id,
+              workSeniorityId: workSeniority.id,
               genderOtherText: "something",
               yearsOfExperience: 2,
             },
@@ -368,7 +415,12 @@ describe("Salary creation", () => {
         status: "pending",
         sourceId: "123",
       });
-      const workSeniorityAndRole = await insertWorkSeniorityAndRole();
+      const workSeniority = await insertWorkSeniority();
+      const workRole = await insertWorkRole();
+      await insertWorkSeniorityAndRole({
+        workRoleId: workRole.id,
+        workSeniorityId: workSeniority.id,
+      });
 
       const UpdateWorkEmail = await executeGraphqlOperationAsUser<
         UpdateSalaryMutation,
@@ -386,7 +438,8 @@ describe("Salary creation", () => {
               gender: Gender.Female,
               typeOfEmployment: TypeOfEmployment.PartTime,
               workMetodology: WorkMetodology.Office,
-              workSeniorityAndRoleId: workSeniorityAndRole.id,
+              workRoleId: workRole.id,
+              workSeniorityId: workSeniority.id,
               genderOtherText: "something",
               yearsOfExperience: 2,
             },
