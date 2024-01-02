@@ -11,6 +11,22 @@ builder.objectType(WorkRoleRef, {
     id: t.exposeString("id", { nullable: false }),
     name: t.exposeString("name", { nullable: false }),
     description: t.exposeString("description", { nullable: true }),
+    seniorities: t.field({
+      type: [WorkSeniorityRef],
+      resolve: async (root, _, { DB }) => {
+        const workSenioritiesAndRoles =
+          await DB.query.workSeniorityAndRoleSchema.findMany({
+            where: (t, { eq }) => eq(t.id, root.id),
+            with: {
+              seniority: true,
+            },
+          });
+
+        return workSenioritiesAndRoles.map((workSeniorityAndRole) =>
+          selectWorkSenioritySchema.parse(workSeniorityAndRole),
+        );
+      },
+    }),
   }),
 });
 
