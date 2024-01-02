@@ -612,6 +612,7 @@ export type UpdateSalaryInput = {
   salaryId: Scalars["String"]["input"];
   typeOfEmployment?: InputMaybe<TypeOfEmployment>;
   workMetodology?: InputMaybe<WorkMetodology>;
+  workRoleId?: InputMaybe<Scalars["String"]["input"]>;
   workSeniorityAndRoleId?: InputMaybe<Scalars["String"]["input"]>;
   yearsOfExperience?: InputMaybe<Scalars["Int"]["input"]>;
 };
