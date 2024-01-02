@@ -69,7 +69,7 @@ describe("Salary creation", () => {
         const { confirmationToken, salaryId, user } = await createSalary();
         const workRole = await insertWorkRole();
         const workSeniority = await insertWorkSeniority();
-        const seniorityAndRole = await insertWorkSeniorityAndRole({
+        await insertWorkSeniorityAndRole({
           workRoleId: workRole.id,
           workSeniorityId: workSeniority.id,
         });
@@ -90,7 +90,8 @@ describe("Salary creation", () => {
                 currencyCode: "CLP",
                 gender: Gender.Female,
                 typeOfEmployment: TypeOfEmployment.PartTime,
-                workSeniorityAndRoleId: seniorityAndRole.id,
+                workSeniorityId: workSeniority.id,
+                workRoleId: workRole.id,
                 workMetodology: WorkMetodology.Office,
                 yearsOfExperience: 2,
               },
@@ -98,6 +99,8 @@ describe("Salary creation", () => {
           },
           user,
         );
+
+        console.log(UpdateWorkEmail.errors);
 
         expect(UpdateWorkEmail.errors).toBeUndefined();
         expect(UpdateWorkEmail.data?.updateSalary).toMatchObject({
