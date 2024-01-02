@@ -7,6 +7,7 @@ import {
   selectCompaniesSchema,
   selectWorkRoleSchema,
   selectWorkSenioritySchema,
+  updateSalariesSchema,
 } from "~/datasources/db/schema";
 import {
   CompanyRef,
@@ -15,6 +16,7 @@ import {
   WorkRoleRef,
 } from "~/schema/shared/refs";
 import { GenderEnum } from "./shared/enums";
+import { z } from "zod";
 
 const TypeOfEmployment = builder.enumType("TypeOfEmployment", {
   values: ["fullTime", "partTime", "freelance"],
@@ -136,7 +138,11 @@ const CreateSalaryInput = builder.inputType("CreateSalaryInput", {
       type: "String",
       required: true,
     }),
-    workSeniorityAndRoleId: t.field({
+    workSeniorityId: t.field({
+      type: "String",
+      required: true,
+    }),
+    workRoleId: t.field({
       type: "String",
       required: true,
     }),
@@ -185,7 +191,11 @@ const UpdateSalaryInput = builder.inputType("UpdateSalaryInput", {
       type: "String",
       required: false,
     }),
-    workSeniorityAndRoleId: t.field({
+    workSeniorityId: t.field({
+      type: "String",
+      required: false,
+    }),
+    workRoleId: t.field({
       type: "String",
       required: false,
     }),
@@ -253,7 +263,8 @@ builder.mutationFields((t) => ({
         companyId,
         amount,
         currencyCode,
-        workSeniorityAndRoleId,
+        workRoleId,
+        workSeniorityId,
         countryCode,
         typeOfEmployment,
         workMetodology,
@@ -280,12 +291,24 @@ builder.mutationFields((t) => ({
       if (new Date(foundConfirmationToken.validUntil) <= new Date()) {
         throw new Error("Invalid token");
       }
+      const workSeniorityAndRole =
+        await DB.query.workSeniorityAndRoleSchema.findFirst({
+          where: (c, { eq, and }) =>
+            and(
+              eq(c.workRoleId, workRoleId),
+              eq(c.workSeniorityId, workSeniorityId),
+            ),
+        });
+
+      if (!workSeniorityAndRole) {
+        throw new Error("Invalid work seniority and role combination");
+      }
 
       const insertSalary = insertSalariesSchema.parse({
         companyId,
         amount,
         currencyCode,
-        workSeniorityAndRoleId,
+        workSeniorityAndRoleId: workSeniorityAndRole.id,
         countryCode,
         typeOfEmployment,
         userId,
@@ -317,14 +340,14 @@ builder.mutationFields((t) => ({
       if (!USER) {
         throw new Error("User is required");
       }
-      const userId = USER.id;
 
       const {
         salaryId,
         confirmationToken,
         amount,
         currencyCode,
-        workSeniorityAndRoleId,
+        workRoleId,
+        workSeniorityId,
         countryCode,
         typeOfEmployment,
         workMetodology,
@@ -360,23 +383,59 @@ builder.mutationFields((t) => ({
         throw new Error("Salary not found");
       }
 
-      const insertSalary = insertSalariesSchema.parse({
-        id: salaryId,
-        amount,
-        currencyCode,
-        workSeniorityAndRoleId,
-        countryCode,
-        typeOfEmployment,
-        userId,
-        workMetodology,
-        yearsOfExperience,
+      if (
+        (workRoleId && !workSeniorityId) ||
+        (!workRoleId && workSeniorityId)
+      ) {
+        throw new Error("Invalid work seniority and role combination");
+      }
+
+      const ob: Partial<z.infer<typeof updateSalariesSchema>> = {
         gender,
         genderOtherText,
-      });
+      };
 
+      if (workRoleId && workSeniorityId) {
+        const workSeniorityAndRole =
+          await DB.query.workSeniorityAndRoleSchema.findFirst({
+            where: (c, { eq, and }) =>
+              and(
+                eq(c.workRoleId, workRoleId),
+                eq(c.workSeniorityId, workSeniorityId),
+              ),
+          });
+        if (!workSeniorityAndRole) {
+          throw new Error("Invalid work seniority and role combination");
+        }
+        ob.workSeniorityAndRoleId = workSeniorityAndRole.id;
+      }
+
+      if (amount) {
+        ob.amount = amount;
+      }
+      if (currencyCode) {
+        ob.currencyCode = currencyCode;
+      }
+      if (countryCode) {
+        ob.countryCode = countryCode;
+      }
+      if (typeOfEmployment) {
+        ob.typeOfEmployment = typeOfEmployment as
+          | "fullTime"
+          | "partTime"
+          | "freelance";
+      }
+      if (workMetodology) {
+        ob.workMetodology = workMetodology as "remote" | "office" | "hybrid";
+      }
+      if (yearsOfExperience) {
+        ob.yearsOfExperience = yearsOfExperience;
+      }
+
+      const updateSalary = updateSalariesSchema.parse(ob);
       const salary = (
         await DB.update(salariesSchema)
-          .set(insertSalary)
+          .set(updateSalary)
           .where(eq(salariesSchema.id, salaryId))
           .returning()
       )?.[0];
