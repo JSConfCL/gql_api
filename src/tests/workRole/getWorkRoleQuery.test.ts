@@ -7,9 +7,9 @@ import {
   insertWorkSeniorityAndRole,
 } from "~/tests/__fixtures";
 import {
-  GetWorkRolesAndSeniorities,
-  GetWorkRolesAndSenioritiesQuery,
-  GetWorkRolesAndSenioritiesQueryVariables,
+  WorkRolesAndSeniorities,
+  WorkRolesAndSenioritiesQuery,
+  WorkRolesAndSenioritiesQueryVariables,
 } from "./getWorkRoleQuery.generated";
 
 describe("Fetch work roles and seniority", () => {
@@ -26,11 +26,11 @@ describe("Fetch work roles and seniority", () => {
     await insertWorkSeniorityAndRole();
 
     const query = await executeGraphqlOperationAsUser<
-      GetWorkRolesAndSenioritiesQuery,
-      GetWorkRolesAndSenioritiesQueryVariables
+      WorkRolesAndSenioritiesQuery,
+      WorkRolesAndSenioritiesQueryVariables
     >(
       {
-        document: GetWorkRolesAndSeniorities,
+        document: WorkRolesAndSeniorities,
       },
       user,
     );
@@ -42,7 +42,7 @@ describe("Fetch work roles and seniority", () => {
   });
   it("Should fail for anonuymous user", async () => {
     const email = faker.internet.email();
-    const user = await insertUser({
+    await insertUser({
       email,
     });
 
@@ -53,10 +53,10 @@ describe("Fetch work roles and seniority", () => {
     await insertWorkSeniorityAndRole();
 
     const query = await executeGraphqlOperation<
-      GetWorkRolesAndSenioritiesQuery,
-      GetWorkRolesAndSenioritiesQueryVariables
+      WorkRolesAndSenioritiesQuery,
+      WorkRolesAndSenioritiesQueryVariables
     >({
-      document: GetWorkRolesAndSeniorities,
+      document: WorkRolesAndSeniorities,
     });
 
     assert.equal(query.errors?.length, 1);
