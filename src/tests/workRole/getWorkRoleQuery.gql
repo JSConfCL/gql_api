@@ -1,4 +1,4 @@
-query GetWorkRolesAndSeniorities {
+query WorkRolesAndSeniorities {
   workRoles {
     description
     id

@@ -6,14 +6,14 @@ import type * as Types from '../../generated/types';
 
 import type { JsonObject } from "type-fest";
 import gql from 'graphql-tag';
-export type GetWorkRolesAndSenioritiesQueryVariables = Types.Exact<{ [key: string]: never; }>;
+export type WorkRolesAndSenioritiesQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type GetWorkRolesAndSenioritiesQuery = { __typename?: 'Query', workRoles: Array<{ __typename?: 'WorkRole', description: string | null, id: string, name: string, seniorities: Array<{ __typename?: 'WorkSeniority', id: string, name: string, description: string | null }> }> };
+export type WorkRolesAndSenioritiesQuery = { __typename?: 'Query', workRoles: Array<{ __typename?: 'WorkRole', description: string | null, id: string, name: string, seniorities: Array<{ __typename?: 'WorkSeniority', id: string, name: string, description: string | null }> }> };
 
 
-export const GetWorkRolesAndSeniorities = gql`
-    query GetWorkRolesAndSeniorities {
+export const WorkRolesAndSeniorities = gql`
+    query WorkRolesAndSeniorities {
   workRoles {
     description
     id
