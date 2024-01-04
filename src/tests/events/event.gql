@@ -16,7 +16,7 @@ query Event($eventId: String!, $eventTickets: EventsTicketsSearchInput) {
     users {
       id
     }
-    tickets(input: $eventTickets) {
+    usersTickets(input: $eventTickets) {
       id
       approvalStatus
       paymentStatus
