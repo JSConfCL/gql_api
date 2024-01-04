@@ -1,0 +1,16 @@
+mutation CreateTicket($input: TicketCreateInput!) {
+  createTicket(input: $input) {
+    id
+    name
+    description
+    status
+    visibility
+    startDateTime
+    endDateTime
+    requiresApproval
+    quantity
+    price
+    currencyId
+    eventId
+  }
+}
