@@ -41,7 +41,7 @@ describe("User", () => {
     const startDateTime = faker.date.future();
     const endDateTime = faker.date.future();
 
-    const fakeInput:CreateTicketMutationVariables['input'] = {
+    const fakeInput: CreateTicketMutationVariables["input"] = {
       name: faker.word.words(3),
       description: faker.lorem.paragraph(3),
       startDateTime: startDateTime.toISOString(),
@@ -93,10 +93,7 @@ describe("User", () => {
     assert.equal(response.data?.createTicket?.price, fakeInput.price);
     assert.equal(response.data?.createTicket?.quantity, fakeInput.quantity);
     assert.equal(response.data?.createTicket?.status, fakeInput.status);
-    assert.equal(
-      response.data?.createTicket?.visibility,
-      fakeInput.visibility,
-    );
+    assert.equal(response.data?.createTicket?.visibility, fakeInput.visibility);
     assert.equal(response.data?.createTicket?.eventId, fakeInput.eventId);
     assert.equal(response.data?.createTicket?.currencyId, fakeInput.currencyId);
   });
