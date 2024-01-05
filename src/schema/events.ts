@@ -148,7 +148,7 @@ builder.objectType(EventRef, {
       authz: {
         rules: ["IsAuthenticated"],
       },
-      resolve: async (root, args, {DB}) => {
+      resolve: async (root, args, { DB }) => {
         const tickets = await DB.query.ticketsSchema.findMany({
           where: (c, { eq }) => eq(c.eventId, root.id),
           orderBy(fields, operators) {

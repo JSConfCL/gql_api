@@ -191,9 +191,11 @@ builder.mutationFields((t) => ({
           eventId: input.eventId,
         });
 
-        const ticket = (await ctx.DB.insert(ticketsSchema)
-          .values(insertTicketValues)
-          .returning())?.[0];
+        const ticket = (
+          await ctx.DB.insert(ticketsSchema)
+            .values(insertTicketValues)
+            .returning()
+        )?.[0];
 
         return selectTicketSchema.parse(ticket);
       } catch (e) {
