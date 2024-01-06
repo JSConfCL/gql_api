@@ -2,7 +2,7 @@ import { GoogleMediaItemType } from "../../google/photos";
 import pMap from "p-map";
 
 export type GoogleImportQueueElement = {
-  sanityEventInstanceId: string;
+  sanityEventId: string;
   googleMedia: GoogleMediaItemType;
 };
 

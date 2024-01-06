@@ -45,12 +45,12 @@ export const queueConsumer: ExportedHandlerQueueHandler<
     for await (const msg of batch.messages) {
       try {
         console.log("Processing message", msg);
-        const { googleMedia, sanityEventInstanceId } = msg.body;
-        const eventInstance = await sanityClient.getDocument(
-          sanityEventInstanceId,
+        const { googleMedia, sanityEventId } = msg.body;
+        const event = await sanityClient.getDocument(
+          sanityEventId,
         );
-        if (!eventInstance) {
-          throw new Error(`Event instance ${sanityEventInstanceId} not found`);
+        if (!event) {
+          throw new Error(`Event ${sanityEventId} not found`);
         }
         const response = await fetch(googleMedia.baseUrl + "=w4096");
         const blob = await response.blob();
@@ -69,9 +69,9 @@ export const queueConsumer: ExportedHandlerQueueHandler<
           _type: "eventImage",
           externalId: googleMedia.id,
           externalURL: googleMedia.baseUrl,
-          eventInstance: {
+          event: {
             _type: "reference",
-            _ref: sanityEventInstanceId,
+            _ref: sanityEventId,
           },
           title: googleMedia.filename,
           image: {
