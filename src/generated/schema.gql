@@ -109,7 +109,7 @@ enum EmailStatus {
 
 input EnqueueGoogleAlbumImportInput {
   albumId: String!
-  sanityEventInstanceId: String!
+  sanityEventId: String!
   token: String!
 }
 
