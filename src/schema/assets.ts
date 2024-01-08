@@ -26,7 +26,7 @@ const EnqueueGoogleAlbumImportInput = builder.inputType(
   {
     fields: (t) => ({
       albumId: t.string({ required: true }),
-      sanityEventInstanceId: t.string({ required: true }),
+      sanityEventId: t.string({ required: true }),
       token: t.string({ required: true }),
     }),
   },
@@ -48,7 +48,7 @@ builder.mutationFields((t) => ({
       input: t.arg({ type: EnqueueGoogleAlbumImportInput, required: true }),
     },
     resolve: async (_, { input }, { GOOGLE_PHOTOS_IMPORT_QUEUE }) => {
-      const { albumId, token, sanityEventInstanceId } = input;
+      const { albumId, token, sanityEventId } = input;
       let shouldGetMore = true;
       let nextPageToken: string | undefined = undefined;
       const allImages: GoogleImportQueueElement[] = [];
@@ -60,7 +60,7 @@ builder.mutationFields((t) => ({
         response.mediaItems.forEach((mediaItem) => {
           allImages.push({
             googleMedia: mediaItem,
-            sanityEventInstanceId,
+            sanityEventId,
           });
         });
 

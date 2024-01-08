@@ -118,7 +118,7 @@ export enum EmailStatus {
 
 export type EnqueueGoogleAlbumImportInput = {
   albumId: Scalars["String"]["input"];
-  sanityEventInstanceId: Scalars["String"]["input"];
+  sanityEventId: Scalars["String"]["input"];
   token: Scalars["String"]["input"];
 };
 
