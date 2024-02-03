@@ -24,7 +24,7 @@ import {
 
 describe("Salary creation", () => {
   describe("User has a valid token", () => {
-    it("Should create a salary", async () => {
+    it.only("Should create a salary", async () => {
       const testDB = await getTestDB();
       const user = await insertUser();
       const company = await insertCompany({
@@ -47,6 +47,7 @@ describe("Salary creation", () => {
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
+        companyId: company.id,
       });
 
       const StartWorkEmailValidationResponse =
@@ -82,6 +83,11 @@ describe("Salary creation", () => {
         throw new Error("Confirmation token not found");
       }
 
+      console.log(
+        "StartWorkEmailValidationResponse",
+        StartWorkEmailValidationResponse,
+      );
+
       assert.equal(StartWorkEmailValidationResponse.errors, undefined);
     });
   });
@@ -108,6 +114,7 @@ describe("Salary creation", () => {
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
+        companyId: company.id,
       });
 
       const StartWorkEmailValidationResponse = await executeGraphqlOperation<
@@ -164,6 +171,7 @@ describe("Salary creation", () => {
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
+        companyId: company.id,
       });
 
       const StartWorkEmailValidationResponse =
@@ -224,6 +232,7 @@ describe("Salary creation", () => {
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
+        companyId: company.id,
       });
 
       const StartWorkEmailValidationResponse =
@@ -283,6 +292,7 @@ describe("Salary creation", () => {
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
+        companyId: company.id,
       });
 
       const StartWorkEmailValidationResponse =
@@ -342,6 +352,7 @@ describe("Salary creation", () => {
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
+        companyId: company.id,
       });
 
       const StartWorkEmailValidationResponse =
@@ -401,6 +412,7 @@ describe("Salary creation", () => {
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
+        companyId: company.id,
       });
 
       const StartWorkEmailValidationResponse =
@@ -460,6 +472,7 @@ describe("Salary creation", () => {
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
+        companyId: company.id,
       });
 
       const StartWorkEmailValidationResponse =
