@@ -8,6 +8,7 @@ import {
   selectWorkRoleSchema,
   selectWorkSenioritySchema,
   updateSalariesSchema,
+  confirmationTokenSchema,
 } from "~/datasources/db/schema";
 import {
   CompanyRef,
@@ -286,10 +287,10 @@ builder.mutationFields((t) => ({
             ),
         });
       if (!foundConfirmationToken) {
-        throw new Error("Invalid token");
+        throw new Error("Token not found");
       }
       if (new Date(foundConfirmationToken.validUntil) <= new Date()) {
-        throw new Error("Invalid token");
+        throw new Error("Token expired");
       }
       const workSeniorityAndRole =
         await DB.query.workSeniorityAndRoleSchema.findFirst({
@@ -302,6 +303,38 @@ builder.mutationFields((t) => ({
 
       if (!workSeniorityAndRole) {
         throw new Error("Invalid work seniority and role combination");
+      }
+      // check if company exists.
+      const company = await DB.query.companiesSchema.findFirst({
+        where: (c, { eq }) => eq(c.id, companyId),
+      });
+      if (!company) {
+        throw new Error("Company not found");
+      }
+      // check if user has a work email associated to said company
+      const userWorkEmail = await DB.query.workEmailSchema.findFirst({
+        where: (c, { eq, and }) =>
+          and(eq(c.userId, userId), eq(c.companyId, companyId)),
+      });
+      if (!userWorkEmail) {
+        throw new Error("User does not have an email associated to company");
+      }
+
+      if (foundConfirmationToken.source === "onboarding") {
+        // Do onboarding checks:
+        // check if user has 0 salaries
+        const userSalaries = await DB.query.salariesSchema.findMany({
+          where: (c, { eq }) => eq(c.userId, userId),
+        });
+        if (userSalaries.length > 0) {
+          // kill token
+          await DB.update(confirmationTokenSchema)
+            .set({
+              status: "rejected",
+            })
+            .where(eq(confirmationTokenSchema.id, foundConfirmationToken.id));
+          throw new Error("User already has a salary");
+        }
       }
 
       const insertSalary = insertSalariesSchema.parse({
@@ -367,13 +400,13 @@ builder.mutationFields((t) => ({
         });
 
       if (!foundConfirmationToken) {
-        throw new Error("Invalid token");
+        throw new Error("Token not found");
       }
       if (
         new Date(foundConfirmationToken.validUntil) <= new Date() ||
         foundConfirmationToken.userId !== USER.id
       ) {
-        throw new Error("Invalid token");
+        throw new Error("Token expired");
       }
       const foundSalary = await DB.query.salariesSchema.findFirst({
         where: (c, { eq }) => eq(c.id, salaryId),

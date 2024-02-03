@@ -211,7 +211,7 @@ builder.mutationFields((t) => ({
           console.log("There is a valid validation token");
         }
         const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
-          source: "onboarding",
+          source: "work_email",
           sourceId: workEmail.id,
           userId: USER.id,
           // by default, the token is valid for 1 hour
@@ -255,7 +255,7 @@ builder.mutationFields((t) => ({
 
         console.log("Inserting the email");
         const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
-          source: "onboarding",
+          source: "work_email",
           sourceId: insertedWorkEmail.id,
           userId: USER.id,
           // by default, the token is valid for 1 hour
@@ -311,7 +311,7 @@ builder.mutationFields((t) => ({
             and(
               eq(c.token, confirmationToken),
               inArray(c.status, ["pending"]),
-              inArray(c.source, ["onboarding", "work_email"]),
+              inArray(c.source, ["work_email"]),
             ),
         });
       if (!foundConfirmationToken) {
