@@ -24,7 +24,7 @@ import {
 
 describe("Salary creation", () => {
   describe("User has a valid token", () => {
-    it.only("Should create a salary", async () => {
+    it("Should create a salary", async () => {
       const testDB = await getTestDB();
       const user = await insertUser();
       const company = await insertCompany({
