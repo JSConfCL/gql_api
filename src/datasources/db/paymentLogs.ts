@@ -24,7 +24,7 @@ export const paymentLogsSchema = pgTable(
     }).notNull(),
     transactionAmount: decimal("transaction_amount").notNull(),
     externalCreationDate: timestamp("external_creation_date", {
-      mode: "string",
+      mode: "date",
       precision: 6,
       withTimezone: true,
     }),
