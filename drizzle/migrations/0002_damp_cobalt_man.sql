@@ -13,12 +13,12 @@ CREATE TABLE IF NOT EXISTS "payments_logs" (
 	CONSTRAINT "payments_logs_external_id_platform_unique" UNIQUE("external_id","platform")
 );
 --> statement-breakpoint
-ALTER TABLE "confirmation_token" DROP CONSTRAINT "confirmation_token_id_unique";--> statement-breakpoint
-ALTER TABLE "salaries" DROP CONSTRAINT "salaries_id_unique";--> statement-breakpoint
-ALTER TABLE "users" DROP CONSTRAINT "users_id_unique";--> statement-breakpoint
-ALTER TABLE "work_role" DROP CONSTRAINT "work_role_id_unique";--> statement-breakpoint
-ALTER TABLE "work_seniority" DROP CONSTRAINT "work_seniority_id_unique";--> statement-breakpoint
-ALTER TABLE "work_seniority_and_role" DROP CONSTRAINT "work_seniority_and_role_id_unique";--> statement-breakpoint
+ALTER TABLE "confirmation_token" DROP CONSTRAINT "confirmation_token_id_unique" CASCADE;--> statement-breakpoint
+ALTER TABLE "salaries" DROP CONSTRAINT "salaries_id_unique" CASCADE;--> statement-breakpoint
+ALTER TABLE "users" DROP CONSTRAINT "users_id_unique" CASCADE;--> statement-breakpoint
+ALTER TABLE "work_role" DROP CONSTRAINT "work_role_id_unique" CASCADE;--> statement-breakpoint
+ALTER TABLE "work_seniority" DROP CONSTRAINT "work_seniority_id_unique" CASCADE;--> statement-breakpoint
+ALTER TABLE "work_seniority_and_role" DROP CONSTRAINT "work_seniority_and_role_id_unique" CASCADE;--> statement-breakpoint
 ALTER TABLE "events_tags" ALTER COLUMN "event_id" SET NOT NULL;--> statement-breakpoint
 ALTER TABLE "events_tags" ALTER COLUMN "tag_id" SET NOT NULL;--> statement-breakpoint
 ALTER TABLE "tags_communities" ALTER COLUMN "tag_id" SET NOT NULL;--> statement-breakpoint
