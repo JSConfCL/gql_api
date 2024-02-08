@@ -6,7 +6,7 @@ import { workSeniorityAndRoleSchema } from "./schema";
 
 // WORK-ROLES-TABLE
 export const workRoleSchema = pgTable("work_role", {
-  id: uuid("id").primaryKey().unique().defaultRandom(),
+  id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   description: text("description"),
   ...createdAndUpdatedAtFields,

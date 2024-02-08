@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
-import { v4 } from "uuid";
-import { getDb } from "../../src/datasources/db";
+import { ORM_TYPE, getDb } from "../../src/datasources/db";
 import { ENV } from "./types";
 import {
   insertUsersToTagsSchema,
@@ -8,13 +7,17 @@ import {
   tagsSchema,
   usersTagsSchema,
   AllowedUserTags,
+  insertPaymentLogsSchema,
+  paymentLogsSchema,
 } from "../../src/datasources/db/schema";
 import { sanitizeForLikeSearch } from "../../src/schema/shared/helpers";
+import { ResultItem, SearchResponse } from "./types/mercadopago.api.types";
 
 const externalReferences = {
   "1LUKA": "1LUKA",
   "5LUKAS": "5LUKAS",
   "10LUKAS": "10LUKAS",
+  DONACION_JSCHILE: "DONACION_JSCHILE",
 };
 
 const getFetch = (env: ENV) => async (url: string) => {
@@ -28,38 +31,28 @@ const getFetch = (env: ENV) => async (url: string) => {
   return json;
 };
 
-type Result = {
-  id: string;
-  operation_type: string;
-  payer: {
-    id: string;
-    email?: string | null;
-    first_name: null | string;
-    last_name: null | string;
-  };
-  transaction_details: {
-    total_paid_amount: number;
-  };
-};
-
-export const getSubscriptions = async (env: ENV) => {
+export const syncMercadopagoPaymentsAndSubscriptions = async (env: ENV) => {
   const DB = getDb({
     neonUrl: env.NEON_URL,
   });
   const meliFetch = getFetch(env);
-  let results: Result[] = [];
+  let results: ResultItem[] = [];
   for await (const [externalReference, externalReferenceId] of Object.entries(
     externalReferences,
   )) {
     console.log("Searching for", externalReference);
     const subscriptions = (await meliFetch(
       `https://api.mercadopago.com/v1/payments/search?sort=date_created&criteria=desc&external_reference=${externalReferenceId}`,
-    )) as {
-      results?: Result[];
-    };
-    results = [...results, ...(subscriptions?.results || [])];
+    )) as SearchResponse;
+    results = [...results, ...(subscriptions?.results ?? [])];
   }
+  await savePaymentEntry(DB, results);
+  await addTagsToDonorUsers(DB, results);
 
+  console.log("👉Results", results.length);
+};
+
+const addTagsToDonorUsers = async (DB: ORM_TYPE, results: ResultItem[]) => {
   const tagToInsert = insertTagsSchema.parse({
     name: AllowedUserTags.DONOR,
     description: "Usuario Donador",
@@ -98,5 +91,29 @@ export const getSubscriptions = async (env: ENV) => {
     } catch (error) {
       console.error("Error processing", error);
     }
+  }
+};
+
+const savePaymentEntry = async (DB: ORM_TYPE, results: ResultItem[]) => {
+  try {
+    console.log("👉 Attempting to save", results.length, " items");
+    const mappedResults = results.map((result) => {
+      return insertPaymentLogsSchema.parse({
+        externalId: result.id.toString(),
+        externalProductReference: result.external_reference,
+        platform: "mercadopago",
+        transactionAmount: result.transaction_amount.toString(),
+        externalCreationDate: result.date_created,
+        currencyId: result.currency_id,
+        originalResponseBlob: result,
+      });
+    });
+    const saved = await DB.insert(paymentLogsSchema)
+      .values(mappedResults)
+      .returning();
+    console.log("👉Saved", saved.length, "financial entries from mercadopago");
+  } catch (e) {
+    console.log("Error saving payment entries", e);
+    console.error(e);
   }
 };

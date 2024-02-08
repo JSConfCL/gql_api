@@ -6,7 +6,7 @@ import { userTicketsSchema, usersToCommunitiesSchema } from "./schema";
 
 // USERS
 export const usersSchema = pgTable("users", {
-  id: text("id").primaryKey().notNull().unique(),
+  id: text("id").primaryKey().notNull(),
   name: text("name"),
   lastName: text("lastName"),
   bio: text("bio").default(""),

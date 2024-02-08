@@ -13,7 +13,7 @@ const workMetodologyEnum = ["remote", "office", "hybrid"] as const;
 
 // SALARIES-TABLE
 export const salariesSchema = pgTable("salaries", {
-  id: uuid("id").primaryKey().unique().defaultRandom(),
+  id: uuid("id").primaryKey().defaultRandom(),
   userId: text("user_id")
     .references(() => usersSchema.id)
     .notNull(),

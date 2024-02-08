@@ -24,7 +24,7 @@ const confirmationTokenSourceEnum = [
 // entonces sabes que esta validando un email
 // validUntil es el timestamp en el que el token deja de ser valido
 export const confirmationTokenSchema = pgTable("confirmation_token", {
-  id: uuid("id").primaryKey().unique().defaultRandom(),
+  id: uuid("id").primaryKey().defaultRandom(),
   source: text("source", {
     enum: confirmationTokenSourceEnum,
   }).notNull(),
