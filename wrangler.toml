@@ -21,6 +21,7 @@ binding = "MAIL_QUEUE"
 queue = "google-photos-import-queue-dev"
 binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
 
+
 # =====================================
 # =====================================
 # 🚨 PRODUCTION CONFIG 🚨
@@ -75,7 +76,3 @@ binding = "MAIL_QUEUE"
 [[env.staging.queues.producers]]
 queue = "google-photos-import-queue-staging"
 binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
-
-[[env.staging.hyperdrive]]
-binding = "HYPERDRIVE"
-id = "7cbe793201644c8da2d333afc982c114"

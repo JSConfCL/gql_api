@@ -2,7 +2,6 @@
 export interface Env {
   GRAPHQL_BASE_ENDPOINT: "/";
   NEON_URL: string | undefined;
-  HYPERDRIVE: Hyperdrive;
   OTEL_SERVICE_NAME: string;
   CLERK_PEM_PUBLIC_KEY: string | undefined;
   CLERK_ISSUER_ID: string | undefined;
