@@ -1,5 +1,12 @@
-import { ENV } from "./types";
 import Stripe from "stripe";
+
+import { ORM_TYPE, getDb } from "../../src/datasources/db";
+import { ENV } from "./types";
+
+import {
+  insertPaymentLogsSchema,
+  paymentLogsSchema,
+} from "../../src/datasources/db/schema";
 
 export const getSubscriptions = async (env: ENV) => {
   const stripe = new Stripe(env.ST_KEY);
@@ -30,4 +37,39 @@ export const getSubscriptions = async (env: ENV) => {
       subscriptionId: subscription.id,
     };
   });
+};
+
+export const syncStripePayments = async (env: ENV) => {
+  const DB = getDb({ neonUrl: env.NEON_URL });
+  const stripe = new Stripe(env.ST_KEY);
+
+  const results = await stripe.charges.list({ limit: 100 });
+
+  await savePaymentEntry(DB, results.data);
+}
+
+
+const savePaymentEntry = async (DB: ORM_TYPE, results: Stripe.Charge[]) => {
+  try {
+    console.log("👉 Attempting to save", results.length, " items");
+    const mappedResults = results.map((result: Stripe.Charge) => {
+      return insertPaymentLogsSchema.parse({
+        externalId: result.id,
+        platform: "stripe",
+        externalCreationDate: new Date(result.created * 1000),
+        transactionAmount: result.amount.toString(),
+        currencyId: result.currency,
+        originalResponseBlob: result,
+      });
+    });
+
+    const saved = await DB.insert(paymentLogsSchema)
+      .values(mappedResults)
+      .onConflictDoNothing()
+      .returning();
+    console.log("👉Saved", saved.length, "financial entries from stripe");
+  } catch (e) {
+    console.log("Error saving payment entries", e);
+    console.error(e);
+  }
 };

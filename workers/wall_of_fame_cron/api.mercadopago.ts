@@ -110,6 +110,7 @@ const savePaymentEntry = async (DB: ORM_TYPE, results: ResultItem[]) => {
     });
     const saved = await DB.insert(paymentLogsSchema)
       .values(mappedResults)
+      .onConflictDoNothing()
       .returning();
     console.log("👉Saved", saved.length, "financial entries from mercadopago");
   } catch (e) {
