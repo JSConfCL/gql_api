@@ -13,6 +13,7 @@ import {
   selectAllowedCurrencySchema,
   selectWorkRoleSchema,
   selectWorkSenioritySchema,
+  selectPaymentLogsSchema,
 } from "~/datasources/db/schema";
 import { SanityAsset } from "../../datasources/sanity/types";
 
@@ -61,3 +62,15 @@ export const WorkSeniorityRef =
   builder.objectRef<WorkSeniorityGraphqlSchema>("WorkSeniority");
 
 export const SanityAssetRef = builder.objectRef<SanityAsset>("SanityAssetRef");
+
+type PaymentLogGraphqlSchema = z.infer<typeof selectPaymentLogsSchema>;
+export const PaymentLogRef = builder.objectRef<PaymentLogGraphqlSchema>(
+  "PublicFinanceEntryRef",
+);
+
+export const ConsolidatedPaymentLogEntryRef = builder.objectRef<{
+  id: string;
+  totalTransactionAmount: number;
+  platform: string;
+  currencyId: string;
+}>("ConsolidatedPaymentLogEntry");

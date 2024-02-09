@@ -5,7 +5,7 @@ main = "src/index.ts"
 
 [vars]
 GRAPHQL_BASE_ENDPOINT = "/"
-OTEL_SERVICE_NAME="graphql-api"
+OTEL_SERVICE_NAME = "graphql-api"
 
 [define]
 _APP_ENV = "'development'"
@@ -36,7 +36,7 @@ logpush = true
 
 [env.production.vars]
 GRAPHQL_BASE_ENDPOINT = "/"
-OTEL_SERVICE_NAME="graphql-api"
+OTEL_SERVICE_NAME = "graphql-api"
 
 [env.production.define]
 _APP_ENV = "'production'"
@@ -68,7 +68,7 @@ logpush = true
 
 [env.staging.vars]
 GRAPHQL_BASE_ENDPOINT = "/"
-OTEL_SERVICE_NAME="graphql-api"
+OTEL_SERVICE_NAME = "graphql-api"
 
 [env.staging.define]
 _APP_ENV = "'staging'"

@@ -15,8 +15,12 @@ export const usersTagsSchema = pgTable(
   "users_tags",
   {
     id: uuid("id").notNull().defaultRandom().unique(),
-    tagId: uuid("tag_id").references(() => tagsSchema.id),
-    userId: text("user_id").references(() => usersSchema.id),
+    tagId: uuid("tag_id")
+      .references(() => tagsSchema.id)
+      .notNull(),
+    userId: text("user_id")
+      .references(() => usersSchema.id)
+      .notNull(),
     ...createdAndUpdatedAtFields,
   },
   (t) => ({

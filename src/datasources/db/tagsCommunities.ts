@@ -9,8 +9,12 @@ export const tagsToCommunitiesSchema = pgTable(
   "tags_communities",
   {
     id: uuid("id").notNull().defaultRandom().unique(),
-    tagId: uuid("tag_id").references(() => tagsSchema.id),
-    communityId: uuid("community_id").references(() => communitySchema.id),
+    tagId: uuid("tag_id")
+      .references(() => tagsSchema.id)
+      .notNull(),
+    communityId: uuid("community_id")
+      .references(() => communitySchema.id)
+      .notNull(),
     ...createdAndUpdatedAtFields,
   },
   (t) => ({

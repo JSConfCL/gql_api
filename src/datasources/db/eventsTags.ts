@@ -9,8 +9,12 @@ export const eventsToTagsSchema = pgTable(
   "events_tags",
   {
     id: uuid("id").notNull().defaultRandom().unique(),
-    eventId: uuid("event_id").references(() => eventsSchema.id),
-    tagId: uuid("tag_id").references(() => tagsSchema.id),
+    eventId: uuid("event_id")
+      .references(() => eventsSchema.id)
+      .notNull(),
+    tagId: uuid("tag_id")
+      .references(() => tagsSchema.id)
+      .notNull(),
     ...createdAndUpdatedAtFields,
   },
   (t) => ({

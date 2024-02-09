@@ -3,6 +3,7 @@ import "./allowedCurrency";
 import "./community";
 import "./company";
 import "./events";
+import "./money";
 import "./salary";
 import "./status";
 import "./tags";

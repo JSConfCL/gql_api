@@ -3,17 +3,16 @@ name = "wall-of-fame-cron"
 compatibility_date = "2023-06-06"
 main = "./index.ts"
 
+[vars]
+# Variables should go here
+
 [triggers]
 # Schedule cron triggers:
 # - Every 10 minutes
-crons = ["*/10 * * * *"]
+crons = ["*/1 * * * *"]
 
 [define]
 _APP_ENV = "'development'"
-
-
-
-
 
 
 # =====================================
@@ -21,17 +20,17 @@ _APP_ENV = "'development'"
 # 🚨 PRODUCTION CONFIG 🚨
 # =====================================
 # =====================================
+
+[env.production.vars]
+# Variables should go here
+
 [env.production.triggers]
 # Schedule cron triggers:
 # - Every 10 minutes
-crons = ["*/10 * * * *"]
+crons = ["*/1 * * * *"]
 
 [env.production.define]
 _APP_ENV = "'production'"
-
-
-
-
 
 
 # =====================================
@@ -39,11 +38,13 @@ _APP_ENV = "'production'"
 # 🚨 STAGING CONFIG 🚨
 # =====================================
 # =====================================
+[env.staging.vars]
+# Variables should go here
 
 [env.staging.triggers]
 # Schedule cron triggers:
 # - Every 10 minutes
-crons = ["*/10 * * * *"]
+crons = ["*/1 * * * *"]
 
 [env.staging.define]
 _APP_ENV = "'staging'"
