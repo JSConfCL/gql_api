@@ -1,4 +1,4 @@
-import Stripe, { Charge } from "stripe";
+import Stripe from "stripe";
 
 import { ORM_TYPE, getDb } from "../../src/datasources/db";
 import { ENV } from "./types";
@@ -49,10 +49,10 @@ export const syncStripePayments = async (env: ENV) => {
 }
 
 
-const savePaymentEntry = async (DB: ORM_TYPE, results: Charge[]) => {
+const savePaymentEntry = async (DB: ORM_TYPE, results: Stripe.Charge[]) => {
   try {
     console.log("👉 Attempting to save", results.length, " items");
-    const mappedResults = results.map((result: Charge) => {
+    const mappedResults = results.map((result: Stripe.Charge) => {
       return insertPaymentLogsSchema.parse({
         externalId: result.id,
         platform: "stripe",
