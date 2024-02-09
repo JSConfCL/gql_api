@@ -1,6 +1,7 @@
 import { APP_ENV } from "../../src/env";
 import { ensureKeys } from "../utils";
 import { syncMercadopagoPaymentsAndSubscriptions } from "./api.mercadopago";
+import { syncStripePayments } from "./api.stripe";
 import { ENV } from "./types";
 import { H } from "@highlight-run/cloudflare";
 
@@ -26,7 +27,10 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
     H.setAttributes({
       APP_ENV: APP_ENV ?? "none",
     });
-    await syncMercadopagoPaymentsAndSubscriptions(env);
+    await Promise.all([
+      syncMercadopagoPaymentsAndSubscriptions(env),
+      syncStripePayments(env)
+    ])
   } catch (e) {
     H.consumeError(e as Error);
     console.error(e);
