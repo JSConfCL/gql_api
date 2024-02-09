@@ -53,7 +53,6 @@ const SearchPaymentLogsInput = builder.inputType("SearchPaymentLogsInput", {
     endDate: t.field({
       required: false,
       type: "DateTime",
-      defaultValue: new Date(),
     }),
   }),
 });

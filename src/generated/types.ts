@@ -80,6 +80,15 @@ export enum CompanyStatus {
   Inactive = "inactive",
 }
 
+/** Representation of a consolidated payment entry log calculation */
+export type ConsolidatedPaymentLogEntry = {
+  __typename?: "ConsolidatedPaymentLogEntry";
+  currencyId: Scalars["String"]["output"];
+  id: Scalars["String"]["output"];
+  platform: Scalars["String"]["output"];
+  totalTransactionAmount: Scalars["Float"]["output"];
+};
+
 export type CreateCommunityInput = {
   description: Scalars["String"]["input"];
   name: Scalars["String"]["input"];
@@ -336,6 +345,17 @@ export type MyTicketsSearchInput = {
   status?: InputMaybe<TicketStatus>;
 };
 
+/** Representation of a payment log entry */
+export type PublicFinanceEntryRef = {
+  __typename?: "PublicFinanceEntryRef";
+  createdAt: Scalars["DateTime"]["output"];
+  currencyId: Scalars["String"]["output"];
+  id: Scalars["String"]["output"];
+  platform: Scalars["String"]["output"];
+  transactionAmount: Scalars["Float"]["output"];
+  transactionDate?: Maybe<Scalars["DateTime"]["output"]>;
+};
+
 export type Query = {
   __typename?: "Query";
   /** Get a list of communities. Filter by name, id, or status */
@@ -356,6 +376,10 @@ export type Query = {
   myTickets: Array<UserTicket>;
   /** Get a list of salaries associated to the user */
   salaries: Array<Salary>;
+  /** Search a consolidated payment logs, by date, aggregated by platform and currency_id */
+  searchConsolidatedPaymentLogs: Array<ConsolidatedPaymentLogEntry>;
+  /** Search on the payment logs by date, and returns a list of payment logs */
+  searchPaymentLogs: Array<PublicFinanceEntryRef>;
   status: Scalars["String"]["output"];
   /** Get a list of tags */
   tags: Array<Tag>;
@@ -367,6 +391,8 @@ export type Query = {
   workEmail: WorkEmail;
   /** Get a list of validated work emails for the user */
   workEmails: Array<ValidatedWorkEmail>;
+  /** Get a a work role's seniorities */
+  workRoleSeniorities: Array<WorkSeniority>;
   /** Get a list of possible work roles */
   workRoles: Array<WorkRole>;
 };
@@ -401,6 +427,14 @@ export type QueryMyTicketsArgs = {
   input?: InputMaybe<MyTicketsSearchInput>;
 };
 
+export type QuerySearchConsolidatedPaymentLogsArgs = {
+  input: SearchPaymentLogsInput;
+};
+
+export type QuerySearchPaymentLogsArgs = {
+  input: SearchPaymentLogsInput;
+};
+
 export type QueryStatusArgs = {
   name?: InputMaybe<Scalars["String"]["input"]>;
 };
@@ -415,6 +449,10 @@ export type QueryUserSearchArgs = {
 
 export type QueryWorkEmailArgs = {
   email: Scalars["String"]["input"];
+};
+
+export type QueryWorkRoleSenioritiesArgs = {
+  input: WorkRoleSenioritiesInput;
 };
 
 /** Representation of a workEmail */
@@ -450,6 +488,11 @@ export type SearchCompaniesInput = {
   description?: InputMaybe<Scalars["String"]["input"]>;
   domain?: InputMaybe<Scalars["String"]["input"]>;
   website?: InputMaybe<Scalars["String"]["input"]>;
+};
+
+export type SearchPaymentLogsInput = {
+  endDate?: InputMaybe<Scalars["DateTime"]["input"]>;
+  startDate: Scalars["DateTime"]["input"];
 };
 
 export enum SearchableUserTags {
@@ -625,6 +668,11 @@ export type WorkRole = {
   description?: Maybe<Scalars["String"]["output"]>;
   id: Scalars["String"]["output"];
   name: Scalars["String"]["output"];
+  seniorities: Array<WorkSeniority>;
+};
+
+export type WorkRoleSenioritiesInput = {
+  workRoleId: Scalars["String"]["input"];
 };
 
 /** Representation of a work seniority */
