@@ -116,6 +116,7 @@ export const yoga = createYoga<Env>({
   },
   cors: (request) => {
     const requestOrigin = request.headers.get("origin") ?? undefined;
+    console.log("Request Origin", requestOrigin);
     return {
       origin: requestOrigin,
       credentials: true,
