@@ -52,10 +52,6 @@ binding = "MAIL_QUEUE"
 queue = "google-photos-import-queue-production"
 binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
 
-[[env.production.hyperdrive]]
-binding = "HYPERDRIVE"
-id = "2d834d5b48a34aa998a8c07e571c8cbd"
-
 
 # =====================================
 # =====================================
