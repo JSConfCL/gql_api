@@ -103,7 +103,7 @@ const savePaymentEntry = async (DB: ORM_TYPE, results: ResultItem[]) => {
         externalProductReference: result.external_reference,
         platform: "mercadopago",
         transactionAmount: result.transaction_amount.toString(),
-        externalCreationDate: result.date_created,
+        externalCreationDate: new Date(result.date_created),
         currencyId: result.currency_id,
         originalResponseBlob: result,
       });

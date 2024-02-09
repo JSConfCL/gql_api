@@ -277,7 +277,7 @@ Estos comandos utilizan las variables de entorno definidas en el archivo .dev.va
 # STACK
 
 - Neon Tech:
-  Servicio de Postgres Serverless, manejando el pool de conexiones mediante [cloudflare hyperdrive](https://developers.cloudflare.com/hyperdrive/), lo que permite mejorar la latencia de las consultas a la base de datos a nivel global.
+  Servicio de Postgres Serverless, en el futuro, manejando el pool de conexiones mediante [cloudflare hyperdrive](https://developers.cloudflare.com/hyperdrive/), lo que permite mejorar la latencia de las consultas a la base de datos a nivel global.
 
 - GraphQL Yoga:
   Un servidor GraphQL fácil de configurar que se apoya en Express.js. Proporciona una forma sencilla de crear servidores GraphQL que se pueden conectar a cualquier fuente de datos.
@@ -286,7 +286,7 @@ Estos comandos utilizan las variables de entorno definidas en el archivo .dev.va
   Una biblioteca de validación y análisis de datos para JavaScript y TypeScript. Se utiliza para definir y validar esquemas de datos.
 
 - Drizzle:
-  Un query builder para TypeScript. Ayuda a interactuar con bases de datos SQLite de una manera más estructurada y segura. Además de ayudarnos a crear migraciones incrementales facilmente.
+  Un query builder para TypeScript. Ayuda a interactuar con nuestra bases de datos de una manera más estructurada y segura. Además de ayudarnos a crear migraciones incrementales facilmente.
 
 - Cloudflare Workers:
   Una plataforma de servidor ...sin servidor 😊 Que permite ejecutar código en la red de distribución de contenido (CDN) de Cloudflare, lo que permite respuestas más rápidas y menor latencia al ejecutar código cerca del usuario final​1.
