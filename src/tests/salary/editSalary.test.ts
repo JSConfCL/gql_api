@@ -45,6 +45,7 @@ const createSalary = async () => {
   const workEmail = await insertWorkEmail({
     confirmationTokenId: insertedConfirmationToken.id,
     userId: user.id,
+    companyId: company.id,
   });
   const salary = await insertSalary({
     workEmailId: workEmail.id,

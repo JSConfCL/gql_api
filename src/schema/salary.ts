@@ -259,8 +259,6 @@ builder.mutationFields((t) => ({
       if (!USER) {
         throw new Error("User is required");
       }
-      console.log("DEBUG -----------------", input, USER);
-
       const {
         confirmationToken,
         companyId,
