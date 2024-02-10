@@ -18,7 +18,7 @@ import {
 import { faker } from "@faker-js/faker";
 
 describe("test the email validation process", () => {
-  describe("Test should pass", () => {
+  describe("Should pass", () => {
     it("Should successfully go through the flow", async () => {
       const testDB = await getTestDB();
       const email = faker.internet.email();
@@ -78,8 +78,57 @@ describe("test the email validation process", () => {
         true,
       );
     });
+    it("Should error if user tries to start a second email validation flow", async () => {
+      const testDB = await getTestDB();
+      const email = faker.internet.email();
+      const otherEmail = faker.internet.email();
+      const user = await insertUser({
+        email,
+      });
+
+      await executeGraphqlOperationAsUser<
+        StartWorkEmailValidationMutation,
+        StartWorkEmailValidationMutationVariables
+      >(
+        {
+          document: StartWorkEmailValidation,
+          variables: {
+            email,
+          },
+        },
+        user,
+      );
+      const workEmailEntry = await testDB.query.workEmailSchema.findFirst();
+      const confirmationToken =
+        await testDB.query.confirmationTokenSchema.findFirst();
+      if (!workEmailEntry) {
+        throw new Error("Work email entry not found");
+      }
+
+      const { confirmationTokenId } = workEmailEntry;
+
+      if (!confirmationTokenId || !confirmationToken) {
+        throw new Error("Confirmation token not found");
+      }
+
+      const StartAnotherWorkEmailValidationResponse =
+        await executeGraphqlOperationAsUser<
+          StartWorkEmailValidationMutation,
+          StartWorkEmailValidationMutationVariables
+        >(
+          {
+            document: StartWorkEmailValidation,
+            variables: {
+              email: otherEmail,
+            },
+          },
+          user,
+        );
+      console.log(StartAnotherWorkEmailValidationResponse.errors);
+      assert.equal(StartAnotherWorkEmailValidationResponse?.errors?.length, 1);
+    });
   });
-  describe("Test should fail", () => {
+  describe("Should Error", () => {
     it("If the user using the code is not the same user that created it", async () => {
       const testDB = await getTestDB();
       const email = faker.internet.email();

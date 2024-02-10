@@ -6,7 +6,7 @@ export type EmailMessageType = {
   to: string;
 };
 export const enqueueEmail = (
-  MAIL_QUEUE: Queue,
+  MAIL_QUEUE: Queue<EmailMessageType>,
   emailMessage: EmailMessageType,
 ) => {
   console.log("Enqueuing email", emailMessage, "to the queue: ", MAIL_QUEUE);

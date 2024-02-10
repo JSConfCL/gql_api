@@ -4,6 +4,7 @@ import {
   executeGraphqlOperation,
   executeGraphqlOperationAsUser,
   insertCompany,
+  insertConfirmationToken,
   insertUser,
   insertWorkEmail,
 } from "~/tests/__fixtures";
@@ -22,13 +23,20 @@ describe("test the work email query", () => {
       email,
     });
 
+    const insertedConfirmationToken = await insertConfirmationToken({
+      source: "work_email",
+      validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
+      userId: user.id,
+      status: "pending",
+      sourceId: "123",
+    });
+
     const insertedWorkEmail = await insertWorkEmail({
       companyId: company.id,
       userId: user.id,
       workEmail: email,
-      status: "confirmed",
+      confirmationTokenId: insertedConfirmationToken.id,
     });
-
     const query = await executeGraphqlOperationAsUser<
       WorkEmailsQuery,
       WorkEmailsQueryVariables
@@ -41,12 +49,12 @@ describe("test the work email query", () => {
 
     assert.equal(query.errors, undefined);
     assert.equal(query.data?.workEmails?.length, 1);
-    assert.equal(query.data?.workEmails?.[0]?.status, EmailStatus.Confirmed);
+    assert.equal(query.data?.workEmails?.[0]?.status, EmailStatus.Pending);
     assert.equal(
       query.data?.workEmails?.[0]?.workEmail,
       insertedWorkEmail.workEmail,
     );
-    assert.equal(query.data?.workEmails?.[0].isValidated, true);
+    assert.equal(query.data?.workEmails?.[0].isValidated, false);
   });
 
   it("Should fail for not authenticated users", async () => {
@@ -56,10 +64,19 @@ describe("test the work email query", () => {
       email,
     });
 
+    const insertedConfirmationToken = await insertConfirmationToken({
+      source: "work_email",
+      validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
+      userId: user.id,
+      status: "confirmed",
+      sourceId: "123",
+    });
+
     await insertWorkEmail({
       companyId: company.id,
       userId: user.id,
       workEmail: email,
+      confirmationTokenId: insertedConfirmationToken.id,
     });
 
     const query = await executeGraphqlOperation<
@@ -80,11 +97,18 @@ describe("test the work email query", () => {
     });
 
     const user2 = await insertUser();
-
+    const insertedConfirmationToken = await insertConfirmationToken({
+      source: "work_email",
+      validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
+      userId: user.id,
+      status: "confirmed",
+      sourceId: "123",
+    });
     await insertWorkEmail({
       companyId: company.id,
       userId: user.id,
       workEmail: email,
+      confirmationTokenId: insertedConfirmationToken.id,
     });
 
     const query = await executeGraphqlOperationAsUser<

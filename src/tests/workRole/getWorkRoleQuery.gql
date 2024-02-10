@@ -1,0 +1,12 @@
+query WorkRolesAndSeniorities {
+  workRoles {
+    description
+    id
+    name
+    seniorities {
+      id
+      name
+      description
+    }
+  }
+}

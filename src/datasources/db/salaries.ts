@@ -60,3 +60,14 @@ export const salairesRelations = relations(salariesSchema, ({ one }) => ({
 
 export const selectSalariesSchema = createSelectSchema(salariesSchema);
 export const insertSalariesSchema = createInsertSchema(salariesSchema);
+export const updateSalariesSchema = insertSalariesSchema.pick({
+  amount: true,
+  gender: true,
+  genderOtherText: true,
+  yearsOfExperience: true,
+  currencyCode: true,
+  countryCode: true,
+  typeOfEmployment: true,
+  workMetodology: true,
+  workSeniorityAndRoleId: true,
+});

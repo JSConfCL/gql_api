@@ -8,6 +8,7 @@
     "db:up": "drizzle-kit up:pg",
     "db:studio": "drizzle-kit studio --verbose",
     "db:migrate": "tsx migrate.ts",
+    "db:seed": "tsx seed.ts",
     "db:model": "tsx ./drizzle/dbml.ts",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
@@ -27,7 +28,7 @@
   },
   "devDependencies": {
     "@clerk/types": "^3.48.1",
-    "@cloudflare/workers-types": "^4.20231218.0",
+    "@cloudflare/workers-types": "^4.20240208.0",
     "@graphql-codegen/add": "^5.0.0",
     "@graphql-codegen/cli": "4.0.1",
     "@graphql-codegen/import-types-preset": "^2.2.6",
@@ -61,7 +62,7 @@
     "uuid": "^9.0.1",
     "vite-tsconfig-paths": "^4.2.0",
     "vitest": "^0.33.0",
-    "wrangler": "^3.22.1"
+    "wrangler": "^3.28.0"
   },
   "engines": {
     "node": ">=18"

@@ -116,6 +116,7 @@ export const yoga = createYoga<Env>({
   },
   cors: (request) => {
     const requestOrigin = request.headers.get("origin") ?? undefined;
+    console.log("Request Origin", requestOrigin);
     return {
       origin: requestOrigin,
       credentials: true,
@@ -130,6 +131,7 @@ export const yoga = createYoga<Env>({
       errorMessage: "Internal Server Error",
       maskError: (error, message) => {
         H.consumeError(error as Error);
+        console.error("🚨ERROR🚨", error, message);
         return maskError(error, message, APP_ENV !== "production");
       },
     }),

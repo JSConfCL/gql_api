@@ -438,7 +438,13 @@ export const insertCompany = async (
 };
 
 export const insertWorkEmail = async (
-  partialInput?: Partial<z.infer<typeof insertWorkEmailSchema>>,
+  partialInput: Omit<
+    Partial<z.infer<typeof insertWorkEmailSchema>>,
+    "confirmationTokenId" | "companyId"
+  > & {
+    confirmationTokenId: string;
+    companyId: string;
+  },
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),

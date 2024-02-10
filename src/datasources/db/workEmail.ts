@@ -15,14 +15,16 @@ export const workEmailSchema = pgTable("work_email", {
     .references(() => usersSchema.id)
     .notNull(),
   workEmail: text("work_email").notNull(),
-  confirmationTokenId: uuid("confirmation_token_id").references(
-    () => confirmationTokenSchema.id,
-  ),
+  confirmationTokenId: uuid("confirmation_token_id")
+    .references(() => confirmationTokenSchema.id)
+    .notNull(),
   status: text("status", {
     enum: statusEnumOptions,
   }).default("pending"),
   confirmationDate: timestamp("confirmation_date"),
-  companyId: uuid("company_id").references(() => companiesSchema.id),
+  companyId: uuid("company_id")
+    .references(() => companiesSchema.id)
+    .notNull(),
   ...createdAndUpdatedAtFields,
 });
 
