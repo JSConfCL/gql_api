@@ -27,7 +27,7 @@ describe("test the work email query", () => {
       source: "work_email",
       validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
       userId: user.id,
-      status: "confirmed",
+      status: "pending",
       sourceId: "123",
     });
 
@@ -49,12 +49,12 @@ describe("test the work email query", () => {
 
     assert.equal(query.errors, undefined);
     assert.equal(query.data?.workEmails?.length, 1);
-    assert.equal(query.data?.workEmails?.[0]?.status, EmailStatus.Confirmed);
+    assert.equal(query.data?.workEmails?.[0]?.status, EmailStatus.Pending);
     assert.equal(
       query.data?.workEmails?.[0]?.workEmail,
       insertedWorkEmail.workEmail,
     );
-    assert.equal(query.data?.workEmails?.[0].isValidated, true);
+    assert.equal(query.data?.workEmails?.[0].isValidated, false);
   });
 
   it("Should fail for not authenticated users", async () => {
