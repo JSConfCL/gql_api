@@ -29,7 +29,7 @@ describe("Test email library", () => {
         send: spy,
       } as unknown as Queue;
       await enqueueGooglePhotoImage(mockedQueue, {
-        sanityEventInstanceId: "some-token",
+        sanityEventId: "some-token",
         googleMedia: googleMediaType,
       });
 
@@ -44,11 +44,11 @@ describe("Test email library", () => {
       } as unknown as Queue;
       await enqueueGooglePhotoImageBatch(mockedQueue, [
         {
-          sanityEventInstanceId: "some-token",
+          sanityEventId: "some-token",
           googleMedia: googleMediaType,
         },
         {
-          sanityEventInstanceId: "some-token",
+          sanityEventId: "some-token",
           googleMedia: googleMediaType,
         },
       ]);
