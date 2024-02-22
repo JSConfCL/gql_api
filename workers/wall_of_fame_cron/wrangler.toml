@@ -9,7 +9,7 @@ main = "./index.ts"
 [triggers]
 # Schedule cron triggers:
 # - Every day
-crons = ["* */12 * * *"]
+crons = ["* */1 * * *"]
 
 [define]
 _APP_ENV = "'development'"
@@ -44,7 +44,7 @@ _APP_ENV = "'production'"
 [env.staging.triggers]
 # Schedule cron triggers:
 # - Every day
-crons = ["* */12 * * *"]
+crons = ["* */1 * * *"]
 
 [env.staging.define]
 _APP_ENV = "'staging'"
