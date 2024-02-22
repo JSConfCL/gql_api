@@ -32,6 +32,8 @@ export const eventsSchema = pgTable("events", {
   geoAddressJSON: text("geo_address_json"),
   meetingURL: text("meeting_url"),
   maxAttendees: integer("max_attendees"),
+  sanityEventId: text("sanity_event_id"),
+  bannerImageSanityRef: text("banner_image_sanity_ref"),
   ...createdAndUpdatedAtFields,
 });
 

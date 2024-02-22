@@ -1,5 +1,5 @@
 # 🚨 DEFAULT CONFIG 🚨
-name = "wall-of-fame-cron"
+name = "sanity-asset-importer"
 compatibility_date = "2023-06-06"
 main = "./index.ts"
 

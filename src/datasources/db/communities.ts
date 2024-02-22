@@ -15,6 +15,8 @@ export const communitySchema = pgTable("communities", {
   name: text("name").notNull(),
   slug: text("slug").unique(),
   description: text("description"),
+  logoImageSanityRef: text("logo_image_sanity_ref"), // these are sanity image IDs
+  bannerImageSanityRef: text("banner_image_sanity_ref"), // these are sanity image IDs
   status: text("status", { enum: communityStatusEnum })
     .default("inactive")
     .notNull(),

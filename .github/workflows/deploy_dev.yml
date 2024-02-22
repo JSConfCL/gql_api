@@ -37,7 +37,10 @@ jobs:
       # Deploy the wall of fame worker
       - name: 🛳️ DEPLOY WALL-OF-FAME WORKER
         run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --config ./workers/wall_of_fame_cron/wrangler.toml
-      # Redeploy the EMAIL queue consumer
+      # Deploy the sanity asset importer worker
+      - name: 🛳️ DEPLOY SANITY-ASSET-IMPORTER WORKER
+        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --config ./workers/sanity_asset_importer/wrangler.toml
+        # Redeploy the EMAIL queue consumer
       - name: 💀/🛳️ RE-DEPLOY MAIL queue consumer
         run: |
           CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler queues consumer remove mail-queue-dev mail-queue-consumer && \

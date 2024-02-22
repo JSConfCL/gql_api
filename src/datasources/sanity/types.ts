@@ -20,13 +20,17 @@ export type SanityAsset = {
 };
 
 export type SanityEvent = {
-  id: string;
-  project: string;
-  mergedTitle: boolean;
+  _id: string;
   title: string;
+  url: string;
   startDate: string;
   endDate: string;
-  bgColor: string;
-  galleryEnabled: boolean;
-  image: SanityAsset;
+  imageUrl?: string;
+  project?: {
+    _type: "project";
+    _ref: string;
+    _id: string;
+    title: string;
+    imageUrl?: string;
+  };
 };
