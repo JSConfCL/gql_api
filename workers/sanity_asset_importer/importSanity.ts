@@ -6,7 +6,6 @@ import { SanityEvent } from "../../src/datasources/sanity/types";
 import { getDb } from "../../src/datasources/db";
 import { eventsSchema } from "../../src/datasources/db/events";
 import { eventsToCommunitiesSchema } from "../../src/datasources/db/eventsCommunities";
-import { eq } from "drizzle-orm";
 
 const getSanityClient = (env: ENV) =>
   createClient({
