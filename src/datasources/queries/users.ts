@@ -25,6 +25,7 @@ export const updateUserProfileInfo = async (
     where: (u, { eq }) => eq(u.id, parsedProfileInfo.sub),
   });
   if (!result) {
+    console.log("User not found, creating new user");
     // we create the user
     const createdUser = (
       await db
@@ -47,8 +48,9 @@ export const updateUserProfileInfo = async (
 
     return selectUsersSchema.parse(createdUser);
   } else {
+    console.log("User found for updating user");
     // we update the user
-    const createdUser = (
+    const updatedUser = (
       await db
         .update(usersSchema)
         .set({
@@ -64,6 +66,6 @@ export const updateUserProfileInfo = async (
         .where(eq(usersSchema.id, parsedProfileInfo.sub))
         .returning()
     )?.[0];
-    return selectUsersSchema.parse(createdUser);
+    return selectUsersSchema.parse(updatedUser);
   }
 };

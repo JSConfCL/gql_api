@@ -31,6 +31,7 @@ const getUser = async ({
 }) => {
   const JWT_TOKEN = (request.headers.get("Authorization") ?? "").split(" ")[1];
   if (!JWT_TOKEN) {
+    console.info("No token present");
     return null;
   }
   const verified = await verifyToken(JWT_TOKEN, {
@@ -38,6 +39,7 @@ const getUser = async ({
     jwtKey: CLERK_PEM_PUBLIC_KEY,
   });
   if (!verified) {
+    console.error("Could not verify token");
     return null;
   }
   const {
@@ -55,6 +57,7 @@ const getUser = async ({
   } = verified;
 
   if (exp < Date.now() / 1000) {
+    console.error("Token expired");
     return null;
   }
   const profileInfo = ProfileInfoSchema.parse({
@@ -69,6 +72,7 @@ const getUser = async ({
     public_metadata,
     sub,
   });
+  console.log("Updating profile Info for user ID:", sub);
   return updateUserProfileInfo(DB, profileInfo);
 };
 
@@ -174,12 +178,14 @@ export const yoga = createYoga<Env>({
     const DB = getDb({
       neonUrl: NEON_URL,
     });
+    console.log("Getting user");
     const USER = await getUser({
       request,
       CLERK_ISSUER_ID,
       CLERK_PEM_PUBLIC_KEY,
       DB,
     });
+    console.log("User Obtained:", USER);
     return {
       ...initContextCache(),
       DB,
