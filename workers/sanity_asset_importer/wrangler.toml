@@ -1,5 +1,5 @@
 # 🚨 DEFAULT CONFIG 🚨
-name = "wall-of-fame-cron"
+name = "sanity-asset-importer"
 compatibility_date = "2023-06-06"
 main = "./index.ts"
 
@@ -9,7 +9,7 @@ main = "./index.ts"
 [triggers]
 # Schedule cron triggers:
 # - Every day
-crons = ["* */1 * * *"]
+crons = ["* */12 * * *"]
 
 [define]
 _APP_ENV = "'development'"
@@ -44,7 +44,7 @@ _APP_ENV = "'production'"
 [env.staging.triggers]
 # Schedule cron triggers:
 # - Every day
-crons = ["* */1 * * *"]
+crons = ["* */12 * * *"]
 
 [env.staging.define]
 _APP_ENV = "'staging'"

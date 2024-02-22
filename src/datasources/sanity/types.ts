@@ -18,3 +18,19 @@ export type SanityAsset = {
     };
   };
 };
+
+export type SanityEvent = {
+  _id: string;
+  title: string;
+  url: string;
+  startDate: string;
+  endDate: string;
+  imageUrl?: string;
+  project?: {
+    _type: "project";
+    _ref: string;
+    _id: string;
+    title: string;
+    imageUrl?: string;
+  };
+};

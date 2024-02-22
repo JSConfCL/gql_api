@@ -20,6 +20,7 @@
     "typecheck": "tsc",
     "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info --port 50123",
     "dev:wall-of-fame": "wrangler dev --test-scheduled --config ./workers/wall_of_fame_cron/wrangler.toml",
+    "dev:sanity": "wrangler dev --test-scheduled --config ./workers/sanity_asset_importer/wrangler.toml",
     "dev:auth": "wrangler dev --test-scheduled --config ./workers/auth_tokens/wrangler.toml",
     "generate": "tsx ./src/generated/generate.ts && graphql-codegen --config codegen.ts && prettier ./src/generated --write",
     "email:dev": "email dev",
