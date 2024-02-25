@@ -32,7 +32,6 @@ builder.queryFields((t) => ({
       if (!event) {
         return [];
       }
-      console.log("event", event);
       const sanityClient = ctx.GET_SANITY_CLIENT();
       const images = await sanityClient.fetch<
         {
