@@ -17,6 +17,7 @@ import {
 } from "~/datasources/queries/users";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import * as rules from "~/authz";
+import { getSanityClient } from "./datasources/sanity/client";
 
 const getUser = async ({
   request,
@@ -159,6 +160,10 @@ export const yoga = createYoga<Env>({
     CLERK_ISSUER_ID,
     MAIL_QUEUE,
     GOOGLE_PHOTOS_IMPORT_QUEUE,
+    SANITY_PROJECT_ID,
+    SANITY_DATASET,
+    SANITY_API_VERSION,
+    SANITY_SECRET_TOKEN,
   }) => {
     if (!CLERK_PEM_PUBLIC_KEY) {
       throw new Error("Missing CLERK_KEY");
@@ -175,6 +180,25 @@ export const yoga = createYoga<Env>({
     if (!NEON_URL) {
       throw new Error("Missing NEON_URL");
     }
+    if (!NEON_URL) {
+      throw new Error("Missing NEON_URL");
+    }
+    if (
+      !SANITY_PROJECT_ID ||
+      !SANITY_DATASET ||
+      !SANITY_API_VERSION ||
+      !SANITY_SECRET_TOKEN
+    ) {
+      throw new Error("Missing Sanity Configuration");
+    }
+    const GET_SANITY_CLIENT = () =>
+      getSanityClient({
+        projectId: SANITY_PROJECT_ID,
+        dataset: SANITY_DATASET,
+        apiVersion: SANITY_API_VERSION,
+        token: SANITY_SECRET_TOKEN,
+        useCdn: true,
+      });
     const DB = getDb({
       neonUrl: NEON_URL,
     });
@@ -191,6 +215,7 @@ export const yoga = createYoga<Env>({
       DB,
       USER,
       MAIL_QUEUE,
+      GET_SANITY_CLIENT,
     };
   },
 });

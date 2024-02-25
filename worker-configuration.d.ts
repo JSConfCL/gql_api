@@ -2,12 +2,15 @@
 export interface Env {
   GRAPHQL_BASE_ENDPOINT: "/";
   NEON_URL: string | undefined;
-  HYPERDRIVE: Hyperdrive;
   OTEL_SERVICE_NAME: string;
   CLERK_PEM_PUBLIC_KEY: string | undefined;
   CLERK_ISSUER_ID: string | undefined;
   ENFORCED_JWT_TOKEN: string | undefined;
   MAIL_QUEUE: Queue;
+  SANITY_PROJECT_ID: string | undefined;
+  SANITY_DATASET: string | undefined;
+  SANITY_API_VERSION: string | undefined;
+  SANITY_SECRET_TOKEN: string | undefined;
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
   RESEND_EMAIL_KEY: string;
   HIGHLIGHT_PROJECT_ID: string;
