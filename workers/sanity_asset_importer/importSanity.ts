@@ -1,20 +1,11 @@
 /* eslint-disable no-console */
 import { H } from "@highlight-run/cloudflare";
-import { createClient } from "@sanity/client";
 import { ENV } from "./types";
 import { SanityEvent } from "../../src/datasources/sanity/types";
 import { getDb } from "../../src/datasources/db";
 import { eventsSchema } from "../../src/datasources/db/events";
 import { eventsToCommunitiesSchema } from "../../src/datasources/db/eventsCommunities";
-
-const getSanityClient = (env: ENV) =>
-  createClient({
-    projectId: env.SANITY_PROJECT_ID,
-    dataset: env.SANITY_DATASET,
-    useCdn: false, // `false` if you want to ensure fresh data
-    apiVersion: env.SANITY_API_VERSION, // use current date (YYYY-MM-DD) to target the latest API version
-    token: env.SANITY_SECRET_TOKEN, // Only if you want to update content with the client
-  });
+import { getSanityClient } from "../../src/datasources/sanity/client";
 
 export const importFromSanity = async (env: ENV) => {
   try {
@@ -22,9 +13,14 @@ export const importFromSanity = async (env: ENV) => {
       neonUrl: env.NEON_URL,
     });
 
-    const sanityClient = getSanityClient(env);
+    const sanityClient = getSanityClient({
+      projectId: env.SANITY_PROJECT_ID,
+      dataset: env.SANITY_DATASET,
+      apiVersion: env.SANITY_API_VERSION,
+      token: env.SANITY_SECRET_TOKEN,
+      useCdn: true,
+    });
     const events = await sanityClient.fetch<SanityEvent[]>(
-      // "*[_type == 'event']{title, url, startDate, endDate, _id, image, project->{_id, title, image}}",
       `*[_type == 'event']{
           title,
           url,

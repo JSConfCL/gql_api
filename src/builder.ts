@@ -7,9 +7,11 @@ import { selectUsersSchema } from "~/datasources/db/schema";
 import { z } from "zod";
 import { Env } from "worker-configuration";
 import TracingPlugin, { wrapResolver } from "@pothos/plugin-tracing";
+import { getSanityClient } from "./datasources/sanity/client";
 
 type Context = {
   DB: ORM_TYPE;
+  GET_SANITY_CLIENT: () => ReturnType<typeof getSanityClient>;
   USER: z.infer<typeof selectUsersSchema> | null;
   MAIL_QUEUE: Queue;
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;

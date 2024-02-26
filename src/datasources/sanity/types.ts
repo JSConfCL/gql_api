@@ -5,7 +5,7 @@ export type SanityAsset = {
   url: string;
   originalFilename: string;
   size: number;
-  metadata: {
+  metadata?: {
     dimensions: {
       aspectRatio: number;
       height: number;
