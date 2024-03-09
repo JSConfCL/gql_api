@@ -31,6 +31,7 @@ import { canCreateEvent, canEditEvent } from "~/validations";
 import { GraphQLError } from "graphql";
 import { sanitizeForLikeSearch } from "./shared/helpers";
 import { SanityAssetZodSchema } from "../datasources/sanity/zod";
+import { getImagesBySanityEventId } from "../datasources/sanity/images";
 
 export const EventStatus = builder.enumType("EventStatus", {
   values: ["active", "inactive"] as const,
@@ -69,52 +70,12 @@ builder.objectType(EventRef, {
     }),
     images: t.field({
       type: [SanityAssetRef],
-      resolve: async (root, args, ctx) => {
-        // console.log("root", root)
-        // console.log("args", args)
-        const sanityClient = ctx.GET_SANITY_CLIENT();
-        const images = await sanityClient.fetch<
-          {
-            id: string;
-            url: string;
-            originalFilename: string;
-            size: number;
-            title: string;
-            assetId: string;
-            path: string;
-          }[]
-        >(
-          `*[_type == 'eventImage' && event._ref == $eventId]{
-            "id": _id,
-            "assetId": image.asset->_id,
-            "path": image.asset->path,
-            "url": image.asset->url,
-            "originalFilename": image.asset->originalFilename,
-            "size": image.asset->size,
-            title,
-          }`,
-          {
-            eventId: root.sanityEventId,
-          },
-        );
-
-        return images
-          .map((image) => {
-            const parsed = SanityAssetZodSchema.safeParse({
-              id: image.id,
-              url: image.url,
-              originalFilename: image.originalFilename,
-              size: image.size,
-              title: image.title,
-              assetId: image.assetId,
-              path: image.path,
-            });
-            if (parsed.success) {
-              return parsed.data;
-            }
-            return null;
-          })
-          .filter(Boolean);
+      resolve: async ({ sanityEventId }, args, ctx) => {
+        const client = ctx.GET_SANITY_CLIENT();
+        return getImagesBySanityEventId({
+          client,
+          sanityEventId,
+        });
       },
     }),
     meetingURL: t.exposeString("meetingURL", { nullable: true }),
