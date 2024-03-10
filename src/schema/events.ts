@@ -17,6 +17,7 @@ import {
 import {
   CommunityRef,
   EventRef,
+  SanityAssetRef,
   TagRef,
   TicketRef,
   UserRef,
@@ -31,6 +32,8 @@ import {
 import { canCreateEvent, canEditEvent } from "~/validations";
 import { GraphQLError } from "graphql";
 import { sanitizeForLikeSearch } from "./shared/helpers";
+import { SanityAssetZodSchema } from "../datasources/sanity/zod";
+import { getImagesBySanityEventId } from "../datasources/sanity/images";
 
 export const EventStatus = builder.enumType("EventStatus", {
   values: ["active", "inactive"] as const,
@@ -66,6 +69,16 @@ builder.objectType(EventRef, {
       type: "DateTime",
       nullable: true,
       resolve: (root) => (root.endDateTime ? new Date(root.endDateTime) : null),
+    }),
+    images: t.field({
+      type: [SanityAssetRef],
+      resolve: async ({ sanityEventId }, args, ctx) => {
+        const client = ctx.GET_SANITY_CLIENT();
+        return getImagesBySanityEventId({
+          client,
+          sanityEventId,
+        });
+      },
     }),
     meetingURL: t.exposeString("meetingURL", { nullable: true }),
     maxAttendees: t.exposeInt("maxAttendees", { nullable: true }),

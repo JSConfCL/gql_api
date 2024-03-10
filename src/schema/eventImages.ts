@@ -1,6 +1,7 @@
 import { SanityAssetRef } from "~/schema/shared/refs";
 import { builder } from "~/builder";
 import { SanityAsset } from "../datasources/sanity/types";
+import { getImagesBySanityEventId } from "../datasources/sanity/images";
 
 const EventImageSearch = builder.inputType("EventImageSearch", {
   description: "Search for tags",
@@ -32,40 +33,11 @@ builder.queryFields((t) => ({
       if (!event) {
         return [];
       }
-      const sanityClient = ctx.GET_SANITY_CLIENT();
-      const images = await sanityClient.fetch<
-        {
-          id: string;
-          url: string;
-          originalFilename: string;
-          size: number;
-          title: string;
-          assetId: string;
-          path: string;
-        }[]
-      >(
-        `*[_type == 'eventImage' && event._ref == $eventId]{
-          "id": _id,
-          "assetId": image.asset->_id,
-          "path": image.asset->path,
-          "url": image.asset->url,
-          "originalFilename": image.asset->originalFilename,
-          "size": image.asset->size,
-          title,
-        }`,
-        {
-          eventId: event.sanityEventId,
-        },
-      );
-      return images.map((image) => {
-        return {
-          id: image.id,
-          assetId: image.assetId,
-          path: image.path,
-          url: image.url,
-          originalFilename: image.originalFilename,
-          size: image.size,
-        } satisfies SanityAsset;
+      const { sanityEventId } = event;
+      const client = ctx.GET_SANITY_CLIENT();
+      return getImagesBySanityEventId({
+        client,
+        sanityEventId,
       });
     },
   }),
