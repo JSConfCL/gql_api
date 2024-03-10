@@ -130,8 +130,9 @@ type Event {
   startDateTime: DateTime!
   status: EventStatus!
   tags: [Tag!]!
-  tickets(input: EventsTicketsSearchInput): [UserTicket!]!
+  tickets: [Ticket!]!
   users: [User!]!
+  usersTickets(input: EventsTicketsSearchInput): [UserTicket!]!
   visibility: EventVisibility!
 }
 
@@ -239,6 +240,11 @@ type Mutation {
   Create a salary
   """
   createSalary(input: CreateSalaryInput!): Salary!
+
+  """
+  Create a ticket
+  """
+  createTicket(input: TicketCreateInput!): Ticket!
 
   """
   Edit an community
@@ -496,6 +502,20 @@ type Ticket {
 enum TicketApprovalStatus {
   approved
   pending
+}
+
+input TicketCreateInput {
+  currencyId: String
+  description: String
+  endDateTime: DateTime
+  eventId: String!
+  name: String!
+  price: Int
+  quantity: Int
+  requiresApproval: Boolean
+  startDateTime: DateTime!
+  status: TicketTemplateStatus
+  visibility: TicketTemplateVisibility
 }
 
 input TicketEditInput {
