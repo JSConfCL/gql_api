@@ -15,7 +15,7 @@ import {
   CancelUserTicketMutation,
   CancelUserTicketMutationVariables,
 } from "./cancelUserTicket.generated";
-import { TicketStatus } from "../../../generated/types";
+import { TicketStatus } from "../../../../generated/types";
 import { v4 } from "uuid";
 
 describe("Cancel User Ticket", () => {

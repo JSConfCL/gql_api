@@ -7,7 +7,7 @@ import { EventStatus } from "~/generated/types";
 export type UserRoleEvent = "admin" | "member" | "collaborator";
 export type UserRoleCommunity = "admin" | "member" | "collaborator";
 
-export async function eventIsActive(
+export async function isEventActive(
   eventId: string,
   DB: ORM_TYPE,
 ): Promise<boolean> {
@@ -210,25 +210,21 @@ export async function canUpdateUserRoleInCommunity(
 }
 
 export async function canCreateTicket({
-  userId,
+  user,
   eventId,
   DB,
 }: {
-  userId: string;
+  user: z.infer<typeof selectUsersSchema>;
   eventId: string;
   DB: ORM_TYPE;
 }): Promise<boolean> {
-  const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
-  });
-  if (user?.isSuperAdmin) {
+  if (user.isSuperAdmin) {
     return true;
   }
-
   const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
     where: (utc, { eq, and }) =>
       and(
-        eq(utc.userId, userId),
+        eq(utc.userId, user.id),
         eq(utc.role, "admin"),
         eq(utc.communityId, eventId),
       ),

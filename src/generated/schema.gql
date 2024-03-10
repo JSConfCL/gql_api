@@ -168,6 +168,13 @@ input EventEditInput {
   visibility: EventVisibility
 }
 
+"""
+Search for tags
+"""
+input EventImageSearch {
+  eventId: String!
+}
+
 enum EventStatus {
   active
   inactive
@@ -220,6 +227,11 @@ type Mutation {
   Cancel a ticket
   """
   cancelUserTicket(userTicketId: String!): UserTicket!
+
+  """
+  Attempt to claim a certain ammount of tickets
+  """
+  claimUserTicket(input: TicketClaimInput!): [UserTicket!]!
 
   """
   Create an community
@@ -322,6 +334,11 @@ type PublicFinanceEntryRef {
   transactionDate: DateTime
 }
 
+input PurchaseOrderInput {
+  quantity: Int!
+  ticketId: String!
+}
+
 type Query {
   """
   Get a list of communities. Filter by name, id, or status
@@ -347,6 +364,11 @@ type Query {
   Get an event by id
   """
   event(id: String!): Event
+
+  """
+  Get a list of images, that are attached to an event
+  """
+  eventImages(input: EventImageSearch!): [SanityAssetRef!]!
 
   """
   Get a list of events. Filter by name, id, status or date
@@ -502,6 +524,11 @@ type Ticket {
 enum TicketApprovalStatus {
   approved
   pending
+  rejected
+}
+
+input TicketClaimInput {
+  purchaseOrder: [PurchaseOrderInput!]!
 }
 
 input TicketCreateInput {
@@ -534,6 +561,7 @@ input TicketEditInput {
 }
 
 enum TicketPaymentStatus {
+  not_required
   paid
   unpaid
 }

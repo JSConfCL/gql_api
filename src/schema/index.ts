@@ -10,7 +10,7 @@ import "./status";
 import "./tags";
 import "./ticket";
 import "./user";
-import "./userTickets";
+import "./userTickets/userTickets";
 import "./workEmail";
 import "./workRole";
 import "./workSeniority";
