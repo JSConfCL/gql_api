@@ -335,10 +335,11 @@ builder.mutationFields((t) => ({
       // - Other General errors
       const transactionResults = await DB.transaction(async (trx) => {
         try {
+          let claimedTickets: Array<typeof insertUserTicketsSchema._type> = [];
           // TODO: Measure and consider parallelizing this.
           for (const item of purchaseOrder) {
             // We pull the ticket template to see if it exists.
-            const ticketTemplate = await DB.query.ticketsSchema.findFirst({
+            const ticketTemplate = await trx.query.ticketsSchema.findFirst({
               where: (t, { eq }) => eq(t.id, item.ticketId),
               with: {
                 event: true,
@@ -366,7 +367,7 @@ builder.mutationFields((t) => ({
             }
 
             // We pull the tickets that are already reserved or in-process  to see if we have enough to fulfill the purchase order
-            const tickets = await DB.query.userTicketsSchema.findMany({
+            const tickets = await trx.query.userTicketsSchema.findMany({
               where: (uts, { eq, and, inArray }) =>
                 and(
                   eq(uts.ticketTemplateId, item.ticketId),
@@ -379,7 +380,7 @@ builder.mutationFields((t) => ({
             // if we have enough tickets to fulfill the purchase order.
             if (ticketTemplate.quantity) {
               // If we would be going over the limit of tickets, we throw an error.
-              if (tickets.length + item.quantity <= ticketTemplate.quantity) {
+              if (tickets.length + item.quantity > ticketTemplate.quantity) {
                 throw new GraphQLError(
                   `Not enough tickets for ticket template with id ${item.ticketId}`,
                 );
@@ -406,35 +407,37 @@ builder.mutationFields((t) => ({
                 approvalStatus: requiresApproval ? "pending" : "approved",
               }),
             );
-            const createdUserTickets = await DB.insert(userTicketsSchema)
+            console.log(
+              `Creating ${newTickets.length} user tickets for ticket template with id ${item.ticketId}`,
+            );
+            const createdUserTickets = await trx
+              .insert(userTicketsSchema)
               .values(newTickets)
               .returning()
               .execute();
 
             //  if the ticket has a quantity field, we  do a last check to see if we have enough gone over the limit of tickets.
-            if (ticketTemplate.quantity) {
-              const tickets = await DB.query.userTicketsSchema.findMany({
-                where: (uts, { eq, and, inArray }) =>
-                  and(
-                    eq(uts.ticketTemplateId, item.ticketId),
-                    inArray(uts.approvalStatus, ["approved", "pending"]),
-                  ),
-              });
+            const finalTickets = await trx.query.userTicketsSchema.findMany({
+              where: (uts, { eq, and, inArray }) =>
+                and(
+                  eq(uts.ticketTemplateId, item.ticketId),
+                  inArray(uts.approvalStatus, ["approved", "pending"]),
+                ),
+            });
 
-              if (
-                tickets.length + createdUserTickets.length >
-                ticketTemplate.quantity
-              ) {
+            if (ticketTemplate.quantity) {
+              if (finalTickets.length > ticketTemplate.quantity) {
                 throw new GraphQLError(
-                  `Not enough tickets for ticket template with id ${item.ticketId}`,
+                  `We hav gone over the limit of tickets for ticket template with id ${item.ticketId}`,
                 );
               }
             }
 
-            return createdUserTickets;
+            claimedTickets = [...claimedTickets, ...createdUserTickets];
           }
-          return [];
+          return claimedTickets;
         } catch (e) {
+          console.error("🚨Error", e);
           trx.rollback();
           throw new GraphQLError(
             e instanceof Error ? e.message : "Unknown error",

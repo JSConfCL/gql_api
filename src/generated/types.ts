@@ -244,7 +244,7 @@ export type Mutation = {
   /** Cancel a ticket */
   cancelUserTicket: UserTicket;
   /** Attempt to claim a certain ammount of tickets */
-  claimTickets: Ticket;
+  claimUserTicket: Array<UserTicket>;
   /** Create an community */
   createCommunity: Community;
   /** Create a company */
@@ -287,7 +287,7 @@ export type MutationCancelUserTicketArgs = {
   userTicketId: Scalars["String"]["input"];
 };
 
-export type MutationClaimTicketsArgs = {
+export type MutationClaimUserTicketArgs = {
   input: TicketClaimInput;
 };
 

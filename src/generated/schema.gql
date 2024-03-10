@@ -231,7 +231,7 @@ type Mutation {
   """
   Attempt to claim a certain ammount of tickets
   """
-  claimTickets(input: TicketClaimInput!): Ticket!
+  claimUserTicket(input: TicketClaimInput!): [UserTicket!]!
 
   """
   Create an community
