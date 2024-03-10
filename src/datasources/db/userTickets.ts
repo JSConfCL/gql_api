@@ -5,8 +5,16 @@ import { ticketsSchema, usersSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
 export const userTicketsStatusEnum = ["active", "inactive"] as const;
-export const userTicketsPaymentStatusEnum = ["paid", "unpaid"] as const;
-export const userTicketsApprovalStatusEnum = ["approved", "pending"] as const;
+export const userTicketsPaymentStatusEnum = [
+  "paid",
+  "unpaid",
+  "not_required",
+] as const;
+export const userTicketsApprovalStatusEnum = [
+  "approved",
+  "pending",
+  "rejected",
+] as const;
 export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;
 // USER-TICKETS-TABLE
 export const userTicketsSchema = pgTable("user_tickets", {

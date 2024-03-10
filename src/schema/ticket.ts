@@ -6,7 +6,8 @@ import {
   insertTicketSchema,
   selectTicketSchema,
   ticketsSchema,
-} from "~/datasources/db/tickets";
+} from "~/datasources/db/schema";
+
 import { eq } from "drizzle-orm";
 import { addToObjectIfPropertyExists } from "./shared/helpers";
 
@@ -148,6 +149,7 @@ const TicketEditInput = builder.inputType("TicketEditInput", {
     }),
   }),
 });
+
 builder.mutationFields((t) => ({
   createTicket: t.field({
     description: "Create a ticket",
@@ -168,7 +170,7 @@ builder.mutationFields((t) => ({
         }
         const { eventId } = input;
         const hasPermissions = await canCreateTicket({
-          userId: ctx.USER.id,
+          user: ctx.USER,
           eventId: eventId,
           DB: ctx.DB,
         });

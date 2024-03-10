@@ -190,6 +190,11 @@ export type EventEditInput = {
   visibility?: InputMaybe<EventVisibility>;
 };
 
+/** Search for tags */
+export type EventImageSearch = {
+  eventId: Scalars["String"]["input"];
+};
+
 export enum EventStatus {
   Active = "active",
   Inactive = "inactive",
@@ -238,6 +243,8 @@ export type Mutation = {
   approvalUserTicket: UserTicket;
   /** Cancel a ticket */
   cancelUserTicket: UserTicket;
+  /** Attempt to claim a certain ammount of tickets */
+  claimTickets: Ticket;
   /** Create an community */
   createCommunity: Community;
   /** Create a company */
@@ -278,6 +285,10 @@ export type MutationApprovalUserTicketArgs = {
 
 export type MutationCancelUserTicketArgs = {
   userTicketId: Scalars["String"]["input"];
+};
+
+export type MutationClaimTicketsArgs = {
+  input: TicketClaimInput;
 };
 
 export type MutationCreateCommunityArgs = {
@@ -363,6 +374,11 @@ export type PublicFinanceEntryRef = {
   transactionDate?: Maybe<Scalars["DateTime"]["output"]>;
 };
 
+export type PurchaseOrderInput = {
+  quantity: Scalars["Int"]["input"];
+  ticketId: Scalars["String"]["input"];
+};
+
 export type Query = {
   __typename?: "Query";
   /** Get a list of communities. Filter by name, id, or status */
@@ -375,6 +391,8 @@ export type Query = {
   company: Company;
   /** Get an event by id */
   event?: Maybe<Event>;
+  /** Get a list of images, that are attached to an event */
+  eventImages: Array<SanityAssetRef>;
   /** Get a list of events. Filter by name, id, status or date */
   events: Array<Event>;
   /** Get the current user */
@@ -424,6 +442,10 @@ export type QueryCompanyArgs = {
 
 export type QueryEventArgs = {
   id: Scalars["String"]["input"];
+};
+
+export type QueryEventImagesArgs = {
+  input: EventImageSearch;
 };
 
 export type QueryEventsArgs = {
@@ -543,7 +565,12 @@ export type Ticket = {
 export enum TicketApprovalStatus {
   Approved = "approved",
   Pending = "pending",
+  Rejected = "rejected",
 }
+
+export type TicketClaimInput = {
+  purchaseOrder: Array<PurchaseOrderInput>;
+};
 
 export type TicketCreateInput = {
   currencyId?: InputMaybe<Scalars["String"]["input"]>;
@@ -575,6 +602,7 @@ export type TicketEditInput = {
 };
 
 export enum TicketPaymentStatus {
+  NotRequired = "not_required",
   Paid = "paid",
   Unpaid = "unpaid",
 }

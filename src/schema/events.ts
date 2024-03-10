@@ -28,7 +28,7 @@ import {
   TicketPaymentStatus,
   TicketRedemptionStatus,
   TicketStatus,
-} from "./userTickets";
+} from "./userTickets/userTickets";
 import { canCreateEvent, canEditEvent } from "~/validations";
 import { GraphQLError } from "graphql";
 import { sanitizeForLikeSearch } from "./shared/helpers";
