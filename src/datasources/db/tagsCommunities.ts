@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { primaryKey, pgTable, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+
 import { communitySchema, tagsSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 

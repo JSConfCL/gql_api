@@ -11,6 +11,9 @@ module.exports = {
         "prettier",
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        // imports
+        "plugin:import/recommended",
+        "plugin:import/typescript",
       ],
       parser: "@typescript-eslint/parser",
       parserOptions: {
@@ -34,6 +37,30 @@ module.exports = {
         "@typescript-eslint/no-unsafe-arguments": "off",
         // "no-console": "error", // We capture console.log on our logger system, so we allow it
         curly: ["error", "all"],
+
+        // turn on errors for missing imports
+        "import/no-unresolved": "error",
+        // 'import/no-named-as-default-member': 'off',
+        "import/order": [
+          "error",
+          {
+            groups: [
+              "builtin", // Built-in imports (come from NodeJS native) go first
+              "external", // <- External imports
+              "internal", // <- Absolute imports
+              ["sibling", "parent"], // <- Relative imports, the sibling and parent types they can be mingled together
+              "index", // <- index imports
+              "unknown", // <- unknown
+            ],
+            "newlines-between": "always",
+            alphabetize: {
+              /* sort in ascending order. Options: ["ignore", "asc", "desc"] */
+              order: "asc",
+              /* ignore case. Options: [true, false] */
+              caseInsensitive: true,
+            },
+          },
+        ],
       },
     },
     // PARA LOS TESTS
@@ -74,6 +101,7 @@ module.exports = {
     "import/resolver": {
       typescript: {
         alwaysTryTypes: true,
+        project: __dirname,
       },
       node: {
         extensions: [".js", ".jsx", ".ts", ".tsx"],

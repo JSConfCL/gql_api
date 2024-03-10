@@ -1,10 +1,12 @@
 /* eslint-disable no-console */
 import { H } from "@highlight-run/cloudflare";
-import { ensureKeys } from "../utils";
-import { GoogleImportQueueElement } from "../../src/datasources/queues/google_import";
 import { v5 } from "uuid";
-import { APP_ENV } from "../../src/env";
-import { getSanityClient } from "../../src/datasources/sanity/client";
+
+import { GoogleImportQueueElement } from "~/datasources/queues/google_import";
+import { getSanityClient } from "~/datasources/sanity/client";
+import { APP_ENV } from "~/env";
+
+import { ensureKeys } from "../utils";
 
 type ENV = {
   SANITY_PROJECT_ID: string;

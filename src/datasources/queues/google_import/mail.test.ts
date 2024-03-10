@@ -1,4 +1,5 @@
 import { it, describe, vi, expect } from "vitest";
+
 import { enqueueGooglePhotoImage, enqueueGooglePhotoImageBatch } from "./index";
 
 const googleMediaType = {

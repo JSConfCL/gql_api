@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { PreExecutionRule, UnauthorizedError } from "@graphql-authz/core";
 import { GraphQLError } from "graphql";
+
 import { GraphqlContext } from "~/builder";
 
 export class IsAuthenticated extends PreExecutionRule {

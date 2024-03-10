@@ -1,9 +1,11 @@
-import { APP_ENV } from "../../src/env";
-import { ensureKeys } from "../utils";
+import { H } from "@highlight-run/cloudflare";
+
+import { APP_ENV } from "~/env";
+
 import { syncMercadopagoPaymentsAndSubscriptions } from "./api.mercadopago";
 import { syncStripePayments } from "./api.stripe";
 import { ENV } from "./types";
-import { H } from "@highlight-run/cloudflare";
+import { ensureKeys } from "../utils";
 
 export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   event,
@@ -29,8 +31,8 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
     });
     await Promise.all([
       syncMercadopagoPaymentsAndSubscriptions(env),
-      syncStripePayments(env)
-    ])
+      syncStripePayments(env),
+    ]);
   } catch (e) {
     H.consumeError(e as Error);
     console.error(e);

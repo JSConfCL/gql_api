@@ -1,5 +1,6 @@
 import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+
 import { createdAndUpdatedAtFields } from "./shared";
 // ALLOWED_CURRENCIES-TABLE
 

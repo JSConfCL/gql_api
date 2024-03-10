@@ -1,9 +1,11 @@
+import { writeFile } from "node:fs/promises";
+
 import {
   // printIntrospectionSchema,
   printSchema,
 } from "graphql/utilities";
+
 import { schema } from "~/schema";
-import { writeFile } from "node:fs/promises";
 
 const start = async () => {
   const schemaString = printSchema(schema);

@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
-import { ORM_TYPE, getDb } from "../../src/datasources/db";
-import { ENV } from "./types";
+import { ORM_TYPE, getDb } from "~/datasources/db";
 import {
   insertUsersToTagsSchema,
   insertTagsSchema,
@@ -9,8 +8,10 @@ import {
   AllowedUserTags,
   insertPaymentLogsSchema,
   paymentLogsSchema,
-} from "../../src/datasources/db/schema";
-import { sanitizeForLikeSearch } from "../../src/schema/shared/helpers";
+} from "~/datasources/db/schema";
+import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
+
+import { ENV } from "./types";
 import { ResultItem, SearchResponse } from "./types/mercadopago.api.types";
 
 const getFetch = (env: ENV) => async (url: string) => {

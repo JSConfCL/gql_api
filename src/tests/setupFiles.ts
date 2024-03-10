@@ -1,6 +1,7 @@
-import { afterEach, beforeEach } from "vitest";
 import * as uuid from "uuid";
-import { closeConnection, getTestDB } from "./__fixtures/databaseHelper";
+import { afterEach, beforeEach } from "vitest";
+
+import { closeConnection, getTestDB } from "./fixtures/databaseHelper";
 
 const MY_NAMESPACE = "1b671a64-40d5-491e-99b0-da01ff1f3341";
 

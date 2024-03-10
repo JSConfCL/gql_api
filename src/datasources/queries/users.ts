@@ -1,5 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
+
 import { ORM_TYPE } from "~/datasources/db";
 import { selectUsersSchema, usersSchema } from "~/datasources/db/schema";
 import { getUsername } from "~/datasources/queries/utils/createUsername";

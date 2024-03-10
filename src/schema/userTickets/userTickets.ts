@@ -1,6 +1,7 @@
-import { builder } from "~/builder";
-import { UserTicketRef } from "../shared/refs";
 import { SQL, eq } from "drizzle-orm";
+import { GraphQLError } from "graphql";
+
+import { builder } from "~/builder";
 import {
   selectUserTicketsSchema,
   eventsSchema,
@@ -11,7 +12,7 @@ import {
   userTicketsRedemptionStatusEnum,
   insertUserTicketsSchema,
 } from "~/datasources/db/schema";
-import { GraphQLError } from "graphql";
+import { UserTicketRef } from "~/schema/shared/refs";
 import {
   canApproveTicket,
   canCancelUserTicket,

@@ -7,8 +7,9 @@ import {
   timestamp,
   unique,
 } from "drizzle-orm/pg-core";
-import { createdAndUpdatedAtFields } from "./shared";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+
+import { createdAndUpdatedAtFields } from "./shared";
 
 const paymentPlatforms = ["mercadopago", "stripe"] as const;
 

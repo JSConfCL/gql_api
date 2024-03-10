@@ -1,8 +1,10 @@
-import { APP_ENV } from "../../src/env";
-import { ensureKeys } from "../utils";
+import { H } from "@highlight-run/cloudflare";
+
+import { APP_ENV } from "~/env";
+
 import { importFromSanity } from "./importSanity";
 import { ENV } from "./types";
-import { H } from "@highlight-run/cloudflare";
+import { ensureKeys } from "../utils";
 
 export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   event,

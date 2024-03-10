@@ -1,22 +1,24 @@
-import { H } from "@highlight-run/cloudflare";
-import { createYoga, maskError } from "graphql-yoga";
-import { useMaskedErrors } from "@envelop/core";
-import { APP_ENV } from "~/env";
-import { useImmediateIntrospection } from "@envelop/immediate-introspection";
-import { ORM_TYPE, getDb } from "~/datasources/db";
-import { Env } from "worker-configuration";
-import { schema } from "~/schema";
-import { initContextCache } from "@pothos/core";
-import { useOpenTelemetry } from "@envelop/opentelemetry";
-import { provider } from "~/obs/exporter";
 import { verifyToken } from "@clerk/backend";
+import { useMaskedErrors } from "@envelop/core";
+import { useImmediateIntrospection } from "@envelop/immediate-introspection";
+import { useOpenTelemetry } from "@envelop/opentelemetry";
+import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
+import { H } from "@highlight-run/cloudflare";
+import { initContextCache } from "@pothos/core";
 import jwt from "@tsndr/cloudflare-worker-jwt";
+import { createYoga, maskError } from "graphql-yoga";
+
+import { Env } from "worker-configuration";
+import * as rules from "~/authz";
+import { ORM_TYPE, getDb } from "~/datasources/db";
 import {
   ProfileInfoSchema,
   updateUserProfileInfo,
 } from "~/datasources/queries/users";
-import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
-import * as rules from "~/authz";
+import { APP_ENV } from "~/env";
+import { provider } from "~/obs/exporter";
+import { schema } from "~/schema";
+
 import { getSanityClient } from "./datasources/sanity/client";
 
 const getUser = async ({

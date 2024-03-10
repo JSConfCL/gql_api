@@ -1,4 +1,5 @@
 import { it, describe, vi, expect } from "vitest";
+
 import { enqueueEmail, sendTransactionalEmail } from "./index";
 
 describe("Test email library", () => {

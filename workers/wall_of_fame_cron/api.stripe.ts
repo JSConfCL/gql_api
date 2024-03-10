@@ -1,12 +1,13 @@
 import Stripe from "stripe";
 
-import { ORM_TYPE, getDb } from "../../src/datasources/db";
-import { ENV } from "./types";
-
+import { ORM_TYPE, getDb } from "~/datasources/db";
 import {
   insertPaymentLogsSchema,
   paymentLogsSchema,
-} from "../../src/datasources/db/schema";
+} from "~/datasources/db/schema";
+
+import { ENV } from "./types";
+
 
 export const getSubscriptions = async (env: ENV) => {
   const stripe = new Stripe(env.ST_KEY);
@@ -46,8 +47,7 @@ export const syncStripePayments = async (env: ENV) => {
   const results = await stripe.charges.list({ limit: 100 });
 
   await savePaymentEntry(DB, results.data);
-}
-
+};
 
 const savePaymentEntry = async (DB: ORM_TYPE, results: Stripe.Charge[]) => {
   try {

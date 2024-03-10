@@ -1,5 +1,6 @@
 import { it, describe, assert } from "vitest";
-import { executeGraphqlOperation } from "~/tests/__fixtures";
+
+import { executeGraphqlOperation } from "~/tests/fixtures";
 import {
   Status,
   StatusQuery,

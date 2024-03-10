@@ -1,4 +1,5 @@
 import { it, describe, assert } from "vitest";
+
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -9,7 +10,8 @@ import {
   insertUser,
   insertUserToCommunity,
   insertUserToEvent,
-} from "~/tests/__fixtures";
+} from "~/tests/fixtures";
+
 import {
   RedeemUserTicket,
   RedeemUserTicketMutation,

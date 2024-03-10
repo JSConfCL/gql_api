@@ -1,4 +1,6 @@
+import { v4 } from "uuid";
 import { it, describe, assert } from "vitest";
+
 import {
   executeGraphqlOperationAsUser,
   insertEvent,
@@ -6,13 +8,13 @@ import {
   insertTicketTemplate,
   insertUser,
   insertUserToEvent,
-} from "~/tests/__fixtures";
+} from "~/tests/fixtures";
+
 import {
   ApprovalUserTicket,
   ApprovalUserTicketMutation,
   ApprovalUserTicketMutationVariables,
 } from "./approvalUserTicket.generated";
-import { v4 } from "uuid";
 
 describe("Approval user ticket", () => {
   it("Should approve a user ticket if is superadmin", async () => {

@@ -1,12 +1,13 @@
+import { relations } from "drizzle-orm";
 import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { createdAndUpdatedAtFields, statusEnumOptions } from "./shared";
+
 import {
   usersSchema,
   companiesSchema,
   confirmationTokenSchema,
 } from "./schema";
-import { relations } from "drizzle-orm";
+import { createdAndUpdatedAtFields, statusEnumOptions } from "./shared";
 
 // WORK-EMAILS-TABLE
 export const workEmailSchema = pgTable("work_email", {

@@ -1,8 +1,9 @@
+import { relations } from "drizzle-orm";
 import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { createdAndUpdatedAtFields } from "./shared";
-import { relations } from "drizzle-orm";
+
 import { salariesSchema, workEmailSchema } from "./schema";
+import { createdAndUpdatedAtFields } from "./shared";
 
 const companiesStatusEnum = ["active", "inactive", "draft"] as const;
 // COMPANIES-TABLE

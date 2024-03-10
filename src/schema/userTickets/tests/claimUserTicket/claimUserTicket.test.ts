@@ -1,4 +1,6 @@
+import { AsyncReturnType } from "type-fest";
 import { it, describe, assert } from "vitest";
+
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -7,13 +9,13 @@ import {
   insertTicketTemplate,
   insertUser,
   insertUserToCommunity,
-} from "~/tests/__fixtures";
+} from "~/tests/fixtures";
+
 import {
   ClaimUserTicket,
   ClaimUserTicketMutation,
   ClaimUserTicketMutationVariables,
 } from "./claimUserTicket.generated";
-import { AsyncReturnType } from "type-fest";
 
 const createCommunityEventUserAndTicketTemplate = async ({
   community,

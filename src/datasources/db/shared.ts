@@ -1,12 +1,11 @@
 import { timestamp } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 export const createdAndUpdatedAtFields = {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at"),
   deletedAt: timestamp("deleted_at"),
 };
-
-import { z } from "zod";
 
 export const createdAndUpdatedAtFieldsSelectZodSchema = {
   createdAt: z.date(),

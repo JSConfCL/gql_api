@@ -1,11 +1,10 @@
-import { createExportTraceServiceRequest } from "@opentelemetry/otlp-transformer";
+import { ExportResult, ExportResultCode } from "@opentelemetry/core";
 import {
   ExportServiceError,
   OTLPExporterError,
 } from "@opentelemetry/otlp-exporter-base";
-import { ExportResult, ExportResultCode } from "@opentelemetry/core";
-import { ReadableSpan, SpanExporter } from "@opentelemetry/sdk-trace-base";
-import {
+import { createExportTraceServiceRequest } from "@opentelemetry/otlp-transformer";
+import { ReadableSpan, SpanExporter ,
   BasicTracerProvider,
   SimpleSpanProcessor,
 } from "@opentelemetry/sdk-trace-base";

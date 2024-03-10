@@ -1,4 +1,6 @@
+import { v4 } from "uuid";
 import { it, describe, assert } from "vitest";
+
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -9,14 +11,14 @@ import {
   insertUser,
   insertUserToCommunity,
   insertUserToEvent,
-} from "~/tests/__fixtures";
+} from "~/tests/fixtures";
+
 import {
   CancelUserTicket,
   CancelUserTicketMutation,
   CancelUserTicketMutationVariables,
 } from "./cancelUserTicket.generated";
 import { TicketStatus } from "../../../../generated/types";
-import { v4 } from "uuid";
 
 describe("Cancel User Ticket", () => {
   it("Should cancel a user ticket if user is the owner of the ticket", async () => {

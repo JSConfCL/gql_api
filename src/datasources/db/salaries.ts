@@ -1,10 +1,10 @@
+import { relations } from "drizzle-orm";
 import { integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { createdAndUpdatedAtFields } from "./shared";
-import { usersSchema } from "./users";
-import { relations } from "drizzle-orm";
+
 import { companiesSchema } from "./companies";
-import { genderOptions } from "./shared";
+import { createdAndUpdatedAtFields , genderOptions } from "./shared";
+import { usersSchema } from "./users";
 import { workEmailSchema } from "./workEmail";
 import { workSeniorityAndRoleSchema } from "./workSeniorityAndRole";
 

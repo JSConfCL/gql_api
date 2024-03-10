@@ -1,5 +1,6 @@
-import { GoogleMediaItemType } from "../../google/photos";
 import pMap from "p-map";
+
+import { GoogleMediaItemType } from "~/datasources/google/photos";
 
 export type GoogleImportQueueElement = {
   sanityEventId: string;

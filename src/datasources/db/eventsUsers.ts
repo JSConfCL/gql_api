@@ -1,9 +1,10 @@
+import { relations } from "drizzle-orm";
 import { pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+
 import { eventsSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 import { usersSchema } from "./users";
-import { relations } from "drizzle-orm";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 const eventsToUsersRoleEnum = ["admin", "member", "collaborator"] as const;
 // EVENT—USER
