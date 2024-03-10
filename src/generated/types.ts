@@ -147,14 +147,13 @@ export type Event = {
   startDateTime: Scalars["DateTime"]["output"];
   status: EventStatus;
   tags: Array<Tag>;
-  tickets: Array<Ticket>;
+  tickets: Array<UserTicket>;
   users: Array<User>;
-  usersTickets: Array<UserTicket>;
   visibility: EventVisibility;
 };
 
 /** Representation of an Event (Events and Users, is what tickets are linked to) */
-export type EventUsersTicketsArgs = {
+export type EventTicketsArgs = {
   input?: InputMaybe<EventsTicketsSearchInput>;
 };
 
@@ -246,8 +245,6 @@ export type Mutation = {
   createEvent: Event;
   /** Create a salary */
   createSalary: Salary;
-  /** Create a ticket */
-  createTicket: Ticket;
   /** Edit an community */
   editCommunity: Community;
   /** Edit an event */
@@ -294,10 +291,6 @@ export type MutationCreateEventArgs = {
 
 export type MutationCreateSalaryArgs = {
   input: CreateSalaryInput;
-};
-
-export type MutationCreateTicketArgs = {
-  input: TicketCreateInput;
 };
 
 export type MutationEditCommunityArgs = {
@@ -544,20 +537,6 @@ export enum TicketApprovalStatus {
   Approved = "approved",
   Pending = "pending",
 }
-
-export type TicketCreateInput = {
-  currencyId?: InputMaybe<Scalars["String"]["input"]>;
-  description?: InputMaybe<Scalars["String"]["input"]>;
-  endDateTime?: InputMaybe<Scalars["DateTime"]["input"]>;
-  eventId: Scalars["String"]["input"];
-  name: Scalars["String"]["input"];
-  price?: InputMaybe<Scalars["Int"]["input"]>;
-  quantity?: InputMaybe<Scalars["Int"]["input"]>;
-  requiresApproval?: InputMaybe<Scalars["Boolean"]["input"]>;
-  startDateTime: Scalars["DateTime"]["input"];
-  status?: InputMaybe<TicketTemplateStatus>;
-  visibility?: InputMaybe<TicketTemplateVisibility>;
-};
 
 export type TicketEditInput = {
   currencyId?: InputMaybe<Scalars["String"]["input"]>;

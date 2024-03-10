@@ -52,7 +52,7 @@ describe("Event", () => {
       community: null,
       tags: [],
       users: [],
-      usersTickets: [],
+      tickets: [],
     } as EventQuery["event"]);
   });
   it("Should get an event Tags", async () => {
@@ -101,7 +101,7 @@ describe("Event", () => {
           id: tag1.id,
         },
       ],
-      usersTickets: [],
+      tickets: [],
     } as EventQuery["event"]);
   });
   it("Should get an event tickets", async () => {
@@ -148,7 +148,7 @@ describe("Event", () => {
       user1,
     );
     assert.equal(response.errors, undefined);
-    assert.equal(response.data?.event?.usersTickets?.length, 2);
+    assert.equal(response.data?.event?.tickets?.length, 2);
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -166,7 +166,7 @@ describe("Event", () => {
         },
       ],
       tags: [],
-      usersTickets: [
+      tickets: [
         {
           id: ticket1.id,
           approvalStatus: ticket1.approvalStatus,
@@ -216,7 +216,7 @@ describe("Event", () => {
         id: community1.id,
       },
       tags: [],
-      usersTickets: [],
+      tickets: [],
     } as EventQuery["event"]);
   });
   it("Should get an event users", async () => {
@@ -243,7 +243,7 @@ describe("Event", () => {
       users: [],
       community: null,
       tags: [],
-      usersTickets: [],
+      tickets: [],
     } as EventQuery["event"]);
   });
   it("return null when no event  is found", async () => {
@@ -522,7 +522,7 @@ describe("Event tickets filter", () => {
       user1,
     );
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.event?.usersTickets.length, 1);
+    assert.deepEqual(response.data?.event?.tickets.length, 1);
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -540,7 +540,7 @@ describe("Event tickets filter", () => {
           id: user1.id,
         },
       ],
-      usersTickets: [
+      tickets: [
         {
           id: ticket1.id,
           approvalStatus: ticket1.approvalStatus,
@@ -599,7 +599,7 @@ describe("Event tickets filter", () => {
       user1,
     );
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.event?.usersTickets.length, 1);
+    assert.deepEqual(response.data?.event?.tickets.length, 1);
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -617,7 +617,7 @@ describe("Event tickets filter", () => {
           id: user1.id,
         },
       ],
-      usersTickets: [
+      tickets: [
         {
           id: ticket1.id,
           approvalStatus: ticket1.approvalStatus,
@@ -676,7 +676,7 @@ describe("Event tickets filter", () => {
       user1,
     );
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.event?.usersTickets.length, 1);
+    assert.deepEqual(response.data?.event?.tickets.length, 1);
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -694,7 +694,7 @@ describe("Event tickets filter", () => {
           id: user1.id,
         },
       ],
-      usersTickets: [
+      tickets: [
         {
           id: ticket1.id,
           approvalStatus: ticket1.approvalStatus,
@@ -753,7 +753,7 @@ describe("Event tickets filter", () => {
       user1,
     );
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.event?.usersTickets.length, 1);
+    assert.deepEqual(response.data?.event?.tickets.length, 1);
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -771,7 +771,7 @@ describe("Event tickets filter", () => {
           id: user1.id,
         },
       ],
-      usersTickets: [
+      tickets: [
         {
           id: ticket1.id,
           approvalStatus: ticket1.approvalStatus,
@@ -832,7 +832,7 @@ describe("Event tickets filter", () => {
       user1,
     );
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.event?.usersTickets.length, 1);
+    assert.deepEqual(response.data?.event?.tickets.length, 1);
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -852,7 +852,7 @@ describe("Event tickets filter", () => {
           id: user1.id,
         },
       ],
-      usersTickets: [
+      tickets: [
         {
           id: ticket1.id,
           approvalStatus: ticket1.approvalStatus,

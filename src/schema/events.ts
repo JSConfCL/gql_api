@@ -7,7 +7,6 @@ import {
   selectCommunitySchema,
   selectEventsSchema,
   selectTagsSchema,
-  selectTicketSchema,
   selectUserTicketsSchema,
   selectUsersSchema,
   updateEventsSchema,
@@ -18,7 +17,6 @@ import {
   CommunityRef,
   EventRef,
   TagRef,
-  TicketRef,
   UserRef,
   UserTicketRef,
 } from "~/schema/shared/refs";
@@ -144,22 +142,6 @@ builder.objectType(EventRef, {
       },
     }),
     tickets: t.field({
-      type: [TicketRef],
-      authz: {
-        rules: ["IsAuthenticated"],
-      },
-      resolve: async (root, args, { DB }) => {
-        const tickets = await DB.query.ticketsSchema.findMany({
-          where: (c, { eq }) => eq(c.eventId, root.id),
-          orderBy(fields, operators) {
-            return operators.asc(fields.createdAt);
-          },
-        });
-
-        return tickets.map((t) => selectTicketSchema.parse(t));
-      },
-    }),
-    usersTickets: t.field({
       type: [UserTicketRef],
       authz: {
         rules: ["IsAuthenticated"],
