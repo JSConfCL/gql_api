@@ -22,7 +22,6 @@ import {
   EditTicketMutationVariables,
 } from "./editTicket.generated";
 
-
 describe("User", () => {
   it("Should update a ticket, all fields", async () => {
     const user1 = await insertUser({

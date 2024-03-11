@@ -139,6 +139,7 @@ export type Event = {
   description?: Maybe<Scalars["String"]["output"]>;
   endDateTime?: Maybe<Scalars["DateTime"]["output"]>;
   id: Scalars["String"]["output"];
+  images: Array<SanityAssetRef>;
   latitude?: Maybe<Scalars["String"]["output"]>;
   longitude?: Maybe<Scalars["String"]["output"]>;
   maxAttendees?: Maybe<Scalars["Int"]["output"]>;
@@ -244,7 +245,7 @@ export type Mutation = {
   /** Cancel a ticket */
   cancelUserTicket: UserTicket;
   /** Attempt to claim a certain ammount of tickets */
-  claimUserTicket: Array<UserTicket>;
+  claimUserTicket: Array<RedeemUserTicketResponse>;
   /** Create an community */
   createCommunity: Community;
   /** Create a company */
@@ -483,6 +484,14 @@ export type QueryWorkEmailArgs = {
 export type QueryWorkRoleSenioritiesArgs = {
   input: WorkRoleSenioritiesInput;
 };
+
+export type RedeemUserTicketError = {
+  __typename?: "RedeemUserTicketError";
+  error: Scalars["Boolean"]["output"];
+  errorMessage: Scalars["String"]["output"];
+};
+
+export type RedeemUserTicketResponse = RedeemUserTicketError | UserTicket;
 
 /** Representation of a workEmail */
 export type Salary = {

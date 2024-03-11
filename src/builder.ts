@@ -9,9 +9,6 @@ import * as rules from "~/authz";
 import { ORM_TYPE } from "~/datasources/db";
 import { selectUsersSchema } from "~/datasources/db/schema";
 
-
-
-
 import { getSanityClient } from "./datasources/sanity/client";
 
 type Context = {

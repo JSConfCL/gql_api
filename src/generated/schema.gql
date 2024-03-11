@@ -122,6 +122,7 @@ type Event {
   description: String
   endDateTime: DateTime
   id: String!
+  images: [SanityAssetRef!]!
   latitude: String
   longitude: String
   maxAttendees: Int
@@ -231,7 +232,7 @@ type Mutation {
   """
   Attempt to claim a certain ammount of tickets
   """
-  claimUserTicket(input: TicketClaimInput!): [UserTicket!]!
+  claimUserTicket(input: TicketClaimInput!): [RedeemUserTicketResponse!]!
 
   """
   Create an community
@@ -438,6 +439,13 @@ type Query {
   """
   workRoles: [WorkRole!]!
 }
+
+type RedeemUserTicketError {
+  error: Boolean!
+  errorMessage: String!
+}
+
+union RedeemUserTicketResponse = RedeemUserTicketError | UserTicket
 
 """
 Representation of a workEmail

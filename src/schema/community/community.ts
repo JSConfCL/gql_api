@@ -15,8 +15,6 @@ import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 import { CommunityRef, EventRef, UserRef } from "~/schema/shared/refs";
 import { canCreateCommunity, canEditCommunity } from "~/validations";
 
-
-
 export const CommnunityStatus = builder.enumType("CommnunityStatus", {
   values: ["active", "inactive"] as const,
 });

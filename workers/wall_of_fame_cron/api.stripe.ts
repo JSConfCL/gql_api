@@ -8,7 +8,6 @@ import {
 
 import { ENV } from "./types";
 
-
 export const getSubscriptions = async (env: ENV) => {
   const stripe = new Stripe(env.ST_KEY);
   const subscriptions = await stripe.subscriptions.list({

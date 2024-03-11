@@ -32,7 +32,7 @@ import {
   TicketPaymentStatus,
   TicketRedemptionStatus,
   TicketStatus,
-} from "~/schema/userTickets/userTickets";
+} from "~/schema/userTickets/types";
 import { canCreateEvent, canEditEvent } from "~/validations";
 
 export const EventStatus = builder.enumType("EventStatus", {

@@ -17,7 +17,6 @@ import {
   isSameUser,
 } from "~/validations";
 
-
 builder.objectType(UserRef, {
   description: "Representation of a user",
   fields: (t) => ({

@@ -22,7 +22,6 @@ import {
   CreateTicketMutationVariables,
 } from "./createTicket.generated";
 
-
 describe("User", () => {
   it("Should create a ticket", async () => {
     const user1 = await insertUser({
