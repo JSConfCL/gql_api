@@ -13,6 +13,7 @@ export * from "~/datasources/db/salaries";
 export * from "~/datasources/db/tags";
 export * from "~/datasources/db/tagsCommunities";
 export * from "~/datasources/db/tickets";
+export * from "~/datasources/db/ticketPrice";
 export * from "~/datasources/db/users";
 export * from "~/datasources/db/usersCommunities";
 export * from "~/datasources/db/userTickets";

@@ -104,7 +104,7 @@ const CRUDDates = ({
       deletedAt?: Date | null | undefined;
     }
   | undefined = {}) => ({
-  createdAt: createdAt ?? faker.date.past(),
+  createdAt: createdAt ?? new Date(),
   updatedAt: updatedAt ?? faker.date.recent(),
   deletedAt: deletedAt ?? faker.date.recent(),
 });
