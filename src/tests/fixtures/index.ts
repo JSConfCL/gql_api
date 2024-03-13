@@ -71,6 +71,9 @@ import {
   workRoleSchema,
   workSeniorityAndRoleSchema,
   workSenioritySchema,
+  insertPriceSchema,
+  selectPriceSchema,
+  pricesSchema,
 } from "~/datasources/db/schema";
 import { genderOptions } from "~/datasources/db/shared";
 import {
@@ -82,7 +85,29 @@ import {
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 
+import {
+  insertTicketPriceSchema,
+  selectTicketPriceSchema,
+  ticketsPricesSchema,
+} from "../../datasources/db/ticketPrice";
+
 const insertUserRequest = insertUsersSchema.deepPartial();
+
+const CRUDDates = ({
+  createdAt,
+  updatedAt,
+  deletedAt,
+}:
+  | {
+      createdAt?: Date | null | undefined;
+      updatedAt?: Date | null | undefined;
+      deletedAt?: Date | null | undefined;
+    }
+  | undefined = {}) => ({
+  createdAt: createdAt ?? faker.date.past(),
+  updatedAt: updatedAt ?? faker.date.recent(),
+  deletedAt: deletedAt ?? faker.date.recent(),
+});
 
 const createExecutor = (user?: Awaited<ReturnType<typeof insertUser>>) =>
   buildHTTPExecutor({
@@ -184,17 +209,15 @@ export const insertUser = async (
     username: partialInput?.username ?? faker.internet.userName(),
     bio: partialInput?.bio,
     email: partialInput?.email,
-    createdAt: partialInput?.createdAt,
     name: partialInput?.name,
-    updatedAt: partialInput?.updatedAt,
     isSuperAdmin: partialInput?.isSuperAdmin,
-    deletedAt: partialInput?.deletedAt,
     emailVerified: partialInput?.emailVerified,
     lastName: partialInput?.lastName,
     publicMetadata: partialInput?.publicMetadata,
     twoFactorEnabled: partialInput?.twoFactorEnabled,
     unsafeMetadata: partialInput?.unsafeMetadata,
     imageUrl: partialInput?.imageUrl,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertUsersSchema>;
   return insertOne(
     insertUsersSchema,
@@ -210,9 +233,7 @@ export const insertUserTag = async (
   const possibleInput = {
     tagId: partialInput?.tagId ?? faker.string.uuid(),
     userId: partialInput?.userId ?? faker.string.uuid(),
-    createdAt: partialInput?.createdAt,
-    updatedAt: partialInput?.updatedAt,
-    deletedAt: partialInput?.updatedAt,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertUsersToTagsSchema>;
   return insertOne(
     insertUsersToTagsSchema,
@@ -229,11 +250,9 @@ export const insertCommunity = async (
     id: partialInput?.id ?? faker.string.uuid(),
     name: partialInput?.name ?? faker.company.name(),
     status: partialInput?.status,
-    createdAt: partialInput?.createdAt,
-    updatedAt: partialInput?.updatedAt,
     description: partialInput?.description,
-    deletedAt: partialInput?.deletedAt,
     slug: partialInput?.slug,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertCommunitySchema>;
   return insertOne(
     insertCommunitySchema,
@@ -250,9 +269,7 @@ export const insertUserToCommunity = async (
     userId: partialInput?.userId,
     communityId: partialInput?.communityId,
     role: partialInput?.role,
-    createdAt: partialInput?.createdAt,
-    deletedAt: partialInput?.deletedAt,
-    updatedAt: partialInput?.updatedAt,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertUsersToCommunitiesSchema>;
   return insertOne(
     insertUsersToCommunitiesSchema,
@@ -269,9 +286,7 @@ export const insertUserToEvent = async (
     userId: partialInput?.userId,
     eventId: partialInput?.eventId,
     role: partialInput?.role,
-    createdAt: partialInput?.createdAt,
-    deletedAt: partialInput?.deletedAt,
-    updatedAt: partialInput?.updatedAt,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertEventsToUsersSchema>;
   return insertOne(
     insertEventsToUsersSchema,
@@ -299,8 +314,7 @@ export const insertTag = async (
     id: partialInput?.id ?? faker.string.uuid(),
     name: partialInput?.name ?? faker.company.name(),
     description: partialInput?.description,
-    createdAt: partialInput?.createdAt,
-    updatedAt: partialInput?.updatedAt,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertTagsSchema>;
   return insertOne(
     insertTagsSchema,
@@ -310,25 +324,57 @@ export const insertTag = async (
   );
 };
 
-export const insertTicketTemplate = async (
-  partialInput: Partial<z.infer<typeof insertTicketSchema>>,
+export const insertPrice = async (
+  partialInput?: Partial<z.infer<typeof insertPriceSchema>>,
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
-    eventId: partialInput.eventId ?? faker.string.uuid(),
+    currencyId: partialInput?.currencyId ?? faker.string.uuid(),
+    price: partialInput?.price ?? faker.number.int(),
+    ...CRUDDates(partialInput),
+  } satisfies z.infer<typeof insertPriceSchema>;
+  return insertOne(
+    insertPriceSchema,
+    selectPriceSchema,
+    pricesSchema,
+    possibleInput,
+  );
+};
+
+export const insertTicketPrice = async (
+  partialInput?: Partial<z.infer<typeof insertTicketPriceSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    priceId: partialInput?.priceId ?? (await insertPrice()).id,
+    ticketId: partialInput?.ticketId ?? (await insertTicket()).id,
+    // currencyId: partialInput?.currencyId ?? faker.string.uuid(),
+    // price: partialInput?.price ?? faker.number.int(),
+    ...CRUDDates(partialInput),
+  } satisfies z.infer<typeof insertTicketPriceSchema>;
+  return insertOne(
+    insertTicketPriceSchema,
+    selectTicketPriceSchema,
+    ticketsPricesSchema,
+    possibleInput,
+  );
+};
+
+export const insertTicketTemplate = async (
+  partialInput?: Partial<z.infer<typeof insertTicketSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    eventId: partialInput?.eventId ?? faker.string.uuid(),
     name: partialInput?.name ?? faker.company.name(),
     startDateTime: partialInput?.startDateTime ?? faker.date.future(),
     endDateTime: partialInput?.endDateTime ?? faker.date.future(),
     requiresApproval: partialInput?.requiresApproval ?? false,
-    createdAt: partialInput?.createdAt,
-    updatedAt: partialInput?.updatedAt,
-    deletedAt: partialInput?.deletedAt,
-    currencyId: partialInput?.currencyId,
-    price: partialInput?.price,
     description: partialInput?.description,
     quantity: partialInput?.quantity ?? 100,
     status: partialInput?.status,
     visibility: partialInput?.visibility,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertTicketSchema>;
 
   return insertOne(
@@ -340,23 +386,22 @@ export const insertTicketTemplate = async (
 };
 
 export const insertTicket = async (
-  partialInput: Omit<z.infer<typeof insertUserTicketsSchema>, "id"> & {
+  partialInput?: Omit<z.infer<typeof insertUserTicketsSchema>, "id"> & {
     id?: string;
   },
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     userId: partialInput?.userId,
-    ticketTemplateId: partialInput.ticketTemplateId,
+    ticketTemplateId:
+      partialInput?.ticketTemplateId ?? (await insertTicketTemplate()).id,
     approvalStatus:
       partialInput?.approvalStatus ?? TicketApprovalStatus.Pending,
     paymentStatus: partialInput?.paymentStatus ?? TicketPaymentStatus.Unpaid,
     redemptionStatus:
       partialInput?.redemptionStatus ?? TicketRedemptionStatus.Pending,
     status: partialInput?.status ?? TicketStatus.Inactive,
-    createdAt: partialInput?.createdAt,
-    updatedAt: partialInput?.updatedAt,
-    deletedAt: partialInput?.deletedAt,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertUserTicketsSchema>;
 
   return insertOne(
@@ -378,15 +423,13 @@ export const insertEvent = async (
     status: partialInput?.status ?? "active",
     startDateTime: partialInput?.startDateTime ?? faker.date.future(),
     endDateTime: partialInput?.endDateTime ?? faker.date.future(),
-    createdAt: partialInput?.createdAt,
     geoAddressJSON: partialInput?.geoAddressJSON,
-    updatedAt: partialInput?.updatedAt,
-    deletedAt: partialInput?.deletedAt,
     geoLatitude: partialInput?.geoLatitude,
     geoLongitude: partialInput?.geoLongitude,
     meetingURL: partialInput?.meetingURL,
     maxAttendees: partialInput?.maxAttendees,
     timeZone: partialInput?.timeZone,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertEventsSchema>;
   return insertOne(
     insertEventsSchema,
@@ -403,9 +446,7 @@ export const insertEventTag = async (
   const possibleInput = {
     eventId: partialInput?.eventId,
     tagId: partialInput?.tagId,
-    createdAt: partialInput?.createdAt,
-    deletedAt: partialInput?.deletedAt,
-    updatedAt: partialInput?.updatedAt,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertEventsToTagsSchema>;
   return insertOne(
     insertEventsToTagsSchema,
@@ -426,9 +467,7 @@ export const insertCompany = async (
     logo: partialInput?.logo,
     website: partialInput?.website,
     status: partialInput?.status,
-    createdAt: partialInput?.createdAt,
-    updatedAt: partialInput?.updatedAt,
-    deletedAt: partialInput?.deletedAt,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertCompaniesSchema>;
   return insertOne(
     insertCompaniesSchema,
@@ -449,9 +488,7 @@ export const insertWorkEmail = async (
     confirmationDate: partialInput?.confirmationDate,
     status: partialInput?.status,
     companyId: partialInput?.companyId,
-    createdAt: partialInput?.createdAt,
-    updatedAt: partialInput?.updatedAt,
-    deletedAt: partialInput?.deletedAt,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertWorkEmailSchema>;
   return insertOne(
     insertWorkEmailSchema,
@@ -472,10 +509,8 @@ export const insertConfirmationToken = async (
     source: partialInput?.source ?? "onboarding",
     validUntil: partialInput?.validUntil ?? faker.date.future(),
     sourceId: partialInput?.sourceId ?? faker.string.uuid(),
-    createdAt: partialInput?.createdAt,
-    updatedAt: partialInput?.updatedAt,
-    deletedAt: partialInput?.deletedAt,
     confirmationDate: partialInput?.confirmationDate,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertConfirmationTokenSchema>;
   return insertOne(
     insertConfirmationTokenSchema,
@@ -492,9 +527,7 @@ export const insertWorkRole = async (
     id: partialInput?.id ?? faker.string.uuid(),
     name: partialInput?.name ?? faker.person.jobTitle(),
     description: partialInput?.description ?? faker.person.jobDescriptor(),
-    createdAt: partialInput?.createdAt,
-    updatedAt: partialInput?.updatedAt,
-    deletedAt: partialInput?.deletedAt,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertWorkRoleSchema>;
   return insertOne(
     insertWorkRoleSchema,
@@ -511,9 +544,7 @@ export const insertWorkSeniority = async (
     id: partialInput?.id ?? faker.string.uuid(),
     name: partialInput?.name ?? faker.person.jobTitle(),
     description: partialInput?.description ?? faker.person.jobDescriptor(),
-    createdAt: partialInput?.createdAt,
-    updatedAt: partialInput?.updatedAt,
-    deletedAt: partialInput?.deletedAt,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertWorkSenioritySchema>;
   return insertOne(
     insertWorkSenioritySchema,
@@ -534,9 +565,7 @@ export const insertWorkSeniorityAndRole = async (
     description: partialInput?.description ?? faker.person.jobDescriptor(),
     workRoleId,
     workSeniorityId,
-    createdAt: partialInput?.createdAt,
-    updatedAt: partialInput?.updatedAt,
-    deletedAt: partialInput?.deletedAt,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertWorkSeniorityAndRoleSchema>;
   return insertOne(
     insertWorkSeniorityAndRoleSchema,
@@ -552,9 +581,7 @@ export const insertAllowedCurrency = async (
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     currency: partialInput?.currency ?? faker.finance.currencyCode(),
-    createdAt: partialInput?.createdAt,
-    updatedAt: partialInput?.updatedAt,
-    deletedAt: partialInput?.deletedAt,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertAllowedCurrencySchema>;
   return insertOne(
     insertAllowedCurrencySchema,
@@ -570,7 +597,7 @@ export const insertSalary = async (
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     userId: partialInput?.userId ?? faker.string.uuid(),
-    amount: partialInput?.amount ?? faker.datatype.number(),
+    amount: partialInput?.amount ?? faker.number.int(),
     countryCode: partialInput?.countryCode ?? faker.address.countryCode(),
     typeOfEmployment:
       partialInput?.typeOfEmployment ??
@@ -582,17 +609,14 @@ export const insertSalary = async (
     workMetodology:
       partialInput?.workMetodology ??
       faker.helpers.arrayElement(["remote", "office", "hybrid"] as const),
-    yearsOfExperience:
-      partialInput?.yearsOfExperience ?? faker.datatype.number(),
+    yearsOfExperience: partialInput?.yearsOfExperience ?? faker.number.int(),
     gender: partialInput?.gender ?? faker.helpers.arrayElement(genderOptions),
     genderOtherText: partialInput?.genderOtherText,
     companyId: partialInput?.companyId,
     workEmailId: partialInput?.workEmailId,
     workSeniorityAndRoleId: partialInput?.workSeniorityAndRoleId,
-    createdAt: partialInput?.createdAt,
     currencyCode: partialInput?.currencyCode ?? faker.finance.currencyCode(),
-    updatedAt: partialInput?.updatedAt,
-    deletedAt: partialInput?.deletedAt,
+    ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertSalariesSchema>;
   return insertOne(
     insertSalariesSchema,

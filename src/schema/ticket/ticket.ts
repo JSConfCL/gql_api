@@ -48,10 +48,8 @@ builder.objectType(TicketRef, {
     requiresApproval: t.exposeBoolean("requiresApproval", {
       nullable: true,
     }),
-    price: t.exposeInt("price", { nullable: true }),
     quantity: t.exposeInt("quantity", { nullable: true }),
     eventId: t.exposeString("eventId", { nullable: false }),
-    currencyId: t.exposeString("currencyId", { nullable: true }),
   }),
 });
 

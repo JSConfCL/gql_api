@@ -234,6 +234,7 @@ builder.mutationFields((t) => ({
                 where: (t, { eq }) => eq(t.id, item.ticketId),
                 with: {
                   event: true,
+                  ticketsPrices: true,
                 },
               });
 
@@ -245,7 +246,9 @@ builder.mutationFields((t) => ({
               }
 
               const requiresPayment =
-                ticketTemplate.price !== null && ticketTemplate.price > 0;
+                ticketTemplate.ticketsPrices &&
+                ticketTemplate.ticketsPrices.length > 0 &&
+                ticketTemplate.ticketsPrices.some((tp) => tp.price > 0);
               const { maxAttendees, status } = ticketTemplate.event;
               const isEventActive = status === "active";
               const requiresApproval = ticketTemplate.requiresApproval;

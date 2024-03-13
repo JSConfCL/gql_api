@@ -515,13 +515,11 @@ input TagSearchInput {
 Representation of a ticket
 """
 type Ticket {
-  currencyId: String
   description: String
   endDateTime: DateTime
   eventId: String!
   id: ID!
   name: String!
-  price: Int
   quantity: Int
   requiresApproval: Boolean
   startDateTime: DateTime!

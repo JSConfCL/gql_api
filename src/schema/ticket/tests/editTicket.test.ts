@@ -88,12 +88,10 @@ describe("User", () => {
       startDateTime: toISODateWithoutMilliseconds(startDateTime),
       endDateTime: toISODateWithoutMilliseconds(endDateTime),
       requiresApproval: fakeInput.requiresApproval,
-      price: fakeInput.price,
       quantity: fakeInput.quantity,
       status: fakeInput.status,
       visibility: fakeInput.visibility,
       eventId: event1.id,
-      currencyId: ticket.currencyId,
     });
   });
   it("Should update a ticket, only one field", async () => {
@@ -143,12 +141,10 @@ describe("User", () => {
       startDateTime: ticket.startDateTime.toISOString(),
       endDateTime: ticket.endDateTime?.toISOString() || null,
       requiresApproval: ticket.requiresApproval,
-      price: ticket.price || null,
       quantity: ticket.quantity || null,
       status: ticket.status as TicketTemplateStatus,
       visibility: ticket.visibility as TicketTemplateVisibility,
       eventId: event1.id,
-      currencyId: ticket.currencyId,
     });
   });
   it("Should update a ticket is community admin", async () => {
@@ -196,12 +192,10 @@ describe("User", () => {
       startDateTime: ticket.startDateTime.toISOString(),
       endDateTime: ticket.endDateTime?.toISOString() || null,
       requiresApproval: ticket.requiresApproval,
-      price: ticket.price,
       quantity: ticket.quantity,
       status: ticket.status as TicketTemplateStatus,
       visibility: ticket.visibility as TicketTemplateVisibility,
       eventId: event1.id,
-      currencyId: ticket.currencyId,
     });
   });
   it("It should throw an error, if don't have permission", async () => {
