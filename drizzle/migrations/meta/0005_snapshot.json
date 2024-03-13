@@ -1,5 +1,5 @@
 {
-  "id": "ee62a786-0d37-48b6-b719-7ea2b45f4086",
+  "id": "e574f140-d04f-45bb-9a40-60c5b987c3f3",
   "prevId": "9889c482-bb51-4a0f-be6b-345e568ede57",
   "version": "5",
   "dialect": "pg",
@@ -1191,6 +1191,73 @@
           "columns": ["name"]
         }
       }
+    },
+    "tickets_prices": {
+      "name": "tickets_prices",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "ticket_id": {
+          "name": "ticket_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price_id": {
+          "name": "price_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tickets_prices_ticket_id_tickets_id_fk": {
+          "name": "tickets_prices_ticket_id_tickets_id_fk",
+          "tableFrom": "tickets_prices",
+          "tableTo": "tickets",
+          "columnsFrom": ["ticket_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tickets_prices_price_id_prices_id_fk": {
+          "name": "tickets_prices_price_id_prices_id_fk",
+          "tableFrom": "tickets_prices",
+          "tableTo": "prices",
+          "columnsFrom": ["price_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     },
     "users": {
       "name": "users",
