@@ -9,12 +9,9 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-import {
-  userTicketsSchema,
-  allowedCurrencySchema,
-  eventsSchema,
-} from "./schema";
+import { eventsSchema, userTicketsSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
+import { ticketsPricesSchema } from "./ticketPrice";
 
 const ticketStatusEnum = ["active", "inactive"] as const;
 
@@ -35,12 +32,10 @@ export const ticketsSchema = pgTable("tickets", {
   startDateTime: timestamp("start_date_time").notNull(),
   endDateTime: timestamp("end_date_time"),
   requiresApproval: boolean("requires_approval").default(false),
-  price: integer("price"),
   quantity: integer("quantity"),
   eventId: uuid("event_id")
     .references(() => eventsSchema.id)
     .notNull(),
-  currencyId: uuid("currency").references(() => allowedCurrencySchema.id),
   ...createdAndUpdatedAtFields,
 });
 
@@ -50,11 +45,20 @@ export const ticketRelations = relations(ticketsSchema, ({ one, many }) => ({
     references: [eventsSchema.id],
   }),
   userTickets: many(userTicketsSchema),
-  allowedCurrencySchema: one(allowedCurrencySchema, {
-    fields: [ticketsSchema.currencyId],
-    references: [allowedCurrencySchema.id],
-  }),
+  ticketsPrices: many(ticketsPricesSchema),
 }));
 
 export const selectTicketSchema = createSelectSchema(ticketsSchema);
 export const insertTicketSchema = createInsertSchema(ticketsSchema);
+export const updateTicketSchema = insertTicketSchema
+  .pick({
+    name: true,
+    description: true,
+    status: true,
+    visibility: true,
+    startDateTime: true,
+    endDateTime: true,
+    quantity: true,
+    requiresApproval: true,
+  })
+  .partial();

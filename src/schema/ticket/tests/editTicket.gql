@@ -9,8 +9,6 @@ mutation EditTicket($input: TicketEditInput!) {
     endDateTime
     requiresApproval
     quantity
-    price
-    currencyId
     eventId
   }
 }

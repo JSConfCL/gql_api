@@ -164,7 +164,7 @@ describe("Claim a user ticket", () => {
       const createdUser = await insertUser({
         isSuperAdmin: true,
       });
-      const { community, user, ticketTemplate } =
+      const { user, ticketTemplate } =
         await createCommunityEventUserAndTicketTemplate({
           user: createdUser,
         });
@@ -258,7 +258,7 @@ describe("Claim a user ticket", () => {
         eventId: createdEvent.id,
         quantity: 5,
       });
-      const { community, user, ticketTemplate, event } =
+      const { community, user, ticketTemplate } =
         await createCommunityEventUserAndTicketTemplate({
           event: createdEvent,
           ticketTemplate: createdTicketTemplate,

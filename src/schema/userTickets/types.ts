@@ -1,5 +1,3 @@
-import { JsonObject } from "type-fest";
-
 import { builder } from "~/builder";
 import {
   userTicketsApprovalStatusEnum,

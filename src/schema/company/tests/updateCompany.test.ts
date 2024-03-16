@@ -17,8 +17,10 @@ import {
 
 describe("Company", () => {
   describe("As a Superadmin", () => {
-    it("Should update", async () => {
-      const company = await insertCompany();
+    it("Should update if it wasnt updated before", async () => {
+      const company = await insertCompany({
+        updatedAt: null,
+      });
       const domain = faker.internet.domainName();
       const description = faker.lorem.paragraph(3);
       const name = faker.lorem.words(3);
@@ -85,7 +87,9 @@ describe("Company", () => {
   });
   describe("As a User", () => {
     it("Should update", async () => {
-      const company = await insertCompany();
+      const company = await insertCompany({
+        updatedAt: null,
+      });
       const domain = faker.internet.domainName();
       const description = faker.lorem.paragraph(3);
       const name = faker.lorem.words(3);

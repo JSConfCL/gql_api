@@ -88,12 +88,10 @@ describe("User", () => {
       startDateTime: toISODateWithoutMilliseconds(startDateTime),
       endDateTime: toISODateWithoutMilliseconds(endDateTime),
       requiresApproval: fakeInput.requiresApproval,
-      price: fakeInput.price,
       quantity: fakeInput.quantity,
       status: fakeInput.status,
       visibility: fakeInput.visibility,
       eventId: event1.id,
-      currencyId: ticket.currencyId,
     });
   });
   it("Should update a ticket, only one field", async () => {
@@ -115,8 +113,9 @@ describe("User", () => {
       eventId: event1.id,
     });
 
-    const fakeInput = {
+    const input = {
       name: faker.word.words(3),
+      ticketId: ticket.id,
     };
 
     const response = await executeGraphqlOperationAsUser<
@@ -126,10 +125,7 @@ describe("User", () => {
       {
         document: EditTicket,
         variables: {
-          input: {
-            ticketId: ticket.id,
-            ...fakeInput,
-          },
+          input,
         },
       },
       user1,
@@ -138,17 +134,15 @@ describe("User", () => {
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.editTicket, {
       id: ticket.id,
-      name: fakeInput.name,
+      name: input.name,
       description: ticket.description,
       startDateTime: ticket.startDateTime.toISOString(),
       endDateTime: ticket.endDateTime?.toISOString() || null,
       requiresApproval: ticket.requiresApproval,
-      price: ticket.price || null,
       quantity: ticket.quantity || null,
       status: ticket.status as TicketTemplateStatus,
       visibility: ticket.visibility as TicketTemplateVisibility,
       eventId: event1.id,
-      currencyId: ticket.currencyId,
     });
   });
   it("Should update a ticket is community admin", async () => {
@@ -168,8 +162,9 @@ describe("User", () => {
       eventId: event1.id,
     });
 
-    const fakeInput = {
+    const input = {
       name: faker.word.words(3),
+      ticketId: ticket.id,
     };
 
     const response = await executeGraphqlOperationAsUser<
@@ -179,10 +174,7 @@ describe("User", () => {
       {
         document: EditTicket,
         variables: {
-          input: {
-            ticketId: ticket.id,
-            ...fakeInput,
-          },
+          input,
         },
       },
       user1,
@@ -191,17 +183,15 @@ describe("User", () => {
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.editTicket, {
       id: ticket.id,
-      name: fakeInput.name,
+      name: input.name,
       description: ticket.description,
       startDateTime: ticket.startDateTime.toISOString(),
       endDateTime: ticket.endDateTime?.toISOString() || null,
       requiresApproval: ticket.requiresApproval,
-      price: ticket.price,
       quantity: ticket.quantity,
       status: ticket.status as TicketTemplateStatus,
       visibility: ticket.visibility as TicketTemplateVisibility,
       eventId: event1.id,
-      currencyId: ticket.currencyId,
     });
   });
   it("It should throw an error, if don't have permission", async () => {
@@ -231,6 +221,7 @@ describe("User", () => {
           input: {
             ticketId: ticket.id,
             name: faker.word.words(3),
+            eventId: event1.id,
           },
         },
       },

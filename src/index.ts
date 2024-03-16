@@ -5,7 +5,7 @@ import { useOpenTelemetry } from "@envelop/opentelemetry";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import { H } from "@highlight-run/cloudflare";
 import { initContextCache } from "@pothos/core";
-import jwt from "@tsndr/cloudflare-worker-jwt";
+import { decode } from "@tsndr/cloudflare-worker-jwt";
 import { createYoga, maskError } from "graphql-yoga";
 
 import { Env } from "worker-configuration";
@@ -91,7 +91,7 @@ const attachPossibleUserIdFromJWT = (request: Request) => {
     return null;
   }
   try {
-    const { payload } = jwt.decode(JWT_TOKEN);
+    const { payload } = decode(JWT_TOKEN);
     const userId = (payload as { id: string })?.id ?? "ANONYMOUS";
     H.setAttributes({
       userId: userId,

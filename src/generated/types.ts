@@ -557,13 +557,11 @@ export type TagSearchInput = {
 /** Representation of a ticket */
 export type Ticket = {
   __typename?: "Ticket";
-  currencyId?: Maybe<Scalars["String"]["output"]>;
   description?: Maybe<Scalars["String"]["output"]>;
   endDateTime?: Maybe<Scalars["DateTime"]["output"]>;
   eventId: Scalars["String"]["output"];
   id: Scalars["ID"]["output"];
   name: Scalars["String"]["output"];
-  price?: Maybe<Scalars["Int"]["output"]>;
   quantity?: Maybe<Scalars["Int"]["output"]>;
   requiresApproval?: Maybe<Scalars["Boolean"]["output"]>;
   startDateTime: Scalars["DateTime"]["output"];

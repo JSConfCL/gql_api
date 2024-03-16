@@ -6,6 +6,7 @@ import {
   insertTicketSchema,
   selectTicketSchema,
   ticketsSchema,
+  updateTicketSchema,
 } from "~/datasources/db/schema";
 import { addToObjectIfPropertyExists } from "~/schema/shared/helpers";
 import { TicketRef } from "~/schema/shared/refs";
@@ -48,10 +49,8 @@ builder.objectType(TicketRef, {
     requiresApproval: t.exposeBoolean("requiresApproval", {
       nullable: true,
     }),
-    price: t.exposeInt("price", { nullable: true }),
     quantity: t.exposeInt("quantity", { nullable: true }),
     eventId: t.exposeString("eventId", { nullable: false }),
-    currencyId: t.exposeString("currencyId", { nullable: true }),
   }),
 });
 
@@ -266,14 +265,19 @@ builder.mutationFields((t) => ({
           input.currencyId,
         );
 
-        const ticket = (
-          await ctx.DB.update(ticketsSchema)
-            .set(updateFields)
-            .where(eq(ticketsSchema.id, ticketId))
-            .returning()
-        )?.[0];
-
-        return selectTicketSchema.parse(ticket);
+        const response = updateTicketSchema.safeParse(updateFields);
+        if (response.success) {
+          const ticket = (
+            await ctx.DB.update(ticketsSchema)
+              .set(response.data)
+              .where(eq(ticketsSchema.id, ticketId))
+              .returning()
+          )?.[0];
+          return selectTicketSchema.parse(ticket);
+        } else {
+          console.error("ERROR:", response.error);
+          throw new Error("Invalid input", response.error);
+        }
       } catch (e) {
         throw new GraphQLError(
           e instanceof Error ? e.message : "Unknown error",

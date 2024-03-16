@@ -92,12 +92,10 @@ describe("User", () => {
       response.data?.createTicket?.requiresApproval,
       fakeInput.requiresApproval,
     );
-    assert.equal(response.data?.createTicket?.price, fakeInput.price);
     assert.equal(response.data?.createTicket?.quantity, fakeInput.quantity);
     assert.equal(response.data?.createTicket?.status, fakeInput.status);
     assert.equal(response.data?.createTicket?.visibility, fakeInput.visibility);
     assert.equal(response.data?.createTicket?.eventId, fakeInput.eventId);
-    assert.equal(response.data?.createTicket?.currencyId, fakeInput.currencyId);
   });
   it("It should throw an error, if don't have permission", async () => {
     const user1 = await insertUser();
