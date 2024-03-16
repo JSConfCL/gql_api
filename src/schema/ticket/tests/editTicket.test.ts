@@ -113,8 +113,9 @@ describe("User", () => {
       eventId: event1.id,
     });
 
-    const fakeInput = {
+    const input = {
       name: faker.word.words(3),
+      ticketId: ticket.id,
     };
 
     const response = await executeGraphqlOperationAsUser<
@@ -124,10 +125,7 @@ describe("User", () => {
       {
         document: EditTicket,
         variables: {
-          input: {
-            ticketId: ticket.id,
-            ...fakeInput,
-          },
+          input,
         },
       },
       user1,
@@ -136,7 +134,7 @@ describe("User", () => {
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.editTicket, {
       id: ticket.id,
-      name: fakeInput.name,
+      name: input.name,
       description: ticket.description,
       startDateTime: ticket.startDateTime.toISOString(),
       endDateTime: ticket.endDateTime?.toISOString() || null,
@@ -164,8 +162,9 @@ describe("User", () => {
       eventId: event1.id,
     });
 
-    const fakeInput = {
+    const input = {
       name: faker.word.words(3),
+      ticketId: ticket.id,
     };
 
     const response = await executeGraphqlOperationAsUser<
@@ -175,10 +174,7 @@ describe("User", () => {
       {
         document: EditTicket,
         variables: {
-          input: {
-            ticketId: ticket.id,
-            ...fakeInput,
-          },
+          input,
         },
       },
       user1,
@@ -187,7 +183,7 @@ describe("User", () => {
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.editTicket, {
       id: ticket.id,
-      name: fakeInput.name,
+      name: input.name,
       description: ticket.description,
       startDateTime: ticket.startDateTime.toISOString(),
       endDateTime: ticket.endDateTime?.toISOString() || null,
@@ -225,6 +221,7 @@ describe("User", () => {
           input: {
             ticketId: ticket.id,
             name: faker.word.words(3),
+            eventId: event1.id,
           },
         },
       },

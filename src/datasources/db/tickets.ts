@@ -50,3 +50,15 @@ export const ticketRelations = relations(ticketsSchema, ({ one, many }) => ({
 
 export const selectTicketSchema = createSelectSchema(ticketsSchema);
 export const insertTicketSchema = createInsertSchema(ticketsSchema);
+export const updateTicketSchema = insertTicketSchema
+  .pick({
+    name: true,
+    description: true,
+    status: true,
+    visibility: true,
+    startDateTime: true,
+    endDateTime: true,
+    quantity: true,
+    requiresApproval: true,
+  })
+  .partial();
