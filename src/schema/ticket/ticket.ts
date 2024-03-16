@@ -229,9 +229,7 @@ builder.mutationFields((t) => ({
           throw new GraphQLError("Not authorized");
         }
 
-        const updateFields = {
-          eventId: input.eventId,
-        };
+        const updateFields = {};
         addToObjectIfPropertyExists(updateFields, "name", input.name);
         addToObjectIfPropertyExists(
           updateFields,
@@ -267,7 +265,7 @@ builder.mutationFields((t) => ({
           input.currencyId,
         );
 
-        const response = insertTicketSchema.safeParse(updateFields);
+        const response = updateTicketSchema.safeParse(updateFields);
         if (response.success) {
           const ticket = (
             await ctx.DB.update(ticketsSchema)
@@ -277,6 +275,7 @@ builder.mutationFields((t) => ({
           )?.[0];
           return selectTicketSchema.parse(ticket);
         } else {
+          console.error("ERROR:", response.error);
           throw new Error("Invalid input", response.error);
         }
       } catch (e) {
