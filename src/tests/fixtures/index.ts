@@ -105,8 +105,10 @@ const CRUDDates = ({
     }
   | undefined = {}) => ({
   createdAt: createdAt ?? new Date(),
-  updatedAt: updatedAt ?? faker.date.recent(),
-  deletedAt: deletedAt ?? faker.date.recent(),
+  // updatedAt and deletedAt can be NULL. So only if they are "not passed", we
+  // will use the faker date, if not, we default to whatever value was passed.
+  updatedAt: typeof updatedAt !== "undefined" ? updatedAt : faker.date.recent(),
+  deletedAt: typeof deletedAt !== "undefined" ? deletedAt : faker.date.recent(),
 });
 
 const createExecutor = (user?: Awaited<ReturnType<typeof insertUser>>) =>
