@@ -462,28 +462,28 @@ builder.mutationFields((t) => ({
       input: t.arg({ type: EventCreateInput, required: true }),
     },
     resolve: async (root, { input }, ctx) => {
+      const {
+        name,
+        description,
+        visibility,
+        startDateTime,
+        endDateTime,
+        communityId,
+        maxAttendees,
+        address,
+        latitude,
+        longitude,
+        meetingURL,
+        status,
+        timeZone,
+      } = input;
+      if (!ctx.USER) {
+        throw new GraphQLError("User not found");
+      }
+      if (!(await canCreateEvent(ctx.USER.id, communityId, ctx.DB))) {
+        throw new GraphQLError("FORBIDDEN");
+      }
       try {
-        const {
-          name,
-          description,
-          visibility,
-          startDateTime,
-          endDateTime,
-          communityId,
-          maxAttendees,
-          address,
-          latitude,
-          longitude,
-          meetingURL,
-          status,
-          timeZone,
-        } = input;
-        if (!ctx.USER) {
-          throw new Error("User not found");
-        }
-        if (!(await canCreateEvent(ctx.USER.id, communityId, ctx.DB))) {
-          throw new Error("FORBIDDEN");
-        }
         const result = await ctx.DB.transaction(async (trx) => {
           try {
             const newEvent = insertEventsSchema.parse({
@@ -521,7 +521,7 @@ builder.mutationFields((t) => ({
         return selectEventsSchema.parse(result);
       } catch (e) {
         throw new GraphQLError(
-          e instanceof Error ? e.message : "Unknown error",
+          "Could not create event. It might be that the community does not exist, or that there is already an event with that name.",
         );
       }
     },
