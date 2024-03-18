@@ -462,63 +462,66 @@ builder.mutationFields((t) => ({
       input: t.arg({ type: EventCreateInput, required: true }),
     },
     resolve: async (root, { input }, ctx) => {
-      const {
-        name,
-        description,
-        visibility,
-        startDateTime,
-        endDateTime,
-        communityId,
-        maxAttendees,
-        address,
-        latitude,
-        longitude,
-        meetingURL,
-        status,
-        timeZone,
-      } = input;
-      if (!ctx.USER) {
-        throw new Error("User not found");
-      }
-      if (!(await canCreateEvent(ctx.USER.id, communityId, ctx.DB))) {
-        throw new Error("FORBIDDEN");
-      }
       try {
+        const {
+          name,
+          description,
+          visibility,
+          startDateTime,
+          endDateTime,
+          communityId,
+          maxAttendees,
+          address,
+          latitude,
+          longitude,
+          meetingURL,
+          status,
+          timeZone,
+        } = input;
+        if (!ctx.USER) {
+          throw new Error("User not found");
+        }
+        if (!(await canCreateEvent(ctx.USER.id, communityId, ctx.DB))) {
+          throw new Error("FORBIDDEN");
+        }
         const result = await ctx.DB.transaction(async (trx) => {
-          const newEvent = insertEventsSchema.safeParse({
-            name,
-            description,
-            visibility,
-            startDateTime,
-            endDateTime,
-            maxAttendees,
-            geoAddressJSON: address,
-            geoLongitude: longitude,
-            getLatitude: latitude,
-            meetingURL,
-            status: status ?? "inactive",
-            timeZone,
-          });
+          try {
+            const newEvent = insertEventsSchema.parse({
+              name,
+              description,
+              visibility,
+              startDateTime,
+              endDateTime,
+              maxAttendees,
+              geoAddressJSON: address,
+              geoLongitude: longitude,
+              getLatitude: latitude,
+              meetingURL,
+              status: status ?? "inactive",
+              timeZone,
+            });
 
-          if (!newEvent.success) {
-            throw new Error("Invalid input", newEvent.error);
+            const events = (
+              await trx.insert(eventsSchema).values(newEvent).returning()
+            )?.[0];
+
+            await trx.insert(eventsToCommunitiesSchema).values({
+              eventId: events.id,
+              communityId: communityId,
+            });
+
+            return events;
+          } catch (e) {
+            trx.rollback();
+            throw new GraphQLError(
+              e instanceof Error ? e.message : "Unknown error",
+            );
           }
-
-          const events = (
-            await trx.insert(eventsSchema).values(newEvent.data).returning()
-          )?.[0];
-
-          await trx.insert(eventsToCommunitiesSchema).values({
-            eventId: events.id,
-            communityId: communityId,
-          });
-
-          return events;
         });
         return selectEventsSchema.parse(result);
       } catch (e) {
-        throw new Error(
-          "Could not create event. It might be that the community does not exist, or that there is already an event with that name.",
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
         );
       }
     },
