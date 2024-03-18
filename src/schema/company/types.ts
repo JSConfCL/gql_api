@@ -1,12 +1,4 @@
-import { SQL, eq, ilike } from "drizzle-orm";
-
 import { builder } from "~/builder";
-import {
-  companiesSchema,
-  insertCompaniesSchema,
-  selectCompaniesSchema,
-} from "~/datasources/db/schema";
-import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 import { CompanyRef } from "~/schema/shared/refs";
 
 export const CompanyStatus = builder.enumType("CompanyStatus", {
