@@ -478,10 +478,10 @@ builder.mutationFields((t) => ({
         timeZone,
       } = input;
       if (!ctx.USER) {
-        throw new Error("User not found");
+        throw new GraphQLError("User not found");
       }
       if (!(await canCreateEvent(ctx.USER.id, communityId, ctx.DB))) {
-        throw new Error("FORBIDDEN");
+        throw new GraphQLError("FORBIDDEN");
       }
       try {
         const result = await ctx.DB.transaction(async (trx) => {
@@ -520,7 +520,7 @@ builder.mutationFields((t) => ({
         });
         return selectEventsSchema.parse(result);
       } catch (e) {
-        throw new Error(
+        throw new GraphQLError(
           "Could not create event. It might be that the community does not exist, or that there is already an event with that name.",
         );
       }
