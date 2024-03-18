@@ -1,17 +1,17 @@
-import { neon, neonConfig } from "@neondatabase/serverless";
-import { NeonHttpDatabase, drizzle } from "drizzle-orm/neon-http";
+import { Pool } from "@neondatabase/serverless";
+import { NeonDatabase, drizzle } from "drizzle-orm/neon-serverless";
 
 import * as schema from "./schema";
 
-neonConfig.fetchConnectionCache = true;
-
-export type ORM_TYPE = NeonHttpDatabase<typeof schema>;
+export type ORM_TYPE = NeonDatabase<typeof schema>;
 let db: ORM_TYPE | null = null;
 export const getDb = ({ neonUrl }: { neonUrl: string }) => {
   if (!db) {
-    const client = neon(neonUrl);
+    const client = new Pool({
+      connectionString: neonUrl,
+    });
     db = drizzle(client, {
-      schema: { ...schema },
+      schema,
       logger: {
         logQuery(query, params) {
           // eslint-disable-next-line no-console
