@@ -520,8 +520,8 @@ builder.mutationFields((t) => ({
         });
         return selectEventsSchema.parse(result);
       } catch (e) {
-        throw new Error(
-          "Could not create event. It might be that the community does not exist, or that there is already an event with that name.",
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
         );
       }
     },
