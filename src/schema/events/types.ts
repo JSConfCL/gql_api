@@ -170,10 +170,9 @@ builder.objectType(EventRef, {
       },
     }),
     tickets: t.field({
+      description:
+        "List of tickets for sale or redemption for this event. (If you are looking for a user's tickets, use the usersTickets field)",
       type: [TicketRef],
-      authz: {
-        rules: ["IsAuthenticated"],
-      },
       resolve: async (root, args, { DB }) => {
         const tickets = await DB.query.ticketsSchema.findMany({
           where: (c, { eq }) => eq(c.eventId, root.id),
@@ -186,6 +185,7 @@ builder.objectType(EventRef, {
       },
     }),
     usersTickets: t.field({
+      description: "List of tickets that a user owns for this event.",
       type: [UserTicketRef],
       authz: {
         rules: ["IsAuthenticated"],
