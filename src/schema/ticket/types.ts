@@ -1,5 +1,6 @@
 import { builder } from "~/builder";
-import { PriceRef, TicketRef } from "~/schema/shared/refs";
+import { selectAllowedCurrencySchema } from "~/datasources/db/schema";
+import { AllowedCurrencyRef, PriceRef, TicketRef } from "~/schema/shared/refs";
 
 export const TicketTemplateStatus = builder.enumType("TicketTemplateStatus", {
   values: ["active", "inactive"] as const,
@@ -10,6 +11,23 @@ export const TicketTemplateVisibility = builder.enumType(
     values: ["public", "private", "unlisted"] as const,
   },
 );
+
+builder.objectType(PriceRef, {
+  description: "Representation of a TicketPrice",
+  fields: (t) => ({
+    id: t.exposeID("id"),
+    amount: t.exposeInt("amount"),
+    currency: t.field({
+      type: AllowedCurrencyRef,
+      resolve: async (root, args, ctx) => {
+        const currency = await ctx.DB.query.allowedCurrencySchema.findFirst({
+          where: (acs, { eq }) => eq(acs.id, root.currencyId),
+        });
+        return selectAllowedCurrencySchema.parse(currency);
+      },
+    }),
+  }),
+});
 
 builder.objectType(TicketRef, {
   description: "Representation of a ticket",

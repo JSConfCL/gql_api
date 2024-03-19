@@ -4,6 +4,7 @@ Representation of a workEmail
 type AllowedCurrency {
   currency: String!
   id: String!
+  validPaymentMethods: ValidPaymentMethods!
 }
 
 enum CommnunityStatus {
@@ -131,8 +132,16 @@ type Event {
   startDateTime: DateTime!
   status: EventStatus!
   tags: [Tag!]!
+
+  """
+  List of tickets for sale or redemption for this event. (If you are looking for a user's tickets, use the usersTickets field)
+  """
   tickets: [Ticket!]!
   users: [User!]!
+
+  """
+  List of tickets that a user owns for this event.
+  """
   usersTickets(input: EventsTicketsSearchInput): [UserTicket!]!
   visibility: EventVisibility!
 }
@@ -321,6 +330,15 @@ input MyTicketsSearchInput {
   paymentStatus: TicketPaymentStatus
   redemptionStatus: TicketRedemptionStatus
   status: TicketStatus
+}
+
+"""
+Representation of a TicketPrice
+"""
+type Price {
+  amount: Int!
+  currency: AllowedCurrency!
+  id: ID!
 }
 
 """
@@ -520,6 +538,7 @@ type Ticket {
   eventId: String!
   id: ID!
   name: String!
+  price: [Price!]
   quantity: Int
   requiresApproval: Boolean
   startDateTime: DateTime!
@@ -652,6 +671,11 @@ type UserTicket {
   paymentStatus: TicketPaymentStatus!
   redemptionStatus: TicketRedemptionStatus!
   status: TicketStatus!
+}
+
+enum ValidPaymentMethods {
+  mercado_pago
+  stripe
 }
 
 """

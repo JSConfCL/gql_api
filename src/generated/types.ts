@@ -41,6 +41,7 @@ export type AllowedCurrency = {
   __typename?: "AllowedCurrency";
   currency: Scalars["String"]["output"];
   id: Scalars["String"]["output"];
+  validPaymentMethods: ValidPaymentMethods;
 };
 
 export enum CommnunityStatus {
@@ -148,8 +149,10 @@ export type Event = {
   startDateTime: Scalars["DateTime"]["output"];
   status: EventStatus;
   tags: Array<Tag>;
+  /** List of tickets for sale or redemption for this event. (If you are looking for a user's tickets, use the usersTickets field) */
   tickets: Array<Ticket>;
   users: Array<User>;
+  /** List of tickets that a user owns for this event. */
   usersTickets: Array<UserTicket>;
   visibility: EventVisibility;
 };
@@ -364,6 +367,14 @@ export type MyTicketsSearchInput = {
   status?: InputMaybe<TicketStatus>;
 };
 
+/** Representation of a TicketPrice */
+export type Price = {
+  __typename?: "Price";
+  amount: Scalars["Int"]["output"];
+  currency: AllowedCurrency;
+  id: Scalars["ID"]["output"];
+};
+
 /** Representation of a payment log entry */
 export type PublicFinanceEntryRef = {
   __typename?: "PublicFinanceEntryRef";
@@ -562,6 +573,7 @@ export type Ticket = {
   eventId: Scalars["String"]["output"];
   id: Scalars["ID"]["output"];
   name: Scalars["String"]["output"];
+  price?: Maybe<Array<Price>>;
   quantity?: Maybe<Scalars["Int"]["output"]>;
   requiresApproval?: Maybe<Scalars["Boolean"]["output"]>;
   startDateTime: Scalars["DateTime"]["output"];
@@ -693,6 +705,11 @@ export type UserTicket = {
   redemptionStatus: TicketRedemptionStatus;
   status: TicketStatus;
 };
+
+export enum ValidPaymentMethods {
+  MercadoPago = "mercado_pago",
+  Stripe = "stripe",
+}
 
 /** Representation of a work email associated to the current user */
 export type ValidatedWorkEmail = {

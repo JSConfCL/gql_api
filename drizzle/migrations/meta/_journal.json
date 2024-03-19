@@ -43,6 +43,13 @@
       "when": 1710548783714,
       "tag": "0005_special_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1710830022190,
+      "tag": "0006_peaceful_swordsman",
+      "breakpoints": true
     }
   ]
 }
