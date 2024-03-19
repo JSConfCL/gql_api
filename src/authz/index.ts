@@ -4,6 +4,8 @@ import { GraphQLError } from "graphql";
 
 import { GraphqlContext } from "~/builder";
 
+import { authHelpers } from "./helpers";
+
 export class IsAuthenticated extends PreExecutionRule {
   error = new UnauthorizedError("User is not authenticated");
   public execute({ USER }: GraphqlContext) {
@@ -95,13 +97,10 @@ export class isCommunityAdmin extends PreExecutionRule {
     if (!USER || !fieldArgs?.input?.communityId) {
       return false;
     }
-    const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
-      where: (utc, { eq, and }) =>
-        and(
-          eq(utc.communityId, fieldArgs.input.communityId),
-          eq(utc.userId, USER.id),
-          eq(utc.role, "admin"),
-        ),
+    const isCommunityAdmin = await authHelpers.isCommuntiyAdmin({
+      user: USER,
+      communityId: fieldArgs.input.communityId,
+      DB,
     });
 
     return Boolean(isCommunityAdmin);

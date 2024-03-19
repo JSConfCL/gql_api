@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { jsonb, boolean, pgTable, text } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 import { userTicketsSchema, usersToCommunitiesSchema } from "./schema";
 import { createdAndUpdatedAtFields, genderOptions } from "./shared";
@@ -30,6 +31,8 @@ export const userRelations = relations(usersSchema, ({ many }) => ({
   usersToCommunities: many(usersToCommunitiesSchema),
   usersToTickets: many(userTicketsSchema),
 }));
+
+export type USER = z.infer<typeof selectUsersSchema>;
 
 export const selectUsersSchema = createSelectSchema(usersSchema);
 export const insertUsersSchema = createInsertSchema(usersSchema);
