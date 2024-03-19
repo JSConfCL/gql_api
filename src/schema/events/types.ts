@@ -1,4 +1,4 @@
-import { SQL, eq, inArray } from "drizzle-orm";
+import { SQL, and, eq, inArray } from "drizzle-orm";
 
 import { builder } from "~/builder";
 import {
@@ -7,6 +7,7 @@ import {
   selectTicketSchema,
   selectUserTicketsSchema,
   selectUsersSchema,
+  ticketsSchema,
   userTicketsSchema,
   usersSchema,
 } from "~/datasources/db/schema";
@@ -26,6 +27,8 @@ import {
   TicketRedemptionStatus,
   TicketStatus,
 } from "~/schema/userTickets/types";
+
+import { authHelpers } from "../../authz/helpers";
 
 export const EventStatus = builder.enumType("EventStatus", {
   values: ["active", "inactive"] as const,
@@ -173,9 +176,46 @@ builder.objectType(EventRef, {
       description:
         "List of tickets for sale or redemption for this event. (If you are looking for a user's tickets, use the usersTickets field)",
       type: [TicketRef],
-      resolve: async (root, args, { DB }) => {
+      resolve: async (root, _, { DB, USER }) => {
+        const wheres: SQL[] = [];
+        wheres.push(eq(ticketsSchema.eventId, root.id));
+
+        // If the user is an admin, they can see all tickets, otherwise, only
+        // active tickets are shown.
+        let statusCheck = eq(ticketsSchema.status, "active");
+        let visibilityCheck = eq(ticketsSchema.visibility, "public");
+        if (USER) {
+          const eventCommunity =
+            await DB.query.eventsToCommunitiesSchema.findFirst({
+              where: (etc, { eq }) => eq(etc.eventId, root.id),
+              with: {
+                community: true,
+              },
+            });
+          if (eventCommunity) {
+            const isAdmin = await authHelpers.isCommuntiyAdmin({
+              user: USER,
+              communityId: eventCommunity.communityId,
+              DB,
+            });
+            if (isAdmin) {
+              statusCheck = inArray(ticketsSchema.status, [
+                "active",
+                "inactive",
+              ]);
+              visibilityCheck = inArray(ticketsSchema.visibility, [
+                "public",
+                "private",
+                "unlisted",
+              ]);
+            }
+          }
+        }
+
+        wheres.push(statusCheck);
+        wheres.push(visibilityCheck);
         const tickets = await DB.query.ticketsSchema.findMany({
-          where: (c, { eq }) => eq(c.eventId, root.id),
+          where: (_, { and }) => and(...wheres),
           orderBy(fields, operators) {
             return operators.asc(fields.createdAt);
           },
