@@ -1,0 +1,11 @@
+query EventTickets {
+  events {
+    id
+    name
+    tickets {
+      id
+      name
+      quantity
+    }
+  }
+}
