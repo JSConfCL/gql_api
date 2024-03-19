@@ -58,7 +58,7 @@ builder.objectType(TicketRef, {
     }),
     quantity: t.exposeInt("quantity", { nullable: true }),
     eventId: t.exposeString("eventId", { nullable: false }),
-    price: t.field({
+    prices: t.field({
       type: [PriceRef],
       nullable: true,
       resolve: async (root, args, ctx) => {

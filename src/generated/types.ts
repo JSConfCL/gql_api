@@ -573,7 +573,7 @@ export type Ticket = {
   eventId: Scalars["String"]["output"];
   id: Scalars["ID"]["output"];
   name: Scalars["String"]["output"];
-  price?: Maybe<Array<Price>>;
+  prices?: Maybe<Array<Price>>;
   quantity?: Maybe<Scalars["Int"]["output"]>;
   requiresApproval?: Maybe<Scalars["Boolean"]["output"]>;
   startDateTime: Scalars["DateTime"]["output"];

@@ -9,7 +9,7 @@ import gql from 'graphql-tag';
 export type SingleEventWithPricingQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type SingleEventWithPricingQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, tickets: Array<{ __typename?: 'Ticket', id: string, price: Array<{ __typename?: 'Price', id: string, amount: number, currency: { __typename?: 'AllowedCurrency', id: string, currency: string, validPaymentMethods: Types.ValidPaymentMethods } }> | null }> }> };
+export type SingleEventWithPricingQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, tickets: Array<{ __typename?: 'Ticket', id: string, prices: Array<{ __typename?: 'Price', id: string, amount: number, currency: { __typename?: 'AllowedCurrency', id: string, currency: string, validPaymentMethods: Types.ValidPaymentMethods } }> | null }> }> };
 
 
 export const SingleEventWithPricing = gql`
@@ -18,7 +18,7 @@ export const SingleEventWithPricing = gql`
     id
     tickets {
       id
-      price {
+      prices {
         id
         amount
         currency {

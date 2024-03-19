@@ -3,7 +3,7 @@ query SingleEventWithPricing {
     id
     tickets {
       id
-      price {
+      prices {
         id
         amount
         currency {

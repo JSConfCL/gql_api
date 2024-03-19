@@ -538,7 +538,7 @@ type Ticket {
   eventId: String!
   id: ID!
   name: String!
-  price: [Price!]
+  prices: [Price!]
   quantity: Int
   requiresApproval: Boolean
   startDateTime: DateTime!

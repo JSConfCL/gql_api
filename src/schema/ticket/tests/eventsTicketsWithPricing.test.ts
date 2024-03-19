@@ -92,25 +92,25 @@ describe("Should get an event and its tickets", () => {
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.events?.length, 1);
     assert.equal(response.data?.events[0]?.tickets.length, 1);
-    assert.equal(response.data?.events[0]?.tickets[0]?.price?.length, 1);
+    assert.equal(response.data?.events[0]?.tickets[0]?.prices?.length, 1);
     assert.equal(
-      response.data?.events[0]?.tickets[0]?.price?.[0].amount,
+      response.data?.events[0]?.tickets[0]?.prices?.[0].amount,
       insertedPrice.price,
     );
     assert.equal(
-      response.data?.events[0]?.tickets[0]?.price?.[0].id,
+      response.data?.events[0]?.tickets[0]?.prices?.[0].id,
       insertedPrice.id,
     );
     assert.equal(
-      response.data?.events[0]?.tickets[0]?.price?.[0].currency.id,
+      response.data?.events[0]?.tickets[0]?.prices?.[0].currency.id,
       insertedCurrency.id,
     );
     assert.equal(
-      response.data?.events[0]?.tickets[0]?.price?.[0].currency.currency,
+      response.data?.events[0]?.tickets[0]?.prices?.[0].currency.currency,
       insertedCurrency.currency,
     );
     assert.equal(
-      response.data?.events[0]?.tickets[0]?.price?.[0].currency
+      response.data?.events[0]?.tickets[0]?.prices?.[0].currency
         .validPaymentMethods,
       insertedCurrency.validPaymentMethods,
     );
