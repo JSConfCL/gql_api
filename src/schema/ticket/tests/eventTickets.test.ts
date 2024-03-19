@@ -1,10 +1,5 @@
-import { faker } from "@faker-js/faker";
-import { it, describe, assert } from "vitest";
+import { assert, describe, it } from "vitest";
 
-import {
-  TicketTemplateStatus,
-  TicketTemplateVisibility,
-} from "~/generated/types";
 import {
   executeGraphqlOperation,
   executeGraphqlOperationAsUser,
@@ -13,15 +8,8 @@ import {
   insertEventToCommunity,
   insertTicketTemplate,
   insertUser,
-  insertUserToCommunity,
-  toISODateWithoutMilliseconds,
 } from "~/tests/fixtures";
 
-import {
-  EditTicket,
-  EditTicketMutation,
-  EditTicketMutationVariables,
-} from "./editTicket.generated";
 import {
   EventTickets,
   EventTicketsQuery,
