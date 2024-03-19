@@ -1,5 +1,5 @@
 import { builder } from "~/builder";
-import { TicketRef } from "~/schema/shared/refs";
+import { PriceRef, TicketRef } from "~/schema/shared/refs";
 
 export const TicketTemplateStatus = builder.enumType("TicketTemplateStatus", {
   values: ["active", "inactive"] as const,
@@ -40,5 +40,32 @@ builder.objectType(TicketRef, {
     }),
     quantity: t.exposeInt("quantity", { nullable: true }),
     eventId: t.exposeString("eventId", { nullable: false }),
+    price: t.field({
+      type: [PriceRef],
+      nullable: true,
+      resolve: async (root, args, ctx) => {
+        const prices = await ctx.DB.query.ticketsPricesSchema.findMany({
+          where: (tps, { eq }) => eq(tps.ticketId, root.id),
+          with: {
+            price: true,
+          },
+        });
+
+        const pasedPrices = prices
+          .map((p) => ({
+            id: p.price.id,
+            amount: p.price.price,
+            currencyId: p.price.currencyId,
+          }))
+          .filter((p) => p.amount !== null || p.currencyId !== null);
+        // this "AS" is an unnecessary type cast, but it's here bc the "filter"
+        // does not do proper type narrowing.
+        return pasedPrices as {
+          id: string;
+          amount: number;
+          currencyId: string;
+        }[];
+      },
+    }),
   }),
 });
