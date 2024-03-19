@@ -74,6 +74,7 @@ import {
   insertPriceSchema,
   selectPriceSchema,
   pricesSchema,
+  validPaymentMethodsEnum,
 } from "~/datasources/db/schema";
 import { genderOptions } from "~/datasources/db/shared";
 import {
@@ -583,6 +584,9 @@ export const insertAllowedCurrency = async (
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     currency: partialInput?.currency ?? faker.finance.currencyCode(),
+    validPaymentMethods:
+      partialInput?.validPaymentMethods ??
+      faker.helpers.arrayElement(validPaymentMethodsEnum),
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertAllowedCurrencySchema>;
   return insertOne(

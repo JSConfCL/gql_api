@@ -38,6 +38,12 @@ export const UserTicketRef =
 type TicketGraphqlSchema = z.infer<typeof selectTicketSchema>;
 export const TicketRef = builder.objectRef<TicketGraphqlSchema>("Ticket");
 
+export const PriceRef = builder.objectRef<{
+  id: string;
+  amount: number;
+  currencyId: string;
+}>("Price");
+
 type WorkEmailGraphqlSchema = z.infer<typeof selectWorkEmailSchema>;
 export const WorkEmailRef =
   builder.objectRef<WorkEmailGraphqlSchema>("WorkEmail");

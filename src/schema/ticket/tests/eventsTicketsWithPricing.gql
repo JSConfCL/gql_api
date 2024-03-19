@@ -1,0 +1,17 @@
+query SingleEventWithPricing {
+  events {
+    id
+    tickets {
+      id
+      prices {
+        id
+        amount
+        currency {
+          id
+          currency
+          validPaymentMethods
+        }
+      }
+    }
+  }
+}

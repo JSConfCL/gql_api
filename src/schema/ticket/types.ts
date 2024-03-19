@@ -1,5 +1,6 @@
 import { builder } from "~/builder";
-import { TicketRef } from "~/schema/shared/refs";
+import { selectAllowedCurrencySchema } from "~/datasources/db/schema";
+import { AllowedCurrencyRef, PriceRef, TicketRef } from "~/schema/shared/refs";
 
 export const TicketTemplateStatus = builder.enumType("TicketTemplateStatus", {
   values: ["active", "inactive"] as const,
@@ -10,6 +11,23 @@ export const TicketTemplateVisibility = builder.enumType(
     values: ["public", "private", "unlisted"] as const,
   },
 );
+
+builder.objectType(PriceRef, {
+  description: "Representation of a TicketPrice",
+  fields: (t) => ({
+    id: t.exposeID("id"),
+    amount: t.exposeInt("amount"),
+    currency: t.field({
+      type: AllowedCurrencyRef,
+      resolve: async (root, args, ctx) => {
+        const currency = await ctx.DB.query.allowedCurrencySchema.findFirst({
+          where: (acs, { eq }) => eq(acs.id, root.currencyId),
+        });
+        return selectAllowedCurrencySchema.parse(currency);
+      },
+    }),
+  }),
+});
 
 builder.objectType(TicketRef, {
   description: "Representation of a ticket",
@@ -40,5 +58,32 @@ builder.objectType(TicketRef, {
     }),
     quantity: t.exposeInt("quantity", { nullable: true }),
     eventId: t.exposeString("eventId", { nullable: false }),
+    prices: t.field({
+      type: [PriceRef],
+      nullable: true,
+      resolve: async (root, args, ctx) => {
+        const prices = await ctx.DB.query.ticketsPricesSchema.findMany({
+          where: (tps, { eq }) => eq(tps.ticketId, root.id),
+          with: {
+            price: true,
+          },
+        });
+
+        const pasedPrices = prices
+          .map((p) => ({
+            id: p.price.id,
+            amount: p.price.price,
+            currencyId: p.price.currencyId,
+          }))
+          .filter((p) => p.amount !== null || p.currencyId !== null);
+        // this "AS" is an unnecessary type cast, but it's here bc the "filter"
+        // does not do proper type narrowing.
+        return pasedPrices as {
+          id: string;
+          amount: number;
+          currencyId: string;
+        }[];
+      },
+    }),
   }),
 });
