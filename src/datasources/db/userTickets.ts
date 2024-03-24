@@ -20,7 +20,7 @@ export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;
 // USER-TICKETS-TABLE
 export const userTicketsSchema = pgTable("user_tickets", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
-  userId: text("user_id").references(() => usersSchema.id),
+  userId: text("old_user_id").references(() => usersSchema.id),
   ticketTemplateId: uuid("ticket_template_id")
     .references(() => ticketsSchema.id)
     .notNull(),

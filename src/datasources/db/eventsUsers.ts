@@ -11,7 +11,7 @@ const eventsToUsersRoleEnum = ["admin", "member", "collaborator"] as const;
 export const eventsToUsersSchema = pgTable("events_users", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   eventId: uuid("event_id").references(() => eventsSchema.id),
-  userId: text("user_id").references(() => usersSchema.id),
+  userId: text("old_user_id").references(() => usersSchema.id),
   role: text("role", { enum: eventsToUsersRoleEnum }).default("member"),
   ...createdAndUpdatedAtFields,
 });
