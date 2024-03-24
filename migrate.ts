@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
-import { config } from "dotenv";
-import { runMigration } from "~/datasources/db/runMigrations";
 import { neon } from "@neondatabase/serverless";
+import { config } from "dotenv";
+
+import { runMigration } from "~/datasources/db/runMigrations";
 
 config({ path: process.cwd() + "/.dev.vars", override: true });
 

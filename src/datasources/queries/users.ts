@@ -22,6 +22,7 @@ export const updateUserProfileInfo = async (
     const createdUsers = await db
       .insert(usersSchema)
       .values({
+        id: parsedProfileInfo.externalId,
         externalId: parsedProfileInfo.externalId,
         email: parsedProfileInfo.email,
         username: parsedProfileInfo.username ?? getUsername(),

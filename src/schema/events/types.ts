@@ -1,4 +1,4 @@
-import { SQL, and, eq, inArray } from "drizzle-orm";
+import { SQL, eq, inArray } from "drizzle-orm";
 
 import { builder } from "~/builder";
 import {
