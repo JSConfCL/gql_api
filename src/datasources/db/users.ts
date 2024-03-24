@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { jsonb, boolean, pgTable, text } from "drizzle-orm/pg-core";
+import { jsonb, boolean, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -8,7 +8,7 @@ import { createdAndUpdatedAtFields, genderOptions } from "./shared";
 
 // USERS
 export const usersSchema = pgTable("users", {
-  id: text("id").primaryKey().notNull(),
+  id: uuid("id").primaryKey().notNull(),
   externalId: text("externalId").unique().notNull(),
   name: text("name"),
   lastName: text("lastName"),
