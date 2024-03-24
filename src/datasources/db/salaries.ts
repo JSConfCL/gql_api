@@ -14,8 +14,8 @@ const workMetodologyEnum = ["remote", "office", "hybrid"] as const;
 // SALARIES-TABLE
 export const salariesSchema = pgTable("salaries", {
   id: uuid("id").primaryKey().defaultRandom(),
-  oldUserId: text("old_user_id")
-    .references(() => usersSchema.oldId)
+  userId: uuid("user_id")
+    .references(() => usersSchema.id)
     .notNull(),
   amount: integer("amount").notNull(),
   companyId: uuid("company_id").references(() => companiesSchema.id),
@@ -53,8 +53,8 @@ export const salairesRelations = relations(salariesSchema, ({ one }) => ({
     references: [workEmailSchema.id],
   }),
   user: one(usersSchema, {
-    fields: [salariesSchema.oldUserId],
-    references: [usersSchema.oldId],
+    fields: [salariesSchema.userId],
+    references: [usersSchema.id],
   }),
 }));
 

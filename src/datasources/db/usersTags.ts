@@ -19,20 +19,20 @@ export const usersTagsSchema = pgTable(
     tagId: uuid("tag_id")
       .references(() => tagsSchema.id)
       .notNull(),
-    oldUserId: text("old_user_id")
-      .references(() => usersSchema.oldId)
+    userId: uuid("user_id")
+      .references(() => usersSchema.id)
       .notNull(),
     ...createdAndUpdatedAtFields,
   },
   (t) => ({
-    primary_key: primaryKey({ columns: [t.tagId, t.oldUserId] }),
+    primary_key: primaryKey({ columns: [t.tagId, t.id] }),
   }),
 );
 
 export const usersToTagsRelations = relations(usersTagsSchema, ({ one }) => ({
   user: one(usersSchema, {
-    fields: [usersTagsSchema.oldUserId],
-    references: [usersSchema.oldId],
+    fields: [usersTagsSchema.userId],
+    references: [usersSchema.id],
   }),
   tag: one(tagsSchema, {
     fields: [usersTagsSchema.tagId],

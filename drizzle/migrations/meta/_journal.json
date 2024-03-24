@@ -71,6 +71,13 @@
       "when": 1711257630516,
       "tag": "0009_material_rictor",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1711258330700,
+      "tag": "0010_clear_wasp",
+      "breakpoints": true
     }
   ]
 }
