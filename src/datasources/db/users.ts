@@ -8,7 +8,7 @@ import { createdAndUpdatedAtFields, genderOptions } from "./shared";
 
 // USERS
 export const usersSchema = pgTable("users", {
-  id: text("id").primaryKey().notNull(),
+  id: text("old_id").unique().notNull(),
   externalId: text("externalId").unique().notNull(),
   name: text("name"),
   lastName: text("lastName"),

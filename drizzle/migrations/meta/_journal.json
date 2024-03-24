@@ -57,6 +57,13 @@
       "when": 1711257315604,
       "tag": "0007_flippant_santa_claus",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1711260897130,
+      "tag": "0008_polite_revanche",
+      "breakpoints": true
     }
   ]
 }
