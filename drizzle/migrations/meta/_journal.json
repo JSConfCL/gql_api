@@ -64,6 +64,13 @@
       "when": 1711260897130,
       "tag": "0008_polite_revanche",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1711261315464,
+      "tag": "0009_friendly_talon",
+      "breakpoints": true
     }
   ]
 }
