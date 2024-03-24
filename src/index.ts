@@ -1,82 +1,143 @@
-import { verifyToken } from "@clerk/backend";
+// import { verifyToken } from "@clerk/backend";
 import { useMaskedErrors } from "@envelop/core";
 import { useImmediateIntrospection } from "@envelop/immediate-introspection";
 import { useOpenTelemetry } from "@envelop/opentelemetry";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import { H } from "@highlight-run/cloudflare";
 import { initContextCache } from "@pothos/core";
-import { decode } from "@tsndr/cloudflare-worker-jwt";
+import { decode, verify } from "@tsndr/cloudflare-worker-jwt";
 import { createYoga, maskError } from "graphql-yoga";
 
 import { Env } from "worker-configuration";
 import * as rules from "~/authz";
 import { ORM_TYPE, getDb } from "~/datasources/db";
-import {
-  ProfileInfoSchema,
-  updateUserProfileInfo,
-} from "~/datasources/queries/users";
+import { updateUserProfileInfo } from "~/datasources/queries/users";
 import { APP_ENV } from "~/env";
 import { provider } from "~/obs/exporter";
 import { schema } from "~/schema";
 
+import { insertUsersSchema } from "./datasources/db/users";
 import { getSanityClient } from "./datasources/sanity/client";
+
+// We get the token either from the Authorization header or from the "sb-access-token" cookie
+const getAuthToken = (request: Request) => {
+  const authHeader = request.headers.get("Authorization");
+  if (authHeader) {
+    const token = authHeader.split(" ")[1];
+    return token;
+  }
+  const cookieHeader = request.headers.get("Cookie");
+  if (cookieHeader) {
+    const cookies = cookieHeader.split(";").map((c) => c.trim());
+    const tokenCookie = cookies.find((c) => c.startsWith("sb-access-token="));
+    if (tokenCookie) {
+      return tokenCookie.split("=")[1];
+    }
+  }
+  return null;
+};
+
+const decodeJWT = (JWT_TOKEN: string) => {
+  try {
+    const { payload } = decode(JWT_TOKEN) as {
+      payload: {
+        aud: string;
+        exp: number;
+        iat: number;
+        iss: string;
+        sub: string;
+        email: string;
+        phone: string;
+        app_metadata: { provider: string; providers: string[] };
+        user_metadata: {
+          avatar_url: string;
+          email: string;
+          email_verified: boolean;
+          full_name: string;
+          iss: string;
+          name: string;
+          phone_verified: boolean;
+          preferred_username: string;
+          provider_id: string;
+          picture: string;
+          sub: string;
+          user_name: string;
+        };
+        role: string;
+        aal: string;
+        amr: { method: "oauth"; timestamp: number }[];
+        session_id: string;
+        is_anonymous: boolean;
+      };
+    };
+    return payload;
+  } catch (e) {
+    console.error("Could not parse token", e);
+    return null;
+  }
+};
 
 const getUser = async ({
   request,
-  CLERK_ISSUER_ID,
-  CLERK_PEM_PUBLIC_KEY,
+  SUPABASE_JWT_DECODER,
   DB,
 }: {
   request: Request;
-  CLERK_ISSUER_ID: string;
-  CLERK_PEM_PUBLIC_KEY: string;
+  SUPABASE_JWT_DECODER: string;
   DB: ORM_TYPE;
 }) => {
-  const JWT_TOKEN = (request.headers.get("Authorization") ?? "").split(" ")[1];
+  const JWT_TOKEN = getAuthToken(request);
   if (!JWT_TOKEN) {
     console.info("No token present");
     return null;
   }
-  const verified = await verifyToken(JWT_TOKEN, {
-    issuer: CLERK_ISSUER_ID,
-    jwtKey: CLERK_PEM_PUBLIC_KEY,
-  });
+  const payload = decodeJWT(JWT_TOKEN);
+  if (!payload) {
+    console.error("Could not parse token");
+    return null;
+  }
+  const isExpired = payload.exp < Date.now() / 1000;
+  console.log("isExpired", isExpired);
+  // check if token is expired (exp)
+  if (isExpired) {
+    console.error("Token expired");
+    return null;
+  }
+  const verified = await verify(JWT_TOKEN, SUPABASE_JWT_DECODER);
+  console.log("verified", verified);
   if (!verified) {
     console.error("Could not verify token");
     return null;
   }
   const {
-    email,
-    email_verified,
-    two_factor_enabled,
-    image_url,
-    external_id,
+    avatar_url,
     name,
-    surname,
-    unsafe_metadata,
-    public_metadata,
+    user_name,
+    email_verified,
+    provider_id,
     sub,
-    exp,
-  } = verified;
+    picture,
+  } = payload.user_metadata;
 
-  if (exp < Date.now() / 1000) {
+  if (payload.exp < Date.now() / 1000) {
     console.error("Token expired");
     return null;
   }
-  const profileInfo = ProfileInfoSchema.parse({
-    email,
-    email_verified,
-    two_factor_enabled,
-    image_url,
-    external_id,
+  const profileInfo = insertUsersSchema.safeParse({
+    email: payload.email,
+    emailVerified: email_verified,
+    imageUrl: avatar_url ? avatar_url : picture ? picture : "",
+    externalId: provider_id,
     name,
-    surname,
-    unsafe_metadata,
-    public_metadata,
-    sub,
+    username: user_name,
+    publicMetadata: payload.user_metadata,
   });
+  if (profileInfo.success === false) {
+    console.error("Could not parse profile info", profileInfo.error);
+    throw new Error("Could not parse profile info", profileInfo.error);
+  }
   console.log("Updating profile Info for user ID:", sub);
-  return updateUserProfileInfo(DB, profileInfo);
+  return updateUserProfileInfo(DB, profileInfo.data);
 };
 
 const attachPossibleUserIdFromJWT = (request: Request) => {
@@ -167,6 +228,7 @@ export const yoga = createYoga<Env>({
     SANITY_DATASET,
     SANITY_API_VERSION,
     SANITY_SECRET_TOKEN,
+    SUPABASE_JWT_DECODER,
   }) => {
     if (!CLERK_PEM_PUBLIC_KEY) {
       throw new Error("Missing CLERK_KEY");
@@ -185,6 +247,9 @@ export const yoga = createYoga<Env>({
     }
     if (!NEON_URL) {
       throw new Error("Missing NEON_URL");
+    }
+    if (!SUPABASE_JWT_DECODER) {
+      throw new Error("Missing SUPABASE_JWT_DECODER");
     }
     if (
       !SANITY_PROJECT_ID ||
@@ -208,11 +273,10 @@ export const yoga = createYoga<Env>({
     console.log("Getting user");
     const USER = await getUser({
       request,
-      CLERK_ISSUER_ID,
-      CLERK_PEM_PUBLIC_KEY,
+      SUPABASE_JWT_DECODER,
       DB,
     });
-    console.log("User Obtained:", USER);
+    console.log("User Obtained:", USER?.id);
     return {
       ...initContextCache(),
       DB,

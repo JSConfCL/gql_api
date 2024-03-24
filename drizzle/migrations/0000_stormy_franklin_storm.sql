@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS "allowed_currencies" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"currency" text NOT NULL,
-	"payment_methods" text,
+	"payment_methods" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
 	"deleted_at" timestamp,
@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS "communities" (
 	"name" text NOT NULL,
 	"slug" text,
 	"description" text,
+	"logo_image_sanity_ref" text,
+	"banner_image_sanity_ref" text,
 	"status" text DEFAULT 'inactive' NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
@@ -38,7 +40,7 @@ CREATE TABLE IF NOT EXISTS "companies" (
 CREATE TABLE IF NOT EXISTS "confirmation_token" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"source" text NOT NULL,
-	"user_id" text NOT NULL,
+	"user_id" uuid NOT NULL,
 	"source_id" text NOT NULL,
 	"token" uuid DEFAULT gen_random_uuid() NOT NULL,
 	"status" text DEFAULT 'pending',
@@ -47,7 +49,6 @@ CREATE TABLE IF NOT EXISTS "confirmation_token" (
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
 	"deleted_at" timestamp,
-	CONSTRAINT "confirmation_token_id_unique" UNIQUE("id"),
 	CONSTRAINT "confirmation_token_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
@@ -65,6 +66,8 @@ CREATE TABLE IF NOT EXISTS "events" (
 	"geo_address_json" text,
 	"meeting_url" text,
 	"max_attendees" integer,
+	"sanity_event_id" text,
+	"banner_image_sanity_ref" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
 	"deleted_at" timestamp,
@@ -84,8 +87,8 @@ CREATE TABLE IF NOT EXISTS "events_communities" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "events_tags" (
 	"id" uuid DEFAULT gen_random_uuid() NOT NULL,
-	"event_id" uuid,
-	"tag_id" uuid,
+	"event_id" uuid NOT NULL,
+	"tag_id" uuid NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
 	"deleted_at" timestamp,
@@ -96,8 +99,32 @@ CREATE TABLE IF NOT EXISTS "events_tags" (
 CREATE TABLE IF NOT EXISTS "events_users" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"event_id" uuid,
-	"user_id" text,
+	"user_id" uuid,
 	"role" text DEFAULT 'member',
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp,
+	"deleted_at" timestamp
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "payments_logs" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"external_id" text NOT NULL,
+	"external_product_reference" text,
+	"platform" text NOT NULL,
+	"transaction_amount" numeric NOT NULL,
+	"external_creation_date" timestamp (6) with time zone,
+	"currency_id" text NOT NULL,
+	"original_response_blob" jsonb NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp,
+	"deleted_at" timestamp,
+	CONSTRAINT "payments_logs_external_id_platform_unique" UNIQUE("external_id","platform")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "prices" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"price" integer,
+	"currency_id" uuid,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
 	"deleted_at" timestamp
@@ -105,11 +132,11 @@ CREATE TABLE IF NOT EXISTS "events_users" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "salaries" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" text NOT NULL,
+	"user_id" uuid NOT NULL,
 	"amount" integer NOT NULL,
 	"company_id" uuid,
 	"currency_code" text NOT NULL,
-	"work_role_id" uuid,
+	"work_seniority_and_role_id" uuid,
 	"work_email_id" uuid,
 	"years_of_experience" integer NOT NULL,
 	"gender" text,
@@ -119,8 +146,7 @@ CREATE TABLE IF NOT EXISTS "salaries" (
 	"work_metodology" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
-	"deleted_at" timestamp,
-	CONSTRAINT "salaries_id_unique" UNIQUE("id")
+	"deleted_at" timestamp
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "tags" (
@@ -135,8 +161,8 @@ CREATE TABLE IF NOT EXISTS "tags" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "tags_communities" (
 	"id" uuid DEFAULT gen_random_uuid() NOT NULL,
-	"tag_id" uuid,
-	"community_id" uuid,
+	"tag_id" uuid NOT NULL,
+	"community_id" uuid NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
 	"deleted_at" timestamp,
@@ -153,41 +179,48 @@ CREATE TABLE IF NOT EXISTS "tickets" (
 	"start_date_time" timestamp NOT NULL,
 	"end_date_time" timestamp,
 	"requires_approval" boolean DEFAULT false,
-	"price" integer,
 	"quantity" integer,
 	"event_id" uuid NOT NULL,
-	"currency" uuid,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
 	"deleted_at" timestamp,
 	CONSTRAINT "tickets_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "tickets_prices" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"ticket_id" uuid NOT NULL,
+	"price_id" uuid NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp,
+	"deleted_at" timestamp
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "users" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"externalId" text NOT NULL,
 	"name" text,
 	"lastName" text,
 	"bio" text DEFAULT '',
-	"email" text,
+	"email" text NOT NULL,
 	"gender" text,
 	"gender_other_text" text,
 	"isSuperAdmin" boolean DEFAULT false,
 	"emailVerified" boolean,
 	"imageUrl" text,
 	"username" text NOT NULL,
-	"twoFactorEnabled" boolean,
-	"unsafeMetadata" jsonb,
 	"publicMetadata" jsonb,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
 	"deleted_at" timestamp,
-	CONSTRAINT "users_id_unique" UNIQUE("id"),
+	CONSTRAINT "users_externalId_unique" UNIQUE("externalId"),
+	CONSTRAINT "users_email_unique" UNIQUE("email"),
 	CONSTRAINT "users_username_unique" UNIQUE("username")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "users_communities" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" text,
+	"user_id" uuid,
 	"community_id" uuid,
 	"role" text DEFAULT 'member',
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -197,7 +230,7 @@ CREATE TABLE IF NOT EXISTS "users_communities" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "user_tickets" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" text,
+	"user_id" uuid,
 	"ticket_template_id" uuid NOT NULL,
 	"status" text DEFAULT 'inactive' NOT NULL,
 	"payment_status" text DEFAULT 'unpaid' NOT NULL,
@@ -210,8 +243,8 @@ CREATE TABLE IF NOT EXISTS "user_tickets" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "users_tags" (
 	"id" uuid DEFAULT gen_random_uuid() NOT NULL,
-	"tag_id" uuid,
-	"user_id" text,
+	"tag_id" uuid NOT NULL,
+	"user_id" uuid NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
 	"deleted_at" timestamp,
@@ -221,7 +254,7 @@ CREATE TABLE IF NOT EXISTS "users_tags" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "work_email" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" text NOT NULL,
+	"user_id" uuid NOT NULL,
 	"work_email" text NOT NULL,
 	"confirmation_token_id" uuid,
 	"status" text DEFAULT 'pending',
@@ -235,12 +268,29 @@ CREATE TABLE IF NOT EXISTS "work_email" (
 CREATE TABLE IF NOT EXISTS "work_role" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
-	"seniority" text NOT NULL,
+	"description" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp,
+	"deleted_at" timestamp
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "work_seniority" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"name" text NOT NULL,
 	"description" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
-	"deleted_at" timestamp,
-	CONSTRAINT "work_role_id_unique" UNIQUE("id")
+	"deleted_at" timestamp
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "work_seniority_and_role" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"work_role_id" uuid,
+	"work_seniority_id" uuid,
+	"description" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp,
+	"deleted_at" timestamp
 );
 --> statement-breakpoint
 DO $$ BEGIN
@@ -286,6 +336,12 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
+ ALTER TABLE "prices" ADD CONSTRAINT "prices_currency_id_allowed_currencies_id_fk" FOREIGN KEY ("currency_id") REFERENCES "allowed_currencies"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
  ALTER TABLE "salaries" ADD CONSTRAINT "salaries_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
@@ -298,7 +354,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "salaries" ADD CONSTRAINT "salaries_work_role_id_work_role_id_fk" FOREIGN KEY ("work_role_id") REFERENCES "work_role"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "salaries" ADD CONSTRAINT "salaries_work_seniority_and_role_id_work_seniority_and_role_id_fk" FOREIGN KEY ("work_seniority_and_role_id") REFERENCES "work_seniority_and_role"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -328,7 +384,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "tickets" ADD CONSTRAINT "tickets_currency_allowed_currencies_id_fk" FOREIGN KEY ("currency") REFERENCES "allowed_currencies"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "tickets_prices" ADD CONSTRAINT "tickets_prices_ticket_id_tickets_id_fk" FOREIGN KEY ("ticket_id") REFERENCES "tickets"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "tickets_prices" ADD CONSTRAINT "tickets_prices_price_id_prices_id_fk" FOREIGN KEY ("price_id") REFERENCES "prices"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -383,6 +445,18 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "work_email" ADD CONSTRAINT "work_email_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "companies"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "work_seniority_and_role" ADD CONSTRAINT "work_seniority_and_role_work_role_id_work_role_id_fk" FOREIGN KEY ("work_role_id") REFERENCES "work_role"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "work_seniority_and_role" ADD CONSTRAINT "work_seniority_and_role_work_seniority_id_work_seniority_id_fk" FOREIGN KEY ("work_seniority_id") REFERENCES "work_seniority"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

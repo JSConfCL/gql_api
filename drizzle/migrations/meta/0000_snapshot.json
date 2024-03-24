@@ -1,5 +1,5 @@
 {
-  "id": "df83a18e-72f6-4235-ba47-6b8200e65029",
+  "id": "d3eeae23-945b-4b75-a8a5-70e0d3d7db51",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -25,7 +25,7 @@
           "name": "payment_methods",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -83,6 +83,18 @@
         },
         "description": {
           "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo_image_sanity_ref": {
+          "name": "logo_image_sanity_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "banner_image_sanity_ref": {
+          "name": "banner_image_sanity_ref",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -217,7 +229,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -287,11 +299,6 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "confirmation_token_id_unique": {
-          "name": "confirmation_token_id_unique",
-          "nullsNotDistinct": false,
-          "columns": ["id"]
-        },
         "confirmation_token_token_unique": {
           "name": "confirmation_token_token_unique",
           "nullsNotDistinct": false,
@@ -381,6 +388,18 @@
         "max_attendees": {
           "name": "max_attendees",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sanity_event_id": {
+          "name": "sanity_event_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "banner_image_sanity_ref": {
+          "name": "banner_image_sanity_ref",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -508,13 +527,13 @@
           "name": "event_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "tag_id": {
           "name": "tag_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -590,7 +609,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -645,6 +664,148 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "payments_logs": {
+      "name": "payments_logs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "external_product_reference": {
+          "name": "external_product_reference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "platform": {
+          "name": "platform",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "transaction_amount": {
+          "name": "transaction_amount",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "external_creation_date": {
+          "name": "external_creation_date",
+          "type": "timestamp (6) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "currency_id": {
+          "name": "currency_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_response_blob": {
+          "name": "original_response_blob",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "payments_logs_external_id_platform_unique": {
+          "name": "payments_logs_external_id_platform_unique",
+          "nullsNotDistinct": false,
+          "columns": ["external_id", "platform"]
+        }
+      }
+    },
+    "prices": {
+      "name": "prices",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "price": {
+          "name": "price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "currency_id": {
+          "name": "currency_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "prices_currency_id_allowed_currencies_id_fk": {
+          "name": "prices_currency_id_allowed_currencies_id_fk",
+          "tableFrom": "prices",
+          "tableTo": "allowed_currencies",
+          "columnsFrom": ["currency_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "salaries": {
       "name": "salaries",
       "schema": "",
@@ -658,7 +819,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -680,8 +841,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "work_role_id": {
-          "name": "work_role_id",
+        "work_seniority_and_role_id": {
+          "name": "work_seniority_and_role_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -768,11 +929,11 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "salaries_work_role_id_work_role_id_fk": {
-          "name": "salaries_work_role_id_work_role_id_fk",
+        "salaries_work_seniority_and_role_id_work_seniority_and_role_id_fk": {
+          "name": "salaries_work_seniority_and_role_id_work_seniority_and_role_id_fk",
           "tableFrom": "salaries",
-          "tableTo": "work_role",
-          "columnsFrom": ["work_role_id"],
+          "tableTo": "work_seniority_and_role",
+          "columnsFrom": ["work_seniority_and_role_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -788,13 +949,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "salaries_id_unique": {
-          "name": "salaries_id_unique",
-          "nullsNotDistinct": false,
-          "columns": ["id"]
-        }
-      }
+      "uniqueConstraints": {}
     },
     "tags": {
       "name": "tags",
@@ -865,13 +1020,13 @@
           "name": "tag_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "community_id": {
           "name": "community_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -984,12 +1139,6 @@
           "notNull": false,
           "default": false
         },
-        "price": {
-          "name": "price",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "quantity": {
           "name": "quantity",
           "type": "integer",
@@ -1001,12 +1150,6 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
-        },
-        "currency": {
-          "name": "currency",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -1038,15 +1181,6 @@
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
-        },
-        "tickets_currency_allowed_currencies_id_fk": {
-          "name": "tickets_currency_allowed_currencies_id_fk",
-          "tableFrom": "tickets",
-          "tableTo": "allowed_currencies",
-          "columnsFrom": ["currency"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1058,14 +1192,87 @@
         }
       }
     },
+    "tickets_prices": {
+      "name": "tickets_prices",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "ticket_id": {
+          "name": "ticket_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price_id": {
+          "name": "price_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tickets_prices_ticket_id_tickets_id_fk": {
+          "name": "tickets_prices_ticket_id_tickets_id_fk",
+          "tableFrom": "tickets_prices",
+          "tableTo": "tickets",
+          "columnsFrom": ["ticket_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tickets_prices_price_id_prices_id_fk": {
+          "name": "tickets_prices_price_id_prices_id_fk",
+          "tableFrom": "tickets_prices",
+          "tableTo": "prices",
+          "columnsFrom": ["price_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "users": {
       "name": "users",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
+          "notNull": true
+        },
+        "externalId": {
+          "name": "externalId",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true
         },
         "name": {
@@ -1091,7 +1298,7 @@
           "name": "email",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "gender": {
           "name": "gender",
@@ -1130,18 +1337,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "twoFactorEnabled": {
-          "name": "twoFactorEnabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "unsafeMetadata": {
-          "name": "unsafeMetadata",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
         "publicMetadata": {
           "name": "publicMetadata",
           "type": "jsonb",
@@ -1172,10 +1367,15 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "users_id_unique": {
-          "name": "users_id_unique",
+        "users_externalId_unique": {
+          "name": "users_externalId_unique",
           "nullsNotDistinct": false,
-          "columns": ["id"]
+          "columns": ["externalId"]
+        },
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": ["email"]
         },
         "users_username_unique": {
           "name": "users_username_unique",
@@ -1197,7 +1397,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -1271,7 +1471,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -1368,13 +1568,13 @@
           "name": "tag_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -1444,7 +1644,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -1549,8 +1749,50 @@
           "primaryKey": false,
           "notNull": true
         },
-        "seniority": {
-          "name": "seniority",
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "work_seniority": {
+      "name": "work_seniority",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -1584,13 +1826,80 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "work_role_id_unique": {
-          "name": "work_role_id_unique",
-          "nullsNotDistinct": false,
-          "columns": ["id"]
+      "uniqueConstraints": {}
+    },
+    "work_seniority_and_role": {
+      "name": "work_seniority_and_role",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "work_role_id": {
+          "name": "work_role_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "work_seniority_id": {
+          "name": "work_seniority_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         }
-      }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "work_seniority_and_role_work_role_id_work_role_id_fk": {
+          "name": "work_seniority_and_role_work_role_id_work_role_id_fk",
+          "tableFrom": "work_seniority_and_role",
+          "tableTo": "work_role",
+          "columnsFrom": ["work_role_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "work_seniority_and_role_work_seniority_id_work_seniority_id_fk": {
+          "name": "work_seniority_and_role_work_seniority_id_work_seniority_id_fk",
+          "tableFrom": "work_seniority_and_role",
+          "tableTo": "work_seniority",
+          "columnsFrom": ["work_seniority_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     }
   },
   "enums": {},
