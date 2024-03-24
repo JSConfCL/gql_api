@@ -276,7 +276,7 @@ export const yoga = createYoga<Env>({
       SUPABASE_JWT_DECODER,
       DB,
     });
-    console.log("User Obtained:", USER);
+    console.log("User Obtained:", USER?.id);
     return {
       ...initContextCache(),
       DB,
