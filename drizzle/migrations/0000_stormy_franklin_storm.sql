@@ -1,4 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "allowed_currencies" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"currency" text NOT NULL,

@@ -27,7 +27,6 @@ const getAuthToken = (request: Request) => {
     return token;
   }
   const cookieHeader = request.headers.get("Cookie");
-  console.log("cookieHeader", cookieHeader);
   if (cookieHeader) {
     const cookies = cookieHeader.split(";").map((c) => c.trim());
     const tokenCookie = cookies.find((c) => c.startsWith("sb-access-token="));
@@ -36,6 +35,46 @@ const getAuthToken = (request: Request) => {
     }
   }
   return null;
+};
+
+const decodeJWT = (JWT_TOKEN: string) => {
+  try {
+    const { payload } = decode(JWT_TOKEN) as {
+      payload: {
+        aud: string;
+        exp: number;
+        iat: number;
+        iss: string;
+        sub: string;
+        email: string;
+        phone: string;
+        app_metadata: { provider: string; providers: string[] };
+        user_metadata: {
+          avatar_url: string;
+          email: string;
+          email_verified: boolean;
+          full_name: string;
+          iss: string;
+          name: string;
+          phone_verified: boolean;
+          preferred_username: string;
+          provider_id: string;
+          picture: string;
+          sub: string;
+          user_name: string;
+        };
+        role: string;
+        aal: string;
+        amr: { method: "oauth"; timestamp: number }[];
+        session_id: string;
+        is_anonymous: boolean;
+      };
+    };
+    return payload;
+  } catch (e) {
+    console.error("Could not parse token", e);
+    return null;
+  }
 };
 
 const getUser = async ({
@@ -48,47 +87,11 @@ const getUser = async ({
   DB: ORM_TYPE;
 }) => {
   const JWT_TOKEN = getAuthToken(request);
-  console.log("JWT_TOKEN", JWT_TOKEN);
   if (!JWT_TOKEN) {
     console.info("No token present");
     return null;
   }
-  const { payload } = decode(JWT_TOKEN) as {
-    payload: {
-      aud: string;
-      exp: number;
-      iat: number;
-      iss: string;
-      sub: string;
-      email: string;
-      phone: string;
-      app_metadata: { provider: string; providers: string[] };
-      user_metadata: {
-        avatar_url: string;
-        email: string;
-        email_verified: boolean;
-        full_name: string;
-        iss: string;
-        name: string;
-        phone_verified: boolean;
-        preferred_username: string;
-        provider_id: string;
-        picture: string;
-        sub: string;
-        user_name: string;
-      };
-      role: string;
-      aal: string;
-      amr: { method: "oauth"; timestamp: number }[];
-      session_id: string;
-      is_anonymous: boolean;
-    };
-  };
-  console.log("payload", payload);
-
-  console.log("SUPABASE_JWT_DECODER", SUPABASE_JWT_DECODER);
-
-  console.log("Date.now", Date.now());
+  const payload = decodeJWT(JWT_TOKEN);
   if (!payload) {
     console.error("Could not parse token");
     return null;
