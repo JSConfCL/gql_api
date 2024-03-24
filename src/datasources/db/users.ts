@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { jsonb, boolean, pgTable, text } from "drizzle-orm/pg-core";
+import { jsonb, boolean, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -8,11 +8,12 @@ import { createdAndUpdatedAtFields, genderOptions } from "./shared";
 
 // USERS
 export const usersSchema = pgTable("users", {
-  id: text("id").primaryKey().notNull(),
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  externalId: text("externalId").unique().notNull(),
   name: text("name"),
   lastName: text("lastName"),
   bio: text("bio").default(""),
-  email: text("email"),
+  email: text("email").unique().notNull(),
   gender: text("gender", {
     enum: genderOptions,
   }),
@@ -21,8 +22,6 @@ export const usersSchema = pgTable("users", {
   emailVerified: boolean("emailVerified"),
   imageUrl: text("imageUrl"),
   username: text("username").unique().notNull(),
-  twoFactorEnabled: boolean("twoFactorEnabled"),
-  unsafeMetadata: jsonb("unsafeMetadata"),
   publicMetadata: jsonb("publicMetadata"),
   ...createdAndUpdatedAtFields,
 });

@@ -12,7 +12,7 @@ import { createdAndUpdatedAtFields, statusEnumOptions } from "./shared";
 // WORK-EMAILS-TABLE
 export const workEmailSchema = pgTable("work_email", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
-  userId: text("user_id")
+  userId: uuid("user_id")
     .references(() => usersSchema.id)
     .notNull(),
   workEmail: text("work_email").notNull(),

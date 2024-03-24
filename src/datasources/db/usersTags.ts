@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { primaryKey, pgTable, uuid, text } from "drizzle-orm/pg-core";
+import { primaryKey, pgTable, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { usersSchema, tagsSchema } from "./schema";
@@ -19,13 +19,13 @@ export const usersTagsSchema = pgTable(
     tagId: uuid("tag_id")
       .references(() => tagsSchema.id)
       .notNull(),
-    userId: text("user_id")
+    userId: uuid("user_id")
       .references(() => usersSchema.id)
       .notNull(),
     ...createdAndUpdatedAtFields,
   },
   (t) => ({
-    primary_key: primaryKey({ columns: [t.tagId, t.userId] }),
+    primary_key: primaryKey({ columns: [t.tagId, t.id] }),
   }),
 );
 

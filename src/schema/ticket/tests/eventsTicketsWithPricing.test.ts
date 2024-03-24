@@ -1,7 +1,6 @@
 import { assert, describe, it } from "vitest";
 
 import {
-  executeGraphqlOperation,
   executeGraphqlOperationAsUser,
   insertAllowedCurrency,
   insertCommunity,
@@ -11,7 +10,6 @@ import {
   insertTicketPrice,
   insertTicketTemplate,
   insertUser,
-  insertUserToCommunity,
 } from "~/tests/fixtures";
 
 import {

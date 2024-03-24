@@ -210,15 +210,14 @@ export const insertUser = async (
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     username: partialInput?.username ?? faker.internet.userName(),
+    externalId: partialInput?.externalId ?? faker.string.uuid(),
     bio: partialInput?.bio,
-    email: partialInput?.email,
+    email: partialInput?.email ?? faker.internet.email(),
     name: partialInput?.name,
     isSuperAdmin: partialInput?.isSuperAdmin,
     emailVerified: partialInput?.emailVerified,
     lastName: partialInput?.lastName,
     publicMetadata: partialInput?.publicMetadata,
-    twoFactorEnabled: partialInput?.twoFactorEnabled,
-    unsafeMetadata: partialInput?.unsafeMetadata,
     imageUrl: partialInput?.imageUrl,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertUsersSchema>;
@@ -395,7 +394,7 @@ export const insertTicket = async (
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
-    userId: partialInput?.userId,
+    userId: partialInput?.userId ?? faker.string.uuid(),
     ticketTemplateId:
       partialInput?.ticketTemplateId ?? (await insertTicketTemplate()).id,
     approvalStatus:
