@@ -27,7 +27,11 @@ export async function hasUserRoleInEvent(
 ): Promise<boolean> {
   const hasRoleInEvent = await DB.query.eventsToUsersSchema.findFirst({
     where: (utc, { eq, and }) =>
-      and(eq(utc.eventId, eventId), eq(utc.userId, userId), eq(utc.role, role)),
+      and(
+        eq(utc.eventId, eventId),
+        eq(utc.oldUserId, userId),
+        eq(utc.role, role),
+      ),
   });
 
   return Boolean(hasRoleInEvent);
@@ -43,7 +47,7 @@ export async function hasUserRoleInCommunity(
     where: (utc, { eq, and }) =>
       and(
         eq(utc.communityId, communityId),
-        eq(utc.userId, userId),
+        eq(utc.oldUserId, userId),
         eq(utc.role, role),
       ),
   });
@@ -65,7 +69,7 @@ export async function canCreateEvent(
   const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
     where: (utc, { eq, and }) =>
       and(
-        eq(utc.userId, userId),
+        eq(utc.oldUserId, userId),
         eq(utc.role, "admin"),
         eq(utc.communityId, communityId),
       ),
@@ -94,7 +98,7 @@ export async function canEditEvent(
   const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
     where: (utc, { eq, and }) =>
       and(
-        eq(utc.userId, userId),
+        eq(utc.oldUserId, userId),
         eq(utc.role, "admin"),
         eq(utc.communityId, eventsToCommunities.communityId),
       ),
@@ -128,7 +132,7 @@ export async function canCancelUserTicket(
   if (!userTicket) {
     return false;
   }
-  if (userId === userTicket.userId) {
+  if (userId === userTicket.oldUserId) {
     return true;
   }
 
@@ -144,7 +148,7 @@ export async function canCancelUserTicket(
     where: (utc, { eq, and }) =>
       and(
         eq(utc.communityId, community.communityId),
-        eq(utc.userId, userId),
+        eq(utc.oldUserId, userId),
         eq(utc.role, "admin"),
       ),
   });
@@ -178,7 +182,7 @@ export async function canApproveTicket(
     where: (utc, { eq, and }) =>
       and(
         eq(utc.eventId, userTicket?.ticketTemplate.eventId),
-        eq(utc.userId, userId),
+        eq(utc.oldUserId, userId),
         eq(utc.role, "admin"),
       ),
   });
@@ -201,7 +205,7 @@ export async function canUpdateUserRoleInCommunity(
   const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
     where: (utc, { eq, and }) =>
       and(
-        eq(utc.userId, userId),
+        eq(utc.oldUserId, userId),
         eq(utc.role, "admin"),
         eq(utc.communityId, communityId),
       ),
@@ -225,7 +229,7 @@ export async function canCreateTicket({
   const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
     where: (utc, { eq, and }) =>
       and(
-        eq(utc.userId, user.oldId),
+        eq(utc.oldUserId, user.oldId),
         eq(utc.role, "admin"),
         eq(utc.communityId, eventId),
       ),
@@ -261,7 +265,7 @@ export async function canEditTicket(
   const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
     where: (utc, { eq, and }) =>
       and(
-        eq(utc.userId, userId),
+        eq(utc.oldUserId, userId),
         eq(utc.role, "admin"),
         eq(utc.communityId, eventToCommunity?.communityId),
       ),
@@ -300,7 +304,7 @@ export async function canRedeemUserTicket(
     await DB.query.usersToCommunitiesSchema.findFirst({
       where: (utc, { eq, and }) =>
         and(
-          eq(utc.userId, userId),
+          eq(utc.oldUserId, userId),
           eq(utc.communityId, eventToCommunitie?.communityId),
           inArray(utc.role, ["admin", "collaborator"]),
         ),
@@ -309,7 +313,7 @@ export async function canRedeemUserTicket(
     await DB.query.eventsToUsersSchema.findFirst({
       where: (utc, { eq, and }) =>
         and(
-          eq(utc.userId, userId),
+          eq(utc.oldUserId, userId),
           eq(utc.eventId, userTicket?.ticketTemplate.eventId),
           inArray(utc.role, ["admin", "collaborator"]),
         ),
@@ -339,7 +343,7 @@ export async function canEditCommunity(
   const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
     where: (utc, { eq, and }) =>
       and(
-        eq(utc.userId, user.oldId),
+        eq(utc.oldUserId, user.oldId),
         eq(utc.role, "admin"),
         eq(utc.communityId, communityId),
       ),

@@ -116,7 +116,7 @@ builder.mutationFields((t) => ({
           .set({
             role: role as UserRoleCommunity,
           })
-          .where(eq(usersToCommunitiesSchema.userId, userId));
+          .where(eq(usersToCommunitiesSchema.oldUserId, userId));
 
         const user = await ctx.DB.query.usersSchema.findFirst({
           where: (u, { eq }) => eq(u.oldId, userId),

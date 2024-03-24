@@ -20,7 +20,7 @@ export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;
 // USER-TICKETS-TABLE
 export const userTicketsSchema = pgTable("user_tickets", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
-  userId: text("user_id").references(() => usersSchema.oldId),
+  oldUserId: text("old_user_id").references(() => usersSchema.oldId),
   ticketTemplateId: uuid("ticket_template_id")
     .references(() => ticketsSchema.id)
     .notNull(),
@@ -49,7 +49,7 @@ export const userTicketsRelations = relations(userTicketsSchema, ({ one }) => ({
     references: [ticketsSchema.id],
   }),
   user: one(usersSchema, {
-    fields: [userTicketsSchema.userId],
+    fields: [userTicketsSchema.oldUserId],
     references: [usersSchema.oldId],
   }),
 }));

@@ -26,7 +26,7 @@ describe("Users Communities Graphql Tests", () => {
     const user2 = await insertUser();
     const community1 = await insertCommunity();
     await insertUserToCommunity({
-      userId: user.oldId,
+      oldUserId: user.oldId,
       communityId: community1.id,
       role: "member",
     });
@@ -51,12 +51,12 @@ describe("Users Communities Graphql Tests", () => {
     const community1 = await insertCommunity();
     const community2 = await insertCommunity();
     await insertUserToCommunity({
-      userId: user1.oldId,
+      oldUserId: user1.oldId,
       communityId: community1.id,
       role: "member",
     });
     await insertUserToCommunity({
-      userId: user2.oldId,
+      oldUserId: user2.oldId,
       communityId: community1.id,
     });
     const response = await executeGraphqlOperation<

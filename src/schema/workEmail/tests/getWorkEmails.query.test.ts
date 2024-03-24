@@ -26,7 +26,7 @@ describe("test the work email query", () => {
 
     const insertedWorkEmail = await insertWorkEmail({
       companyId: company.id,
-      userId: user.oldId,
+      oldUserId: user.oldId,
       workEmail: email,
       status: "confirmed",
     });
@@ -60,7 +60,7 @@ describe("test the work email query", () => {
 
     await insertWorkEmail({
       companyId: company.id,
-      userId: user.oldId,
+      oldUserId: user.oldId,
       workEmail: email,
     });
 
@@ -85,7 +85,7 @@ describe("test the work email query", () => {
 
     await insertWorkEmail({
       companyId: company.id,
-      userId: user.oldId,
+      oldUserId: user.oldId,
       workEmail: email,
     });
 

@@ -1,4 +1,4 @@
-import { SQL, and, eq, inArray } from "drizzle-orm";
+import { SQL, eq, inArray } from "drizzle-orm";
 
 import { builder } from "~/builder";
 import {
@@ -139,7 +139,7 @@ builder.objectType(EventRef, {
           });
 
         const usersToCommunitieIds = usersToCommunitie
-          .map((utc) => utc.userId)
+          .map((utc) => utc.oldUserId)
           .filter(Boolean);
 
         if (usersToCommunitieIds.length === 0) {
@@ -259,7 +259,7 @@ builder.objectType(EventRef, {
         }
         const roleUserEvent = await DB.query.eventsToUsersSchema.findFirst({
           where: (etc, { eq, and }) =>
-            and(eq(etc.eventId, root.id), eq(etc.userId, USER.oldId)),
+            and(eq(etc.eventId, root.id), eq(etc.oldUserId, USER.oldId)),
         });
         const community = await DB.query.eventsToCommunitiesSchema.findFirst({
           where: (etc, { eq }) => eq(etc.eventId, root.id),
@@ -272,14 +272,14 @@ builder.objectType(EventRef, {
             where: (etc, { eq, and }) =>
               and(
                 eq(etc.communityId, community?.communityId),
-                eq(etc.userId, USER.oldId),
+                eq(etc.oldUserId, USER.oldId),
               ),
           });
         if (
           !(roleUserEvent?.role && AdminRoles.has(roleUserEvent.role)) ||
           !(roleUserCommunity?.role && AdminRoles.has(roleUserCommunity.role))
         ) {
-          wheres.push(eq(userTicketsSchema.userId, USER.oldId));
+          wheres.push(eq(userTicketsSchema.oldUserId, USER.oldId));
         }
 
         // TODO: (Felipe) — Esta es otra manera de hacerlo, aun no se cual es

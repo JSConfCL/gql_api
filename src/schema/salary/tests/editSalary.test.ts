@@ -31,13 +31,13 @@ const createSalary = async () => {
   const insertedConfirmationToken = await insertConfirmationToken({
     source: "onboarding",
     validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
-    userId: user.oldId,
+    oldUserId: user.oldId,
     status: "pending",
     sourceId: "123",
   });
   const workEmail = await insertWorkEmail({
     confirmationTokenId: insertedConfirmationToken.id,
-    userId: user.oldId,
+    oldUserId: user.oldId,
   });
   const salary = await insertSalary({
     workEmailId: workEmail.id,
@@ -51,7 +51,7 @@ const createSalary = async () => {
     workSeniorityAndRoleId: workSeniorityAndRole.id,
     genderOtherText: "",
     yearsOfExperience: 1,
-    userId: user.oldId,
+    oldUserId: user.oldId,
   });
   return {
     salaryId: salary.id,
@@ -180,7 +180,7 @@ describe("Salary creation", () => {
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
-        userId: user2.oldId,
+        oldUserId: user2.oldId,
         status: "pending",
         sourceId: "123",
       });
@@ -247,7 +247,7 @@ describe("Salary creation", () => {
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
-        userId: user.oldId,
+        oldUserId: user.oldId,
         status: "confirmed",
         sourceId: "123",
       });
@@ -284,7 +284,7 @@ describe("Salary creation", () => {
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
-        userId: user.oldId,
+        oldUserId: user.oldId,
         status: "rejected",
         sourceId: "123",
       });
@@ -321,7 +321,7 @@ describe("Salary creation", () => {
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
-        userId: user.oldId,
+        oldUserId: user.oldId,
         status: "expired",
         sourceId: "123",
       });
@@ -359,7 +359,7 @@ describe("Salary creation", () => {
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() - 1000 * 60 * 60 * 24),
-        userId: user.oldId,
+        oldUserId: user.oldId,
         status: "pending",
         sourceId: "123",
       });

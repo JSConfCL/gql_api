@@ -66,7 +66,7 @@ builder.mutationFields((t) => ({
         where: (wes, { ilike, and, eq }) =>
           and(
             ilike(wes.workEmail, email.toLowerCase()),
-            eq(wes.userId, USER.oldId),
+            eq(wes.oldUserId, USER.oldId),
           ),
         with: {
           confirmationToken: true,
@@ -210,7 +210,7 @@ builder.mutationFields((t) => ({
 
       if (
         new Date(foundConfirmationToken.validUntil) <= new Date() ||
-        foundConfirmationToken.userId !== USER.oldId
+        foundConfirmationToken.oldUserId !== USER.oldId
       ) {
         throw new Error("Invalid token");
       }
@@ -218,7 +218,7 @@ builder.mutationFields((t) => ({
         where: (wes, { eq, and }) =>
           and(
             eq(wes.confirmationTokenId, foundConfirmationToken.id),
-            eq(wes.userId, USER.oldId),
+            eq(wes.oldUserId, USER.oldId),
           ),
       });
       if (possibleWorkSchema) {

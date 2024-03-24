@@ -235,7 +235,7 @@ export const insertUserTag = async (
 ) => {
   const possibleInput = {
     tagId: partialInput?.tagId ?? faker.string.uuid(),
-    userId: partialInput?.userId ?? faker.string.uuid(),
+    oldUserId: partialInput?.oldUserId ?? faker.string.uuid(),
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertUsersToTagsSchema>;
   return insertOne(
@@ -269,7 +269,7 @@ export const insertUserToCommunity = async (
   partialInput: z.infer<typeof insertUsersToCommunitiesSchema>,
 ) => {
   const possibleInput = {
-    userId: partialInput?.userId,
+    oldUserId: partialInput?.oldUserId,
     communityId: partialInput?.communityId,
     role: partialInput?.role,
     ...CRUDDates(partialInput),
@@ -286,7 +286,7 @@ export const insertUserToEvent = async (
   partialInput: z.infer<typeof insertEventsToUsersSchema>,
 ) => {
   const possibleInput = {
-    userId: partialInput?.userId,
+    oldUserId: partialInput?.oldUserId,
     eventId: partialInput?.eventId,
     role: partialInput?.role,
     ...CRUDDates(partialInput),
@@ -395,7 +395,7 @@ export const insertTicket = async (
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
-    userId: partialInput?.userId,
+    oldUserId: partialInput?.oldUserId,
     ticketTemplateId:
       partialInput?.ticketTemplateId ?? (await insertTicketTemplate()).id,
     approvalStatus:
@@ -485,7 +485,7 @@ export const insertWorkEmail = async (
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
-    userId: partialInput?.userId ?? faker.string.uuid(),
+    oldUserId: partialInput?.oldUserId ?? faker.string.uuid(),
     workEmail: partialInput?.workEmail ?? faker.internet.email(),
     confirmationTokenId: partialInput?.confirmationTokenId,
     confirmationDate: partialInput?.confirmationDate,
@@ -506,7 +506,7 @@ export const insertConfirmationToken = async (
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
-    userId: partialInput?.userId ?? faker.string.uuid(),
+    oldUserId: partialInput?.oldUserId ?? faker.string.uuid(),
     token: partialInput?.token ?? faker.string.uuid(),
     status: partialInput?.status,
     source: partialInput?.source ?? "onboarding",
@@ -602,7 +602,7 @@ export const insertSalary = async (
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
-    userId: partialInput?.userId ?? faker.string.uuid(),
+    oldUserId: partialInput?.oldUserId ?? faker.string.uuid(),
     amount: partialInput?.amount ?? faker.number.int(),
     countryCode: partialInput?.countryCode ?? faker.address.countryCode(),
     typeOfEmployment:

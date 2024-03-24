@@ -31,13 +31,13 @@ describe("Salary creation", () => {
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
-        userId: user.oldId,
+        oldUserId: user.oldId,
         status: "pending",
         sourceId: "123",
       });
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
-        userId: user.oldId,
+        oldUserId: user.oldId,
       });
 
       const StartWorkEmailValidationResponse =
@@ -86,13 +86,13 @@ describe("Salary creation", () => {
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
-        userId: user.oldId,
+        oldUserId: user.oldId,
         status: "pending",
         sourceId: "123",
       });
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
-        userId: user.oldId,
+        oldUserId: user.oldId,
       });
 
       const StartWorkEmailValidationResponse = await executeGraphqlOperation<
@@ -136,13 +136,13 @@ describe("Salary creation", () => {
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
-        userId: user2.oldId,
+        oldUserId: user2.oldId,
         status: "pending",
         sourceId: "123",
       });
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
-        userId: user.oldId,
+        oldUserId: user.oldId,
       });
 
       const StartWorkEmailValidationResponse =
@@ -190,13 +190,13 @@ describe("Salary creation", () => {
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
-        userId: user2.oldId,
+        oldUserId: user2.oldId,
         status: "pending",
         sourceId: "123",
       });
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
-        userId: user.oldId,
+        oldUserId: user.oldId,
       });
 
       const StartWorkEmailValidationResponse =
@@ -243,13 +243,13 @@ describe("Salary creation", () => {
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
-        userId: user.oldId,
+        oldUserId: user.oldId,
         status: "confirmed",
         sourceId: "123",
       });
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
-        userId: user.oldId,
+        oldUserId: user.oldId,
       });
 
       const StartWorkEmailValidationResponse =
@@ -296,13 +296,13 @@ describe("Salary creation", () => {
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
-        userId: user.oldId,
+        oldUserId: user.oldId,
         status: "rejected",
         sourceId: "123",
       });
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
-        userId: user.oldId,
+        oldUserId: user.oldId,
       });
 
       const StartWorkEmailValidationResponse =
@@ -349,13 +349,13 @@ describe("Salary creation", () => {
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24),
-        userId: user.oldId,
+        oldUserId: user.oldId,
         status: "expired",
         sourceId: "123",
       });
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
-        userId: user.oldId,
+        oldUserId: user.oldId,
       });
 
       const StartWorkEmailValidationResponse =
@@ -402,13 +402,13 @@ describe("Salary creation", () => {
       const insertedConfirmationToken = await insertConfirmationToken({
         source: "onboarding",
         validUntil: new Date(Date.now() - 1000 * 60 * 60 * 24),
-        userId: user.oldId,
+        oldUserId: user.oldId,
         status: "expired",
         sourceId: "123",
       });
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
-        userId: user.oldId,
+        oldUserId: user.oldId,
       });
 
       const StartWorkEmailValidationResponse =

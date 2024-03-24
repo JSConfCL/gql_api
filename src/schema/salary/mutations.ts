@@ -147,7 +147,7 @@ builder.mutationFields((t) => ({
           where: (c, { eq, and, inArray }) =>
             and(
               eq(c.token, confirmationToken),
-              eq(c.userId, userId),
+              eq(c.oldUserId, userId),
               inArray(c.status, ["pending"]),
               inArray(c.source, ["onboarding", "salary_submission"]),
             ),
@@ -226,7 +226,7 @@ builder.mutationFields((t) => ({
       }
       if (
         new Date(foundConfirmationToken.validUntil) <= new Date() ||
-        foundConfirmationToken.userId !== USER.oldId
+        foundConfirmationToken.oldUserId !== USER.oldId
       ) {
         throw new Error("Invalid token");
       }

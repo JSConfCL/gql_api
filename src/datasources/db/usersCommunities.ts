@@ -10,7 +10,7 @@ const usersToCommunitiesRoleEnum = ["admin", "member", "collaborator"] as const;
 // USERS—COMMUNITIES—TABLE
 export const usersToCommunitiesSchema = pgTable("users_communities", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
-  userId: text("user_id").references(() => usersSchema.oldId),
+  oldUserId: text("old_user_id").references(() => usersSchema.oldId),
   communityId: uuid("community_id").references(() => communitySchema.id),
   role: text("role", { enum: usersToCommunitiesRoleEnum }).default("member"),
   ...createdAndUpdatedAtFields,
@@ -24,7 +24,7 @@ export const usersToCommunitiesRelations = relations(
       references: [communitySchema.id],
     }),
     user: one(usersSchema, {
-      fields: [usersToCommunitiesSchema.userId],
+      fields: [usersToCommunitiesSchema.oldUserId],
       references: [usersSchema.oldId],
     }),
   }),

@@ -28,12 +28,12 @@ describe("User update role in communities", () => {
     });
     await insertUserToCommunity({
       communityId: community1.id,
-      userId: user1.oldId,
+      oldUserId: user1.oldId,
       role: "member",
     });
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.oldId,
+      oldUserId: user1.oldId,
       role: "member",
     });
 
@@ -68,12 +68,12 @@ describe("User update role in communities", () => {
     });
     await insertUserToCommunity({
       communityId: community1.id,
-      userId: user1.oldId,
+      oldUserId: user1.oldId,
       role: "collaborator",
     });
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.oldId,
+      oldUserId: user1.oldId,
       role: "member",
     });
 
@@ -110,12 +110,12 @@ describe("User update role in communities", () => {
     });
     await insertUserToCommunity({
       communityId: community1.id,
-      userId: user1.oldId,
+      oldUserId: user1.oldId,
       role: "member",
     });
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.oldId,
+      oldUserId: user1.oldId,
       role: "member",
     });
 
@@ -150,12 +150,12 @@ describe("User update role in communities", () => {
     });
     await insertUserToCommunity({
       communityId: community1.id,
-      userId: user1.oldId,
+      oldUserId: user1.oldId,
       role: "admin",
     });
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.oldId,
+      oldUserId: user1.oldId,
       role: "member",
     });
 
