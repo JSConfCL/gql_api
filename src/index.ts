@@ -270,8 +270,6 @@ export const yoga = createYoga<Env>({
     console.log("Getting user");
     const USER = await getUser({
       request,
-      CLERK_ISSUER_ID,
-      CLERK_PEM_PUBLIC_KEY,
       SUPABASE_JWT_DECODER,
       DB,
     });
