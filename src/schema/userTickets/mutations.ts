@@ -67,9 +67,7 @@ builder.mutationFields((t) => ({
         if (!ctx.USER) {
           throw new Error("User not found");
         }
-        if (
-          !(await canCancelUserTicket(ctx.USER?.oldId, userTicketId, ctx.DB))
-        ) {
+        if (!(await canCancelUserTicket(ctx.USER?.id, userTicketId, ctx.DB))) {
           throw new Error("You can't cancel this ticket");
         }
         let ticket = await ctx.DB.query.userTicketsSchema.findFirst({
@@ -113,7 +111,7 @@ builder.mutationFields((t) => ({
         if (!USER) {
           throw new Error("User not found");
         }
-        if (!(await canApproveTicket(USER.oldId, userTicketId, DB))) {
+        if (!(await canApproveTicket(USER.id, userTicketId, DB))) {
           throw new Error("Unauthorized!");
         }
         const ticket = await DB.query.userTicketsSchema.findFirst({
@@ -168,7 +166,7 @@ builder.mutationFields((t) => ({
         if (!USER) {
           throw new Error("User not found");
         }
-        if (!(await canRedeemUserTicket(USER?.oldId, userTicketId, DB))) {
+        if (!(await canRedeemUserTicket(USER?.id, userTicketId, DB))) {
           throw new Error("You can't redeem this ticket");
         }
 
@@ -303,7 +301,7 @@ builder.mutationFields((t) => ({
               // If no errors were thrown, we can proceed to reserve the tickets.
               const newTickets = new Array(item.quantity).fill(false).map(() =>
                 insertUserTicketsSchema.parse({
-                  userId: USER.oldId,
+                  userId: USER.id,
                   ticketTemplateId: ticketTemplate.id,
                   paymentStatus: requiresPayment ? "unpaid" : "not_required",
                   approvalStatus: requiresApproval ? "pending" : "approved",

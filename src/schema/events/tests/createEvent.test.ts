@@ -33,7 +33,7 @@ describe("Event", () => {
       const community = await insertCommunity();
       await insertUserToCommunity({
         communityId: community.id,
-        oldUserId: user1.oldId,
+        userId: user1.id,
         role: "admin",
       });
       const response = await executeGraphqlOperationAsUser<
@@ -112,7 +112,7 @@ describe("Event", () => {
       const community = await insertCommunity();
       await insertUserToCommunity({
         communityId: community.id,
-        oldUserId: user1.oldId,
+        userId: user1.id,
         role: "member",
       });
       const response = await executeGraphqlOperationAsUser<
@@ -153,7 +153,7 @@ describe("Event", () => {
       const community = await insertCommunity();
       await insertUserToCommunity({
         communityId: community.id,
-        oldUserId: user1.oldId,
+        userId: user1.id,
         role: "collaborator",
       });
       const response = await executeGraphqlOperationAsUser<

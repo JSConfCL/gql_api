@@ -25,7 +25,7 @@ describe("test the work email query", () => {
 
     const insertedWorkEmail = await insertWorkEmail({
       companyId: company.id,
-      oldUserId: user.oldId,
+      userId: user.id,
       workEmail: email,
     });
 
@@ -59,7 +59,7 @@ describe("test the work email query", () => {
 
     const insertedWorkEmail = await insertWorkEmail({
       companyId: company.id,
-      oldUserId: user.oldId,
+      userId: user.id,
       workEmail: email,
     });
 
@@ -87,7 +87,7 @@ describe("test the work email query", () => {
 
     const insertedWorkEmail = await insertWorkEmail({
       companyId: company.id,
-      oldUserId: user.oldId,
+      userId: user.id,
       workEmail: email,
     });
 
@@ -116,7 +116,7 @@ describe("test the work email query", () => {
 
     await insertWorkEmail({
       companyId: company.id,
-      oldUserId: user.oldId,
+      userId: user.id,
       workEmail: email,
     });
 

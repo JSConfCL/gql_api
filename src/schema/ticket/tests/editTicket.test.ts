@@ -35,7 +35,7 @@ describe("User", () => {
     });
     await insertUserToCommunity({
       communityId: community1.id,
-      oldUserId: user1.oldId,
+      userId: user1.id,
       role: "member",
     });
     const ticket = await insertTicketTemplate({
@@ -106,7 +106,7 @@ describe("User", () => {
     });
     await insertUserToCommunity({
       communityId: community1.id,
-      oldUserId: user1.oldId,
+      userId: user1.id,
       role: "member",
     });
     const ticket = await insertTicketTemplate({
@@ -155,7 +155,7 @@ describe("User", () => {
     });
     await insertUserToCommunity({
       communityId: community1.id,
-      oldUserId: user1.oldId,
+      userId: user1.id,
       role: "admin",
     });
     const ticket = await insertTicketTemplate({
@@ -204,7 +204,7 @@ describe("User", () => {
     });
     await insertUserToCommunity({
       communityId: community1.id,
-      oldUserId: user1.oldId,
+      userId: user1.id,
       role: "member",
     });
     const ticket = await insertTicketTemplate({

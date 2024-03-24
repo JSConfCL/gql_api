@@ -32,7 +32,7 @@ builder.queryFields((t) => ({
         throw new Error("User not found");
       }
       const user = await DB.query.usersSchema.findFirst({
-        where: (u, { eq }) => eq(u.oldId, USER.oldId),
+        where: (u, { eq }) => eq(u.id, USER.id),
       });
       return selectUsersSchema.parse(user);
     },

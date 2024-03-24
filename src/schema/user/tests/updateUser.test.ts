@@ -26,7 +26,7 @@ describe("User", () => {
         document: UpdateUser,
         variables: {
           input: {
-            id: user1.oldId,
+            id: user1.id,
             ...fakeInput,
           },
         },
@@ -35,9 +35,9 @@ describe("User", () => {
     );
 
     assert.equal(response.errors, undefined);
-    assert.equal(response.data?.updateUser?.id, user1.oldId);
+    assert.equal(response.data?.updateUser?.id, user1.id);
     assert.deepEqual(response.data?.updateUser, {
-      id: user1.oldId,
+      id: user1.id,
       ...fakeInput,
     });
   });
@@ -54,7 +54,7 @@ describe("User", () => {
         document: UpdateUser,
         variables: {
           input: {
-            id: user1.oldId,
+            id: user1.id,
             ...fakeInput,
           },
         },
@@ -63,9 +63,9 @@ describe("User", () => {
     );
 
     assert.equal(response.errors, undefined);
-    assert.equal(response.data?.updateUser?.id, user1.oldId);
+    assert.equal(response.data?.updateUser?.id, user1.id);
     assert.deepEqual(response.data?.updateUser, {
-      id: user1.oldId,
+      id: user1.id,
       lastName: user1.lastName,
       bio: user1.bio,
       username: user1.username,
@@ -86,7 +86,7 @@ describe("User", () => {
         document: UpdateUser,
         variables: {
           input: {
-            id: user1.oldId,
+            id: user1.id,
             ...fakeInput,
           },
         },

@@ -50,7 +50,7 @@ builder.mutationFields((t) => ({
         if (!ctx.USER) {
           throw new Error("User not found");
         }
-        if (!isSameUser(id, ctx.USER.oldId)) {
+        if (!isSameUser(id, ctx.USER.id)) {
           throw new Error("Not authorized");
         }
         const updateFields = {} as {
@@ -75,7 +75,7 @@ builder.mutationFields((t) => ({
         const user = (
           await ctx.DB.update(usersSchema)
             .set(updateFields)
-            .where(eq(usersSchema.oldId, id))
+            .where(eq(usersSchema.id, id))
             .returning()
         )?.[0];
 
@@ -105,7 +105,7 @@ builder.mutationFields((t) => ({
         }
         if (
           !(await canUpdateUserRoleInCommunity(
-            ctx.USER?.oldId,
+            ctx.USER?.id,
             communityId,
             ctx.DB,
           ))
@@ -116,10 +116,10 @@ builder.mutationFields((t) => ({
           .set({
             role: role as UserRoleCommunity,
           })
-          .where(eq(usersToCommunitiesSchema.oldUserId, userId));
+          .where(eq(usersToCommunitiesSchema.userId, userId));
 
         const user = await ctx.DB.query.usersSchema.findFirst({
-          where: (u, { eq }) => eq(u.oldId, userId),
+          where: (u, { eq }) => eq(u.id, userId),
         });
 
         return selectUsersSchema.parse(user);

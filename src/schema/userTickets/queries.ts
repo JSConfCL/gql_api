@@ -81,7 +81,7 @@ builder.queryFields((t) => ({
         wheres.push(eq(userTicketsSchema.redemptionStatus, redemptionStatus));
       }
       if (ctx.USER) {
-        wheres.push(eq(userTicketsSchema.oldUserId, ctx.USER.oldId));
+        wheres.push(eq(userTicketsSchema.userId, ctx.USER.id));
       }
       const myTickets = await ctx.DB.query.userTicketsSchema.findMany({
         where: (_, { and }) => and(...wheres),

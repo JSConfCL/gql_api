@@ -28,12 +28,12 @@ describe("User update role in communities", () => {
     });
     await insertUserToCommunity({
       communityId: community1.id,
-      oldUserId: user1.oldId,
+      userId: user1.id,
       role: "member",
     });
     await insertUserToEvent({
       eventId: event1.id,
-      oldUserId: user1.oldId,
+      userId: user1.id,
       role: "member",
     });
 
@@ -45,7 +45,7 @@ describe("User update role in communities", () => {
         document: UpdateUserRoleInCommunity,
         variables: {
           input: {
-            userId: user2.oldId,
+            userId: user2.id,
             communityId: community1.id,
             role: "admin",
           },
@@ -68,12 +68,12 @@ describe("User update role in communities", () => {
     });
     await insertUserToCommunity({
       communityId: community1.id,
-      oldUserId: user1.oldId,
+      userId: user1.id,
       role: "collaborator",
     });
     await insertUserToEvent({
       eventId: event1.id,
-      oldUserId: user1.oldId,
+      userId: user1.id,
       role: "member",
     });
 
@@ -85,7 +85,7 @@ describe("User update role in communities", () => {
         document: UpdateUserRoleInCommunity,
         variables: {
           input: {
-            userId: user2.oldId,
+            userId: user2.id,
             communityId: community1.id,
             role: "admin",
           },
@@ -110,12 +110,12 @@ describe("User update role in communities", () => {
     });
     await insertUserToCommunity({
       communityId: community1.id,
-      oldUserId: user1.oldId,
+      userId: user1.id,
       role: "member",
     });
     await insertUserToEvent({
       eventId: event1.id,
-      oldUserId: user1.oldId,
+      userId: user1.id,
       role: "member",
     });
 
@@ -127,7 +127,7 @@ describe("User update role in communities", () => {
         document: UpdateUserRoleInCommunity,
         variables: {
           input: {
-            userId: user2.oldId,
+            userId: user2.id,
             communityId: community1.id,
             role: "admin",
           },
@@ -137,7 +137,7 @@ describe("User update role in communities", () => {
     );
 
     assert.equal(response.errors, undefined);
-    assert.equal(response.data?.updateUserRoleInCommunity?.id, user2.oldId);
+    assert.equal(response.data?.updateUserRoleInCommunity?.id, user2.id);
   });
   it("Should update a user role in community if user is a community admin", async () => {
     const user1 = await insertUser();
@@ -150,12 +150,12 @@ describe("User update role in communities", () => {
     });
     await insertUserToCommunity({
       communityId: community1.id,
-      oldUserId: user1.oldId,
+      userId: user1.id,
       role: "admin",
     });
     await insertUserToEvent({
       eventId: event1.id,
-      oldUserId: user1.oldId,
+      userId: user1.id,
       role: "member",
     });
 
@@ -167,7 +167,7 @@ describe("User update role in communities", () => {
         document: UpdateUserRoleInCommunity,
         variables: {
           input: {
-            userId: user2.oldId,
+            userId: user2.id,
             communityId: community1.id,
             role: "admin",
           },
@@ -177,6 +177,6 @@ describe("User update role in communities", () => {
     );
 
     assert.equal(response.errors, undefined);
-    assert.equal(response.data?.updateUserRoleInCommunity?.id, user2.oldId);
+    assert.equal(response.data?.updateUserRoleInCommunity?.id, user2.id);
   });
 });

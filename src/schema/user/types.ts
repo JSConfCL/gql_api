@@ -18,7 +18,7 @@ builder.objectType(UserRef, {
       type: [CommunityRef],
       resolve: async (root, args, ctx) => {
         const communities = await ctx.DB.query.usersSchema.findFirst({
-          where: (u, { eq }) => eq(u.oldId, root.oldId),
+          where: (u, { eq }) => eq(u.id, root.id),
           with: {
             usersToCommunities: {
               with: {

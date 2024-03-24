@@ -140,14 +140,14 @@ builder.mutationFields((t) => ({
         genderOtherText,
       } = input;
 
-      const userId = USER.oldId;
+      const userId = USER.id;
 
       const foundConfirmationToken =
         await DB.query.confirmationTokenSchema.findFirst({
           where: (c, { eq, and, inArray }) =>
             and(
               eq(c.token, confirmationToken),
-              eq(c.oldUserId, userId),
+              eq(c.userId, userId),
               inArray(c.status, ["pending"]),
               inArray(c.source, ["onboarding", "salary_submission"]),
             ),
@@ -195,7 +195,7 @@ builder.mutationFields((t) => ({
       if (!USER) {
         throw new Error("User is required");
       }
-      const userId = USER.oldId;
+      const userId = USER.id;
 
       const {
         salaryId,
@@ -226,7 +226,7 @@ builder.mutationFields((t) => ({
       }
       if (
         new Date(foundConfirmationToken.validUntil) <= new Date() ||
-        foundConfirmationToken.oldUserId !== USER.oldId
+        foundConfirmationToken.userId !== USER.id
       ) {
         throw new Error("Invalid token");
       }

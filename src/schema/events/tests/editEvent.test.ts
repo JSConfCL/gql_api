@@ -31,7 +31,7 @@ describe("Event", () => {
       });
       await insertUserToCommunity({
         communityId: community.id,
-        oldUserId: user1.oldId,
+        userId: user1.id,
         role: "admin",
       });
       await insertEventToCommunity({
@@ -91,7 +91,7 @@ describe("Event", () => {
       });
       await insertUserToCommunity({
         communityId: community.id,
-        oldUserId: user1.oldId,
+        userId: user1.id,
         role: "admin",
       });
       await insertEventToCommunity({
@@ -150,7 +150,7 @@ describe("Event", () => {
       });
       await insertUserToCommunity({
         communityId: community.id,
-        oldUserId: user1.oldId,
+        userId: user1.id,
         role: "member",
       });
       await insertEventToCommunity({
@@ -204,7 +204,7 @@ describe("Event", () => {
       });
       await insertUserToCommunity({
         communityId: community.id,
-        oldUserId: user1.oldId,
+        userId: user1.id,
         role: "collaborator",
       });
       await insertEventToCommunity({
@@ -260,7 +260,7 @@ describe("Event", () => {
     });
     await insertUserToCommunity({
       communityId: community.id,
-      oldUserId: user1.oldId,
+      userId: user1.id,
       role: "admin",
     });
     await insertEventToCommunity({

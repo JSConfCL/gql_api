@@ -29,11 +29,11 @@ describe("Search users by tag", () => {
 
     const userTag = await insertUserTag({
       tagId: tag.id,
-      oldUserId: user.oldId,
+      userId: user.id,
     });
     const user2Tag = await insertUserTag({
       tagId: tag2.id,
-      oldUserId: user2.oldId,
+      userId: user2.id,
     });
     const response = await executeGraphqlOperationAsSuperAdmin<
       UserSearchQuery,
@@ -58,11 +58,11 @@ describe("Search users by tag", () => {
     });
     const userTag = await insertUserTag({
       tagId: tag.id,
-      oldUserId: user.oldId,
+      userId: user.id,
     });
     const user2Tag = await insertUserTag({
       tagId: tag.id,
-      oldUserId: user2.oldId,
+      userId: user2.id,
     });
     const response = await executeGraphqlOperationAsSuperAdmin<
       UserSearchQuery,
@@ -91,11 +91,11 @@ describe("Search users by tag", () => {
 
     const userTag = await insertUserTag({
       tagId: tag.id,
-      oldUserId: user.oldId,
+      userId: user.id,
     });
     const user2Tag = await insertUserTag({
       tagId: tag2.id,
-      oldUserId: user2.oldId,
+      userId: user2.id,
     });
     const response = await executeGraphqlOperationAsSuperAdmin<
       UserSearchQuery,
