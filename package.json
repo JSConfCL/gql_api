@@ -90,7 +90,7 @@
     "@pothos/plugin-authz": "^3.5.8",
     "@pothos/plugin-tracing": "^0.5.8",
     "@sanity/client": "^6.7.0",
-    "@tsndr/cloudflare-worker-jwt": "^2.3.2",
+    "@tsndr/cloudflare-worker-jwt": "^2.5.3",
     "@types/react": "^18.2.22",
     "cookie": "^0.5.0",
     "dbdocs": "^0.8.2",

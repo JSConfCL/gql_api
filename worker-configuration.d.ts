@@ -4,6 +4,7 @@ export interface Env {
   NEON_URL: string | undefined;
   OTEL_SERVICE_NAME: string;
   CLERK_PEM_PUBLIC_KEY: string | undefined;
+  SUPABASE_JWT_DECODER: string | undefined;
   CLERK_ISSUER_ID: string | undefined;
   ENFORCED_JWT_TOKEN: string | undefined;
   MAIL_QUEUE: Queue;

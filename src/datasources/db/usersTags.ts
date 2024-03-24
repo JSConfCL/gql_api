@@ -19,7 +19,7 @@ export const usersTagsSchema = pgTable(
     tagId: uuid("tag_id")
       .references(() => tagsSchema.id)
       .notNull(),
-    userId: text("user_id")
+    userId: text("old_user_id")
       .references(() => usersSchema.id)
       .notNull(),
     ...createdAndUpdatedAtFields,
