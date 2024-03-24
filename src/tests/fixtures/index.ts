@@ -209,7 +209,7 @@ export const insertUser = async (
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
-    newId: partialInput?.newId ?? faker.string.uuid(),
+    userId: partialInput?.userId ?? faker.string.uuid(),
     externalId: partialInput?.externalId ?? faker.string.uuid(),
     username: partialInput?.username ?? faker.internet.userName(),
     bio: partialInput?.bio,

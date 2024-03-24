@@ -30,7 +30,7 @@ export const getTestDB = async (maybeDatabaseName?: string) => {
     console.log("Retornando BDD previa");
     return db;
   }
-  console.log("🆕 Creando una nueva BDD");
+  console.log(`🆕 Creando una nueva BDD: ${databaseName}`);
   await ensureDBIsClean(databaseName);
   const migrationClient = postgres(`${dbUrl}/${databaseName}`, { max: 1 });
   client = migrationClient;
