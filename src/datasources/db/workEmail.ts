@@ -13,7 +13,7 @@ import { createdAndUpdatedAtFields, statusEnumOptions } from "./shared";
 export const workEmailSchema = pgTable("work_email", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   userId: text("user_id")
-    .references(() => usersSchema.id)
+    .references(() => usersSchema.oldId)
     .notNull(),
   workEmail: text("work_email").notNull(),
   confirmationTokenId: uuid("confirmation_token_id").references(
@@ -38,7 +38,7 @@ export const workEmailRelations = relations(workEmailSchema, ({ one }) => ({
   }),
   user: one(usersSchema, {
     fields: [workEmailSchema.userId],
-    references: [usersSchema.id],
+    references: [usersSchema.oldId],
   }),
 }));
 

@@ -117,12 +117,12 @@ describe("Event", () => {
     const user2 = await insertUser();
     await insertUserToCommunity({
       communityId: community1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "admin",
     });
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "admin",
     });
     const ticketTemplate1 = await insertTicketTemplate({
@@ -130,11 +130,11 @@ describe("Event", () => {
     });
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
     });
     const ticket2 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user2.id,
+      userId: user2.oldId,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -164,7 +164,7 @@ describe("Event", () => {
       },
       users: [
         {
-          id: user1.id,
+          id: user1.oldId,
         },
       ],
       tags: [],
@@ -489,12 +489,12 @@ describe("Event tickets filter", () => {
     const user1 = await insertUser();
     await insertUserToCommunity({
       communityId: community1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "admin",
     });
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "admin",
     });
     const ticketTemplate1 = await insertTicketTemplate({
@@ -502,11 +502,11 @@ describe("Event tickets filter", () => {
     });
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
     });
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -539,7 +539,7 @@ describe("Event tickets filter", () => {
       tags: [],
       users: [
         {
-          id: user1.id,
+          id: user1.oldId,
         },
       ],
       usersTickets: [
@@ -564,12 +564,12 @@ describe("Event tickets filter", () => {
     const user1 = await insertUser();
     await insertUserToCommunity({
       communityId: community1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "admin",
     });
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "admin",
     });
     const ticketTemplate1 = await insertTicketTemplate({
@@ -577,12 +577,12 @@ describe("Event tickets filter", () => {
     });
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       approvalStatus: TicketApprovalStatus.Approved,
     });
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       approvalStatus: TicketApprovalStatus.Pending,
     });
     const response = await executeGraphqlOperationAsUser<
@@ -616,7 +616,7 @@ describe("Event tickets filter", () => {
       tags: [],
       users: [
         {
-          id: user1.id,
+          id: user1.oldId,
         },
       ],
       usersTickets: [
@@ -641,12 +641,12 @@ describe("Event tickets filter", () => {
     const user1 = await insertUser();
     await insertUserToCommunity({
       communityId: community1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "admin",
     });
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "admin",
     });
     const ticketTemplate1 = await insertTicketTemplate({
@@ -654,12 +654,12 @@ describe("Event tickets filter", () => {
     });
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       paymentStatus: TicketPaymentStatus.Paid,
     });
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       paymentStatus: TicketPaymentStatus.Unpaid,
     });
     const response = await executeGraphqlOperationAsUser<
@@ -693,7 +693,7 @@ describe("Event tickets filter", () => {
       tags: [],
       users: [
         {
-          id: user1.id,
+          id: user1.oldId,
         },
       ],
       usersTickets: [
@@ -718,12 +718,12 @@ describe("Event tickets filter", () => {
     const user1 = await insertUser();
     await insertUserToCommunity({
       communityId: community1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "admin",
     });
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "admin",
     });
     const ticketTemplate1 = await insertTicketTemplate({
@@ -731,12 +731,12 @@ describe("Event tickets filter", () => {
     });
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       redemptionStatus: TicketRedemptionStatus.Redeemed,
     });
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       redemptionStatus: TicketRedemptionStatus.Pending,
     });
     const response = await executeGraphqlOperationAsUser<
@@ -770,7 +770,7 @@ describe("Event tickets filter", () => {
       tags: [],
       users: [
         {
-          id: user1.id,
+          id: user1.oldId,
         },
       ],
       usersTickets: [
@@ -795,12 +795,12 @@ describe("Event tickets filter", () => {
     const user1 = await insertUser();
     await insertUserToCommunity({
       communityId: community1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "admin",
     });
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "admin",
     });
 
@@ -809,12 +809,12 @@ describe("Event tickets filter", () => {
     });
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       status: TicketStatus.Active,
     });
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       status: TicketStatus.Inactive,
     });
 
@@ -851,7 +851,7 @@ describe("Event tickets filter", () => {
       tags: [],
       users: [
         {
-          id: user1.id,
+          id: user1.oldId,
         },
       ],
       usersTickets: [

@@ -16,7 +16,7 @@ builder.queryFields((t) => ({
         throw new Error("No user present");
       }
       const workEmail = await DB.query.workEmailSchema.findMany({
-        where: (wes, { eq }) => eq(wes.userId, USER.id),
+        where: (wes, { eq }) => eq(wes.userId, USER.oldId),
       });
       return workEmail.map((we) => selectWorkEmailSchema.parse(we));
     },
@@ -34,7 +34,7 @@ builder.queryFields((t) => ({
       if (!USER) {
         throw new Error("No user present");
       }
-      const userId = USER.id;
+      const userId = USER.oldId;
       const workEmail = await DB.query.workEmailSchema.findFirst({
         where: (wes, { and, ilike }) =>
           and(

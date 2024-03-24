@@ -66,7 +66,7 @@ builder.mutationFields((t) => ({
         where: (wes, { ilike, and, eq }) =>
           and(
             ilike(wes.workEmail, email.toLowerCase()),
-            eq(wes.userId, USER.id),
+            eq(wes.userId, USER.oldId),
           ),
         with: {
           confirmationToken: true,
@@ -103,7 +103,7 @@ builder.mutationFields((t) => ({
         const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
           source: "onboarding",
           sourceId: workEmail.id,
-          userId: USER.id,
+          userId: USER.oldId,
           // by default, the token is valid for 1 hour
           validUntil: new Date(Date.now() + 1000 * 60 * 60),
         });
@@ -125,7 +125,7 @@ builder.mutationFields((t) => ({
 
         await enqueueEmail(MAIL_QUEUE, {
           code: insertedToken.token,
-          userId: USER.id,
+          userId: USER.oldId,
           to: email.toLowerCase(),
         });
         return selectWorkEmailSchema.parse(updatedWorkEmail);
@@ -134,7 +134,7 @@ builder.mutationFields((t) => ({
           "There is no validation request for this work email. Creating the email and the token",
         );
         const insertWorkEmail = insertWorkEmailSchema.parse({
-          userId: USER.id,
+          userId: USER.oldId,
           workEmail: email.toLowerCase(),
           companyId,
         });
@@ -147,7 +147,7 @@ builder.mutationFields((t) => ({
         const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
           source: "onboarding",
           sourceId: insertedWorkEmail.id,
-          userId: USER.id,
+          userId: USER.oldId,
           // by default, the token is valid for 1 hour
           validUntil: new Date(Date.now() + 1000 * 60 * 60),
         });
@@ -168,7 +168,7 @@ builder.mutationFields((t) => ({
 
         console.log("Enqueuing the email");
         await enqueueEmail(MAIL_QUEUE, {
-          userId: USER.id,
+          userId: USER.oldId,
           code: insertedToken.token,
           to: email.toLowerCase(),
         });
@@ -210,7 +210,7 @@ builder.mutationFields((t) => ({
 
       if (
         new Date(foundConfirmationToken.validUntil) <= new Date() ||
-        foundConfirmationToken.userId !== USER.id
+        foundConfirmationToken.userId !== USER.oldId
       ) {
         throw new Error("Invalid token");
       }
@@ -218,7 +218,7 @@ builder.mutationFields((t) => ({
         where: (wes, { eq, and }) =>
           and(
             eq(wes.confirmationTokenId, foundConfirmationToken.id),
-            eq(wes.userId, USER.id),
+            eq(wes.userId, USER.oldId),
           ),
       });
       if (possibleWorkSchema) {

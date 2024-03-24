@@ -30,12 +30,12 @@ describe("Redeem user ticket", () => {
       const user1 = await insertUser();
       await insertUserToCommunity({
         communityId: community1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         role: "admin",
       });
       await insertUserToEvent({
         eventId: event1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         role: "admin",
       });
       const ticketTemplate1 = await insertTicketTemplate({
@@ -43,7 +43,7 @@ describe("Redeem user ticket", () => {
       });
       const ticket1 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         status: "active",
       });
       const response = await executeGraphqlOperationAsUser<
@@ -75,12 +75,12 @@ describe("Redeem user ticket", () => {
       const user1 = await insertUser();
       await insertUserToCommunity({
         communityId: community1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         role: "collaborator",
       });
       await insertUserToEvent({
         eventId: event1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         role: "member",
       });
       const ticketTemplate1 = await insertTicketTemplate({
@@ -88,7 +88,7 @@ describe("Redeem user ticket", () => {
       });
       const ticket1 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         status: "active",
       });
       const response = await executeGraphqlOperationAsUser<
@@ -122,12 +122,12 @@ describe("Redeem user ticket", () => {
       });
       await insertUserToCommunity({
         communityId: community1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         role: "member",
       });
       await insertUserToEvent({
         eventId: event1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         role: "member",
       });
       const ticketTemplate1 = await insertTicketTemplate({
@@ -135,7 +135,7 @@ describe("Redeem user ticket", () => {
       });
       const ticket1 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         status: "active",
       });
       const response = await executeGraphqlOperationAsUser<
@@ -167,12 +167,12 @@ describe("Redeem user ticket", () => {
       const user1 = await insertUser();
       await insertUserToCommunity({
         communityId: community1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         role: "member",
       });
       await insertUserToEvent({
         eventId: event1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         role: "admin",
       });
       const ticketTemplate1 = await insertTicketTemplate({
@@ -180,7 +180,7 @@ describe("Redeem user ticket", () => {
       });
       const ticket1 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         status: "active",
       });
       const response = await executeGraphqlOperationAsUser<
@@ -212,12 +212,12 @@ describe("Redeem user ticket", () => {
       const user1 = await insertUser();
       await insertUserToCommunity({
         communityId: community1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         role: "member",
       });
       await insertUserToEvent({
         eventId: event1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         role: "collaborator",
       });
       const ticketTemplate1 = await insertTicketTemplate({
@@ -225,7 +225,7 @@ describe("Redeem user ticket", () => {
       });
       const ticket1 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         status: "active",
       });
       const response = await executeGraphqlOperationAsUser<
@@ -260,12 +260,12 @@ describe("Redeem user ticket", () => {
       const user2 = await insertUser();
       await insertUserToCommunity({
         communityId: community1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         role: "member",
       });
       await insertUserToEvent({
         eventId: event1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         role: "member",
       });
       const ticketTemplate1 = await insertTicketTemplate({
@@ -273,7 +273,7 @@ describe("Redeem user ticket", () => {
       });
       const ticket1 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         status: "active",
       });
       const response = await executeGraphqlOperationAsUser<
@@ -303,12 +303,12 @@ describe("Redeem user ticket", () => {
       const user1 = await insertUser();
       await insertUserToCommunity({
         communityId: community1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         role: "admin",
       });
       await insertUserToEvent({
         eventId: event1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         role: "admin",
       });
       const ticketTemplate1 = await insertTicketTemplate({
@@ -316,7 +316,7 @@ describe("Redeem user ticket", () => {
       });
       const ticket1 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
-        userId: user1.id,
+        userId: user1.oldId,
         status: "inactive",
       });
       const response = await executeGraphqlOperationAsUser<

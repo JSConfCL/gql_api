@@ -57,7 +57,7 @@ export async function canCreateEvent(
   DB: ORM_TYPE,
 ): Promise<boolean> {
   const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
+    where: (u, { eq }) => eq(u.oldId, userId),
   });
   if (user?.isSuperAdmin) {
     return true;
@@ -79,7 +79,7 @@ export async function canEditEvent(
   DB: ORM_TYPE,
 ): Promise<boolean> {
   const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
+    where: (u, { eq }) => eq(u.oldId, userId),
   });
   if (user?.isSuperAdmin) {
     return true;
@@ -112,7 +112,7 @@ export async function canCancelUserTicket(
   DB: ORM_TYPE,
 ): Promise<boolean> {
   const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
+    where: (u, { eq }) => eq(u.oldId, userId),
   });
   if (user?.isSuperAdmin) {
     return true;
@@ -158,7 +158,7 @@ export async function canApproveTicket(
   DB: ORM_TYPE,
 ): Promise<boolean> {
   const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
+    where: (u, { eq }) => eq(u.oldId, userId),
   });
   if (user?.isSuperAdmin) {
     return true;
@@ -192,7 +192,7 @@ export async function canUpdateUserRoleInCommunity(
   DB: ORM_TYPE,
 ): Promise<boolean> {
   const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
+    where: (u, { eq }) => eq(u.oldId, userId),
   });
   if (user?.isSuperAdmin) {
     return true;
@@ -225,7 +225,7 @@ export async function canCreateTicket({
   const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
     where: (utc, { eq, and }) =>
       and(
-        eq(utc.userId, user.id),
+        eq(utc.userId, user.oldId),
         eq(utc.role, "admin"),
         eq(utc.communityId, eventId),
       ),
@@ -240,7 +240,7 @@ export async function canEditTicket(
   DB: ORM_TYPE,
 ): Promise<boolean> {
   const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
+    where: (u, { eq }) => eq(u.oldId, userId),
   });
   if (user?.isSuperAdmin) {
     return true;
@@ -275,7 +275,7 @@ export async function canRedeemUserTicket(
   DB: ORM_TYPE,
 ): Promise<boolean> {
   const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
+    where: (u, { eq }) => eq(u.oldId, userId),
   });
   if (user?.isSuperAdmin) {
     return true;
@@ -339,7 +339,7 @@ export async function canEditCommunity(
   const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
     where: (utc, { eq, and }) =>
       and(
-        eq(utc.userId, user.id),
+        eq(utc.userId, user.oldId),
         eq(utc.role, "admin"),
         eq(utc.communityId, communityId),
       ),

@@ -20,7 +20,7 @@ export const usersTagsSchema = pgTable(
       .references(() => tagsSchema.id)
       .notNull(),
     userId: text("user_id")
-      .references(() => usersSchema.id)
+      .references(() => usersSchema.oldId)
       .notNull(),
     ...createdAndUpdatedAtFields,
   },
@@ -32,7 +32,7 @@ export const usersTagsSchema = pgTable(
 export const usersToTagsRelations = relations(usersTagsSchema, ({ one }) => ({
   user: one(usersSchema, {
     fields: [usersTagsSchema.userId],
-    references: [usersSchema.id],
+    references: [usersSchema.oldId],
   }),
   tag: one(tagsSchema, {
     fields: [usersTagsSchema.tagId],

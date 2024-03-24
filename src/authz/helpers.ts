@@ -15,7 +15,7 @@ const isCommuntiyAdmin = async ({
     where: (utc, { eq, and }) =>
       and(
         eq(utc.communityId, communityId),
-        eq(utc.userId, user.id),
+        eq(utc.userId, user.oldId),
         eq(utc.role, "admin"),
       ),
   });

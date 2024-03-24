@@ -63,7 +63,7 @@ describe("Claim a user ticket", () => {
         await createCommunityEventUserAndTicketTemplate();
       await insertUserToCommunity({
         communityId: community.id,
-        userId: user.id,
+        userId: user.oldId,
         role: "member",
       });
       const response = await executeGraphqlOperationAsUser<
@@ -97,7 +97,7 @@ describe("Claim a user ticket", () => {
         await createCommunityEventUserAndTicketTemplate();
       await insertUserToCommunity({
         communityId: community.id,
-        userId: user.id,
+        userId: user.oldId,
         role: "admin",
       });
       const response = await executeGraphqlOperationAsUser<
@@ -131,7 +131,7 @@ describe("Claim a user ticket", () => {
         await createCommunityEventUserAndTicketTemplate();
       await insertUserToCommunity({
         communityId: community.id,
-        userId: user.id,
+        userId: user.oldId,
         role: "collaborator",
       });
       const response = await executeGraphqlOperationAsUser<
@@ -208,7 +208,7 @@ describe("Claim a user ticket", () => {
         });
       await insertUserToCommunity({
         communityId: community.id,
-        userId: user.id,
+        userId: user.oldId,
         role: "member",
       });
       const response = await executeGraphqlOperationAsUser<
@@ -265,7 +265,7 @@ describe("Claim a user ticket", () => {
         });
       await insertUserToCommunity({
         communityId: community.id,
-        userId: user.id,
+        userId: user.oldId,
         role: "member",
       });
       const response = await executeGraphqlOperationAsUser<
@@ -317,7 +317,7 @@ describe("Claim a user ticket", () => {
         });
       await insertUserToCommunity({
         communityId: community.id,
-        userId: user.id,
+        userId: user.oldId,
         role: "member",
       });
       const response = await executeGraphqlOperationAsUser<

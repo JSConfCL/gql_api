@@ -86,7 +86,7 @@ describe("Should get an event and its tickets", () => {
     const user1 = await insertUser({});
     const community1 = await insertCommunity();
     await insertUserToCommunity({
-      userId: user1.id,
+      userId: user1.oldId,
       communityId: community1.id,
       role: "admin",
     });
@@ -124,7 +124,7 @@ describe("Should get an event and its tickets", () => {
     const user1 = await insertUser({});
     const community1 = await insertCommunity();
     await insertUserToCommunity({
-      userId: user1.id,
+      userId: user1.oldId,
       communityId: community1.id,
       role: "collaborator",
     });

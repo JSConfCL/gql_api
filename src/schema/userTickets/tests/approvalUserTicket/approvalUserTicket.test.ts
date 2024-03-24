@@ -24,7 +24,7 @@ describe("Approval user ticket", () => {
     });
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "member",
     });
     const ticketTemplate1 = await insertTicketTemplate({
@@ -33,7 +33,7 @@ describe("Approval user ticket", () => {
     });
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
     });
     const response = await executeGraphqlOperationAsUser<
       ApprovalUserTicketMutation,
@@ -56,7 +56,7 @@ describe("Approval user ticket", () => {
     const user1 = await insertUser();
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "admin",
     });
     const ticketTemplate1 = await insertTicketTemplate({
@@ -65,7 +65,7 @@ describe("Approval user ticket", () => {
     });
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
     });
     const response = await executeGraphqlOperationAsUser<
       ApprovalUserTicketMutation,
@@ -88,7 +88,7 @@ describe("Approval user ticket", () => {
     const user1 = await insertUser();
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "member",
     });
     const ticketTemplate1 = await insertTicketTemplate({
@@ -97,7 +97,7 @@ describe("Approval user ticket", () => {
     });
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
     });
     const response = await executeGraphqlOperationAsUser<
       ApprovalUserTicketMutation,
@@ -121,7 +121,7 @@ describe("Approval user ticket", () => {
     });
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "member",
     });
     const ticketTemplate1 = await insertTicketTemplate({
@@ -130,7 +130,7 @@ describe("Approval user ticket", () => {
     });
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       approvalStatus: "approved",
     });
     const response = await executeGraphqlOperationAsUser<
@@ -155,7 +155,7 @@ describe("Approval user ticket", () => {
     });
     await insertUserToEvent({
       eventId: event1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "member",
     });
     const ticketTemplate1 = await insertTicketTemplate({
@@ -164,7 +164,7 @@ describe("Approval user ticket", () => {
     });
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
+      userId: user1.oldId,
     });
     const response = await executeGraphqlOperationAsUser<
       ApprovalUserTicketMutation,

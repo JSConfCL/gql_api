@@ -187,7 +187,7 @@ builder.mutationFields((t) => ({
         if (!ctx.USER) {
           throw new GraphQLError("User not found");
         }
-        if (!(await canEditTicket(ctx.USER.id, ticketId, ctx.DB))) {
+        if (!(await canEditTicket(ctx.USER.oldId, ticketId, ctx.DB))) {
           throw new GraphQLError("Not authorized");
         }
 

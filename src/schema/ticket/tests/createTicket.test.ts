@@ -36,7 +36,7 @@ describe("User", () => {
     });
     await insertUserToCommunity({
       communityId: community1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "member",
     });
 
@@ -107,7 +107,7 @@ describe("User", () => {
     });
     await insertUserToCommunity({
       communityId: community1.id,
-      userId: user1.id,
+      userId: user1.oldId,
       role: "member",
     });
 

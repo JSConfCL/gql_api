@@ -22,7 +22,7 @@ export class IsSameUser extends PreExecutionRule {
     if (!USER || !fieldArgs.input.id) {
       return false;
     }
-    return USER.id === fieldArgs.input.id;
+    return USER.oldId === fieldArgs.input.id;
   }
 }
 
@@ -37,7 +37,7 @@ export class IsTicketOwner extends PreExecutionRule {
     }
     const IsTicketOwner = await DB.query.userTicketsSchema.findFirst({
       where: (utc, { eq, and }) =>
-        and(eq(utc.userId, USER.id), eq(utc.id, fieldArgs.input.id)),
+        and(eq(utc.userId, USER.oldId), eq(utc.id, fieldArgs.input.id)),
     });
     return Boolean(IsTicketOwner);
   }
@@ -62,7 +62,7 @@ export class CanCreateEvent extends PreExecutionRule {
     }
     const user = await DB.query.usersToCommunitiesSchema.findFirst({
       where: (utc, { eq, and }) =>
-        and(eq(utc.userId, USER.id), eq(utc.role, "admin")),
+        and(eq(utc.userId, USER.oldId), eq(utc.role, "admin")),
     });
 
     return Boolean(user);
@@ -81,7 +81,7 @@ export class isCommunityCollaborator extends PreExecutionRule {
       with: {
         usersToCommunities: {
           where: (utc, { eq, and }) =>
-            and(eq(utc.userId, USER.id), eq(utc.role, "admin")),
+            and(eq(utc.userId, USER.oldId), eq(utc.role, "admin")),
         },
       },
     });
@@ -119,7 +119,7 @@ export class isEventAdmin extends PreExecutionRule {
       where: (utc, { eq, and }) =>
         and(
           eq(utc.eventId, fieldArgs.input.eventId),
-          eq(utc.userId, USER.id),
+          eq(utc.userId, USER.oldId),
           eq(utc.role, "admin"),
         ),
     });
@@ -156,7 +156,7 @@ export class canApproveTicket extends PreExecutionRule {
       where: (utc, { eq, and }) =>
         and(
           eq(utc.eventId, userTicket?.ticketTemplate.eventId),
-          eq(utc.userId, USER.id),
+          eq(utc.userId, USER.oldId),
           eq(utc.role, "admin"),
         ),
     });

@@ -146,7 +146,7 @@ builder.objectType(EventRef, {
           return [];
         }
 
-        wheres.push(inArray(usersSchema.id, usersToCommunitieIds));
+        wheres.push(inArray(usersSchema.oldId, usersToCommunitieIds));
         const users = await ctx.DB.query.usersSchema.findMany({
           where: (c, { and }) => and(...wheres),
           orderBy(fields, operators) {
@@ -259,7 +259,7 @@ builder.objectType(EventRef, {
         }
         const roleUserEvent = await DB.query.eventsToUsersSchema.findFirst({
           where: (etc, { eq, and }) =>
-            and(eq(etc.eventId, root.id), eq(etc.userId, USER.id)),
+            and(eq(etc.eventId, root.id), eq(etc.userId, USER.oldId)),
         });
         const community = await DB.query.eventsToCommunitiesSchema.findFirst({
           where: (etc, { eq }) => eq(etc.eventId, root.id),
@@ -272,14 +272,14 @@ builder.objectType(EventRef, {
             where: (etc, { eq, and }) =>
               and(
                 eq(etc.communityId, community?.communityId),
-                eq(etc.userId, USER.id),
+                eq(etc.userId, USER.oldId),
               ),
           });
         if (
           !(roleUserEvent?.role && AdminRoles.has(roleUserEvent.role)) ||
           !(roleUserCommunity?.role && AdminRoles.has(roleUserCommunity.role))
         ) {
-          wheres.push(eq(userTicketsSchema.userId, USER.id));
+          wheres.push(eq(userTicketsSchema.userId, USER.oldId));
         }
 
         // TODO: (Felipe) — Esta es otra manera de hacerlo, aun no se cual es

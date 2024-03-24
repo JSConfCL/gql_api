@@ -46,7 +46,7 @@ describe("Edit community", () => {
       await insertUserToCommunity({
         communityId: community1.id,
         role: "admin",
-        userId: user1.id,
+        userId: user1.oldId,
       });
       await executeGraphqlOperationAsUser<
         EditCommunityMutation,

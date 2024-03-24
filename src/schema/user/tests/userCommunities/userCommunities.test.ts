@@ -26,7 +26,7 @@ describe("Users Communities Graphql Tests", () => {
     const user2 = await insertUser();
     const community1 = await insertCommunity();
     await insertUserToCommunity({
-      userId: user.id,
+      userId: user.oldId,
       communityId: community1.id,
       role: "member",
     });
@@ -38,10 +38,10 @@ describe("Users Communities Graphql Tests", () => {
     });
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.users.length, 2);
-    assert.equal(response.data?.users[0].id, user.id);
+    assert.equal(response.data?.users[0].id, user.oldId);
     assert.equal(response.data?.users[0].communities.length, 1);
     assert.equal(response.data?.users[0].communities[0].id, community1.id);
-    assert.equal(response.data?.users[1].id, user2.id);
+    assert.equal(response.data?.users[1].id, user2.oldId);
     assert.equal(response.data?.users[1].communities.length, 0);
   });
 
@@ -51,12 +51,12 @@ describe("Users Communities Graphql Tests", () => {
     const community1 = await insertCommunity();
     const community2 = await insertCommunity();
     await insertUserToCommunity({
-      userId: user1.id,
+      userId: user1.oldId,
       communityId: community1.id,
       role: "member",
     });
     await insertUserToCommunity({
-      userId: user2.id,
+      userId: user2.oldId,
       communityId: community1.id,
     });
     const response = await executeGraphqlOperation<
@@ -72,8 +72,8 @@ describe("Users Communities Graphql Tests", () => {
     assert.equal(response.data?.communities[0].id, community1.id);
     assert.equal(response.data?.communities[1].id, community2.id);
     assert.equal(response.data?.communities[0].users.length, 2);
-    assert.oneOf(user1.id, userIds, "Could not find user");
-    assert.oneOf(user2.id, userIds, "Could not find user");
+    assert.oneOf(user1.oldId, userIds, "Could not find user");
+    assert.oneOf(user2.oldId, userIds, "Could not find user");
   });
 
   it("Should return an empty list of users for a community if no users are in that community", async () => {

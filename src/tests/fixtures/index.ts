@@ -209,16 +209,16 @@ export const insertUser = async (
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
+    oldId: partialInput?.oldId ?? faker.string.uuid(),
     username: partialInput?.username ?? faker.internet.userName(),
+    externalId: partialInput?.externalId ?? faker.string.uuid(),
     bio: partialInput?.bio,
-    email: partialInput?.email,
+    email: partialInput?.email ?? faker.internet.email(),
     name: partialInput?.name,
     isSuperAdmin: partialInput?.isSuperAdmin,
     emailVerified: partialInput?.emailVerified,
     lastName: partialInput?.lastName,
     publicMetadata: partialInput?.publicMetadata,
-    twoFactorEnabled: partialInput?.twoFactorEnabled,
-    unsafeMetadata: partialInput?.unsafeMetadata,
     imageUrl: partialInput?.imageUrl,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertUsersSchema>;
