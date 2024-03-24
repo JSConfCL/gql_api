@@ -29,8 +29,8 @@ export const confirmationTokenSchema = pgTable("confirmation_token", {
   source: text("source", {
     enum: confirmationTokenSourceEnum,
   }).notNull(),
-  userId: text("old_user_id")
-    .references(() => usersSchema.id)
+  userId: uuid("user_id")
+    .references(() => usersSchema.userId)
     .notNull(),
   sourceId: text("source_id").notNull(),
   token: uuid("token").notNull().unique().defaultRandom(),
@@ -47,7 +47,7 @@ export const confirmationTokenRelations = relations(
   ({ one }) => ({
     user: one(usersSchema, {
       fields: [confirmationTokenSchema.userId],
-      references: [usersSchema.id],
+      references: [usersSchema.userId],
     }),
   }),
 );
