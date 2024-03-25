@@ -1,11 +1,15 @@
 mutation ClaimUserTicket($input: TicketClaimInput!) {
   claimUserTicket(input: $input) {
-    ... on UserTicket {
+    __typename
+    ... on PurchaseOrder {
       id
-      status
-      paymentStatus
-      approvalStatus
-      redemptionStatus
+      tickets {
+        id
+        paymentStatus
+        approvalStatus
+        redemptionStatus
+        status
+      }
     }
     ... on RedeemUserTicketError {
       __typename

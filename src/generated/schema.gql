@@ -241,7 +241,7 @@ type Mutation {
   """
   Attempt to claim a certain ammount of tickets
   """
-  claimUserTicket(input: TicketClaimInput!): [RedeemUserTicketResponse!]!
+  claimUserTicket(input: TicketClaimInput!): RedeemUserTicketResponse!
 
   """
   Create an community
@@ -351,6 +351,15 @@ type PublicFinanceEntryRef {
   platform: String!
   transactionAmount: Float!
   transactionDate: DateTime
+}
+
+"""
+Representation of a Purchase Order
+"""
+type PurchaseOrder {
+  id: ID!
+  tickets: [UserTicket!]!
+  totalAmount: Float
 }
 
 input PurchaseOrderInput {
@@ -463,7 +472,7 @@ type RedeemUserTicketError {
   errorMessage: String!
 }
 
-union RedeemUserTicketResponse = RedeemUserTicketError | UserTicket
+union RedeemUserTicketResponse = PurchaseOrder | RedeemUserTicketError
 
 """
 Representation of a workEmail
@@ -539,6 +548,10 @@ type Ticket {
   id: ID!
   name: String!
   prices: [Price!]
+
+  """
+  The number of tickets available for this ticket type
+  """
   quantity: Int
   requiresApproval: Boolean
   startDateTime: DateTime!

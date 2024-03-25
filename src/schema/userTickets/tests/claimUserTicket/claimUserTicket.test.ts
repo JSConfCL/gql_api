@@ -90,7 +90,10 @@ describe("Claim a user ticket", () => {
         user,
       );
       assert.equal(response.errors, undefined);
-      assert.equal(response.data?.claimUserTicket?.length, 3);
+      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
+        assert.equal(response.data?.claimUserTicket.tickets.length, 3);
+      }
     });
     it("For an ADMIN user", async () => {
       const { community, user, ticketTemplate } =
@@ -124,7 +127,10 @@ describe("Claim a user ticket", () => {
         user,
       );
       assert.equal(response.errors, undefined);
-      assert.equal(response.data?.claimUserTicket?.length, 3);
+      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
+        assert.equal(response.data?.claimUserTicket.tickets.length, 3);
+      }
     });
     it("For a COLLABORATOR  user", async () => {
       const { community, user, ticketTemplate } =
@@ -158,7 +164,10 @@ describe("Claim a user ticket", () => {
         user,
       );
       assert.equal(response.errors, undefined);
-      assert.equal(response.data?.claimUserTicket?.length, 3);
+      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
+        assert.equal(response.data?.claimUserTicket.tickets.length, 3);
+      }
     });
     it("For a SUPER ADMIN user", async () => {
       const createdUser = await insertUser({
@@ -193,7 +202,10 @@ describe("Claim a user ticket", () => {
         user,
       );
       assert.equal(response.errors, undefined);
-      assert.equal(response.data?.claimUserTicket?.length, 3);
+      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
+        assert.equal(response.data?.claimUserTicket.tickets.length, 3);
+      }
     });
   });
   describe("Should NOT allow claiming", () => {
@@ -236,15 +248,14 @@ describe("Claim a user ticket", () => {
       );
       assert.equal(response.errors, undefined);
       assert.equal(
-        response.data?.claimUserTicket[0].__typename,
+        response.data?.claimUserTicket?.__typename,
         "RedeemUserTicketError",
       );
       if (
-        response.data?.claimUserTicket[0].__typename === "RedeemUserTicketError"
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
       ) {
-        // response.data?.claimUserTicket[0].errorMessage === "Event is inactive"
         assert.equal(
-          response.data?.claimUserTicket[0].errorMessage,
+          response.data?.claimUserTicket.errorMessage,
           `Event ${event.id} is not active. Cannot claim tickets for an inactive event.`,
         );
       }
@@ -293,15 +304,14 @@ describe("Claim a user ticket", () => {
       );
       assert.equal(response.errors, undefined);
       assert.equal(
-        response.data?.claimUserTicket[0].__typename,
+        response.data?.claimUserTicket?.__typename,
         "RedeemUserTicketError",
       );
       if (
-        response.data?.claimUserTicket[0].__typename === "RedeemUserTicketError"
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
       ) {
-        // response.data?.claimUserTicket[0].errorMessage === "Event is inactive"
         assert.equal(
-          response.data?.claimUserTicket[0].errorMessage,
+          response.data?.claimUserTicket.errorMessage,
           `Not enough tickets for ticket template with id ${ticketTemplate.id}`,
         );
       }
@@ -345,15 +355,14 @@ describe("Claim a user ticket", () => {
       );
       assert.equal(response.errors, undefined);
       assert.equal(
-        response.data?.claimUserTicket[0].__typename,
+        response.data?.claimUserTicket?.__typename,
         "RedeemUserTicketError",
       );
       if (
-        response.data?.claimUserTicket[0].__typename === "RedeemUserTicketError"
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
       ) {
-        // response.data?.claimUserTicket[0].errorMessage === "Event is inactive"
         assert.equal(
-          response.data?.claimUserTicket[0].errorMessage,
+          response.data?.claimUserTicket.errorMessage,
           `Not enough room on event ${event.id}`,
         );
       }
