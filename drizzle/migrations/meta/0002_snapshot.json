@@ -1,5 +1,5 @@
 {
-  "id": "e60e0682-bc5b-4a01-820e-5b2b913c0bd5",
+  "id": "092a9b6e-3684-45b3-91d2-2617b4a431fa",
   "prevId": "ca759d08-e295-4166-bfd5-17fec2e97125",
   "version": "5",
   "dialect": "pg",
@@ -829,6 +829,13 @@
           "primaryKey": false,
           "notNull": false
         },
+        "idempotency_uuid_key": {
+          "name": "idempotency_uuid_key",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
         "payment_platform": {
           "name": "payment_platform",
           "type": "text",
@@ -914,7 +921,13 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "purchase_orders_idempotency_uuid_key_unique": {
+          "name": "purchase_orders_idempotency_uuid_key_unique",
+          "nullsNotDistinct": false,
+          "columns": ["idempotency_uuid_key"]
+        }
+      }
     },
     "salaries": {
       "name": "salaries",

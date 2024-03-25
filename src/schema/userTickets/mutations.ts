@@ -16,6 +16,7 @@ import {
 } from "~/validations";
 
 import { PurchaseOrderRef, RedeemUserTicketError } from "./types";
+import { isValidUUID } from "../shared/helpers";
 
 const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {
   fields: (t) => ({
@@ -33,6 +34,11 @@ const TicketClaimInput = builder.inputType("TicketClaimInput", {
     purchaseOrder: t.field({
       type: [PurchaseOrderInput],
       required: true,
+    }),
+    idempotencyUUIDKey: t.string({
+      description:
+        "A unique key to prevent duplicate requests, it's optional to send, but it's recommended to send it to prevent duplicate requests. If not sent, it will be created by the server.",
+      required: false,
     }),
   }),
 });
@@ -213,9 +219,16 @@ builder.mutationFields((t) => ({
     authz: {
       rules: ["IsAuthenticated"],
     },
-    resolve: async (root, { input: { purchaseOrder } }, { USER, DB }) => {
+    resolve: async (
+      root,
+      { input: { purchaseOrder, idempotencyUUIDKey } },
+      { USER, DB },
+    ) => {
       if (!USER) {
         throw new GraphQLError("User not found");
+      }
+      if (idempotencyUUIDKey && !isValidUUID(idempotencyUUIDKey)) {
+        throw new GraphQLError("Idempotency key is not a valid UUID");
       }
       // We try to reserve as many tickets as exist in purchaseOrder array. we
       // create a transaction to check on the tickets and reserve them. We
@@ -226,11 +239,24 @@ builder.mutationFields((t) => ({
       try {
         const transactionResults = await DB.transaction(async (trx) => {
           try {
+            if (idempotencyUUIDKey) {
+              const existingPurchaseOrder =
+                await trx.query.purchaseOrdersSchema.findFirst({
+                  where: (po, { eq }) =>
+                    eq(po.idempotencyUUIDKey, idempotencyUUIDKey),
+                });
+              if (existingPurchaseOrder) {
+                return new GraphQLError(
+                  `Purchase order with idempotency key ${idempotencyUUIDKey} already exists.`,
+                );
+              }
+            }
             // We create a purchase order to keep track of the tickets we create.
             const createdPurchaseOrders = await trx
               .insert(purchaseOrdersSchema)
               .values({
                 userId: USER.id,
+                idempotencyUUIDKey: idempotencyUUIDKey ?? undefined,
               })
               .returning()
               .execute();

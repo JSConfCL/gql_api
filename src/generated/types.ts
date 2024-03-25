@@ -597,6 +597,8 @@ export enum TicketApprovalStatus {
 }
 
 export type TicketClaimInput = {
+  /** A unique key to prevent duplicate requests, it's optional to send, but it's recommended to send it to prevent duplicate requests. If not sent, it will be created by the server. */
+  idempotencyUUIDKey?: InputMaybe<Scalars["String"]["input"]>;
   purchaseOrder: Array<PurchaseOrderInput>;
 };
 

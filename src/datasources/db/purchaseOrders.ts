@@ -20,6 +20,10 @@ export const purchaseOrdersSchema = pgTable("purchase_orders", {
     .references(() => usersSchema.id)
     .notNull(),
   description: text("description"),
+  idempotencyUUIDKey: uuid("idempotency_uuid_key")
+    .notNull()
+    .defaultRandom()
+    .unique(),
   paymentPlatform: text("payment_platform", {
     enum: purchaseOrderPaymentPlatforms,
   }),

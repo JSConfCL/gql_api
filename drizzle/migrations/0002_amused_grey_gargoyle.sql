@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS "purchase_orders" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"description" text,
+	"idempotency_uuid_key" uuid DEFAULT gen_random_uuid() NOT NULL,
 	"payment_platform" text,
 	"total_price" numeric,
 	"currency_id" uuid,
@@ -11,7 +12,8 @@ CREATE TABLE IF NOT EXISTS "purchase_orders" (
 	"purchase_order_payment_status" text DEFAULT 'unpaid' NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
-	"deleted_at" timestamp
+	"deleted_at" timestamp,
+	CONSTRAINT "purchase_orders_idempotency_uuid_key_unique" UNIQUE("idempotency_uuid_key")
 );
 --> statement-breakpoint
 ALTER TABLE "user_tickets" ADD COLUMN "purchase_order_id" uuid NOT NULL;--> statement-breakpoint
