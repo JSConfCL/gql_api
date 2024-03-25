@@ -15,6 +15,13 @@
       "when": 1711299192636,
       "tag": "0001_yellow_dorian_gray",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1711336045200,
+      "tag": "0002_slimy_steve_rogers",
+      "breakpoints": true
     }
   ]
 }

@@ -9,6 +9,7 @@ export * from "~/datasources/db/eventsTags";
 export * from "~/datasources/db/eventsUsers";
 export * from "~/datasources/db/paymentLogs";
 export * from "~/datasources/db/prices";
+export * from "~/datasources/db/purchaseOrders";
 export * from "~/datasources/db/salaries";
 export * from "~/datasources/db/tags";
 export * from "~/datasources/db/tagsCommunities";

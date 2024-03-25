@@ -4,6 +4,7 @@ import { GraphQLError } from "graphql";
 import { builder } from "~/builder";
 import {
   insertUserTicketsSchema,
+  purchaseOrdersSchema,
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
@@ -14,7 +15,7 @@ import {
   canRedeemUserTicket,
 } from "~/validations";
 
-import { RedeemUserTicketError } from "./types";
+import { PurchaseOrderRef, RedeemUserTicketError } from "./types";
 
 const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {
   fields: (t) => ({
@@ -39,12 +40,12 @@ const TicketClaimInput = builder.inputType("TicketClaimInput", {
 export const RedeemUserTicketResponse = builder.unionType(
   "RedeemUserTicketResponse",
   {
-    types: [UserTicketRef, RedeemUserTicketError],
+    types: [PurchaseOrderRef, RedeemUserTicketError],
     resolveType: (value) => {
       if ("errorMessage" in value) {
         return RedeemUserTicketError;
       }
-      return UserTicketRef;
+      return PurchaseOrderRef;
     },
   },
 );
@@ -202,7 +203,7 @@ builder.mutationFields((t) => ({
   }),
   claimUserTicket: t.field({
     description: "Attempt to claim a certain ammount of tickets",
-    type: [RedeemUserTicketResponse],
+    type: RedeemUserTicketResponse,
     args: {
       input: t.arg({
         type: TicketClaimInput,
@@ -216,17 +217,31 @@ builder.mutationFields((t) => ({
       if (!USER) {
         throw new GraphQLError("User not found");
       }
-      // We try to reserve as many tickets as exist in purchaseOrder array.
-      // we create a transaction to check on the tickets and reserve them.
-      // We reverse the transacion if we find that:
+      // We try to reserve as many tickets as exist in purchaseOrder array. we
+      // create a transaction to check on the tickets and reserve them. We
+      // reverse the transacion if we find that:
       // - We would be going over the limit of tickets.
       // - We don't have enough tickets to fulfill the purchase order.
       // - Other General errors
       try {
         const transactionResults = await DB.transaction(async (trx) => {
           try {
+            // We create a purchase order to keep track of the tickets we create.
+            const createdPurchaseOrders = await trx
+              .insert(purchaseOrdersSchema)
+              .values({
+                userId: USER.id,
+              })
+              .returning()
+              .execute();
             let claimedTickets: Array<typeof insertUserTicketsSchema._type> =
               [];
+
+            const createdPurchaseOrder = createdPurchaseOrders[0];
+            if (!createdPurchaseOrder) {
+              return new Error("Could not create purchase order");
+            }
+
             // TODO: Measure and consider parallelizing this.
             for (const item of purchaseOrder) {
               // We pull the ticket template to see if it exists.
@@ -266,7 +281,8 @@ builder.mutationFields((t) => ({
                 );
               }
 
-              // We pull the tickets that are already reserved or in-process  to see if we have enough to fulfill the purchase order
+              // We pull the tickets that are already reserved or in-process to
+              // see if we have enough to fulfill the purchase order
               const tickets = await trx.query.userTicketsSchema.findMany({
                 where: (uts, { eq, and, inArray }) =>
                   and(
@@ -279,7 +295,8 @@ builder.mutationFields((t) => ({
               // limit to the amount of tickets that can be created. So we check
               // if we have enough tickets to fulfill the purchase order.
               if (ticketTemplate.quantity) {
-                // If we would be going over the limit of tickets, we throw an error.
+                // If we would be going over the limit of tickets, we throw an
+                // error.
                 if (tickets.length + item.quantity > ticketTemplate.quantity) {
                   return new Error(
                     `Not enough tickets for ticket template with id ${item.ticketId}`,
@@ -287,10 +304,11 @@ builder.mutationFields((t) => ({
                 }
               }
 
-              // If the event has a maxAttendees field, we check if we have enough
-              // room to fulfill the purchase order.
+              // If the event has a maxAttendees field, we check if we have
+              // enough room to fulfill the purchase order.
               if (maxAttendees) {
-                // If we would be going over the limit of attendees, we throw an error.
+                // If we would be going over the limit of attendees, we throw an
+                // error.
                 if (tickets.length + item.quantity > maxAttendees) {
                   return new Error(
                     `Not enough room on event ${ticketTemplate.event.id}`,
@@ -298,10 +316,12 @@ builder.mutationFields((t) => ({
                 }
               }
 
-              // If no errors were thrown, we can proceed to reserve the tickets.
+              // If no errors were thrown, we can proceed to reserve the
+              // tickets.
               const newTickets = new Array(item.quantity).fill(false).map(() =>
                 insertUserTicketsSchema.parse({
                   userId: USER.id,
+                  purchaseOrderId: createdPurchaseOrder.id,
                   ticketTemplateId: ticketTemplate.id,
                   paymentStatus: requiresPayment ? "unpaid" : "not_required",
                   approvalStatus: requiresApproval ? "pending" : "approved",
@@ -316,7 +336,8 @@ builder.mutationFields((t) => ({
                 .returning()
                 .execute();
 
-              //  if the ticket has a quantity field, we  do a last check to see if we have enough gone over the limit of tickets.
+              //  if the ticket has a quantity field, we  do a last check to see
+              //  if we have enough gone over the limit of tickets.
               const finalTickets = await trx.query.userTicketsSchema.findMany({
                 where: (uts, { eq, and, inArray }) =>
                   and(
@@ -332,10 +353,9 @@ builder.mutationFields((t) => ({
                   );
                 }
               }
-
               claimedTickets = [...claimedTickets, ...createdUserTickets];
             }
-            return claimedTickets;
+            return { createdPurchaseOrder, claimedTickets };
           } catch (e) {
             console.error("🚨Error", e);
             trx.rollback();
@@ -343,24 +363,24 @@ builder.mutationFields((t) => ({
           }
         });
         if (transactionResults instanceof Error) {
-          return [
-            {
-              error: true as const,
-              errorMessage: transactionResults.message,
-            },
-          ];
+          return {
+            error: true as const,
+            errorMessage: transactionResults.message,
+          };
         }
-        return transactionResults.map((ticket) =>
-          selectUserTicketsSchema.parse(ticket),
-        );
+
+        const { claimedTickets, createdPurchaseOrder } = transactionResults;
+        const ticketsIds = claimedTickets.flatMap((t) => (t.id ? [t.id] : []));
+        return {
+          id: createdPurchaseOrder.id,
+          ticketsIds,
+        };
       } catch (e: unknown) {
         console.error("🚨Error", e);
-        return [
-          {
-            error: true as const,
-            errorMessage: e instanceof Error ? e.message : "Unknown error",
-          },
-        ];
+        return {
+          error: true as const,
+          errorMessage: e instanceof Error ? e.message : "Unknown error",
+        };
       }
     },
   }),

@@ -24,6 +24,7 @@ import {
   insertUserToEvent,
   executeGraphqlOperationAsUser,
   toISODateWithoutMilliseconds,
+  insertPurchaseOrder,
 } from "~/tests/fixtures";
 
 import { Event, EventQuery, EventQueryVariables } from "./event.generated";
@@ -128,13 +129,16 @@ describe("Event", () => {
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
+    const purchaseOrder = await insertPurchaseOrder();
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
     });
     const ticket2 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user2.id,
+      purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -500,13 +504,16 @@ describe("Event tickets filter", () => {
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
+    const purchaseOrder = await insertPurchaseOrder();
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
     });
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -575,15 +582,18 @@ describe("Event tickets filter", () => {
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
+    const purchaseOrder = await insertPurchaseOrder();
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       approvalStatus: TicketApprovalStatus.Approved,
+      purchaseOrderId: purchaseOrder.id,
     });
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       approvalStatus: TicketApprovalStatus.Pending,
+      purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -652,15 +662,18 @@ describe("Event tickets filter", () => {
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
+    const purchaseOrder = await insertPurchaseOrder();
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       paymentStatus: TicketPaymentStatus.Paid,
+      purchaseOrderId: purchaseOrder.id,
     });
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       paymentStatus: TicketPaymentStatus.Unpaid,
+      purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -729,15 +742,18 @@ describe("Event tickets filter", () => {
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
+    const purchaseOrder = await insertPurchaseOrder();
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       redemptionStatus: TicketRedemptionStatus.Redeemed,
+      purchaseOrderId: purchaseOrder.id,
     });
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       redemptionStatus: TicketRedemptionStatus.Pending,
+      purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -807,15 +823,18 @@ describe("Event tickets filter", () => {
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
+    const purchaseOrder = await insertPurchaseOrder();
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       status: TicketStatus.Active,
+      purchaseOrderId: purchaseOrder.id,
     });
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       status: TicketStatus.Inactive,
+      purchaseOrderId: purchaseOrder.id,
     });
 
     const response = await executeGraphqlOperationAsUser<
