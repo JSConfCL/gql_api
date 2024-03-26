@@ -2,7 +2,7 @@ import { relations } from "drizzle-orm";
 import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-import { ticketsSchema, usersSchema } from "./schema";
+import { purchaseOrdersSchema, ticketsSchema, usersSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
 export const userTicketsStatusEnum = ["active", "inactive"] as const;
@@ -30,6 +30,9 @@ export const userTicketsSchema = pgTable("user_tickets", {
   paymentStatus: text("payment_status", { enum: userTicketsPaymentStatusEnum })
     .default("unpaid")
     .notNull(),
+  purchaseOrderId: uuid("purchase_order_id")
+    .references(() => purchaseOrdersSchema.id)
+    .notNull(),
   approvalStatus: text("approval_status", {
     enum: userTicketsApprovalStatusEnum,
   })
@@ -47,6 +50,10 @@ export const userTicketsRelations = relations(userTicketsSchema, ({ one }) => ({
   ticketTemplate: one(ticketsSchema, {
     fields: [userTicketsSchema.ticketTemplateId],
     references: [ticketsSchema.id],
+  }),
+  purchaseOrdersSchema: one(purchaseOrdersSchema, {
+    fields: [userTicketsSchema.purchaseOrderId],
+    references: [purchaseOrdersSchema.id],
   }),
   user: one(usersSchema, {
     fields: [userTicketsSchema.userId],

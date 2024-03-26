@@ -6,6 +6,7 @@ import {
   insertCommunity,
   insertEvent,
   insertEventToCommunity,
+  insertPurchaseOrder,
   insertTicket,
   insertTicketTemplate,
   insertUser,
@@ -42,10 +43,12 @@ describe("Cancel User Ticket", () => {
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
+    const purchaseOrder = await insertPurchaseOrder();
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       status: "active",
+      purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
       CancelUserTicketMutation,
@@ -89,10 +92,12 @@ describe("Cancel User Ticket", () => {
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
+    const purchaseOrder = await insertPurchaseOrder();
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       status: "active",
+      purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
       CancelUserTicketMutation,
@@ -167,10 +172,12 @@ describe("Cancel User Ticket", () => {
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
+    const purchaseOrder = await insertPurchaseOrder();
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       status: "active",
+      purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
       CancelUserTicketMutation,

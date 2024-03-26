@@ -248,7 +248,7 @@ export type Mutation = {
   /** Cancel a ticket */
   cancelUserTicket: UserTicket;
   /** Attempt to claim a certain ammount of tickets */
-  claimUserTicket: Array<RedeemUserTicketResponse>;
+  claimUserTicket: RedeemUserTicketResponse;
   /** Create an community */
   createCommunity: Community;
   /** Create a company */
@@ -386,6 +386,14 @@ export type PublicFinanceEntryRef = {
   transactionDate?: Maybe<Scalars["DateTime"]["output"]>;
 };
 
+/** Representation of a Purchase Order */
+export type PurchaseOrder = {
+  __typename?: "PurchaseOrder";
+  id: Scalars["ID"]["output"];
+  tickets: Array<UserTicket>;
+  totalAmount?: Maybe<Scalars["Float"]["output"]>;
+};
+
 export type PurchaseOrderInput = {
   quantity: Scalars["Int"]["input"];
   ticketId: Scalars["String"]["input"];
@@ -502,7 +510,7 @@ export type RedeemUserTicketError = {
   errorMessage: Scalars["String"]["output"];
 };
 
-export type RedeemUserTicketResponse = RedeemUserTicketError | UserTicket;
+export type RedeemUserTicketResponse = PurchaseOrder | RedeemUserTicketError;
 
 /** Representation of a workEmail */
 export type Salary = {
@@ -574,6 +582,7 @@ export type Ticket = {
   id: Scalars["ID"]["output"];
   name: Scalars["String"]["output"];
   prices?: Maybe<Array<Price>>;
+  /** The number of tickets available for this ticket type */
   quantity?: Maybe<Scalars["Int"]["output"]>;
   requiresApproval?: Maybe<Scalars["Boolean"]["output"]>;
   startDateTime: Scalars["DateTime"]["output"];
@@ -588,6 +597,8 @@ export enum TicketApprovalStatus {
 }
 
 export type TicketClaimInput = {
+  /** A unique key to prevent duplicate requests, it's optional to send, but it's recommended to send it to prevent duplicate requests. If not sent, it will be created by the server. */
+  idempotencyUUIDKey?: InputMaybe<Scalars["String"]["input"]>;
   purchaseOrder: Array<PurchaseOrderInput>;
 };
 

@@ -75,6 +75,9 @@ import {
   selectPriceSchema,
   pricesSchema,
   validPaymentMethodsEnum,
+  selectPurchaseOrdersSchema,
+  purchaseOrdersSchema,
+  insertPurchaseOrdersSchema,
 } from "~/datasources/db/schema";
 import { genderOptions } from "~/datasources/db/shared";
 import {
@@ -387,6 +390,32 @@ export const insertTicketTemplate = async (
   );
 };
 
+export const insertPurchaseOrder = async (
+  partialInput?: Partial<z.infer<typeof insertPurchaseOrdersSchema>>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    userId: partialInput?.userId ?? (await insertUser()).id,
+    description: partialInput?.description,
+    paymentPlatform: partialInput?.paymentPlatform,
+    totalPrice: partialInput?.totalPrice,
+    currencyId: partialInput?.currencyId,
+    paymentPlatformReferenceID: partialInput?.paymentPlatformReferenceID,
+    paymentPlatformStatus: partialInput?.paymentPlatformStatus,
+    paymentPlatformMetadata: partialInput?.paymentPlatformMetadata,
+    purchaseOrderPaymentStatus:
+      partialInput?.purchaseOrderPaymentStatus ?? "unpaid",
+    ...CRUDDates(partialInput),
+  } satisfies z.infer<typeof insertPurchaseOrdersSchema>;
+
+  return insertOne(
+    insertPurchaseOrdersSchema,
+    selectPurchaseOrdersSchema,
+    purchaseOrdersSchema,
+    possibleInput,
+  );
+};
+
 export const insertTicket = async (
   partialInput?: Omit<z.infer<typeof insertUserTicketsSchema>, "id"> & {
     id?: string;
@@ -395,6 +424,8 @@ export const insertTicket = async (
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     userId: partialInput?.userId,
+    purchaseOrderId:
+      partialInput?.purchaseOrderId ?? (await insertPurchaseOrder()).id,
     ticketTemplateId:
       partialInput?.ticketTemplateId ?? (await insertTicketTemplate()).id,
     approvalStatus:

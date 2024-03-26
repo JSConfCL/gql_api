@@ -11,18 +11,22 @@ export type ClaimUserTicketMutationVariables = Types.Exact<{
 }>;
 
 
-export type ClaimUserTicketMutation = { __typename?: 'Mutation', claimUserTicket: Array<{ __typename: 'RedeemUserTicketError', errorMessage: string } | { __typename?: 'UserTicket', id: string, status: Types.TicketStatus, paymentStatus: Types.TicketPaymentStatus, approvalStatus: Types.TicketApprovalStatus, redemptionStatus: Types.TicketRedemptionStatus }> };
+export type ClaimUserTicketMutation = { __typename?: 'Mutation', claimUserTicket: { __typename: 'PurchaseOrder', id: string, tickets: Array<{ __typename?: 'UserTicket', id: string, paymentStatus: Types.TicketPaymentStatus, approvalStatus: Types.TicketApprovalStatus, redemptionStatus: Types.TicketRedemptionStatus, status: Types.TicketStatus }> } | { __typename: 'RedeemUserTicketError', errorMessage: string } };
 
 
 export const ClaimUserTicket = gql`
     mutation ClaimUserTicket($input: TicketClaimInput!) {
   claimUserTicket(input: $input) {
-    ... on UserTicket {
+    __typename
+    ... on PurchaseOrder {
       id
-      status
-      paymentStatus
-      approvalStatus
-      redemptionStatus
+      tickets {
+        id
+        paymentStatus
+        approvalStatus
+        redemptionStatus
+        status
+      }
     }
     ... on RedeemUserTicketError {
       __typename

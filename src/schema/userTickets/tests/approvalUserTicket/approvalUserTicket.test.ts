@@ -4,6 +4,7 @@ import { it, describe, assert } from "vitest";
 import {
   executeGraphqlOperationAsUser,
   insertEvent,
+  insertPurchaseOrder,
   insertTicket,
   insertTicketTemplate,
   insertUser,
@@ -31,9 +32,11 @@ describe("Approval user ticket", () => {
       eventId: event1.id,
       requiresApproval: true,
     });
+    const purchaseOrder = await insertPurchaseOrder();
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
       ApprovalUserTicketMutation,
@@ -63,9 +66,11 @@ describe("Approval user ticket", () => {
       eventId: event1.id,
       requiresApproval: true,
     });
+    const purchaseOrder = await insertPurchaseOrder();
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
       ApprovalUserTicketMutation,
@@ -95,9 +100,11 @@ describe("Approval user ticket", () => {
       eventId: event1.id,
       requiresApproval: true,
     });
+    const purchaseOrder = await insertPurchaseOrder();
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
       ApprovalUserTicketMutation,
@@ -128,10 +135,12 @@ describe("Approval user ticket", () => {
       eventId: event1.id,
       requiresApproval: true,
     });
+    const purchaseOrder = await insertPurchaseOrder();
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       approvalStatus: "approved",
+      purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
       ApprovalUserTicketMutation,
@@ -162,9 +171,11 @@ describe("Approval user ticket", () => {
       eventId: event1.id,
       requiresApproval: false,
     });
+    const purchaseOrder = await insertPurchaseOrder();
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
       ApprovalUserTicketMutation,

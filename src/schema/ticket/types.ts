@@ -56,7 +56,10 @@ builder.objectType(TicketRef, {
     requiresApproval: t.exposeBoolean("requiresApproval", {
       nullable: true,
     }),
-    quantity: t.exposeInt("quantity", { nullable: true }),
+    quantity: t.exposeInt("quantity", {
+      description: "The number of tickets available for this ticket type",
+      nullable: true,
+    }),
     eventId: t.exposeString("eventId", { nullable: false }),
     prices: t.field({
       type: [PriceRef],
