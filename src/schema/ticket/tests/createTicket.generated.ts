@@ -11,7 +11,7 @@ export type CreateTicketMutationVariables = Types.Exact<{
 }>;
 
 
-export type CreateTicketMutation = { __typename?: 'Mutation', createTicket: { __typename?: 'Ticket', id: string, name: string, description: string | null, status: Types.TicketTemplateStatus, visibility: Types.TicketTemplateVisibility, startDateTime: string, endDateTime: string | null, requiresApproval: boolean | null, quantity: number | null, eventId: string } };
+export type CreateTicketMutation = { __typename?: 'Mutation', createTicket: { __typename?: 'Ticket', id: string, name: string, description: string | null, status: Types.TicketTemplateStatus, visibility: Types.TicketTemplateVisibility, startDateTime: string, endDateTime: string | null, isUnlimited: boolean, requiresApproval: boolean, quantity: number | null, eventId: string } };
 
 
 export const CreateTicket = gql`
@@ -24,6 +24,7 @@ export const CreateTicket = gql`
     visibility
     startDateTime
     endDateTime
+    isUnlimited
     requiresApproval
     quantity
     eventId

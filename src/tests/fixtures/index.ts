@@ -9,6 +9,7 @@ import { PgTable } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { type ExecutionResult } from "graphql";
 import { createYoga } from "graphql-yoga";
+import Stripe from "stripe";
 import { ZodType, z } from "zod";
 
 import { Env } from "worker-configuration";
@@ -125,6 +126,7 @@ const createExecutor = (user?: Awaited<ReturnType<typeof insertUser>>) =>
           ...initContextCache(),
           DB,
           USER: user ? user : undefined,
+          GET_STRIPE_CLIENT: () => null,
         };
       },
       plugins: [authZEnvelopPlugin({ rules })],

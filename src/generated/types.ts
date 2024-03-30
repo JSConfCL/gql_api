@@ -267,6 +267,8 @@ export type Mutation = {
   editTicket: Ticket;
   /** Enqueue images to import */
   enqueueGoogleAlbumImport: Scalars["Boolean"]["output"];
+  /** Create a salary */
+  initializePurchaseFlowForPurchaseOrder: PurchaseOrder;
   /** Redeem a ticket */
   redeemUserTicket: UserTicket;
   /** Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position */
@@ -331,6 +333,10 @@ export type MutationEnqueueGoogleAlbumImportArgs = {
   input: EnqueueGoogleAlbumImportInput;
 };
 
+export type MutationInitializePurchaseFlowForPurchaseOrderArgs = {
+  input: PurchaseFlowForPurchaseOrderInput;
+};
+
 export type MutationRedeemUserTicketArgs = {
   userTicketId: Scalars["String"]["input"];
 };
@@ -375,6 +381,11 @@ export type Price = {
   id: Scalars["ID"]["output"];
 };
 
+export type PricingInputField = {
+  currencyId?: InputMaybe<Scalars["String"]["input"]>;
+  value?: InputMaybe<Scalars["Int"]["input"]>;
+};
+
 /** Representation of a payment log entry */
 export type PublicFinanceEntryRef = {
   __typename?: "PublicFinanceEntryRef";
@@ -386,18 +397,39 @@ export type PublicFinanceEntryRef = {
   transactionDate?: Maybe<Scalars["DateTime"]["output"]>;
 };
 
+export type PurchaseFlowForPurchaseOrderInput = {
+  currencyID: Scalars["String"]["input"];
+  paymentPlatform: PurchaseOrderPlatformEnum;
+  purchaseOrderId: Scalars["String"]["input"];
+};
+
 /** Representation of a Purchase Order */
 export type PurchaseOrder = {
   __typename?: "PurchaseOrder";
+  currency?: Maybe<AllowedCurrency>;
+  finalPrice?: Maybe<Scalars["Float"]["output"]>;
   id: Scalars["ID"]["output"];
+  paymentLink?: Maybe<Scalars["String"]["output"]>;
+  status?: Maybe<PurchaseOrderStatusEnum>;
   tickets: Array<UserTicket>;
-  totalAmount?: Maybe<Scalars["Float"]["output"]>;
 };
 
 export type PurchaseOrderInput = {
   quantity: Scalars["Int"]["input"];
   ticketId: Scalars["String"]["input"];
 };
+
+export enum PurchaseOrderPlatformEnum {
+  Mercadopago = "mercadopago",
+  Stripe = "stripe",
+}
+
+export enum PurchaseOrderStatusEnum {
+  Cancelled = "cancelled",
+  NotRequired = "not_required",
+  Paid = "paid",
+  Unpaid = "unpaid",
+}
 
 export type Query = {
   __typename?: "Query";
@@ -580,11 +612,13 @@ export type Ticket = {
   endDateTime?: Maybe<Scalars["DateTime"]["output"]>;
   eventId: Scalars["String"]["output"];
   id: Scalars["ID"]["output"];
+  /** Whether or not the ticket has an unlimited quantity. This is reserved for things loike online events. */
+  isUnlimited: Scalars["Boolean"]["output"];
   name: Scalars["String"]["output"];
   prices?: Maybe<Array<Price>>;
   /** The number of tickets available for this ticket type */
   quantity?: Maybe<Scalars["Int"]["output"]>;
-  requiresApproval?: Maybe<Scalars["Boolean"]["output"]>;
+  requiresApproval: Scalars["Boolean"]["output"];
   startDateTime: Scalars["DateTime"]["output"];
   status: TicketTemplateStatus;
   visibility: TicketTemplateVisibility;
@@ -603,35 +637,38 @@ export type TicketClaimInput = {
 };
 
 export type TicketCreateInput = {
-  currencyId?: InputMaybe<Scalars["String"]["input"]>;
   description?: InputMaybe<Scalars["String"]["input"]>;
   endDateTime?: InputMaybe<Scalars["DateTime"]["input"]>;
   eventId: Scalars["String"]["input"];
   name: Scalars["String"]["input"];
-  price?: InputMaybe<Scalars["Int"]["input"]>;
+  prices?: InputMaybe<Array<PricingInputField>>;
   quantity?: InputMaybe<Scalars["Int"]["input"]>;
   requiresApproval?: InputMaybe<Scalars["Boolean"]["input"]>;
   startDateTime: Scalars["DateTime"]["input"];
   status?: InputMaybe<TicketTemplateStatus>;
+  /** If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold. */
+  unlimitedTickets: Scalars["Boolean"]["input"];
   visibility?: InputMaybe<TicketTemplateVisibility>;
 };
 
 export type TicketEditInput = {
-  currencyId?: InputMaybe<Scalars["String"]["input"]>;
   description?: InputMaybe<Scalars["String"]["input"]>;
   endDateTime?: InputMaybe<Scalars["DateTime"]["input"]>;
   eventId?: InputMaybe<Scalars["String"]["input"]>;
   name?: InputMaybe<Scalars["String"]["input"]>;
-  price?: InputMaybe<Scalars["Int"]["input"]>;
+  prices?: InputMaybe<PricingInputField>;
   quantity?: InputMaybe<Scalars["Int"]["input"]>;
   requiresApproval?: InputMaybe<Scalars["Boolean"]["input"]>;
   startDateTime?: InputMaybe<Scalars["DateTime"]["input"]>;
   status?: InputMaybe<TicketTemplateStatus>;
   ticketId: Scalars["String"]["input"];
+  /** If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold. */
+  unlimitedTickets: Scalars["Boolean"]["input"];
   visibility?: InputMaybe<TicketTemplateVisibility>;
 };
 
 export enum TicketPaymentStatus {
+  Cancelled = "cancelled",
   NotRequired = "not_required",
   Paid = "paid",
   Unpaid = "unpaid",
@@ -644,6 +681,7 @@ export enum TicketRedemptionStatus {
 
 export enum TicketStatus {
   Active = "active",
+  Expired = "expired",
   Inactive = "inactive",
 }
 

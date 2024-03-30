@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { it, describe, assert } from "vitest";
+import { it, describe, assert, vi } from "vitest";
 
 import {
   TicketTemplateStatus,
@@ -22,6 +22,9 @@ import {
   CreateTicketMutationVariables,
 } from "./createTicket.generated";
 
+// We need to mock the stripe datasource to avoid making real requests
+vi.mock("~/datasources/stripe");
+
 describe("User", () => {
   it("Should create a ticket", async () => {
     const user1 = await insertUser({
@@ -29,7 +32,14 @@ describe("User", () => {
     });
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
-    const currency1 = await insertAllowedCurrency();
+    const currency1 = await insertAllowedCurrency({
+      currency: "USD",
+      validPaymentMethods: "stripe",
+    });
+    const currency2 = await insertAllowedCurrency({
+      currency: "CLP",
+      validPaymentMethods: "mercado_pago",
+    });
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
@@ -49,10 +59,23 @@ describe("User", () => {
       startDateTime: startDateTime.toISOString(),
       endDateTime: endDateTime.toISOString(),
       requiresApproval: false,
-      price: faker.number.int({
-        min: 1,
-        max: 100,
-      }),
+      unlimitedTickets: false,
+      prices: [
+        {
+          currencyId: currency1.id,
+          value: faker.number.int({
+            min: 1,
+            max: 100,
+          }),
+        },
+        {
+          currencyId: currency2.id,
+          value: faker.number.int({
+            min: 1,
+            max: 100,
+          }),
+        },
+      ],
       quantity: faker.number.int({
         min: 1,
         max: 100,
@@ -60,7 +83,6 @@ describe("User", () => {
       status: TicketTemplateStatus.Active,
       visibility: TicketTemplateVisibility.Public,
       eventId: event1.id,
-      currencyId: currency1.id,
     };
 
     const response = await executeGraphqlOperationAsUser<
@@ -122,6 +144,7 @@ describe("User", () => {
             name: faker.word.words(3),
             eventId: event1.id,
             startDateTime: faker.date.future().toISOString(),
+            unlimitedTickets: true,
           },
         },
       },

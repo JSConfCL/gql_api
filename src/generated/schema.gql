@@ -289,6 +289,13 @@ type Mutation {
   enqueueGoogleAlbumImport(input: EnqueueGoogleAlbumImportInput!): Boolean!
 
   """
+  Create a salary
+  """
+  initializePurchaseFlowForPurchaseOrder(
+    input: PurchaseFlowForPurchaseOrderInput!
+  ): PurchaseOrder!
+
+  """
   Redeem a ticket
   """
   redeemUserTicket(userTicketId: String!): UserTicket!
@@ -341,6 +348,11 @@ type Price {
   id: ID!
 }
 
+input PricingInputField {
+  currencyId: String
+  value: Int
+}
+
 """
 Representation of a payment log entry
 """
@@ -353,18 +365,39 @@ type PublicFinanceEntryRef {
   transactionDate: DateTime
 }
 
+input PurchaseFlowForPurchaseOrderInput {
+  currencyID: String!
+  paymentPlatform: PurchaseOrderPlatformEnum!
+  purchaseOrderId: String!
+}
+
 """
 Representation of a Purchase Order
 """
 type PurchaseOrder {
+  currency: AllowedCurrency
+  finalPrice: Float
   id: ID!
+  paymentLink: String
+  status: PurchaseOrderStatusEnum
   tickets: [UserTicket!]!
-  totalAmount: Float
 }
 
 input PurchaseOrderInput {
   quantity: Int!
   ticketId: String!
+}
+
+enum PurchaseOrderPlatformEnum {
+  mercadopago
+  stripe
+}
+
+enum PurchaseOrderStatusEnum {
+  cancelled
+  not_required
+  paid
+  unpaid
 }
 
 type Query {
@@ -546,6 +579,11 @@ type Ticket {
   endDateTime: DateTime
   eventId: String!
   id: ID!
+
+  """
+  Whether or not the ticket has an unlimited quantity. This is reserved for things loike online events.
+  """
+  isUnlimited: Boolean!
   name: String!
   prices: [Price!]
 
@@ -553,7 +591,7 @@ type Ticket {
   The number of tickets available for this ticket type
   """
   quantity: Int
-  requiresApproval: Boolean
+  requiresApproval: Boolean!
   startDateTime: DateTime!
   status: TicketTemplateStatus!
   visibility: TicketTemplateVisibility!
@@ -574,35 +612,44 @@ input TicketClaimInput {
 }
 
 input TicketCreateInput {
-  currencyId: String
   description: String
   endDateTime: DateTime
   eventId: String!
   name: String!
-  price: Int
+  prices: [PricingInputField!]
   quantity: Int
   requiresApproval: Boolean
   startDateTime: DateTime!
   status: TicketTemplateStatus
+
+  """
+  If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold.
+  """
+  unlimitedTickets: Boolean!
   visibility: TicketTemplateVisibility
 }
 
 input TicketEditInput {
-  currencyId: String
   description: String
   endDateTime: DateTime
   eventId: String
   name: String
-  price: Int
+  prices: PricingInputField
   quantity: Int
   requiresApproval: Boolean
   startDateTime: DateTime
   status: TicketTemplateStatus
   ticketId: String!
+
+  """
+  If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold.
+  """
+  unlimitedTickets: Boolean!
   visibility: TicketTemplateVisibility
 }
 
 enum TicketPaymentStatus {
+  cancelled
   not_required
   paid
   unpaid
@@ -615,6 +662,7 @@ enum TicketRedemptionStatus {
 
 enum TicketStatus {
   active
+  expired
   inactive
 }
 

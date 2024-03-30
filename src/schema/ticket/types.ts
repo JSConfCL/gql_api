@@ -53,12 +53,15 @@ builder.objectType(TicketRef, {
       nullable: true,
       resolve: (root) => (root.endDateTime ? new Date(root.endDateTime) : null),
     }),
-    requiresApproval: t.exposeBoolean("requiresApproval", {
-      nullable: true,
-    }),
+    requiresApproval: t.exposeBoolean("requiresApproval"),
     quantity: t.exposeInt("quantity", {
       description: "The number of tickets available for this ticket type",
       nullable: true,
+    }),
+    isUnlimited: t.exposeBoolean("isUnlimited", {
+      description:
+        "Whether or not the ticket has an unlimited quantity. This is reserved for things loike online events.",
+      nullable: false,
     }),
     eventId: t.exposeString("eventId", { nullable: false }),
     prices: t.field({

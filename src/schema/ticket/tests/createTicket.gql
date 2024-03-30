@@ -7,6 +7,7 @@ mutation CreateTicket($input: TicketCreateInput!) {
     visibility
     startDateTime
     endDateTime
+    isUnlimited
     requiresApproval
     quantity
     eventId

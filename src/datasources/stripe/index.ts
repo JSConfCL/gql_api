@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { puchaseOrderPaymentStatusEnum } from "../db/purchaseOrders";
 import { someMinutesIntoTheFuture } from "../helpers";
 
-const getPaymentStatusFromPaymentProviderStatus = (
+export const getPaymentStatusFromPaymentProviderStatus = (
   stripeStatus: Stripe.Response<Stripe.Checkout.Session>["status"],
 ): (typeof puchaseOrderPaymentStatusEnum)[number] => {
   if (stripeStatus === "complete") {
@@ -20,7 +20,7 @@ const isInteger = (n: number) => n % 1 === 0;
 
 export const createStripeProduct = async ({
   item,
-  getStripClient,
+  getStripeClient,
 }: {
   item: {
     id: string;
@@ -32,9 +32,9 @@ export const createStripeProduct = async ({
     };
     unit_amount: number;
   };
-  getStripClient: () => Stripe;
+  getStripeClient: () => Stripe;
 }) => {
-  const stripeClient = getStripClient();
+  const stripeClient = getStripeClient();
   // check if a number is a float or an integrer
   const productData = await stripeClient.products.create({
     id: item.id,
@@ -60,7 +60,7 @@ export const createStripeProduct = async ({
 export const createPayment = async ({
   items,
   purchaseOrderId,
-  getStripClient,
+  getStripeClient,
 }: {
   items: Array<{
     id: string;
@@ -78,9 +78,9 @@ export const createPayment = async ({
     quantity: number;
   }>;
   purchaseOrderId: string;
-  getStripClient: () => Stripe;
+  getStripeClient: () => Stripe;
 }) => {
-  const stripeClient = getStripClient();
+  const stripeClient = getStripeClient();
   const exirationDate = someMinutesIntoTheFuture(31);
   const expirationDateInEpoch = Math.round(exirationDate.getTime() / 1000);
   const paymentLink = await stripeClient.checkout.sessions.create({

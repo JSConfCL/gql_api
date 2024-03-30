@@ -93,22 +93,22 @@ builder.mutationField("createTicket", (t) =>
       rules: ["IsAuthenticated"],
     },
     resolve: async (root, { input }, ctx) => {
+      if (!ctx.USER) {
+        throw new GraphQLError("User not found");
+      }
+      const { eventId } = input;
+      // Check if the user has permissions to create a ticket
+      const hasPermissions = await canCreateTicket({
+        user: ctx.USER,
+        eventId: eventId,
+        DB: ctx.DB,
+      });
+
+      if (!hasPermissions) {
+        throw new GraphQLError("Not authorized");
+      }
       const transactionResults = await ctx.DB.transaction(async (trx) => {
         try {
-          if (!ctx.USER) {
-            throw new GraphQLError("User not found");
-          }
-          const { eventId } = input;
-          // Check if the user has permissions to create a ticket
-          const hasPermissions = await canCreateTicket({
-            user: ctx.USER,
-            eventId: eventId,
-            DB: ctx.DB,
-          });
-
-          if (!hasPermissions) {
-            throw new GraphQLError("Not authorized");
-          }
           const hasQuantity = input.quantity ? input.quantity !== 0 : false;
           if (!hasQuantity && !input.unlimitedTickets) {
             throw new GraphQLError(
@@ -137,15 +137,15 @@ builder.mutationField("createTicket", (t) =>
               }
 
               const insertPriceValues = insertPriceSchema.parse({
-                value: price.value,
+                price: price.value,
                 currencyId: price.currencyId,
               });
 
-              const insertedPrices = await trx
+              const insertedPrice = await trx
                 .insert(pricesSchema)
                 .values(insertPriceValues)
                 .returning();
-              const newPrice = insertedPrices?.[0];
+              const newPrice = insertedPrice?.[0];
               if (!newPrice) {
                 throw new GraphQLError("Price not created");
               }
@@ -166,16 +166,19 @@ builder.mutationField("createTicket", (t) =>
             eventId: input.eventId,
             isUnlimited: input.unlimitedTickets,
           });
-          const insertedTickets = await ctx.DB.insert(ticketsSchema)
+          const insertedTickets = await trx
+            .insert(ticketsSchema)
             .values(insertTicketValues)
             .returning();
           const ticket = insertedTickets?.[0];
+
           if (!ticket) {
             throw new GraphQLError("Could not create ticket");
           }
 
           // Third, we attach the prices to the ticket.
           for (const price of insertedPrices) {
+            console.log("Attaching price to ticket: ", price);
             const ticketPriceToInsert = insertTicketPriceSchema.parse({
               ticketId: ticket.id,
               priceId: price.id,
@@ -198,8 +201,9 @@ builder.mutationField("createTicket", (t) =>
                 currency: true,
               },
             });
+            console.log("Found price: ", ctx);
             if (foundPrice?.currency) {
-              if (foundPrice.currencyId === "USD") {
+              if (foundPrice.currency.currency === "USD") {
                 await createStripeProduct({
                   item: {
                     id: ticket.id,
@@ -208,7 +212,7 @@ builder.mutationField("createTicket", (t) =>
                     currency: foundPrice.currency.currency,
                     unit_amount: foundPrice.price,
                   },
-                  getStripClient: ctx.GET_STRIPE_CLIENT,
+                  getStripeClient: ctx.GET_STRIPE_CLIENT,
                 });
               }
               if (foundPrice?.currencyId === "CLP") {
