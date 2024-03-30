@@ -18,6 +18,7 @@ import { schema } from "~/schema";
 
 import { insertUsersSchema } from "./datasources/db/users";
 import { getSanityClient } from "./datasources/sanity/client";
+import { getStripClient } from "./datasources/stripe/client";
 
 // We get the token either from the Authorization header or from the "sb-access-token" cookie
 const getAuthToken = (request: Request) => {
@@ -229,6 +230,7 @@ export const yoga = createYoga<Env>({
     SANITY_API_VERSION,
     SANITY_SECRET_TOKEN,
     SUPABASE_JWT_DECODER,
+    STRIPE_KEY,
   }) => {
     if (!CLERK_PEM_PUBLIC_KEY) {
       throw new Error("Missing CLERK_KEY");
@@ -251,6 +253,9 @@ export const yoga = createYoga<Env>({
     if (!SUPABASE_JWT_DECODER) {
       throw new Error("Missing SUPABASE_JWT_DECODER");
     }
+    if (!STRIPE_KEY) {
+      throw new Error("Missing STRIPE_KEY");
+    }
     if (
       !SANITY_PROJECT_ID ||
       !SANITY_DATASET ||
@@ -267,6 +272,8 @@ export const yoga = createYoga<Env>({
         token: SANITY_SECRET_TOKEN,
         useCdn: true,
       });
+
+    const GET_STRIPE_CLIENT = () => getStripClient(STRIPE_KEY);
     const DB = getDb({
       neonUrl: NEON_URL,
     });
@@ -283,6 +290,7 @@ export const yoga = createYoga<Env>({
       USER,
       MAIL_QUEUE,
       GET_SANITY_CLIENT,
+      GET_STRIPE_CLIENT,
     };
   },
 });

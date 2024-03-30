@@ -31,11 +31,14 @@ export const ticketsSchema = pgTable("tickets", {
     .default("unlisted"),
   startDateTime: timestamp("start_date_time").notNull(),
   endDateTime: timestamp("end_date_time"),
-  requiresApproval: boolean("requires_approval").default(false),
+  requiresApproval: boolean("requires_approval").notNull().default(false),
   quantity: integer("quantity"),
+  isUnlimited: boolean("is_unlimited").notNull().default(false),
   eventId: uuid("event_id")
     .references(() => eventsSchema.id)
     .notNull(),
+  stripeProductId: text("stripe_product_id"),
+  mercadoPagoProductId: text("mercado_pago_product_id"),
   ...createdAndUpdatedAtFields,
 });
 

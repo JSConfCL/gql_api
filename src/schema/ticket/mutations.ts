@@ -3,8 +3,13 @@ import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
 import {
+  insertPriceSchema,
+  insertTicketPriceSchema,
   insertTicketSchema,
+  pricesSchema,
+  selectPriceSchema,
   selectTicketSchema,
+  ticketsPricesSchema,
   ticketsSchema,
   updateTicketSchema,
 } from "~/datasources/db/schema";
@@ -15,6 +20,19 @@ import {
   TicketTemplateVisibility,
 } from "~/schema/ticket/types";
 import { canCreateTicket, canEditTicket } from "~/validations";
+
+import { createStripeProduct } from "../../datasources/stripe";
+
+const PricingInputField = builder.inputType("PricingInputField", {
+  fields: (t) => ({
+    value: t.int({
+      required: false,
+    }),
+    currencyId: t.string({
+      required: false,
+    }),
+  }),
+});
 
 const TicketCreateInput = builder.inputType("TicketCreateInput", {
   fields: (t) => ({
@@ -43,33 +61,184 @@ const TicketCreateInput = builder.inputType("TicketCreateInput", {
     requiresApproval: t.boolean({
       required: false,
     }),
-    price: t.int({
-      required: false,
-    }),
     quantity: t.int({
       required: false,
     }),
     eventId: t.string({
       required: true,
     }),
-    currencyId: t.string({
+    unlimitedTickets: t.boolean({
+      required: true,
+      description:
+        "If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold.",
+    }),
+    prices: t.field({
+      type: [PricingInputField],
       required: false,
     }),
   }),
 });
 
+builder.mutationField("createTicket", (t) =>
+  t.field({
+    description: "Create a ticket",
+    type: TicketRef,
+    args: {
+      input: t.arg({
+        type: TicketCreateInput,
+        required: true,
+      }),
+    },
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, { input }, ctx) => {
+      const transactionResults = await ctx.DB.transaction(async (trx) => {
+        try {
+          if (!ctx.USER) {
+            throw new GraphQLError("User not found");
+          }
+          const { eventId } = input;
+          // Check if the user has permissions to create a ticket
+          const hasPermissions = await canCreateTicket({
+            user: ctx.USER,
+            eventId: eventId,
+            DB: ctx.DB,
+          });
+
+          if (!hasPermissions) {
+            throw new GraphQLError("Not authorized");
+          }
+          const hasQuantity = input.quantity ? input.quantity !== 0 : false;
+          if (!hasQuantity && !input.unlimitedTickets) {
+            throw new GraphQLError(
+              "Quantity must be provided if unlimitedTickets is false",
+            );
+          }
+
+          // First, we check if the user is trying to create a ticket with
+          // price. If so, we create all the prices.
+          const insertedPrices: Array<typeof selectPriceSchema._type> = [];
+          if (Array.isArray(input.prices)) {
+            if (input.prices.length === 0) {
+              throw new GraphQLError("Prices array must not be empty");
+            }
+            for (const price of input.prices) {
+              if (!price.value) {
+                throw new GraphQLError("Price is required");
+              }
+              if (price.value <= 0) {
+                throw new GraphQLError("Price must be greater than 0");
+              }
+              if (!price.currencyId) {
+                throw new GraphQLError(
+                  "CurrencyId is required when price is provided",
+                );
+              }
+
+              const insertPriceValues = insertPriceSchema.parse({
+                value: price.value,
+                currencyId: price.currencyId,
+              });
+
+              const insertedPrices = await trx
+                .insert(pricesSchema)
+                .values(insertPriceValues)
+                .returning();
+              const newPrice = insertedPrices?.[0];
+              if (!newPrice) {
+                throw new GraphQLError("Price not created");
+              }
+              insertedPrices.push(newPrice);
+            }
+          }
+
+          // Second, we create the ticket
+          const insertTicketValues = insertTicketSchema.parse({
+            name: input.name,
+            description: input.description,
+            status: input.status,
+            visibility: input.visibility,
+            startDateTime: input.startDateTime,
+            endDateTime: input.endDateTime,
+            requiresApproval: input.requiresApproval,
+            quantity: input.quantity,
+            eventId: input.eventId,
+            isUnlimited: input.unlimitedTickets,
+          });
+          const insertedTickets = await ctx.DB.insert(ticketsSchema)
+            .values(insertTicketValues)
+            .returning();
+          const ticket = insertedTickets?.[0];
+          if (!ticket) {
+            throw new GraphQLError("Could not create ticket");
+          }
+
+          // Third, we attach the prices to the ticket.
+          for (const price of insertedPrices) {
+            const ticketPriceToInsert = insertTicketPriceSchema.parse({
+              ticketId: ticket.id,
+              priceId: price.id,
+            });
+            const insertedTicketPrice = await trx
+              .insert(ticketsPricesSchema)
+              .values(ticketPriceToInsert)
+              .returning();
+            const ticketPrice = insertedTicketPrice?.[0];
+            if (!ticketPrice) {
+              throw new GraphQLError("Could not attach price to ticket");
+            }
+
+            // We pull the priceId w/ the currencyId. If the currencyId is USD,
+            // we create the product in Stripe. If the currencyId is CLP, we
+            // create the product in MercadoPago.
+            const foundPrice = await trx.query.pricesSchema.findFirst({
+              where: (ps, { eq }) => eq(ps.id, ticketPrice.priceId),
+              with: {
+                currency: true,
+              },
+            });
+            if (foundPrice?.currency) {
+              if (foundPrice.currencyId === "USD") {
+                await createStripeProduct({
+                  item: {
+                    id: ticket.id,
+                    name: ticket.name,
+                    description: ticket.description ?? undefined,
+                    currency: foundPrice.currency.currency,
+                    unit_amount: foundPrice.price,
+                  },
+                  getStripClient: ctx.GET_STRIPE_CLIENT,
+                });
+              }
+              if (foundPrice?.currencyId === "CLP") {
+                // TODO: createMercadoPagoProduct
+              }
+            }
+          }
+          return selectTicketSchema.parse(ticket);
+        } catch (e) {
+          console.log("Error creating tickets:", e);
+          throw new GraphQLError(
+            e instanceof Error ? e.message : "Unknown error",
+          );
+        }
+      });
+
+      return transactionResults;
+    },
+  }),
+);
+
 const TicketEditInput = builder.inputType("TicketEditInput", {
   fields: (t) => ({
-    ticketId: t.field({
-      type: "String",
+    ticketId: t.string({
       required: true,
     }),
-    name: t.field({
-      type: "String",
+    name: t.string({
       required: false,
     }),
-    description: t.field({
-      type: "String",
+    description: t.string({
       required: false,
     }),
     status: t.field({
@@ -88,88 +257,29 @@ const TicketEditInput = builder.inputType("TicketEditInput", {
       type: "DateTime",
       required: false,
     }),
-    requiresApproval: t.field({
-      type: "Boolean",
+    requiresApproval: t.boolean({
       required: false,
     }),
-    price: t.field({
-      type: "Int",
+    quantity: t.int({
       required: false,
     }),
-    quantity: t.field({
-      type: "Int",
+    eventId: t.string({
       required: false,
     }),
-    eventId: t.field({
-      type: "String",
-      required: false,
+    unlimitedTickets: t.boolean({
+      required: true,
+      description:
+        "If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold.",
     }),
-    currencyId: t.field({
-      type: "String",
+    prices: t.field({
+      type: PricingInputField,
       required: false,
     }),
   }),
 });
 
-builder.mutationFields((t) => ({
-  createTicket: t.field({
-    description: "Create a ticket",
-    type: TicketRef,
-    args: {
-      input: t.arg({
-        type: TicketCreateInput,
-        required: true,
-      }),
-    },
-    authz: {
-      rules: ["IsAuthenticated"],
-    },
-    resolve: async (root, { input }, ctx) => {
-      try {
-        if (!ctx.USER) {
-          throw new GraphQLError("User not found");
-        }
-        const { eventId } = input;
-        const hasPermissions = await canCreateTicket({
-          user: ctx.USER,
-          eventId: eventId,
-          DB: ctx.DB,
-        });
-
-        if (!hasPermissions) {
-          throw new GraphQLError("Not authorized");
-        }
-
-        const insertTicketValues = insertTicketSchema.parse({
-          name: input.name,
-          description: input.description,
-          status: input.status,
-          visibility: input.visibility,
-          startDateTime: input.startDateTime,
-          endDateTime: input.endDateTime,
-          requiresApproval: input.requiresApproval,
-          price: input.price,
-          quantity: input.quantity,
-          currencyId: input.currencyId,
-          eventId: input.eventId,
-        });
-
-        const ticket = (
-          await ctx.DB.insert(ticketsSchema)
-            .values(insertTicketValues)
-            .returning()
-        )?.[0];
-
-        return selectTicketSchema.parse(ticket);
-      } catch (e) {
-        throw new GraphQLError(
-          e instanceof Error ? e.message : "Unknown error",
-        );
-      }
-    },
-  }),
-
-  editTicket: t.field({
+builder.mutationField("editTicket", (t) =>
+  t.field({
     description: "Edit a ticket",
     type: TicketRef,
     args: {
@@ -219,13 +329,13 @@ builder.mutationFields((t) => ({
           "requiresApproval",
           input.requiresApproval,
         );
-        addToObjectIfPropertyExists(updateFields, "price", input.price);
         addToObjectIfPropertyExists(updateFields, "quantity", input.quantity);
-        addToObjectIfPropertyExists(
-          updateFields,
-          "currencyId",
-          input.currencyId,
-        );
+        // addToObjectIfPropertyExists(updateFields, "price", input.price);
+        // addToObjectIfPropertyExists(
+        //   updateFields,
+        //   "currencyId",
+        //   input.currencyId,
+        // );
 
         const response = updateTicketSchema.safeParse(updateFields);
         if (response.success) {
@@ -247,4 +357,4 @@ builder.mutationFields((t) => ({
       }
     },
   }),
-}));
+);

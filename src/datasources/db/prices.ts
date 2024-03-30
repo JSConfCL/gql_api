@@ -9,7 +9,7 @@ import { ticketsPricesSchema } from "./ticketPrice";
 // TICKETS-TABLE
 export const pricesSchema = pgTable("prices", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
-  price: integer("price"),
+  price: integer("price").notNull(),
   currencyId: uuid("currency_id").references(() => allowedCurrencySchema.id),
   ...createdAndUpdatedAtFields,
 });

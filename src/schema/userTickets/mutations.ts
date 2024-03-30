@@ -15,7 +15,8 @@ import {
   canRedeemUserTicket,
 } from "~/validations";
 
-import { PurchaseOrderRef, RedeemUserTicketError } from "./types";
+import { RedeemUserTicketError } from "./types";
+import { PurchaseOrderRef } from "../purchaseOrder/types";
 import { isValidUUID } from "../shared/helpers";
 
 const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {

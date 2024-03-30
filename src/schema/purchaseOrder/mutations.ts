@@ -1,15 +1,9 @@
-import { eq } from "drizzle-orm";
+import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
-import {
-  insertSalariesSchema,
-  purchaseOrderPaymentPlatforms,
-  purchaseOrdersSchema,
-  salariesSchema,
-  selectSalariesSchema,
-} from "~/datasources/db/schema";
-import { GenderEnum } from "~/schema/shared/enums";
-import { SalaryRef } from "~/schema/shared/refs";
+import { purchaseOrderPaymentPlatforms } from "~/datasources/db/schema";
+
+import { PurchaseOrderRef } from "./types";
 
 const PurchaseOrderPlatformEnum = builder.enumType(
   "PurchaseOrderPlatformEnum",
@@ -41,7 +35,7 @@ const PurchaseFlowForPurchaseOrderInput = builder.inputType(
 builder.mutationFields((t) => ({
   initializePurchaseFlowForPurchaseOrder: t.field({
     description: "Create a salary",
-    type: SalaryRef,
+    type: PurchaseOrderRef,
     authz: {
       rules: ["IsAuthenticated"],
     },
@@ -62,16 +56,16 @@ builder.mutationFields((t) => ({
       });
 
       if (!purchaseOrder) {
-        throw new Error("Purchase order not found");
+        throw new GraphQLError("Purchase order not found");
       }
       if (purchaseOrder.userId !== USER.id) {
-        throw new Error("Unauthorized");
+        throw new GraphQLError("Unauthorized");
       }
       if (purchaseOrder.purchaseOrderPaymentStatus === "paid") {
-        throw new Error("Purchase order already paid");
+        throw new GraphQLError("Purchase order already paid");
       }
       if (purchaseOrder.purchaseOrderPaymentStatus === "not_required") {
-        throw new Error("Purchase order payment not required");
+        throw new GraphQLError("Purchase order payment not required");
       }
 
       // TODO: Depending on the currency ID, we update the totalPrice for the purchase order.

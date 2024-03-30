@@ -9,10 +9,12 @@ import { ORM_TYPE } from "~/datasources/db";
 import { USER } from "~/datasources/db/schema";
 
 import { getSanityClient } from "./datasources/sanity/client";
+import { getStripClient } from "./datasources/stripe/client";
 
 type Context = {
   DB: ORM_TYPE;
   GET_SANITY_CLIENT: () => ReturnType<typeof getSanityClient>;
+  GET_STRIPE_CLIENT: () => ReturnType<typeof getStripClient>;
   USER: USER;
   MAIL_QUEUE: Queue;
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;

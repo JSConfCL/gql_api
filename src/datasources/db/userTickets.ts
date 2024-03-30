@@ -5,10 +5,11 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { purchaseOrdersSchema, ticketsSchema, usersSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
-export const userTicketsStatusEnum = ["active", "inactive"] as const;
+export const userTicketsStatusEnum = ["active", "inactive", "expired"] as const;
 export const userTicketsPaymentStatusEnum = [
   "paid",
   "unpaid",
+  "cancelled",
   "not_required",
 ] as const;
 export const userTicketsApprovalStatusEnum = [
