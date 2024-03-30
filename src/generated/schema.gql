@@ -644,7 +644,7 @@ input TicketEditInput {
   """
   If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold.
   """
-  unlimitedTickets: Boolean!
+  unlimitedTickets: Boolean
   visibility: TicketTemplateVisibility
 }
 

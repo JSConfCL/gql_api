@@ -663,7 +663,7 @@ export type TicketEditInput = {
   status?: InputMaybe<TicketTemplateStatus>;
   ticketId: Scalars["String"]["input"];
   /** If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold. */
-  unlimitedTickets: Scalars["Boolean"]["input"];
+  unlimitedTickets?: InputMaybe<Scalars["Boolean"]["input"]>;
   visibility?: InputMaybe<TicketTemplateVisibility>;
 };
 

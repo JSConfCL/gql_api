@@ -270,7 +270,7 @@ const TicketEditInput = builder.inputType("TicketEditInput", {
       required: false,
     }),
     unlimitedTickets: t.boolean({
-      required: true,
+      required: false,
       description:
         "If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold.",
     }),
