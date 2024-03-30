@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 
 let stripeClient: Stripe | null = null;
-export const getStripClient = (stripeKey: string) => {
+export const getStripeClient = (stripeKey: string) => {
   if (!stripeClient) {
     stripeClient = new Stripe(stripeKey);
   }

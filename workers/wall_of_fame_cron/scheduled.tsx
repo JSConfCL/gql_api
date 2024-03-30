@@ -1,11 +1,11 @@
 import { H } from "@highlight-run/cloudflare";
 
 import { APP_ENV } from "~/env";
+import { ensureKeys } from "~workers/utils";
 
 import { syncMercadopagoPaymentsAndSubscriptions } from "./api.mercadopago";
 import { syncStripePayments } from "./api.stripe";
 import { ENV } from "./types";
-import { ensureKeys } from "../utils";
 
 export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   event,

@@ -82,6 +82,11 @@ import {
 } from "~/datasources/db/schema";
 import { genderOptions } from "~/datasources/db/shared";
 import {
+  insertTicketPriceSchema,
+  selectTicketPriceSchema,
+  ticketsPricesSchema,
+} from "~/datasources/db/ticketPrice";
+import {
   TicketApprovalStatus,
   TicketPaymentStatus,
   TicketRedemptionStatus,
@@ -89,12 +94,6 @@ import {
 } from "~/generated/types";
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
-
-import {
-  insertTicketPriceSchema,
-  selectTicketPriceSchema,
-  ticketsPricesSchema,
-} from "../../datasources/db/ticketPrice";
 
 const insertUserRequest = insertUsersSchema.deepPartial();
 

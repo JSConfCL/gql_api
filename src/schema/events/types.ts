@@ -1,5 +1,6 @@
 import { SQL, eq, inArray } from "drizzle-orm";
 
+import { authHelpers } from "~/authz/helpers";
 import { builder } from "~/builder";
 import {
   selectCommunitySchema,
@@ -27,8 +28,6 @@ import {
   TicketRedemptionStatus,
   TicketStatus,
 } from "~/schema/userTickets/types";
-
-import { authHelpers } from "../../authz/helpers";
 
 export const EventStatus = builder.enumType("EventStatus", {
   values: ["active", "inactive"] as const,

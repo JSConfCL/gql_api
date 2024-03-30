@@ -5,8 +5,7 @@ import { v5 } from "uuid";
 import { GoogleImportQueueElement } from "~/datasources/queues/google_import";
 import { getSanityClient } from "~/datasources/sanity/client";
 import { APP_ENV } from "~/env";
-
-import { ensureKeys } from "../utils";
+import { ensureKeys } from "~workers/utils";
 
 type ENV = {
   SANITY_PROJECT_ID: string;

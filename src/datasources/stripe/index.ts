@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 
-import { puchaseOrderPaymentStatusEnum } from "../db/purchaseOrders";
-import { someMinutesIntoTheFuture } from "../helpers";
+import { puchaseOrderPaymentStatusEnum } from "~/datasources/db/purchaseOrders";
+import { someMinutesIntoTheFuture } from "~/datasources/helpers";
 
 export const getPaymentStatusFromPaymentProviderStatus = (
   stripeStatus: Stripe.Response<Stripe.Checkout.Session>["status"],

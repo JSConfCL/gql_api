@@ -8,6 +8,8 @@ import {
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
+import { PurchaseOrderRef } from "~/schema/purchaseOrder/types";
+import { isValidUUID } from "~/schema/shared/helpers";
 import { UserTicketRef } from "~/schema/shared/refs";
 import {
   canApproveTicket,
@@ -16,8 +18,6 @@ import {
 } from "~/validations";
 
 import { RedeemUserTicketError } from "./types";
-import { PurchaseOrderRef } from "../purchaseOrder/types";
-import { isValidUUID } from "../shared/helpers";
 
 const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {
   fields: (t) => ({

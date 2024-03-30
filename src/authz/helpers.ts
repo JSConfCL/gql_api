@@ -1,6 +1,5 @@
+import { ORM_TYPE } from "~/datasources/db";
 import { USER } from "~/datasources/db/schema";
-
-import { ORM_TYPE } from "../datasources/db";
 
 const isCommuntiyAdmin = async ({
   user,

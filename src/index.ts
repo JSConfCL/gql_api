@@ -18,7 +18,7 @@ import { schema } from "~/schema";
 
 import { insertUsersSchema } from "./datasources/db/users";
 import { getSanityClient } from "./datasources/sanity/client";
-import { getStripClient } from "./datasources/stripe/client";
+import { getStripeClient } from "./datasources/stripe/client";
 
 // We get the token either from the Authorization header or from the "sb-access-token" cookie
 const getAuthToken = (request: Request) => {
@@ -273,7 +273,7 @@ export const yoga = createYoga<Env>({
         useCdn: true,
       });
 
-    const GET_STRIPE_CLIENT = () => getStripClient(STRIPE_KEY);
+    const GET_STRIPE_CLIENT = () => getStripeClient(STRIPE_KEY);
     const DB = getDb({
       neonUrl: NEON_URL,
     });

@@ -13,6 +13,7 @@ import {
   ticketsSchema,
   updateTicketSchema,
 } from "~/datasources/db/schema";
+import { createStripeProduct } from "~/datasources/stripe";
 import { addToObjectIfPropertyExists } from "~/schema/shared/helpers";
 import { TicketRef } from "~/schema/shared/refs";
 import {
@@ -20,8 +21,6 @@ import {
   TicketTemplateVisibility,
 } from "~/schema/ticket/types";
 import { canCreateTicket, canEditTicket } from "~/validations";
-
-import { createStripeProduct } from "../../datasources/stripe";
 
 const PricingInputField = builder.inputType("PricingInputField", {
   fields: (t) => ({
