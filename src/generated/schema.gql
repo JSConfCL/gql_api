@@ -581,6 +581,11 @@ type Ticket {
   id: ID!
 
   """
+  Whether or not the ticket is free
+  """
+  isFree: Boolean!
+
+  """
   Whether or not the ticket has an unlimited quantity. This is reserved for things loike online events.
   """
   isUnlimited: Boolean!
@@ -615,6 +620,11 @@ input TicketCreateInput {
   description: String
   endDateTime: DateTime
   eventId: String!
+
+  """
+  If the ticket is free, the price submitted will be ignored.
+  """
+  isFree: Boolean!
   name: String!
   prices: [PricingInputField!]
   quantity: Int

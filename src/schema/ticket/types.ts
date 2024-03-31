@@ -58,6 +58,10 @@ builder.objectType(TicketRef, {
       description: "The number of tickets available for this ticket type",
       nullable: true,
     }),
+    isFree: t.exposeBoolean("isFree", {
+      description: "Whether or not the ticket is free",
+      nullable: false,
+    }),
     isUnlimited: t.exposeBoolean("isUnlimited", {
       description:
         "Whether or not the ticket has an unlimited quantity. This is reserved for things loike online events.",

@@ -60,6 +60,7 @@ describe("User", () => {
       endDateTime: endDateTime.toISOString(),
       requiresApproval: false,
       unlimitedTickets: false,
+      isFree: false,
       prices: [
         {
           currencyId: currency1.id,
@@ -142,6 +143,7 @@ describe("User", () => {
         variables: {
           input: {
             name: faker.word.words(3),
+            isFree: false,
             eventId: event1.id,
             startDateTime: faker.date.future().toISOString(),
             unlimitedTickets: true,

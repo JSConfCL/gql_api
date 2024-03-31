@@ -13,9 +13,9 @@ import {
   ticketsSchema,
   updateTicketSchema,
 } from "~/datasources/db/schema";
-import { createStripeProduct } from "~/datasources/stripe";
 import { addToObjectIfPropertyExists } from "~/schema/shared/helpers";
 import { TicketRef } from "~/schema/shared/refs";
+import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
 import {
   TicketTemplateStatus,
   TicketTemplateVisibility,
@@ -71,6 +71,11 @@ const TicketCreateInput = builder.inputType("TicketCreateInput", {
       description:
         "If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold.",
     }),
+    isFree: t.boolean({
+      required: true,
+      description:
+        "If the ticket is free, the price submitted will be ignored.",
+    }),
     prices: t.field({
       type: [PricingInputField],
       required: false,
@@ -106,15 +111,32 @@ builder.mutationField("createTicket", (t) =>
       if (!hasPermissions) {
         throw new GraphQLError("Not authorized");
       }
+      const hasQuantity = input.quantity ? input.quantity !== 0 : false;
+
+      if (input.unlimitedTickets) {
+        if (hasQuantity) {
+          throw new GraphQLError(
+            "Quantity must not be provided if tickets are unlimited",
+          );
+        }
+      } else {
+        if (!hasQuantity) {
+          throw new GraphQLError(
+            "Quantity must be provided if tickets are not unlimited",
+          );
+        }
+      }
+
+      if (input.isFree && input.prices) {
+        throw new GraphQLError("prices must not be provided if ticket is free");
+      }
+
+      if (input.quantity && input.quantity <= 0) {
+        throw new GraphQLError("Quantity must be greater than 0");
+      }
+
       const transactionResults = await ctx.DB.transaction(async (trx) => {
         try {
-          const hasQuantity = input.quantity ? input.quantity !== 0 : false;
-          if (!hasQuantity && !input.unlimitedTickets) {
-            throw new GraphQLError(
-              "Quantity must be provided if unlimitedTickets is false",
-            );
-          }
-
           // First, we check if the user is trying to create a ticket with
           // price. If so, we create all the prices.
           const insertedPrices: Array<typeof selectPriceSchema._type> = [];
@@ -164,14 +186,15 @@ builder.mutationField("createTicket", (t) =>
             quantity: input.quantity,
             eventId: input.eventId,
             isUnlimited: input.unlimitedTickets,
+            isFree: input.isFree,
           });
           const insertedTickets = await trx
             .insert(ticketsSchema)
             .values(insertTicketValues)
             .returning();
-          const ticket = insertedTickets?.[0];
+          const insertedTicket = insertedTickets?.[0];
 
-          if (!ticket) {
+          if (!insertedTicket) {
             throw new GraphQLError("Could not create ticket");
           }
 
@@ -179,7 +202,7 @@ builder.mutationField("createTicket", (t) =>
           for (const price of insertedPrices) {
             console.log("Attaching price to ticket: ", price);
             const ticketPriceToInsert = insertTicketPriceSchema.parse({
-              ticketId: ticket.id,
+              ticketId: insertedTicket.id,
               priceId: price.id,
             });
             const insertedTicketPrice = await trx
@@ -200,26 +223,18 @@ builder.mutationField("createTicket", (t) =>
                 currency: true,
               },
             });
-            console.log("Found price: ", ctx);
+            console.log("Found price", foundPrice);
             if (foundPrice?.currency) {
-              if (foundPrice.currency.currency === "USD") {
-                await createStripeProduct({
-                  item: {
-                    id: ticket.id,
-                    name: ticket.name,
-                    description: ticket.description ?? undefined,
-                    currency: foundPrice.currency.currency,
-                    unit_amount: foundPrice.price,
-                  },
-                  getStripeClient: ctx.GET_STRIPE_CLIENT,
-                });
-              }
-              if (foundPrice?.currencyId === "CLP") {
-                // TODO: createMercadoPagoProduct
-              }
+              await ensureProductsAreCreated({
+                price: foundPrice.price,
+                currencyCode: foundPrice.currency.currency,
+                ticket: insertedTicket,
+                getStripeClient: ctx.GET_STRIPE_CLIENT,
+                transactionHander: trx,
+              });
             }
           }
-          return selectTicketSchema.parse(ticket);
+          return selectTicketSchema.parse(insertedTicket);
         } catch (e) {
           console.log("Error creating tickets:", e);
           throw new GraphQLError(

@@ -5,6 +5,7 @@ import { builder } from "~/builder";
 import {
   insertUserTicketsSchema,
   purchaseOrdersSchema,
+  selectPurchaseOrdersSchema,
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
@@ -376,13 +377,23 @@ builder.mutationFields((t) => ({
               if (ticketTemplate.quantity) {
                 if (finalTickets.length > ticketTemplate.quantity) {
                   return new Error(
-                    `We hav gone over the limit of tickets for ticket template with id ${item.ticketId}`,
+                    `We have gone over the limit of tickets for ticket template with id ${item.ticketId}`,
                   );
                 }
               }
               claimedTickets = [...claimedTickets, ...createdUserTickets];
             }
-            return { createdPurchaseOrder, claimedTickets };
+
+            const foundPurchaseOrder =
+              await trx.query.purchaseOrdersSchema.findFirst({
+                where: (po, { eq }) => eq(po.id, createdPurchaseOrder.id),
+              });
+            if (!foundPurchaseOrder) {
+              return new Error("Could not find purchase order");
+            }
+            const selectedPurchaseOrder =
+              selectPurchaseOrdersSchema.parse(foundPurchaseOrder);
+            return { selectedPurchaseOrder, claimedTickets };
           } catch (e) {
             console.error("🚨Error", e);
             trx.rollback();
@@ -396,10 +407,10 @@ builder.mutationFields((t) => ({
           };
         }
 
-        const { claimedTickets, createdPurchaseOrder } = transactionResults;
+        const { claimedTickets, selectedPurchaseOrder } = transactionResults;
         const ticketsIds = claimedTickets.flatMap((t) => (t.id ? [t.id] : []));
         return {
-          id: createdPurchaseOrder.id,
+          purchaseOrder: selectedPurchaseOrder,
           ticketsIds,
         };
       } catch (e: unknown) {

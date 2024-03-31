@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 
-export const createStripeProduct = async ({
+export const createStripeProductAndPrice = async ({
   item,
 }: {
   item: {

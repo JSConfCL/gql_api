@@ -612,6 +612,8 @@ export type Ticket = {
   endDateTime?: Maybe<Scalars["DateTime"]["output"]>;
   eventId: Scalars["String"]["output"];
   id: Scalars["ID"]["output"];
+  /** Whether or not the ticket is free */
+  isFree: Scalars["Boolean"]["output"];
   /** Whether or not the ticket has an unlimited quantity. This is reserved for things loike online events. */
   isUnlimited: Scalars["Boolean"]["output"];
   name: Scalars["String"]["output"];
@@ -640,6 +642,8 @@ export type TicketCreateInput = {
   description?: InputMaybe<Scalars["String"]["input"]>;
   endDateTime?: InputMaybe<Scalars["DateTime"]["input"]>;
   eventId: Scalars["String"]["input"];
+  /** If the ticket is free, the price submitted will be ignored. */
+  isFree: Scalars["Boolean"]["input"];
   name: Scalars["String"]["input"];
   prices?: InputMaybe<Array<PricingInputField>>;
   quantity?: InputMaybe<Scalars["Int"]["input"]>;

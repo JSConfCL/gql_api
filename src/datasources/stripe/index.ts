@@ -17,8 +17,14 @@ export const getPaymentStatusFromPaymentProviderStatus = (
 };
 
 const isInteger = (n: number) => n % 1 === 0;
+const getUnitAmount = (unitAmount: number) => {
+  if (isInteger(unitAmount)) {
+    return { unit_amount: unitAmount };
+  }
+  return { unit_amount_decimal: unitAmount.toString() };
+};
 
-export const createStripeProduct = async ({
+export const createStripeProductAndPrice = async ({
   item,
   getStripeClient,
 }: {
@@ -47,14 +53,19 @@ export const createStripeProduct = async ({
       // Stripe expects the unit_amount to be an integer, and unit_amount_decimal to be a float
       // if we want to use decimals. (sellin 29.99 USD), we need to use unit_amount_decimal
       // instead of unit_amount.
-      ...(isInteger(item.unit_amount)
-        ? { unit_amount: item.unit_amount }
-        : { unit_amount_decimal: item.unit_amount.toString() }),
+      ...getUnitAmount(item.unit_amount),
     },
     shippable: false,
   });
 
-  return productData;
+  const defaultPrice = productData.default_price;
+  if (!defaultPrice) {
+    throw new Error("Stripe product and price could not be created.");
+  }
+  if (typeof defaultPrice === "string") {
+    return defaultPrice;
+  }
+  return defaultPrice.id;
 };
 
 export const createPayment = async ({
@@ -64,17 +75,6 @@ export const createPayment = async ({
 }: {
   items: Array<{
     id: string;
-    price_data: {
-      currency: string;
-      product_data: {
-        description?: string;
-        name: string;
-        metadata?: {
-          [name: string]: string | number | null;
-        };
-      };
-      unit_amount: number;
-    };
     quantity: number;
   }>;
   purchaseOrderId: string;
@@ -96,6 +96,7 @@ export const createPayment = async ({
     // one-time or recurring Prices.
     // For payment mode, there is a maximum of 100 line items, however it is
     // recommended to consolidate line items if there are more than a few dozen.
+    // line_items: items,
     line_items: items,
     // A unique string to reference the Checkout Session. This can be a
     // customer ID, a cart ID, or similar, and can be used to reconcile the
@@ -109,8 +110,5 @@ export const createPayment = async ({
     mode: "payment",
   });
 
-  return {
-    id: paymentLink.id,
-    paymentUrl: paymentLink.url,
-  };
+  return paymentLink;
 };

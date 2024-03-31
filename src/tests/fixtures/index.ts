@@ -9,7 +9,6 @@ import { PgTable } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { type ExecutionResult } from "graphql";
 import { createYoga } from "graphql-yoga";
-import Stripe from "stripe";
 import { ZodType, z } from "zod";
 
 import { Env } from "worker-configuration";
@@ -380,6 +379,8 @@ export const insertTicketTemplate = async (
     quantity: partialInput?.quantity ?? 100,
     status: partialInput?.status,
     visibility: partialInput?.visibility,
+    isFree: partialInput?.isFree ?? false,
+    isUnlimited: partialInput?.isUnlimited ?? false,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertTicketSchema>;
 
@@ -406,6 +407,7 @@ export const insertPurchaseOrder = async (
     paymentPlatformMetadata: partialInput?.paymentPlatformMetadata,
     purchaseOrderPaymentStatus:
       partialInput?.purchaseOrderPaymentStatus ?? "unpaid",
+    paymentPlatformExpirationDate: partialInput?.paymentPlatformExpirationDate,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertPurchaseOrdersSchema>;
 

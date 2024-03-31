@@ -34,6 +34,7 @@ export const ticketsSchema = pgTable("tickets", {
   requiresApproval: boolean("requires_approval").notNull().default(false),
   quantity: integer("quantity"),
   isUnlimited: boolean("is_unlimited").notNull().default(false),
+  isFree: boolean("is_free").notNull(),
   eventId: uuid("event_id")
     .references(() => eventsSchema.id)
     .notNull(),

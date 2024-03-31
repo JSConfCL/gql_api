@@ -12,8 +12,6 @@ const PurchaseOrderStatusEnum = builder.enumType("PurchaseOrderStatusEnum", {
 });
 
 export const PurchaseOrderRef = builder.objectRef<{
-  id: string;
-  finalPrice?: number;
   ticketsIds: string[];
   purchaseOrder: typeof selectPurchaseOrdersSchema._type;
 }>("PurchaseOrder");
@@ -21,12 +19,18 @@ export const PurchaseOrderRef = builder.objectRef<{
 builder.objectType(PurchaseOrderRef, {
   description: "Representation of a Purchase Order",
   fields: (t) => ({
-    id: t.exposeID("id"),
+    id: t.field({
+      type: "ID",
+      nullable: false,
+      resolve: (root) => root.purchaseOrder.id,
+    }),
     finalPrice: t.field({
       type: "Float",
       nullable: true,
       resolve: (root) => {
-        return root.finalPrice ?? 0;
+        return root.purchaseOrder.totalPrice
+          ? parseFloat(root.purchaseOrder.totalPrice)
+          : null;
       },
     }),
     paymentLink: t.field({
@@ -41,7 +45,7 @@ builder.objectType(PurchaseOrderRef, {
       nullable: true,
       resolve: async (root, args, ctx) => {
         const currencyId = root.purchaseOrder.currencyId;
-        if (root.finalPrice && currencyId) {
+        if (root.purchaseOrder.totalPrice && currencyId) {
           const currency = await ctx.DB.query.allowedCurrencySchema.findFirst({
             where: (acs, { eq }) => eq(acs.id, currencyId),
           });
@@ -62,7 +66,8 @@ builder.objectType(PurchaseOrderRef, {
       type: [UserTicketRef],
       resolve: async (root, s, { DB }) => {
         const userTickets = await DB.query.userTicketsSchema.findMany({
-          where: (ut, { eq, and }) => and(eq(ut.purchaseOrderId, root.id)),
+          where: (ut, { eq, and }) =>
+            and(eq(ut.purchaseOrderId, root.purchaseOrder.id)),
         });
         return userTickets.map((ut) => selectUserTicketsSchema.parse(ut));
       },
