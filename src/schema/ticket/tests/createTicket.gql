@@ -8,6 +8,7 @@ mutation CreateTicket($input: TicketCreateInput!) {
     startDateTime
     endDateTime
     isUnlimited
+    isFree
     requiresApproval
     quantity
     eventId

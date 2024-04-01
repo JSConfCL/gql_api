@@ -151,6 +151,205 @@ describe("As a user User", () => {
       });
     });
   });
+  describe("Should create a free ticket", () => {
+    it("Without pricing", async () => {
+      const { user1, event1 } = await userSetup();
+      const startDateTime = faker.date.future({
+        years: 1,
+      });
+      const endDateTime = faker.date.future({
+        years: 3,
+      });
+
+      const input: CreateTicketMutationVariables["input"] = {
+        name: faker.word.words(3),
+        description: faker.lorem.paragraph(3),
+        startDateTime: startDateTime.toISOString(),
+        endDateTime: endDateTime.toISOString(),
+        requiresApproval: false,
+        unlimitedTickets: false,
+        isFree: true,
+        quantity: faker.number.int({
+          min: 1,
+          max: 100,
+        }),
+        status: TicketTemplateStatus.Active,
+        visibility: TicketTemplateVisibility.Public,
+        eventId: event1.id,
+      };
+
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input,
+          },
+        },
+        user1,
+      );
+
+      assert.equal(response.errors, undefined);
+      assert.equal(response.data?.createTicket?.name, input.name);
+      assert.equal(
+        response.data?.createTicket?.startDateTime,
+        toISODateWithoutMilliseconds(startDateTime),
+      );
+      assert.equal(
+        response.data?.createTicket?.endDateTime,
+        toISODateWithoutMilliseconds(endDateTime),
+      );
+      assert.equal(
+        response.data?.createTicket?.requiresApproval,
+        input.requiresApproval,
+      );
+      assert.equal(response.data?.createTicket?.isFree, true);
+      assert.equal(response.data?.createTicket?.quantity, input.quantity);
+      assert.equal(response.data?.createTicket?.status, input.status);
+      assert.equal(response.data?.createTicket?.visibility, input.visibility);
+      assert.equal(response.data?.createTicket.eventId, input.eventId);
+      assert.equal(response.data?.createTicket.prices, null);
+    });
+  });
+  describe("Should create an unlimited ticket", () => {
+    it("With pricing", async () => {
+      const { user1, event1 } = await userSetup();
+      const currency1 = await insertAllowedCurrency({
+        currency: "USD",
+        validPaymentMethods: "stripe",
+      });
+
+      const startDateTime = faker.date.future({
+        years: 1,
+      });
+      const endDateTime = faker.date.future({
+        years: 3,
+      });
+
+      const value1 = faker.number.int({
+        min: 1,
+        max: 100,
+      });
+      const input: CreateTicketMutationVariables["input"] = {
+        name: faker.word.words(3),
+        description: faker.lorem.paragraph(3),
+        startDateTime: startDateTime.toISOString(),
+        endDateTime: endDateTime.toISOString(),
+        requiresApproval: false,
+        unlimitedTickets: true,
+        isFree: false,
+        prices: [
+          {
+            currencyId: currency1.id,
+            value: value1,
+          },
+        ],
+        status: TicketTemplateStatus.Active,
+        visibility: TicketTemplateVisibility.Public,
+        eventId: event1.id,
+      };
+
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input,
+          },
+        },
+        user1,
+      );
+
+      assert.equal(response.errors, undefined);
+      assert.equal(response.data?.createTicket?.name, input.name);
+      assert.equal(
+        response.data?.createTicket?.startDateTime,
+        toISODateWithoutMilliseconds(startDateTime),
+      );
+      assert.equal(
+        response.data?.createTicket?.endDateTime,
+        toISODateWithoutMilliseconds(endDateTime),
+      );
+      assert.equal(
+        response.data?.createTicket?.requiresApproval,
+        input.requiresApproval,
+      );
+      assert.equal(response.data?.createTicket?.quantity, null);
+      assert.equal(response.data?.createTicket?.isUnlimited, true);
+      assert.equal(response.data?.createTicket?.isFree, false);
+      assert.equal(response.data?.createTicket?.status, input.status);
+      assert.equal(response.data?.createTicket?.visibility, input.visibility);
+      assert.equal(response.data?.createTicket.eventId, input.eventId);
+      assert.equal(response.data?.createTicket.prices?.[0].amount, value1);
+      assert.deepEqual(response.data?.createTicket.prices?.[0].currency, {
+        currency: currency1.currency,
+        id: currency1.id,
+        validPaymentMethods: ValidPaymentMethods.Stripe,
+      });
+    });
+    it("without pricing", async () => {
+      const { user1, event1 } = await userSetup();
+      const startDateTime = faker.date.future({
+        years: 1,
+      });
+      const endDateTime = faker.date.future({
+        years: 3,
+      });
+
+      const input: CreateTicketMutationVariables["input"] = {
+        name: faker.word.words(3),
+        description: faker.lorem.paragraph(3),
+        startDateTime: startDateTime.toISOString(),
+        endDateTime: endDateTime.toISOString(),
+        requiresApproval: false,
+        unlimitedTickets: true,
+        isFree: true,
+        status: TicketTemplateStatus.Active,
+        visibility: TicketTemplateVisibility.Public,
+        eventId: event1.id,
+      };
+
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input,
+          },
+        },
+        user1,
+      );
+
+      assert.equal(response.errors, undefined);
+      assert.equal(response.data?.createTicket?.name, input.name);
+      assert.equal(
+        response.data?.createTicket?.startDateTime,
+        toISODateWithoutMilliseconds(startDateTime),
+      );
+      assert.equal(
+        response.data?.createTicket?.endDateTime,
+        toISODateWithoutMilliseconds(endDateTime),
+      );
+      assert.equal(
+        response.data?.createTicket?.requiresApproval,
+        input.requiresApproval,
+      );
+      assert.equal(response.data?.createTicket?.quantity, null);
+      assert.equal(response.data?.createTicket?.isUnlimited, true);
+      assert.equal(response.data?.createTicket?.isFree, true);
+      assert.equal(response.data?.createTicket?.status, input.status);
+      assert.equal(response.data?.createTicket?.visibility, input.visibility);
+      assert.equal(response.data?.createTicket.eventId, input.eventId);
+      assert.equal(response.data?.createTicket.prices, null);
+    });
+  });
+
   describe("Should throw an error", () => {
     it("If user don't have permission", async () => {
       const user1 = await insertUser();
@@ -556,7 +755,7 @@ describe("As a user User", () => {
 
       assert.equal(
         response.errors?.[0].message,
-        "CurrencyId is required wnhen prices are provided",
+        "CurrencyId is required when price is provided",
       );
     });
     it("If user is not authenticated", async () => {

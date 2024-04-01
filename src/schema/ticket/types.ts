@@ -72,6 +72,9 @@ builder.objectType(TicketRef, {
       type: [PriceRef],
       nullable: true,
       resolve: async (root, args, ctx) => {
+        if (root.isFree) {
+          return null;
+        }
         const prices = await ctx.DB.query.ticketsPricesSchema.findMany({
           where: (tps, { eq }) => eq(tps.ticketId, root.id),
           with: {
