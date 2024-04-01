@@ -101,6 +101,12 @@ builder.mutationField("createTicket", (t) =>
         throw new GraphQLError("User not found");
       }
       const { eventId } = input;
+      const event = await ctx.DB.query.eventsSchema.findFirst({
+        where: (e, { eq }) => eq(e.id, eventId),
+      });
+      if (!event) {
+        throw new GraphQLError("Event not found");
+      }
       // Check if the user has permissions to create a ticket
       const hasPermissions = await canCreateTicket({
         user: ctx.USER,
@@ -113,6 +119,12 @@ builder.mutationField("createTicket", (t) =>
       }
       const hasQuantity = input.quantity ? input.quantity !== 0 : false;
 
+      if (input.endDateTime && input.startDateTime > input.endDateTime) {
+        throw new GraphQLError("End date must be after start date");
+      }
+      if (input.startDateTime < new Date()) {
+        throw new GraphQLError("Start date must be in the future");
+      }
       if (input.unlimitedTickets) {
         if (hasQuantity) {
           throw new GraphQLError(
@@ -128,11 +140,17 @@ builder.mutationField("createTicket", (t) =>
       }
 
       if (input.isFree && input.prices) {
-        throw new GraphQLError("prices must not be provided if ticket is free");
+        throw new GraphQLError(
+          "Prices array must not be provided if ticket is free",
+        );
       }
 
-      if (input.quantity && input.quantity <= 0) {
-        throw new GraphQLError("Quantity must be greater than 0");
+      if (
+        input.quantity !== undefined &&
+        input.quantity !== null &&
+        input.quantity <= 0
+      ) {
+        throw new GraphQLError("Cannot have negative quantity of tickets");
       }
 
       const transactionResults = await ctx.DB.transaction(async (trx) => {
@@ -149,7 +167,9 @@ builder.mutationField("createTicket", (t) =>
                 throw new GraphQLError("Price is required");
               }
               if (price.value <= 0) {
-                throw new GraphQLError("Price must be greater than 0");
+                throw new GraphQLError(
+                  "Price must be greater than 0. If this is a free ticket, set isFree to true.",
+                );
               }
               if (!price.currencyId) {
                 throw new GraphQLError(
@@ -157,20 +177,24 @@ builder.mutationField("createTicket", (t) =>
                 );
               }
 
-              const insertPriceValues = insertPriceSchema.parse({
-                price: price.value,
-                currencyId: price.currencyId,
-              });
-
-              const insertedPrice = await trx
-                .insert(pricesSchema)
-                .values(insertPriceValues)
-                .returning();
-              const newPrice = insertedPrice?.[0];
-              if (!newPrice) {
-                throw new GraphQLError("Price not created");
+              try {
+                const insertPriceValues = insertPriceSchema.parse({
+                  price: price.value,
+                  currencyId: price.currencyId,
+                });
+                const insertedPrice = await trx
+                  .insert(pricesSchema)
+                  .values(insertPriceValues)
+                  .returning();
+                const newPrice = insertedPrice?.[0];
+                if (!newPrice) {
+                  throw new GraphQLError("Price not created");
+                }
+                insertedPrices.push(newPrice);
+              } catch (e) {
+                console.log("Error creating price:", e);
+                throw new GraphQLError("Error creating price");
               }
-              insertedPrices.push(newPrice);
             }
           }
 

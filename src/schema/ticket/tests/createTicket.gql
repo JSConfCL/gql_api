@@ -11,5 +11,14 @@ mutation CreateTicket($input: TicketCreateInput!) {
     requiresApproval
     quantity
     eventId
+    prices {
+      id
+      amount
+      currency {
+        id
+        currency
+        validPaymentMethods
+      }
+    }
   }
 }

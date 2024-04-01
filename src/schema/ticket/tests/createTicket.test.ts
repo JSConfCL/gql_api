@@ -1,11 +1,14 @@
 import { faker } from "@faker-js/faker";
+import { AsyncReturnType } from "type-fest";
 import { it, describe, assert, vi } from "vitest";
 
 import {
   TicketTemplateStatus,
   TicketTemplateVisibility,
+  ValidPaymentMethods,
 } from "~/generated/types";
 import {
+  executeGraphqlOperation,
   executeGraphqlOperationAsUser,
   insertAllowedCurrency,
   insertCommunity,
@@ -25,120 +28,543 @@ import {
 // We need to mock the stripe datasource to avoid making real requests
 vi.mock("~/datasources/stripe");
 
-describe("User", () => {
-  it("Should create a ticket", async () => {
-    const user1 = await insertUser({
+const userSetup = async ({
+  user,
+  event,
+  community,
+}: {
+  user?: AsyncReturnType<typeof insertUser>;
+  event?: AsyncReturnType<typeof insertEvent>;
+  community?: AsyncReturnType<typeof insertCommunity>;
+} = {}) => {
+  const user1 =
+    user ??
+    (await insertUser({
       isSuperAdmin: true,
-    });
-    const community1 = await insertCommunity();
-    const event1 = await insertEvent();
-    const currency1 = await insertAllowedCurrency({
-      currency: "USD",
-      validPaymentMethods: "stripe",
-    });
-    const currency2 = await insertAllowedCurrency({
-      currency: "CLP",
-      validPaymentMethods: "mercado_pago",
-    });
-    await insertEventToCommunity({
-      eventId: event1.id,
-      communityId: community1.id,
-    });
-    await insertUserToCommunity({
-      communityId: community1.id,
-      userId: user1.id,
-      role: "member",
-    });
+    }));
+  const community1 = community ?? (await insertCommunity());
+  const event1 = event ?? (await insertEvent());
+  await insertEventToCommunity({
+    eventId: event1.id,
+    communityId: community1.id,
+  });
+  return { user1, community1, event1 };
+};
 
-    const startDateTime = faker.date.future();
-    const endDateTime = faker.date.future();
+describe("As a user User", () => {
+  describe("Should create a ticket", () => {
+    it("With USD pricing and CLP pricing", async () => {
+      const { user1, event1 } = await userSetup();
+      const currency1 = await insertAllowedCurrency({
+        currency: "USD",
+        validPaymentMethods: "stripe",
+      });
+      const currency2 = await insertAllowedCurrency({
+        currency: "CLP",
+        validPaymentMethods: "mercado_pago",
+      });
 
-    const fakeInput: CreateTicketMutationVariables["input"] = {
-      name: faker.word.words(3),
-      description: faker.lorem.paragraph(3),
-      startDateTime: startDateTime.toISOString(),
-      endDateTime: endDateTime.toISOString(),
-      requiresApproval: false,
-      unlimitedTickets: false,
-      isFree: false,
-      prices: [
-        {
-          currencyId: currency1.id,
-          value: faker.number.int({
-            min: 1,
-            max: 100,
-          }),
-        },
-        {
-          currencyId: currency2.id,
-          value: faker.number.int({
-            min: 1,
-            max: 100,
-          }),
-        },
-      ],
-      quantity: faker.number.int({
+      const startDateTime = faker.date.future({
+        years: 1,
+      });
+      const endDateTime = faker.date.future({
+        years: 3,
+      });
+
+      const value1 = faker.number.int({
         min: 1,
         max: 100,
-      }),
-      status: TicketTemplateStatus.Active,
-      visibility: TicketTemplateVisibility.Public,
-      eventId: event1.id,
-    };
+      });
+      const value2 = faker.number.int({
+        min: 1,
+        max: 100,
+      });
+      const input: CreateTicketMutationVariables["input"] = {
+        name: faker.word.words(3),
+        description: faker.lorem.paragraph(3),
+        startDateTime: startDateTime.toISOString(),
+        endDateTime: endDateTime.toISOString(),
+        requiresApproval: false,
+        unlimitedTickets: false,
+        isFree: false,
+        prices: [
+          {
+            currencyId: currency1.id,
+            value: value1,
+          },
+          {
+            currencyId: currency2.id,
+            value: value2,
+          },
+        ],
+        quantity: faker.number.int({
+          min: 1,
+          max: 100,
+        }),
+        status: TicketTemplateStatus.Active,
+        visibility: TicketTemplateVisibility.Public,
+        eventId: event1.id,
+      };
 
-    const response = await executeGraphqlOperationAsUser<
-      CreateTicketMutation,
-      CreateTicketMutationVariables
-    >(
-      {
-        document: CreateTicket,
-        variables: {
-          input: {
-            ...fakeInput,
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input,
           },
         },
-      },
-      user1,
-    );
+        user1,
+      );
 
-    assert.equal(response.errors, undefined);
-    assert.equal(response.data?.createTicket?.name, fakeInput.name);
-    assert.equal(
-      response.data?.createTicket?.startDateTime,
-      toISODateWithoutMilliseconds(startDateTime),
-    );
-    assert.equal(
-      response.data?.createTicket?.endDateTime,
-      toISODateWithoutMilliseconds(endDateTime),
-    );
-    assert.equal(
-      response.data?.createTicket?.requiresApproval,
-      fakeInput.requiresApproval,
-    );
-    assert.equal(response.data?.createTicket?.quantity, fakeInput.quantity);
-    assert.equal(response.data?.createTicket?.status, fakeInput.status);
-    assert.equal(response.data?.createTicket?.visibility, fakeInput.visibility);
-    assert.equal(response.data?.createTicket?.eventId, fakeInput.eventId);
+      assert.equal(response.errors, undefined);
+      assert.equal(response.data?.createTicket?.name, input.name);
+      assert.equal(
+        response.data?.createTicket?.startDateTime,
+        toISODateWithoutMilliseconds(startDateTime),
+      );
+      assert.equal(
+        response.data?.createTicket?.endDateTime,
+        toISODateWithoutMilliseconds(endDateTime),
+      );
+      assert.equal(
+        response.data?.createTicket?.requiresApproval,
+        input.requiresApproval,
+      );
+      assert.equal(response.data?.createTicket?.quantity, input.quantity);
+      assert.equal(response.data?.createTicket?.status, input.status);
+      assert.equal(response.data?.createTicket?.visibility, input.visibility);
+      assert.equal(response.data?.createTicket.eventId, input.eventId);
+      assert.equal(response.data?.createTicket.prices?.[0].amount, value1);
+      assert.deepEqual(response.data?.createTicket.prices?.[0].currency, {
+        currency: currency1.currency,
+        id: currency1.id,
+        validPaymentMethods: ValidPaymentMethods.Stripe,
+      });
+      assert.equal(response.data?.createTicket.prices?.[1].amount, value2);
+      assert.deepEqual(response.data?.createTicket.prices?.[1].currency, {
+        currency: currency2.currency,
+        id: currency2.id,
+        validPaymentMethods: ValidPaymentMethods.MercadoPago,
+      });
+    });
   });
-  it("It should throw an error, if don't have permission", async () => {
-    const user1 = await insertUser();
-    const community1 = await insertCommunity();
-    const event1 = await insertEvent();
-    await insertEventToCommunity({
-      eventId: event1.id,
-      communityId: community1.id,
-    });
-    await insertUserToCommunity({
-      communityId: community1.id,
-      userId: user1.id,
-      role: "member",
-    });
+  describe("Should throw an error", () => {
+    it("If user don't have permission", async () => {
+      const user1 = await insertUser();
+      const community1 = await insertCommunity();
+      const event1 = await insertEvent();
+      await insertEventToCommunity({
+        eventId: event1.id,
+        communityId: community1.id,
+      });
+      await insertUserToCommunity({
+        communityId: community1.id,
+        userId: user1.id,
+        role: "member",
+      });
 
-    const response = await executeGraphqlOperationAsUser<
-      CreateTicketMutation,
-      CreateTicketMutationVariables
-    >(
-      {
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input: {
+              name: faker.word.words(3),
+              isFree: false,
+              eventId: event1.id,
+              startDateTime: faker.date.future().toISOString(),
+              unlimitedTickets: true,
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(response.errors?.[0].message, "Not authorized");
+    });
+    it("If event does not exist", async () => {
+      const { user1 } = await userSetup();
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input: {
+              name: faker.word.words(3),
+              isFree: false,
+              eventId: faker.string.uuid(),
+              startDateTime: faker.date.future().toISOString(),
+              unlimitedTickets: true,
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(response.errors?.[0].message, "Event not found");
+    });
+    it("If currency does not exist", async () => {
+      const { user1, event1 } = await userSetup();
+      const price = faker.number.int({
+        min: 10,
+        max: 10000,
+      });
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input: {
+              name: faker.word.words(3),
+              isFree: false,
+              eventId: event1.id,
+              startDateTime: faker.date.future().toISOString(),
+              unlimitedTickets: true,
+              prices: [
+                {
+                  currencyId: faker.string.uuid(),
+                  value: price,
+                },
+              ],
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(response.errors?.[0].message, "Error creating price");
+    });
+    it("If price is 0 (or less than 0) and isFree is false", async () => {
+      const { user1, event1 } = await userSetup();
+      const currency1 = await insertAllowedCurrency({
+        currency: "USD",
+        validPaymentMethods: "stripe",
+      });
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input: {
+              name: faker.word.words(3),
+              isFree: false,
+              eventId: event1.id,
+              startDateTime: faker.date.future().toISOString(),
+              unlimitedTickets: true,
+              prices: [
+                {
+                  currencyId: currency1.id,
+                  value: -1,
+                },
+              ],
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(
+        response.errors?.[0].message,
+        "Price must be greater than 0. If this is a free ticket, set isFree to true.",
+      );
+    });
+    it("If price is set and isFree is true", async () => {
+      const { user1, event1 } = await userSetup();
+      const currency1 = await insertAllowedCurrency({
+        currency: "USD",
+        validPaymentMethods: "stripe",
+      });
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input: {
+              name: faker.word.words(3),
+              isFree: true,
+              eventId: event1.id,
+              startDateTime: faker.date.future().toISOString(),
+              unlimitedTickets: true,
+              prices: [
+                {
+                  currencyId: currency1.id,
+                  value: 10,
+                },
+              ],
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(
+        response.errors?.[0].message,
+        "Prices array must not be provided if ticket is free",
+      );
+    });
+    it("If startDateTime is in the past", async () => {
+      const { user1, event1 } = await userSetup();
+      const currency1 = await insertAllowedCurrency({
+        currency: "USD",
+        validPaymentMethods: "stripe",
+      });
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input: {
+              name: faker.word.words(3),
+              isFree: false,
+              eventId: event1.id,
+              startDateTime: faker.date.past().toISOString(),
+              unlimitedTickets: true,
+              prices: [
+                {
+                  currencyId: currency1.id,
+                  value: 10,
+                },
+              ],
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(
+        response.errors?.[0].message,
+        "Start date must be in the future",
+      );
+    });
+    it("If endDateTime is before startDateTime", async () => {
+      const { user1, event1 } = await userSetup();
+      const currency1 = await insertAllowedCurrency({
+        currency: "USD",
+        validPaymentMethods: "stripe",
+      });
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input: {
+              name: faker.word.words(3),
+              isFree: false,
+              eventId: event1.id,
+              startDateTime: faker.date.future().toISOString(),
+              endDateTime: faker.date.past().toISOString(),
+              unlimitedTickets: true,
+              prices: [
+                {
+                  currencyId: currency1.id,
+                  value: 10,
+                },
+              ],
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(
+        response.errors?.[0].message,
+        "End date must be after start date",
+      );
+    });
+    it("If tickets are unlimited and quantity is provided", async () => {
+      const { user1, event1 } = await userSetup();
+      const currency1 = await insertAllowedCurrency({
+        currency: "USD",
+        validPaymentMethods: "stripe",
+      });
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input: {
+              name: faker.word.words(3),
+              isFree: false,
+              eventId: event1.id,
+              startDateTime: faker.date.future().toISOString(),
+              unlimitedTickets: true,
+              quantity: 10,
+              prices: [
+                {
+                  currencyId: currency1.id,
+                  value: 10,
+                },
+              ],
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(
+        response.errors?.[0].message,
+        "Quantity must not be provided if tickets are unlimited",
+      );
+    });
+    it("If quantity is 0 (or less than 0) and tickets are not unlimited", async () => {
+      const { user1, event1 } = await userSetup();
+      const currency1 = await insertAllowedCurrency({
+        currency: "USD",
+        validPaymentMethods: "stripe",
+      });
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input: {
+              name: faker.word.words(3),
+              isFree: false,
+              eventId: event1.id,
+              startDateTime: faker.date.future().toISOString(),
+              unlimitedTickets: false,
+              quantity: 0,
+              prices: [
+                {
+                  currencyId: currency1.id,
+                  value: 10,
+                },
+              ],
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(
+        response.errors?.[0].message,
+        "Quantity must be provided if tickets are not unlimited",
+      );
+    });
+    it("If amount of tickets is negative", async () => {
+      const { user1, event1 } = await userSetup();
+      const currency1 = await insertAllowedCurrency({
+        currency: "USD",
+        validPaymentMethods: "stripe",
+      });
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input: {
+              name: faker.word.words(3),
+              isFree: false,
+              eventId: event1.id,
+              startDateTime: faker.date.future().toISOString(),
+              unlimitedTickets: false,
+              quantity: -1,
+              prices: [
+                {
+                  currencyId: currency1.id,
+                  value: 10,
+                },
+              ],
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(
+        response.errors?.[0].message,
+        "Cannot have negative quantity of tickets",
+      );
+    });
+    it("If we sent an empty prices array", async () => {
+      const { user1, event1 } = await userSetup();
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input: {
+              name: faker.word.words(3),
+              isFree: false,
+              eventId: event1.id,
+              startDateTime: faker.date.future().toISOString(),
+              unlimitedTickets: false,
+              quantity: 10,
+              prices: [],
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(
+        response.errors?.[0].message,
+        "Prices array must not be empty",
+      );
+    });
+    it("CurrencyId is required if prices are provided", async () => {
+      const { user1, event1 } = await userSetup();
+      const response = await executeGraphqlOperationAsUser<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >(
+        {
+          document: CreateTicket,
+          variables: {
+            input: {
+              name: faker.word.words(3),
+              isFree: false,
+              eventId: event1.id,
+              startDateTime: faker.date.future().toISOString(),
+              unlimitedTickets: false,
+              quantity: 10,
+              prices: [
+                {
+                  value: 10,
+                },
+              ],
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(
+        response.errors?.[0].message,
+        "CurrencyId is required wnhen prices are provided",
+      );
+    });
+    it("If user is not authenticated", async () => {
+      const { event1 } = await userSetup();
+      const response = await executeGraphqlOperation<
+        CreateTicketMutation,
+        CreateTicketMutationVariables
+      >({
         document: CreateTicket,
         variables: {
           input: {
@@ -146,13 +572,19 @@ describe("User", () => {
             isFree: false,
             eventId: event1.id,
             startDateTime: faker.date.future().toISOString(),
-            unlimitedTickets: true,
+            unlimitedTickets: false,
+            quantity: 10,
+            prices: [
+              {
+                currencyId: faker.string.uuid(),
+                value: 10,
+              },
+            ],
           },
         },
-      },
-      user1,
-    );
+      });
 
-    assert.equal(response.errors?.[0].message, "Not authorized");
+      assert.equal(response.errors?.[0].message, "User is not authenticated");
+    });
   });
 });
