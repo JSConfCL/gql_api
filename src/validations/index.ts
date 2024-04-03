@@ -222,16 +222,23 @@ export async function canCreateTicket({
   if (user.isSuperAdmin) {
     return true;
   }
-  const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
-    where: (utc, { eq, and }) =>
-      and(
-        eq(utc.userId, user.id),
-        eq(utc.role, "admin"),
-        eq(utc.communityId, eventId),
-      ),
+  const results = await DB.query.eventsToCommunitiesSchema.findFirst({
+    where: (utc, { eq }) => eq(utc.eventId, eventId),
+    with: {
+      community: {
+        with: {
+          usersToCommunities: {
+            where: (utc, { eq, and }) =>
+              and(eq(utc.userId, user.id), eq(utc.role, "admin")),
+          },
+        },
+      },
+    },
   });
-
-  return Boolean(isCommunityAdmin);
+  const communityAdminAssignments =
+    results?.community?.usersToCommunities.length ?? 0;
+  const isEventAdmin = communityAdminAssignments > 0;
+  return Boolean(isEventAdmin);
 }
 
 export async function canEditTicket(
