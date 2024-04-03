@@ -110,15 +110,8 @@ const getUser = async ({
     console.error("Could not verify token");
     return null;
   }
-  const {
-    avatar_url,
-    name,
-    user_name,
-    email_verified,
-    provider_id,
-    sub,
-    picture,
-  } = payload.user_metadata;
+  const { avatar_url, name, user_name, email_verified, sub, picture } =
+    payload.user_metadata;
 
   if (payload.exp < Date.now() / 1000) {
     console.error("Token expired");
@@ -128,10 +121,10 @@ const getUser = async ({
     email: payload.email,
     emailVerified: email_verified,
     imageUrl: avatar_url ? avatar_url : picture ? picture : "",
-    externalId: provider_id,
+    externalId: sub,
     name,
     username: user_name,
-    publicMetadata: payload.user_metadata,
+    publicMetadata: payload,
   });
   if (profileInfo.success === false) {
     console.error("Could not parse profile info", profileInfo.error);
