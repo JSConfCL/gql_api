@@ -13,23 +13,12 @@ import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
 
 import { PurchaseOrderRef } from "./types";
 
-const PurchaseOrderPlatformEnum = builder.enumType(
-  "PurchaseOrderPlatformEnum",
-  {
-    values: purchaseOrderPaymentPlatforms,
-  },
-);
-
 const PurchaseFlowForPurchaseOrderInput = builder.inputType(
   "PurchaseFlowForPurchaseOrderInput",
   {
     fields: (t) => ({
       purchaseOrderId: t.field({
         type: "String",
-        required: true,
-      }),
-      paymentPlatform: t.field({
-        type: PurchaseOrderPlatformEnum,
         required: true,
       }),
       currencyID: t.field({
@@ -64,9 +53,9 @@ const fetchPurchaseOrderInformation = async (
   });
 };
 
-builder.mutationFields((t) => ({
-  initializePurchaseFlowForPurchaseOrder: t.field({
-    description: "Create a salary",
+builder.mutationField("payForPurchaseOrder", (t) =>
+  t.field({
+    description: "Create a purchase order",
     type: PurchaseOrderRef,
     authz: {
       rules: ["IsAuthenticated"],
@@ -81,7 +70,7 @@ builder.mutationFields((t) => ({
       if (!USER) {
         throw new Error("User is required");
       }
-      const { paymentPlatform, purchaseOrderId } = input;
+      const { purchaseOrderId } = input;
 
       const purchaseOrder = await DB.query.purchaseOrdersSchema.findFirst({
         where: (po, { eq, and }) =>
@@ -233,4 +222,4 @@ builder.mutationFields((t) => ({
       // - Construct response and return payment link.
     },
   }),
-}));
+);
