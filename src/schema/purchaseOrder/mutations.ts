@@ -4,7 +4,6 @@ import { GraphQLError } from "graphql";
 import { builder } from "~/builder";
 import { ORM_TYPE } from "~/datasources/db";
 import {
-  purchaseOrderPaymentPlatforms,
   purchaseOrdersSchema,
   selectPurchaseOrdersSchema,
 } from "~/datasources/db/schema";
@@ -13,21 +12,18 @@ import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
 
 import { PurchaseOrderRef } from "./types";
 
-const PurchaseFlowForPurchaseOrderInput = builder.inputType(
-  "PurchaseFlowForPurchaseOrderInput",
-  {
-    fields: (t) => ({
-      purchaseOrderId: t.field({
-        type: "String",
-        required: true,
-      }),
-      currencyID: t.field({
-        type: "String",
-        required: true,
-      }),
+const PayForPurchaseOrderInput = builder.inputType("PayForPurchaseOrderInput", {
+  fields: (t) => ({
+    purchaseOrderId: t.field({
+      type: "String",
+      required: true,
     }),
-  },
-);
+    currencyID: t.field({
+      type: "String",
+      required: true,
+    }),
+  }),
+});
 
 const fetchPurchaseOrderInformation = async (
   purchaseOrderId: string,
@@ -62,7 +58,7 @@ builder.mutationField("payForPurchaseOrder", (t) =>
     },
     args: {
       input: t.arg({
-        type: PurchaseFlowForPurchaseOrderInput,
+        type: PayForPurchaseOrderInput,
         required: true,
       }),
     },
@@ -90,7 +86,8 @@ builder.mutationField("payForPurchaseOrder", (t) =>
         throw new GraphQLError("Purchase order payment not required");
       }
 
-      // TODO: Depending on the currency ID, we update the totalPrice for the purchase order.
+      // TODO: Depending on the currency ID, we update the totalPrice for the
+      // purchase order.
       const query = await fetchPurchaseOrderInformation(purchaseOrderId, DB);
 
       let totalAmount = 0;
@@ -126,13 +123,17 @@ builder.mutationField("payForPurchaseOrder", (t) =>
             if (!ticketPrice.price.currency) {
               throw new Error("Currency not found");
             }
-            await ensureProductsAreCreated({
-              price: ticketPrice.price.price,
-              currencyCode: ticketPrice.price.currency.currency,
-              ticket: ticket.ticketTemplate,
-              getStripeClient: GET_STRIPE_CLIENT,
-              transactionHander: trx,
-            });
+            try {
+              await ensureProductsAreCreated({
+                price: ticketPrice.price.price,
+                currencyCode: ticketPrice.price.currency.currency,
+                ticket: ticket.ticketTemplate,
+                getStripeClient: GET_STRIPE_CLIENT,
+                transactionHander: trx,
+              });
+            } catch (error) {
+              console.error("Could not create product", error);
+            }
           }
         }
       });
@@ -163,7 +164,7 @@ builder.mutationField("payForPurchaseOrder", (t) =>
         }
         ticketsGroupedByTemplateId[ticket.ticketTemplate.id].quantity += 1;
       }
-      const items: Array<{ id: string; quantity: number }> = [];
+      const items: Array<{ price: string; quantity: number }> = [];
       for (const ticketGroup of Object.values(ticketsGroupedByTemplateId)) {
         if (!ticketGroup.stripeId) {
           throw new Error(
@@ -171,11 +172,13 @@ builder.mutationField("payForPurchaseOrder", (t) =>
           );
         }
         items.push({
-          id: ticketGroup.stripeId,
+          price: ticketGroup.stripeId,
           quantity: ticketGroup.quantity,
         });
       }
 
+      console.log("🚨 Attempting to create payment on platform");
+      console.log(items, purchaseOrderId);
       // 2. We create a payment link on stripe.
       const paymentLink = await createPayment({
         items,
@@ -183,10 +186,12 @@ builder.mutationField("payForPurchaseOrder", (t) =>
         getStripeClient: GET_STRIPE_CLIENT,
       });
 
-      // 3. We update the purchase order with the payment link, and the total price and status
+      // 3. We update the purchase order with the payment link, and the total
+      //    price and status
       if (!paymentLink.amount_total) {
         throw new Error("Amount total not found");
       }
+      console.log("🚨 paymentLink", paymentLink);
       const updatedPurchaseOrders = await DB.update(purchaseOrdersSchema)
         .set({
           totalPrice: paymentLink.amount_total.toString(),
@@ -208,18 +213,11 @@ builder.mutationField("payForPurchaseOrder", (t) =>
         throw new Error("Purchase order not found");
       }
 
+      // 4. We return the payment link.
       return {
         purchaseOrder: selectPurchaseOrdersSchema.parse(updatedPurchaseOrder),
         ticketsIds: userTickets.map((t) => t.id),
       };
-
-      // 4. We return the payment link.
-
-      // if 0, throw error
-      // if not 0, update purchase order total price
-      // - create purchase order/payment link on stripe.
-      // - add it to PO.
-      // - Construct response and return payment link.
     },
   }),
 );

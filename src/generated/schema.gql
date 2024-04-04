@@ -289,11 +289,9 @@ type Mutation {
   enqueueGoogleAlbumImport(input: EnqueueGoogleAlbumImportInput!): Boolean!
 
   """
-  Create a salary
+  Create a purchase order
   """
-  initializePurchaseFlowForPurchaseOrder(
-    input: PurchaseFlowForPurchaseOrderInput!
-  ): PurchaseOrder!
+  payForPurchaseOrder(input: PayForPurchaseOrderInput!): PurchaseOrder!
 
   """
   Redeem a ticket
@@ -339,6 +337,11 @@ input MyTicketsSearchInput {
   status: TicketStatus
 }
 
+input PayForPurchaseOrderInput {
+  currencyID: String!
+  purchaseOrderId: String!
+}
+
 """
 Representation of a TicketPrice
 """
@@ -365,12 +368,6 @@ type PublicFinanceEntryRef {
   transactionDate: DateTime
 }
 
-input PurchaseFlowForPurchaseOrderInput {
-  currencyID: String!
-  paymentPlatform: PurchaseOrderPlatformEnum!
-  purchaseOrderId: String!
-}
-
 """
 Representation of a Purchase Order
 """
@@ -386,11 +383,6 @@ type PurchaseOrder {
 input PurchaseOrderInput {
   quantity: Int!
   ticketId: String!
-}
-
-enum PurchaseOrderPlatformEnum {
-  mercadopago
-  stripe
 }
 
 enum PurchaseOrderStatusEnum {

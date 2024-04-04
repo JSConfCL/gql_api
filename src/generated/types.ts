@@ -267,8 +267,8 @@ export type Mutation = {
   editTicket: Ticket;
   /** Enqueue images to import */
   enqueueGoogleAlbumImport: Scalars["Boolean"]["output"];
-  /** Create a salary */
-  initializePurchaseFlowForPurchaseOrder: PurchaseOrder;
+  /** Create a purchase order */
+  payForPurchaseOrder: PurchaseOrder;
   /** Redeem a ticket */
   redeemUserTicket: UserTicket;
   /** Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position */
@@ -333,8 +333,8 @@ export type MutationEnqueueGoogleAlbumImportArgs = {
   input: EnqueueGoogleAlbumImportInput;
 };
 
-export type MutationInitializePurchaseFlowForPurchaseOrderArgs = {
-  input: PurchaseFlowForPurchaseOrderInput;
+export type MutationPayForPurchaseOrderArgs = {
+  input: PayForPurchaseOrderInput;
 };
 
 export type MutationRedeemUserTicketArgs = {
@@ -373,6 +373,11 @@ export type MyTicketsSearchInput = {
   status?: InputMaybe<TicketStatus>;
 };
 
+export type PayForPurchaseOrderInput = {
+  currencyID: Scalars["String"]["input"];
+  purchaseOrderId: Scalars["String"]["input"];
+};
+
 /** Representation of a TicketPrice */
 export type Price = {
   __typename?: "Price";
@@ -397,12 +402,6 @@ export type PublicFinanceEntryRef = {
   transactionDate?: Maybe<Scalars["DateTime"]["output"]>;
 };
 
-export type PurchaseFlowForPurchaseOrderInput = {
-  currencyID: Scalars["String"]["input"];
-  paymentPlatform: PurchaseOrderPlatformEnum;
-  purchaseOrderId: Scalars["String"]["input"];
-};
-
 /** Representation of a Purchase Order */
 export type PurchaseOrder = {
   __typename?: "PurchaseOrder";
@@ -418,11 +417,6 @@ export type PurchaseOrderInput = {
   quantity: Scalars["Int"]["input"];
   ticketId: Scalars["String"]["input"];
 };
-
-export enum PurchaseOrderPlatformEnum {
-  Mercadopago = "mercadopago",
-  Stripe = "stripe",
-}
 
 export enum PurchaseOrderStatusEnum {
   Cancelled = "cancelled",

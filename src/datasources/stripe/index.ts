@@ -74,7 +74,7 @@ export const createPayment = async ({
   getStripeClient,
 }: {
   items: Array<{
-    id: string;
+    price: string;
     quantity: number;
   }>;
   purchaseOrderId: string;
@@ -88,7 +88,7 @@ export const createPayment = async ({
     // complete. If you’d like to use information from the successful Checkout
     // Session on your page, read the guide on customizing your success page.
     // https://stripe.com/docs/payments/checkout/custom-success-page
-    // success_url: `${process.env.STRIPE_API_SUCCESS_URL}?session_id={CHECKOUT_SESSION_ID}&paymentId=${paymentId}`,
+    success_url: `http://localhost:3000?session_id={CHECKOUT_SESSION_ID}&paymentId=${purchaseOrderId}`,
     // The URL the customer will be directed to if they decide to cancel
     // payment and return to your website.
     // cancel_url: `https://jsconf.cl/tickets`,

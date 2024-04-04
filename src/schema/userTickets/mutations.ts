@@ -307,12 +307,6 @@ builder.mutationFields((t) => ({
               if (!isEventActive) {
                 throw new Error(
                   `Event ${ticketTemplate.event.id} is not active. Cannot claim tickets for an inactive event.`,
-                  {
-                    extensions: {
-                      code: "EVENT_NOT_ACTIVE",
-                      eventId: ticketTemplate.event.id,
-                    },
-                  },
                 );
               }
 
