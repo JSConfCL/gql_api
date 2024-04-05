@@ -101,20 +101,20 @@ builder.objectType(EventRef, {
     longitude: t.exposeString("geoLongitude", { nullable: true }),
     address: t.exposeString("geoAddressJSON", { nullable: true }),
     community: t.field({
-      type: CommunityRef,
+      type: [CommunityRef],
       nullable: true,
       resolve: async (root, args, ctx) => {
-        const community = await ctx.DB.query.communitySchema.findFirst({
+        const communities = await ctx.DB.query.communitySchema.findMany({
           with: {
             eventsToCommunities: {
               where: (etc, { eq }) => eq(etc.eventId, root.id),
             },
           },
         });
-        if (!community) {
-          return null;
+        if (!communities || communities.length === 0) {
+          return [];
         }
-        return selectCommunitySchema.parse(community);
+        return communities.map((c) => selectCommunitySchema.parse(c));
       },
     }),
     users: t.field({
