@@ -165,10 +165,10 @@ builder.mutationField("createTicket", (t) =>
               throw new GraphQLError("Prices array must not be empty");
             }
             for (const price of input.prices) {
-              if (!price.value) {
+              if (!price.value_in_cents) {
                 throw new GraphQLError("Price is required");
               }
-              if (price.value <= 0) {
+              if (price.value_in_cents <= 0) {
                 throw new GraphQLError(
                   "Price must be greater than 0. If this is a free ticket, set isFree to true.",
                 );
@@ -181,7 +181,7 @@ builder.mutationField("createTicket", (t) =>
 
               try {
                 const insertPriceValues = insertPriceSchema.parse({
-                  price: price.value,
+                  price_in_cents: price.value_in_cents,
                   currencyId: price.currencyId,
                 });
                 const insertedPrice = await trx

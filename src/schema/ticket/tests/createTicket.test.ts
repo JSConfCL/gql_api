@@ -115,11 +115,11 @@ describe("As a SUPER_ADMIN", () => {
         prices: [
           {
             currencyId: currency1.id,
-            value: value1,
+            value_in_cents: value1,
           },
           {
             currencyId: currency2.id,
-            value: value2,
+            value_in_cents: value2,
           },
         ],
         quantity: faker.number.int({
@@ -258,7 +258,7 @@ describe("As a SUPER_ADMIN", () => {
         prices: [
           {
             currencyId: currency1.id,
-            value: value1,
+            value_in_cents: value1,
           },
         ],
         status: TicketTemplateStatus.Active,
@@ -446,7 +446,7 @@ describe("Should throw an error", () => {
             prices: [
               {
                 currencyId: faker.string.uuid(),
-                value: price,
+                value_in_cents: price,
               },
             ],
           },
@@ -479,7 +479,7 @@ describe("Should throw an error", () => {
             prices: [
               {
                 currencyId: currency1.id,
-                value: -1,
+                value_in_cents: -1,
               },
             ],
           },
@@ -515,7 +515,7 @@ describe("Should throw an error", () => {
             prices: [
               {
                 currencyId: currency1.id,
-                value: 10,
+                value_in_cents: 10,
               },
             ],
           },
@@ -551,7 +551,7 @@ describe("Should throw an error", () => {
             prices: [
               {
                 currencyId: currency1.id,
-                value: 10,
+                value_in_cents: 10,
               },
             ],
           },
@@ -588,7 +588,7 @@ describe("Should throw an error", () => {
             prices: [
               {
                 currencyId: currency1.id,
-                value: 10,
+                value_in_cents: 10,
               },
             ],
           },
@@ -625,7 +625,7 @@ describe("Should throw an error", () => {
             prices: [
               {
                 currencyId: currency1.id,
-                value: 10,
+                value_in_cents: 10,
               },
             ],
           },
@@ -662,7 +662,7 @@ describe("Should throw an error", () => {
             prices: [
               {
                 currencyId: currency1.id,
-                value: 10,
+                value_in_cents: 10,
               },
             ],
           },
@@ -699,7 +699,7 @@ describe("Should throw an error", () => {
             prices: [
               {
                 currencyId: currency1.id,
-                value: 10,
+                value_in_cents: 10,
               },
             ],
           },
@@ -743,6 +743,7 @@ describe("Should throw an error", () => {
   });
   it("CurrencyId is required if prices are provided", async () => {
     const { user1, event1 } = await superAdminSetup();
+    const value_in_cents = 10;
     const response = await executeGraphqlOperationAsUser<
       CreateTicketMutation,
       CreateTicketMutationVariables
@@ -758,8 +759,9 @@ describe("Should throw an error", () => {
             unlimitedTickets: false,
             quantity: 10,
             prices: [
+              // @ts-expect-error we are testing the error case
               {
-                value: 10,
+                value_in_cents,
               },
             ],
           },
@@ -770,7 +772,7 @@ describe("Should throw an error", () => {
 
     assert.equal(
       response.errors?.[0].message,
-      "CurrencyId is required when price is provided",
+      `Variable "$input" got invalid value { value_in_cents: ${value_in_cents} } at "input.prices[0]"; Field "currencyId" of required type "String!" was not provided.`,
     );
   });
   it("If user is not authenticated", async () => {
@@ -791,7 +793,7 @@ describe("Should throw an error", () => {
           prices: [
             {
               currencyId: faker.string.uuid(),
-              value: 10,
+              value_in_cents: 10,
             },
           ],
         },
@@ -837,11 +839,11 @@ describe("As an ADMIN-USER", () => {
         prices: [
           {
             currencyId: currency1.id,
-            value: value1,
+            value_in_cents: value1,
           },
           {
             currencyId: currency2.id,
-            value: value2,
+            value_in_cents: value2,
           },
         ],
         quantity: faker.number.int({
@@ -980,7 +982,7 @@ describe("As an ADMIN-USER", () => {
         prices: [
           {
             currencyId: currency1.id,
-            value: value1,
+            value_in_cents: value1,
           },
         ],
         status: TicketTemplateStatus.Active,
