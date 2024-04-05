@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { it, describe, assert } from "vitest";
 
 import {
+  TicketEditInput,
   TicketTemplateStatus,
   TicketTemplateVisibility,
 } from "~/generated/types";
@@ -46,23 +47,18 @@ describe("User", () => {
     const endDateTime = faker.date.future();
 
     const fakeInput = {
+      ticketId: ticket.id,
       name: faker.word.words(3),
       description: faker.lorem.paragraph(3),
       startDateTime: startDateTime.toISOString(),
       endDateTime: endDateTime.toISOString(),
       requiresApproval: false,
-      price: faker.number.int({
-        min: 1,
-        max: 100,
-      }),
-      quantity: faker.number.int({
-        min: 1,
-        max: 100,
-      }),
+      unlimitedTickets: true,
+      quantity: 100,
       status: TicketTemplateStatus.Active,
       visibility: TicketTemplateVisibility.Public,
       eventId: event1.id,
-    };
+    } satisfies TicketEditInput;
 
     const response = await executeGraphqlOperationAsUser<
       EditTicketMutation,
@@ -72,7 +68,6 @@ describe("User", () => {
         document: EditTicket,
         variables: {
           input: {
-            ticketId: ticket.id,
             ...fakeInput,
           },
         },
@@ -88,10 +83,11 @@ describe("User", () => {
       startDateTime: toISODateWithoutMilliseconds(startDateTime),
       endDateTime: toISODateWithoutMilliseconds(endDateTime),
       requiresApproval: fakeInput.requiresApproval,
-      quantity: fakeInput.quantity,
       status: fakeInput.status,
       visibility: fakeInput.visibility,
       eventId: event1.id,
+      isUnlimited: false,
+      quantity: 100,
     });
   });
   it("Should update a ticket, only one field", async () => {
@@ -143,6 +139,7 @@ describe("User", () => {
       status: ticket.status as TicketTemplateStatus,
       visibility: ticket.visibility as TicketTemplateVisibility,
       eventId: event1.id,
+      isUnlimited: false,
     });
   });
   it("Should update a ticket is community admin", async () => {
@@ -192,6 +189,7 @@ describe("User", () => {
       status: ticket.status as TicketTemplateStatus,
       visibility: ticket.visibility as TicketTemplateVisibility,
       eventId: event1.id,
+      isUnlimited: false,
     });
   });
   it("It should throw an error, if don't have permission", async () => {

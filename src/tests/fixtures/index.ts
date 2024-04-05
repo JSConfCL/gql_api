@@ -81,6 +81,11 @@ import {
 } from "~/datasources/db/schema";
 import { genderOptions } from "~/datasources/db/shared";
 import {
+  insertTicketPriceSchema,
+  selectTicketPriceSchema,
+  ticketsPricesSchema,
+} from "~/datasources/db/ticketPrice";
+import {
   TicketApprovalStatus,
   TicketPaymentStatus,
   TicketRedemptionStatus,
@@ -88,12 +93,6 @@ import {
 } from "~/generated/types";
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
-
-import {
-  insertTicketPriceSchema,
-  selectTicketPriceSchema,
-  ticketsPricesSchema,
-} from "../../datasources/db/ticketPrice";
 
 const insertUserRequest = insertUsersSchema.deepPartial();
 
@@ -125,6 +124,7 @@ const createExecutor = (user?: Awaited<ReturnType<typeof insertUser>>) =>
           ...initContextCache(),
           DB,
           USER: user ? user : undefined,
+          GET_STRIPE_CLIENT: () => null,
         };
       },
       plugins: [authZEnvelopPlugin({ rules })],
@@ -335,7 +335,7 @@ export const insertPrice = async (
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     currencyId: partialInput?.currencyId ?? faker.string.uuid(),
-    price: partialInput?.price ?? faker.number.int(),
+    price_in_cents: partialInput?.price_in_cents ?? faker.number.int(),
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertPriceSchema>;
   return insertOne(
@@ -379,6 +379,8 @@ export const insertTicketTemplate = async (
     quantity: partialInput?.quantity ?? 100,
     status: partialInput?.status,
     visibility: partialInput?.visibility,
+    isFree: partialInput?.isFree ?? false,
+    isUnlimited: partialInput?.isUnlimited ?? false,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertTicketSchema>;
 
@@ -405,6 +407,7 @@ export const insertPurchaseOrder = async (
     paymentPlatformMetadata: partialInput?.paymentPlatformMetadata,
     purchaseOrderPaymentStatus:
       partialInput?.purchaseOrderPaymentStatus ?? "unpaid",
+    paymentPlatformExpirationDate: partialInput?.paymentPlatformExpirationDate,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertPurchaseOrdersSchema>;
 

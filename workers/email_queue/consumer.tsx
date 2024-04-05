@@ -2,13 +2,12 @@ import { H } from "@highlight-run/cloudflare";
 import { render } from "@react-email/render";
 import * as React from "react";
 
+import { WorkEmailValidationEmail } from "~/../emails/invite-email";
 import {
   EmailMessageType,
   sendTransactionalEmail,
 } from "~/datasources/queues/mail";
 import { APP_ENV } from "~/env";
-
-import { WorkEmailValidationEmail } from "../../emails/invite-email";
 
 type ENV = {
   RESEND_EMAIL_KEY?: string;

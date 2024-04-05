@@ -5,9 +5,12 @@ import { builder } from "~/builder";
 import {
   insertUserTicketsSchema,
   purchaseOrdersSchema,
+  selectPurchaseOrdersSchema,
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
+import { PurchaseOrderRef } from "~/schema/purchaseOrder/types";
+import { isValidUUID } from "~/schema/shared/helpers";
 import { UserTicketRef } from "~/schema/shared/refs";
 import {
   canApproveTicket,
@@ -15,8 +18,7 @@ import {
   canRedeemUserTicket,
 } from "~/validations";
 
-import { PurchaseOrderRef, RedeemUserTicketError } from "./types";
-import { isValidUUID } from "../shared/helpers";
+import { RedeemUserTicketError } from "./types";
 
 const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {
   fields: (t) => ({
@@ -72,16 +74,16 @@ builder.mutationFields((t) => ({
     resolve: async (root, { userTicketId }, ctx) => {
       try {
         if (!ctx.USER) {
-          throw new Error("User not found");
+          throw new GraphQLError("User not found");
         }
         if (!(await canCancelUserTicket(ctx.USER?.id, userTicketId, ctx.DB))) {
-          throw new Error("You can't cancel this ticket");
+          throw new GraphQLError("You can't cancel this ticket");
         }
         let ticket = await ctx.DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
         });
         if (ticket?.status === "inactive") {
-          throw new Error("Ticket already cancelled");
+          throw new GraphQLError("Ticket already cancelled");
         }
         ticket = (
           await ctx.DB.update(userTicketsSchema)
@@ -116,10 +118,10 @@ builder.mutationFields((t) => ({
     resolve: async (root, { userTicketId }, { DB, USER }) => {
       try {
         if (!USER) {
-          throw new Error("User not found");
+          throw new GraphQLError("User not found");
         }
         if (!(await canApproveTicket(USER.id, userTicketId, DB))) {
-          throw new Error("Unauthorized!");
+          throw new GraphQLError("Unauthorized!");
         }
         const ticket = await DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
@@ -128,16 +130,16 @@ builder.mutationFields((t) => ({
           },
         });
         if (!ticket) {
-          throw new Error("Unauthorized!");
+          throw new GraphQLError("Unauthorized!");
         }
         if (!USER) {
-          throw new Error("User not found");
+          throw new GraphQLError("User not found");
         }
         if (ticket.approvalStatus === "approved") {
-          throw new Error("Ticket already approved");
+          throw new GraphQLError("Ticket already approved");
         }
         if (!ticket.ticketTemplate?.requiresApproval) {
-          throw new Error("Ticket does not require approval");
+          throw new GraphQLError("Ticket does not require approval");
         }
         const updatedTicket = (
           await DB.update(userTicketsSchema)
@@ -171,24 +173,24 @@ builder.mutationFields((t) => ({
     resolve: async (root, { userTicketId }, { USER, DB }) => {
       try {
         if (!USER) {
-          throw new Error("User not found");
+          throw new GraphQLError("User not found");
         }
         if (!(await canRedeemUserTicket(USER?.id, userTicketId, DB))) {
-          throw new Error("You can't redeem this ticket");
+          throw new GraphQLError("You can't redeem this ticket");
         }
 
         const ticket = await DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
         });
         if (!ticket) {
-          throw new Error("Unauthorized!");
+          throw new GraphQLError("Unauthorized!");
         }
 
         if (ticket.redemptionStatus === "redeemed") {
-          throw new Error("Ticket already redeemed");
+          throw new GraphQLError("Ticket already redeemed");
         }
         if (ticket.status !== "active") {
-          throw new Error("Ticket is not active");
+          throw new GraphQLError("Ticket is not active");
         }
         const updatedTicket = (
           await DB.update(userTicketsSchema)
@@ -236,6 +238,7 @@ builder.mutationFields((t) => ({
       // - We would be going over the limit of tickets.
       // - We don't have enough tickets to fulfill the purchase order.
       // - Other General errors
+      let transactionError: null | GraphQLError = null;
       try {
         const transactionResults = await DB.transaction(async (trx) => {
           try {
@@ -246,7 +249,7 @@ builder.mutationFields((t) => ({
                     eq(po.idempotencyUUIDKey, idempotencyUUIDKey),
                 });
               if (existingPurchaseOrder) {
-                return new GraphQLError(
+                throw new Error(
                   `Purchase order with idempotency key ${idempotencyUUIDKey} already exists.`,
                 );
               }
@@ -265,7 +268,7 @@ builder.mutationFields((t) => ({
 
             const createdPurchaseOrder = createdPurchaseOrders[0];
             if (!createdPurchaseOrder) {
-              return new Error("Could not create purchase order");
+              throw new Error("Could not create purchase order");
             }
 
             // TODO: Measure and consider parallelizing this.
@@ -285,7 +288,7 @@ builder.mutationFields((t) => ({
 
               // If the ticket template does not exist, we throw an error.
               if (!ticketTemplate) {
-                return new Error(
+                throw new Error(
                   `Ticket template with id ${item.ticketId} not found`,
                 );
               }
@@ -294,7 +297,9 @@ builder.mutationFields((t) => ({
                 ticketTemplate.ticketsPrices &&
                 ticketTemplate.ticketsPrices.length > 0 &&
                 ticketTemplate.ticketsPrices.some(
-                  (tp) => tp?.price?.price !== null && tp?.price?.price > 0,
+                  (tp) =>
+                    tp?.price?.price_in_cents !== null &&
+                    tp?.price?.price_in_cents > 0,
                 );
               const { maxAttendees, status } = ticketTemplate.event;
               const isEventActive = status === "active";
@@ -302,7 +307,7 @@ builder.mutationFields((t) => ({
 
               // If the event is not active, we throw an error.
               if (!isEventActive) {
-                return new Error(
+                throw new Error(
                   `Event ${ticketTemplate.event.id} is not active. Cannot claim tickets for an inactive event.`,
                 );
               }
@@ -324,7 +329,7 @@ builder.mutationFields((t) => ({
                 // If we would be going over the limit of tickets, we throw an
                 // error.
                 if (tickets.length + item.quantity > ticketTemplate.quantity) {
-                  return new Error(
+                  throw new Error(
                     `Not enough tickets for ticket template with id ${item.ticketId}`,
                   );
                 }
@@ -336,7 +341,7 @@ builder.mutationFields((t) => ({
                 // If we would be going over the limit of attendees, we throw an
                 // error.
                 if (tickets.length + item.quantity > maxAttendees) {
-                  return new Error(
+                  throw new Error(
                     `Not enough room on event ${ticketTemplate.event.id}`,
                   );
                 }
@@ -374,39 +379,54 @@ builder.mutationFields((t) => ({
 
               if (ticketTemplate.quantity) {
                 if (finalTickets.length > ticketTemplate.quantity) {
-                  return new Error(
-                    `We hav gone over the limit of tickets for ticket template with id ${item.ticketId}`,
+                  throw new Error(
+                    `We have gone over the limit of tickets for ticket template with id ${item.ticketId}`,
                   );
                 }
               }
               claimedTickets = [...claimedTickets, ...createdUserTickets];
             }
-            return { createdPurchaseOrder, claimedTickets };
+
+            const foundPurchaseOrder =
+              await trx.query.purchaseOrdersSchema.findFirst({
+                where: (po, { eq }) => eq(po.id, createdPurchaseOrder.id),
+              });
+            if (!foundPurchaseOrder) {
+              throw new Error("Could not find purchase order");
+            }
+            const selectedPurchaseOrder =
+              selectPurchaseOrdersSchema.parse(foundPurchaseOrder);
+            return { selectedPurchaseOrder, claimedTickets };
           } catch (e) {
             console.error("🚨Error", e);
+            transactionError =
+              e instanceof Error
+                ? new GraphQLError(e.message, {
+                    originalError: e,
+                  })
+                : new GraphQLError("Unknown error");
             trx.rollback();
-            return new Error(e instanceof Error ? e.message : "Unknown error");
+            throw e;
           }
         });
-        if (transactionResults instanceof Error) {
-          return {
-            error: true as const,
-            errorMessage: transactionResults.message,
-          };
-        }
 
-        const { claimedTickets, createdPurchaseOrder } = transactionResults;
+        const { claimedTickets, selectedPurchaseOrder } = transactionResults;
         const ticketsIds = claimedTickets.flatMap((t) => (t.id ? [t.id] : []));
         return {
-          id: createdPurchaseOrder.id,
+          purchaseOrder: selectedPurchaseOrder,
           ticketsIds,
         };
       } catch (e: unknown) {
-        console.error("🚨Error", e);
-        return {
-          error: true as const,
-          errorMessage: e instanceof Error ? e.message : "Unknown error",
-        };
+        if (transactionError) {
+          console.error("🚨Transaction error", transactionError);
+          return {
+            error: true as const,
+            errorMessage: (transactionError as GraphQLError).message,
+          };
+        }
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
+        );
       }
     },
   }),

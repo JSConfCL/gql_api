@@ -53,18 +53,28 @@ builder.objectType(TicketRef, {
       nullable: true,
       resolve: (root) => (root.endDateTime ? new Date(root.endDateTime) : null),
     }),
-    requiresApproval: t.exposeBoolean("requiresApproval", {
-      nullable: true,
-    }),
+    requiresApproval: t.exposeBoolean("requiresApproval"),
     quantity: t.exposeInt("quantity", {
       description: "The number of tickets available for this ticket type",
       nullable: true,
+    }),
+    isFree: t.exposeBoolean("isFree", {
+      description: "Whether or not the ticket is free",
+      nullable: false,
+    }),
+    isUnlimited: t.exposeBoolean("isUnlimited", {
+      description:
+        "Whether or not the ticket has an unlimited quantity. This is reserved for things loike online events.",
+      nullable: false,
     }),
     eventId: t.exposeString("eventId", { nullable: false }),
     prices: t.field({
       type: [PriceRef],
       nullable: true,
       resolve: async (root, args, ctx) => {
+        if (root.isFree) {
+          return null;
+        }
         const prices = await ctx.DB.query.ticketsPricesSchema.findMany({
           where: (tps, { eq }) => eq(tps.ticketId, root.id),
           with: {
@@ -75,7 +85,7 @@ builder.objectType(TicketRef, {
         const pasedPrices = prices
           .map((p) => ({
             id: p.price.id,
-            amount: p.price.price,
+            amount: p.price.price_in_cents,
             currencyId: p.price.currencyId,
           }))
           .filter((p) => p.amount !== null || p.currencyId !== null);

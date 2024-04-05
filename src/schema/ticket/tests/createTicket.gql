@@ -7,8 +7,19 @@ mutation CreateTicket($input: TicketCreateInput!) {
     visibility
     startDateTime
     endDateTime
+    isUnlimited
+    isFree
     requiresApproval
     quantity
     eventId
+    prices {
+      id
+      amount
+      currency {
+        id
+        currency
+        validPaymentMethods
+      }
+    }
   }
 }

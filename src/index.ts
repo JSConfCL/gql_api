@@ -18,6 +18,7 @@ import { schema } from "~/schema";
 
 import { insertUsersSchema } from "./datasources/db/users";
 import { getSanityClient } from "./datasources/sanity/client";
+import { getStripeClient } from "./datasources/stripe/client";
 
 // We get the token either from the Authorization header or from the "sb-access-token" cookie
 const getAuthToken = (request: Request) => {
@@ -109,15 +110,8 @@ const getUser = async ({
     console.error("Could not verify token");
     return null;
   }
-  const {
-    avatar_url,
-    name,
-    user_name,
-    email_verified,
-    provider_id,
-    sub,
-    picture,
-  } = payload.user_metadata;
+  const { avatar_url, name, user_name, email_verified, sub, picture } =
+    payload.user_metadata;
 
   if (payload.exp < Date.now() / 1000) {
     console.error("Token expired");
@@ -127,10 +121,10 @@ const getUser = async ({
     email: payload.email,
     emailVerified: email_verified,
     imageUrl: avatar_url ? avatar_url : picture ? picture : "",
-    externalId: provider_id,
+    externalId: sub,
     name,
     username: user_name,
-    publicMetadata: payload.user_metadata,
+    publicMetadata: payload,
   });
   if (profileInfo.success === false) {
     console.error("Could not parse profile info", profileInfo.error);
@@ -229,6 +223,7 @@ export const yoga = createYoga<Env>({
     SANITY_API_VERSION,
     SANITY_SECRET_TOKEN,
     SUPABASE_JWT_DECODER,
+    STRIPE_KEY,
   }) => {
     if (!CLERK_PEM_PUBLIC_KEY) {
       throw new Error("Missing CLERK_KEY");
@@ -251,6 +246,9 @@ export const yoga = createYoga<Env>({
     if (!SUPABASE_JWT_DECODER) {
       throw new Error("Missing SUPABASE_JWT_DECODER");
     }
+    if (!STRIPE_KEY) {
+      throw new Error("Missing STRIPE_KEY");
+    }
     if (
       !SANITY_PROJECT_ID ||
       !SANITY_DATASET ||
@@ -267,6 +265,8 @@ export const yoga = createYoga<Env>({
         token: SANITY_SECRET_TOKEN,
         useCdn: true,
       });
+
+    const GET_STRIPE_CLIENT = () => getStripeClient(STRIPE_KEY);
     const DB = getDb({
       neonUrl: NEON_URL,
     });
@@ -283,6 +283,7 @@ export const yoga = createYoga<Env>({
       USER,
       MAIL_QUEUE,
       GET_SANITY_CLIENT,
+      GET_STRIPE_CLIENT,
     };
   },
 });

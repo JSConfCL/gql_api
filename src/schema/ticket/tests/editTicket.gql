@@ -5,6 +5,7 @@ mutation EditTicket($input: TicketEditInput!) {
     description
     status
     visibility
+    isUnlimited
     startDateTime
     endDateTime
     requiresApproval

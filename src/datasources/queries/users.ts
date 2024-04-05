@@ -14,7 +14,7 @@ export const updateUserProfileInfo = async (
   parsedProfileInfo: z.infer<typeof insertUsersSchema>,
 ) => {
   const result = await db.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.externalId, parsedProfileInfo.externalId),
+    where: (u, { eq }) => eq(u.email, parsedProfileInfo.email),
   });
   if (!result) {
     console.log("User not found — creating new user");
@@ -44,13 +44,14 @@ export const updateUserProfileInfo = async (
     const updatedUsers = await db
       .update(usersSchema)
       .set({
+        externalId: parsedProfileInfo.externalId,
         name: parsedProfileInfo.name,
         imageUrl: parsedProfileInfo.imageUrl,
         emailVerified: parsedProfileInfo.emailVerified,
         publicMetadata: parsedProfileInfo.publicMetadata ?? {},
         updatedAt: sql`current_timestamp`,
       })
-      .where(eq(usersSchema.externalId, parsedProfileInfo.externalId))
+      .where(eq(usersSchema.email, parsedProfileInfo.email))
       .returning();
     const updatedUser = updatedUsers?.[0];
     if (!updatedUser) {
