@@ -16,9 +16,9 @@ export const getPaymentStatusFromPaymentProviderStatus = (
   return "unpaid";
 };
 
-const isInteger = (n: number) => n % 1 === 0;
+const isIntegerLike = (numberInCents: number) => numberInCents % 100 === 0;
 const getUnitAmount = (unitAmount: number) => {
-  if (isInteger(unitAmount)) {
+  if (isIntegerLike(unitAmount)) {
     return { unit_amount: unitAmount };
   }
   return { unit_amount_decimal: unitAmount.toString() };
