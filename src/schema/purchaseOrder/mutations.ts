@@ -6,7 +6,9 @@ import { ORM_TYPE } from "~/datasources/db";
 import {
   purchaseOrdersSchema,
   selectPurchaseOrdersSchema,
+  userTicketsSchema,
 } from "~/datasources/db/schema";
+import { sendTransactionalHTMLEmail } from "~/datasources/email/sendEmailToWorkers";
 import { createPayment } from "~/datasources/stripe";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
 
@@ -71,6 +73,9 @@ builder.mutationField("payForPurchaseOrder", (t) =>
       const purchaseOrder = await DB.query.purchaseOrdersSchema.findFirst({
         where: (po, { eq, and }) =>
           and(eq(po.id, purchaseOrderId), eq(po.userId, USER.id)),
+        with: {
+          user: true,
+        },
       });
 
       if (!purchaseOrder) {
@@ -82,7 +87,10 @@ builder.mutationField("payForPurchaseOrder", (t) =>
       if (purchaseOrder.purchaseOrderPaymentStatus === "paid") {
         throw new GraphQLError("Purchase order already paid");
       }
-      if (purchaseOrder.purchaseOrderPaymentStatus === "not_required") {
+      if (
+        purchaseOrder.purchaseOrderPaymentStatus === "not_required" &&
+        purchaseOrder.status !== "active"
+      ) {
         throw new GraphQLError("Purchase order payment not required");
       }
 
@@ -91,29 +99,73 @@ builder.mutationField("payForPurchaseOrder", (t) =>
       const query = await fetchPurchaseOrderInformation(purchaseOrderId, DB);
 
       let totalAmount = 0;
-      let requiresPayment = false;
+      let allTicketsAreFree = true;
       for (const ticket of query) {
         if (!ticket.ticketTemplate.isFree) {
-          requiresPayment = true;
+          allTicketsAreFree = false;
         }
         for (const ticketPrice of ticket.ticketTemplate.ticketsPrices) {
           totalAmount = ticketPrice.price.price_in_cents ?? 0;
         }
       }
 
-      console.log("🚨", totalAmount);
-      if (!requiresPayment) {
+      if (allTicketsAreFree && totalAmount !== 0) {
+        throw new GraphQLError(
+          "Purchase order payment not required, but total amount is not zero. This should not happen",
+        );
+      }
+      if (!allTicketsAreFree && totalAmount === 0) {
+        throw new GraphQLError(
+          "Purchase order payment required, but total amount is zero. This should not happen",
+        );
+      }
+      if (allTicketsAreFree) {
         console.log(
           "Purchase order payment not required, meaning all tickets are free, updating purchase order to reflect that",
         );
+        const updatedPOs = await DB.update(purchaseOrdersSchema)
+          .set({
+            purchaseOrderPaymentStatus: "not_required",
+            status: "active",
+          })
+          .where(eq(purchaseOrdersSchema.id, purchaseOrderId))
+          .returning();
+        const updatedPO = updatedPOs[0];
+        if (!updatedPO) {
+          throw new GraphQLError("Purchase order not found");
+        }
+        await DB.update(userTicketsSchema).set({
+          status: "active",
+          paymentStatus: "not_required",
+        });
+
+        const userTickets = await DB.query.userTicketsSchema.findMany({
+          where: (t, { eq }) => eq(t.purchaseOrderId, purchaseOrderId),
+        });
+
+        const userTicketsIds = userTickets.map((t) => t.id);
+
+        await sendTransactionalHTMLEmail({
+          htmlContent: `<div>Thank you for your purchase</div>`,
+          to: [
+            {
+              name: purchaseOrder.user.name ?? purchaseOrder.user.username,
+              email: purchaseOrder.user.email,
+            },
+          ],
+          from: {
+            name: "CommunityOS",
+          },
+          subject: "Tus tickets están listos 🎉",
+        });
+        console.log(`Email sent to ${purchaseOrder.user.email}`);
+        return {
+          purchaseOrder: selectPurchaseOrdersSchema.parse(updatedPO),
+          ticketsIds: userTicketsIds,
+        };
         // TODO: Update purchase order to "auto-pay" or not be required.
       }
-      if (totalAmount === 0) {
-        console.error(
-          "This should not happen, total amount is 0, but requires payment. This is a bug.",
-        );
-        throw new GraphQLError("Total amount is 0, but PO requires payment");
-      }
+
       await DB.transaction(async (trx) => {
         console.log("Purchase order requires payment");
         // 1. We ensure that products are created in the database.
