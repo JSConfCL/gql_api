@@ -24,11 +24,13 @@ import { canCreateTicket, canEditTicket } from "~/validations";
 
 const PricingInputField = builder.inputType("PricingInputField", {
   fields: (t) => ({
-    value: t.int({
-      required: false,
+    value_in_cents: t.int({
+      description:
+        "The price. But in cents, so for a $10 ticket, you'd pass 1000 (or 10_00), or for 1000 chilean pesos, you'd pass 1000_00",
+      required: true,
     }),
     currencyId: t.string({
-      required: false,
+      required: true,
     }),
   }),
 });
@@ -250,7 +252,7 @@ builder.mutationField("createTicket", (t) =>
             console.log("Found price", foundPrice);
             if (foundPrice?.currency) {
               await ensureProductsAreCreated({
-                price: foundPrice.price,
+                price: foundPrice.price_in_cents,
                 currencyCode: foundPrice.currency.currency,
                 ticket: insertedTicket,
                 getStripeClient: ctx.GET_STRIPE_CLIENT,

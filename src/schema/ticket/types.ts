@@ -85,7 +85,7 @@ builder.objectType(TicketRef, {
         const pasedPrices = prices
           .map((p) => ({
             id: p.price.id,
-            amount: p.price.price,
+            amount: p.price.price_in_cents,
             currencyId: p.price.currencyId,
           }))
           .filter((p) => p.amount !== null || p.currencyId !== null);

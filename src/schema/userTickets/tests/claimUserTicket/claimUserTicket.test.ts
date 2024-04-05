@@ -61,7 +61,7 @@ const createCommunityEventUserAndTicketTemplate = async ({
     validPaymentMethods: "stripe",
   });
   const price = await insertPrice({
-    price: 100_00,
+    price_in_cents: 100_00,
     currencyId: allowedCurrency.id,
   });
   const createdTicketPrice =

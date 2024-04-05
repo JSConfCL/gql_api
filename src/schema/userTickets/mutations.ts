@@ -297,7 +297,9 @@ builder.mutationFields((t) => ({
                 ticketTemplate.ticketsPrices &&
                 ticketTemplate.ticketsPrices.length > 0 &&
                 ticketTemplate.ticketsPrices.some(
-                  (tp) => tp?.price?.price !== null && tp?.price?.price > 0,
+                  (tp) =>
+                    tp?.price?.price_in_cents !== null &&
+                    tp?.price?.price_in_cents > 0,
                 );
               const { maxAttendees, status } = ticketTemplate.event;
               const isEventActive = status === "active";

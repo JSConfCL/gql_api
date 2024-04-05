@@ -335,7 +335,7 @@ export const insertPrice = async (
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     currencyId: partialInput?.currencyId ?? faker.string.uuid(),
-    price: partialInput?.price ?? faker.number.int(),
+    price_in_cents: partialInput?.price_in_cents ?? faker.number.int(),
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertPriceSchema>;
   return insertOne(

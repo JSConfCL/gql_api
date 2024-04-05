@@ -97,7 +97,7 @@ builder.mutationField("payForPurchaseOrder", (t) =>
           requiresPayment = true;
         }
         for (const ticketPrice of ticket.ticketTemplate.ticketsPrices) {
-          totalAmount = ticketPrice.price.price ?? 0;
+          totalAmount = ticketPrice.price.price_in_cents ?? 0;
         }
       }
 
@@ -119,13 +119,13 @@ builder.mutationField("payForPurchaseOrder", (t) =>
         // 1. We ensure that products are created in the database.
         for (const ticket of query) {
           for (const ticketPrice of ticket.ticketTemplate.ticketsPrices) {
-            console.log("🚨", ticketPrice.price.price);
+            console.log("🚨", ticketPrice.price.price_in_cents);
             if (!ticketPrice.price.currency) {
               throw new Error("Currency not found");
             }
             try {
               await ensureProductsAreCreated({
-                price: ticketPrice.price.price,
+                price: ticketPrice.price.price_in_cents,
                 currencyCode: ticketPrice.price.currency.currency,
                 ticket: ticket.ticketTemplate,
                 getStripeClient: GET_STRIPE_CLIENT,

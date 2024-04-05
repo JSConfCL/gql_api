@@ -387,8 +387,9 @@ export type Price = {
 };
 
 export type PricingInputField = {
-  currencyId?: InputMaybe<Scalars["String"]["input"]>;
-  value?: InputMaybe<Scalars["Int"]["input"]>;
+  currencyId: Scalars["String"]["input"];
+  /** The price. But in cents, so for a $10 ticket, you'd pass 1000 (or 10_00), or for 1000 chilean pesos, you'd pass 1000_00 */
+  value_in_cents: Scalars["Int"]["input"];
 };
 
 /** Representation of a payment log entry */

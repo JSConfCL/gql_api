@@ -70,7 +70,7 @@ describe("Should get an event and its tickets", () => {
       validPaymentMethods: "stripe",
     });
     const insertedPrice = await insertPrice({
-      price: 100,
+      price_in_cents: 100_00,
       currencyId: insertedCurrency.id,
     });
     await insertTicketPrice({
@@ -93,7 +93,7 @@ describe("Should get an event and its tickets", () => {
     assert.equal(response.data?.events[0]?.tickets[0]?.prices?.length, 1);
     assert.equal(
       response.data?.events[0]?.tickets[0]?.prices?.[0].amount,
-      insertedPrice.price,
+      insertedPrice.price_in_cents,
     );
     assert.equal(
       response.data?.events[0]?.tickets[0]?.prices?.[0].id,

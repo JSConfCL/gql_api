@@ -352,8 +352,12 @@ type Price {
 }
 
 input PricingInputField {
-  currencyId: String
-  value: Int
+  currencyId: String!
+
+  """
+  The price. But in cents, so for a $10 ticket, you'd pass 1000 (or 10_00), or for 1000 chilean pesos, you'd pass 1000_00
+  """
+  value_in_cents: Int!
 }
 
 """
