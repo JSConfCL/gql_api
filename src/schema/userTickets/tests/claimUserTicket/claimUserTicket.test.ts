@@ -4,9 +4,12 @@ import { it, describe, assert } from "vitest";
 
 import {
   executeGraphqlOperationAsUser,
+  insertAllowedCurrency,
   insertCommunity,
   insertEvent,
   insertEventToCommunity,
+  insertPrice,
+  insertTicketPrice,
   insertTicketTemplate,
   insertUser,
   insertUserToCommunity,
@@ -23,11 +26,13 @@ const createCommunityEventUserAndTicketTemplate = async ({
   event,
   user,
   ticketTemplate,
+  ticketPrice,
 }: {
   community?: AsyncReturnType<typeof insertCommunity>;
   event?: AsyncReturnType<typeof insertEvent>;
   user?: AsyncReturnType<typeof insertUser>;
   ticketTemplate?: AsyncReturnType<typeof insertTicketTemplate>;
+  ticketPrice?: AsyncReturnType<typeof insertPrice>;
 } = {}) => {
   const createdCommunity = community ?? (await insertCommunity());
   const createdEvent =
@@ -47,6 +52,23 @@ const createCommunityEventUserAndTicketTemplate = async ({
     (await insertTicketTemplate({
       eventId: createdEvent.id,
       quantity: 100,
+      isFree: false,
+      isUnlimited: false,
+    }));
+
+  const allowedCurrency = await insertAllowedCurrency({
+    currency: "USD",
+    validPaymentMethods: "stripe",
+  });
+  const price = await insertPrice({
+    price: 100_00,
+    currencyId: allowedCurrency.id,
+  });
+  const createdTicketPrice =
+    ticketPrice ??
+    (await insertTicketPrice({
+      priceId: price.id,
+      ticketId: createdTicketTemplate.id,
     }));
 
   return {
@@ -54,6 +76,7 @@ const createCommunityEventUserAndTicketTemplate = async ({
     event: createdEvent,
     user: createdUser,
     ticketTemplate: createdTicketTemplate,
+    ticketPrice: createdTicketPrice,
   };
 };
 

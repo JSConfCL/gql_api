@@ -416,7 +416,11 @@ builder.mutationFields((t) => ({
         };
       } catch (e: unknown) {
         if (transactionError) {
-          throw transactionError;
+          console.error("🚨Transaction error", transactionError);
+          return {
+            error: true as const,
+            errorMessage: (transactionError as GraphQLError).message,
+          };
         }
         throw new GraphQLError(
           e instanceof Error ? e.message : "Unknown error",
