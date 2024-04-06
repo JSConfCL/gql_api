@@ -1,4 +1,3 @@
-// import { verifyToken } from "@clerk/backend";
 import { useMaskedErrors } from "@envelop/core";
 import { useImmediateIntrospection } from "@envelop/immediate-introspection";
 import { useOpenTelemetry } from "@envelop/opentelemetry";
@@ -214,8 +213,6 @@ export const yoga = createYoga<Env>({
   context: async ({
     request,
     NEON_URL,
-    CLERK_PEM_PUBLIC_KEY,
-    CLERK_ISSUER_ID,
     MAIL_QUEUE,
     GOOGLE_PHOTOS_IMPORT_QUEUE,
     SANITY_PROJECT_ID,
@@ -225,12 +222,6 @@ export const yoga = createYoga<Env>({
     SUPABASE_JWT_DECODER,
     STRIPE_KEY,
   }) => {
-    if (!CLERK_PEM_PUBLIC_KEY) {
-      throw new Error("Missing CLERK_KEY");
-    }
-    if (!CLERK_ISSUER_ID) {
-      throw new Error("Missing CLERK_ISSUER_ID");
-    }
     if (!MAIL_QUEUE) {
       throw new Error("Missing MAIL_QUEUE");
     }

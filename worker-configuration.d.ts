@@ -3,10 +3,8 @@ export interface Env {
   GRAPHQL_BASE_ENDPOINT: "/";
   NEON_URL: string | undefined;
   OTEL_SERVICE_NAME: string;
-  CLERK_PEM_PUBLIC_KEY: string | undefined;
   SUPABASE_JWT_DECODER: string | undefined;
   STRIPE_KEY: string | undefined;
-  CLERK_ISSUER_ID: string | undefined;
   ENFORCED_JWT_TOKEN: string | undefined;
   MAIL_QUEUE: Queue;
   SANITY_PROJECT_ID: string | undefined;

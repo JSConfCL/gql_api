@@ -267,8 +267,6 @@ Estos comandos utilizan las variables de entorno definidas en el archivo .dev.va
 - Tener un archivo `.dev.vars` con el siguiente contenido
   ```txt
   NEON_URL="PREGUNTALE AL EQUIPO POR ESTO"
-  CLERK_PEM_PUBLIC_KEY="PREGUNTALE AL EQUIPO POR ESTO"
-  CLERK_ISSUER_ID="PREGUNTALE AL EQUIPO POR ESTO"
   SUPABASE_JWT_DECODER"PREGUNTALE AL EQUIPO POR ESTO"
   ```
 

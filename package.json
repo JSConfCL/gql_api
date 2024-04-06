@@ -27,7 +27,6 @@
     "email:export": "email export"
   },
   "devDependencies": {
-    "@clerk/types": "^3.48.1",
     "@cloudflare/workers-types": "^4.20231218.0",
     "@graphql-codegen/add": "^5.0.0",
     "@graphql-codegen/cli": "4.0.1",
@@ -70,8 +69,6 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@clerk/backend": "^0.26.0",
-    "@clerk/edge": "^1.13.2",
     "@cloudflare/workers-honeycomb-logger": "^2.3.3",
     "@envelop/core": "^4.0.0",
     "@envelop/immediate-introspection": "^2.0.0",
