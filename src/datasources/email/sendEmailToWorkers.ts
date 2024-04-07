@@ -14,6 +14,9 @@ export async function sendTransactionalHTMLEmail({
     ...defaulFromtProps,
     ...from,
   };
+  if (process?.env?.NODE_ENV === "test") {
+    return true;
+  }
   try {
     const send_request = new Request(
       "https://api.mailchannels.net/tx/v1/send",
