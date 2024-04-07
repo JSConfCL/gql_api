@@ -15,6 +15,7 @@ export const userTicketsPaymentStatusEnum = [
 export const userTicketsApprovalStatusEnum = [
   "approved",
   "pending",
+  "not_required",
   "rejected",
 ] as const;
 export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;
@@ -25,19 +26,19 @@ export const userTicketsSchema = pgTable("user_tickets", {
   ticketTemplateId: uuid("ticket_template_id")
     .references(() => ticketsSchema.id)
     .notNull(),
+  purchaseOrderId: uuid("purchase_order_id")
+    .references(() => purchaseOrdersSchema.id)
+    .notNull(),
   status: text("status", { enum: userTicketsStatusEnum })
     .default("inactive")
     .notNull(),
   paymentStatus: text("payment_status", { enum: userTicketsPaymentStatusEnum })
     .default("unpaid")
     .notNull(),
-  purchaseOrderId: uuid("purchase_order_id")
-    .references(() => purchaseOrdersSchema.id)
-    .notNull(),
   approvalStatus: text("approval_status", {
     enum: userTicketsApprovalStatusEnum,
   })
-    .default("pending")
+    .default("not_required")
     .notNull(),
   redemptionStatus: text("redemption_status", {
     enum: userTicketsRedemptionStatusEnum,

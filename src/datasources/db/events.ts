@@ -31,6 +31,8 @@ export const eventsSchema = pgTable("events", {
   geoLatitude: text("geo_latitude"),
   geoLongitude: text("geo_longitude"),
   geoAddressJSON: text("geo_address_json"),
+  addressDescriptiveName: text("address_descriptive_name"),
+  address: text("address"),
   meetingURL: text("meeting_url"),
   maxAttendees: integer("max_attendees"),
   sanityEventId: text("sanity_event_id"),

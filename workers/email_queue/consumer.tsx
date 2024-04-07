@@ -1,12 +1,10 @@
 import { H } from "@highlight-run/cloudflare";
-import { render } from "@react-email/render";
+import { renderAsync } from "@react-email/render";
 import * as React from "react";
 
-import { WorkEmailValidationEmail } from "~/../emails/invite-email";
-import {
-  EmailMessageType,
-  sendTransactionalEmail,
-} from "~/datasources/queues/mail";
+import { WorkEmailValidationEmail } from "emails/templates/salaries/invite-email";
+import { sendTransactionalHTMLEmail } from "~/datasources/email/sendEmailToWorkers";
+import { EmailMessageType } from "~/datasources/queues/mail";
 import { APP_ENV } from "~/env";
 
 type ENV = {
@@ -51,22 +49,18 @@ const processEmailQueue = async (
     throw new Error("RESEND_EMAIL_KEY is not defined");
   }
   // TODO: Send azure email
-  await sendTransactionalEmail(
-    {
-      RESEND_EMAIL_KEY,
-    },
-    {
-      from: "Javascript Chile <team@jschile.org>",
-      to: message.body.to,
-      subject: "Tu código de verificación",
-      html: render(
-        <WorkEmailValidationEmail
-          baseUrl=""
-          code={message.body.code}
-          userId={message.body.userId}
-        />,
-      ),
-    },
+  const htmlContent = await renderAsync(
+    <WorkEmailValidationEmail
+      baseUrl=""
+      code={message.body.code}
+      userId={message.body.userId}
+    />,
   );
+  await sendTransactionalHTMLEmail({
+    htmlContent: htmlContent,
+    to: [{ email: message.body.to }],
+    from: { name: "Javascript Chile", email: "team@jschile.org" },
+    subject: "Tu código de verificación",
+  });
   message.ack();
 };
