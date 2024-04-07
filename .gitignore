@@ -4,6 +4,7 @@ yalc.lock
 
 # For emails
 .react-email
+emails/out
 
 # For workers cache
 .wrangler

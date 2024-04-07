@@ -1,6 +1,9 @@
+import { render } from "@react-email/components";
 import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
+import React from "react";
 
+import { PurchaseOrderSuccessful } from "emails/templates/tickets/purchase-order-successful";
 import { builder } from "~/builder";
 import { ORM_TYPE } from "~/datasources/db";
 import {
@@ -145,19 +148,68 @@ builder.mutationField("payForPurchaseOrder", (t) =>
 
         const userTicketsIds = userTickets.map((t) => t.id);
 
-        await sendTransactionalHTMLEmail({
-          htmlContent: `<div>Thank you for your purchase</div>`,
-          to: [
-            {
-              name: purchaseOrder.user.name ?? purchaseOrder.user.username,
-              email: purchaseOrder.user.email,
+        const information = await DB.query.purchaseOrdersSchema.findFirst({
+          where: (po, { eq }) => eq(po.id, purchaseOrderId),
+          with: {
+            user: true,
+            userTickets: {
+              with: {
+                event: {
+                  with: {
+                    eventsToCommunities: {
+                      with: {
+                        community: true,
+                      },
+                    },
+                  },
+                },
+              },
             },
-          ],
-          from: {
-            name: "CommunityOS",
           },
-          subject: "Tus tickets están listos 🎉",
         });
+
+        const eventInfo = information?.userTickets[0].event;
+        if (!eventInfo) {
+          console.error("Event not found");
+        }
+        const communityInfo = eventInfo?.eventsToCommunities[0].community;
+        if (!communityInfo) {
+          console.error("Community not found");
+        }
+        if (communityInfo && eventInfo) {
+          await sendTransactionalHTMLEmail({
+            htmlContent: render(
+              <PurchaseOrderSuccessful
+                purchaseOrderId={purchaseOrderId}
+                community={{
+                  name: communityInfo.name,
+                  // communityURL: "https://cdn.com",
+                  logoURL: communityInfo.logoImageSanityRef,
+                }}
+                eventName={eventInfo.name}
+                place={{
+                  name: eventInfo.addressDescriptiveName,
+                  address: eventInfo.address,
+                }}
+                date={{
+                  start: eventInfo.startDateTime,
+                  end: eventInfo.endDateTime,
+                }}
+              />,
+            ),
+            to: [
+              {
+                name: purchaseOrder.user.name ?? purchaseOrder.user.username,
+                email: purchaseOrder.user.email,
+              },
+            ],
+            from: {
+              name: "CommunityOS",
+            },
+            subject: "Tus tickets están listos 🎉",
+          });
+        }
+
         console.log(`Email sent to ${purchaseOrder.user.email}`);
         return {
           purchaseOrder: selectPurchaseOrdersSchema.parse(updatedPO),

@@ -7,7 +7,7 @@ export async function sendTransactionalHTMLEmail({
 }: {
   htmlContent: string;
   from: { name: string; email?: string };
-  to: Array<{ name: string; email: string }>;
+  to: Array<{ name?: string; email: string }>;
   subject: string;
 }) {
   const emailFrom = {
