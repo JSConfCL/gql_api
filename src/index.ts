@@ -19,7 +19,7 @@ import { insertUsersSchema } from "./datasources/db/users";
 import { getSanityClient } from "./datasources/sanity/client";
 import { getStripeClient } from "./datasources/stripe/client";
 
-// We get the token either from the Authorization header or from the "sb-access-token" cookie
+// We get the token either from the Authorization header or from the "community-os-access-token" cookie
 const getAuthToken = (request: Request) => {
   const authHeader = request.headers.get("Authorization");
   if (authHeader) {
@@ -29,7 +29,9 @@ const getAuthToken = (request: Request) => {
   const cookieHeader = request.headers.get("Cookie");
   if (cookieHeader) {
     const cookies = cookieHeader.split(";").map((c) => c.trim());
-    const tokenCookie = cookies.find((c) => c.startsWith("sb-access-token="));
+    const tokenCookie = cookies.find((c) =>
+      c.startsWith("community-os-access-token="),
+    );
     if (tokenCookie) {
       return tokenCookie.split("=")[1];
     }
@@ -134,11 +136,11 @@ const getUser = async ({
 };
 
 const attachPossibleUserIdFromJWT = (request: Request) => {
-  const JWT_TOKEN = (request.headers.get("Authorization") ?? "").split(" ")[1];
   const isOptions = request.method === "OPTIONS";
   if (isOptions) {
     return null;
   }
+  const JWT_TOKEN = getAuthToken(request);
 
   if (!JWT_TOKEN) {
     console.info("No token present");
