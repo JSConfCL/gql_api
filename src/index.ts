@@ -148,6 +148,7 @@ const attachPossibleUserIdFromJWT = (request: Request) => {
   try {
     const { payload } = decode(JWT_TOKEN);
     const userId = (payload as { id: string })?.id ?? "ANONYMOUS";
+    console.log("User_ID", userId);
     H.setAttributes({
       userId: userId,
     });
