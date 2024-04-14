@@ -136,11 +136,11 @@ const getUser = async ({
 };
 
 const attachPossibleUserIdFromJWT = (request: Request) => {
-  const JWT_TOKEN = getAuthToken(request);
   const isOptions = request.method === "OPTIONS";
   if (isOptions) {
     return null;
   }
+  const JWT_TOKEN = getAuthToken(request);
   if (!JWT_TOKEN) {
     console.info("No token present");
     return null;
@@ -182,7 +182,16 @@ export const yoga = createYoga<Env>({
     return {
       origin: requestOrigin,
       credentials: true,
-      allowedHeaders: ["*"],
+      allowedHeaders: [
+        "Accept",
+        "Content-Type",
+        "Authorization",
+        "Cookie",
+        "cookie",
+        "x-graphql-csrf-token",
+        "x-graphql-query-id",
+        "x-graphql-operation-name",
+      ],
       methods: ["POST", "GET", "OPTIONS"],
     };
   },
@@ -289,7 +298,6 @@ export default {
     });
 
     attachPossibleUserIdFromJWT(req);
-    // eslint-disable-next-line no-console
     console.log("🏁 — Initialize Request");
     const response = await yoga.fetch(
       // @ts-expect-error Los tipos de yoga están mal
@@ -298,6 +306,7 @@ export default {
       ctx,
     );
     H.sendResponse(response);
+    console.log("🏁 — End Request");
     return response;
   },
 };
