@@ -3,6 +3,9 @@ name = "graphql-api"
 compatibility_date = "2023-06-06"
 main = "src/index.ts"
 node_compat = true
+services = [
+  { binding = "TRANSACTIONAL_EMAIL_SERVICE", service = "transactional-email-service" }
+]
 
 [vars]
 GRAPHQL_BASE_ENDPOINT = "/"
@@ -32,9 +35,15 @@ localConnectionString="postgresql://fake-user:fake-pasword@fake:5432/fake-db"
 # 🚨 PRODUCTION CONFIG 🚨
 # =====================================
 # =====================================
+
 [env.production]
 route = "api.jschile.org/*"
 logpush = true
+
+[env.production.services]
+services = [
+  { binding = "TRANSACTIONAL_EMAIL_SERVICE", service = "transactional-email-service" }
+]
 
 [env.production.vars]
 GRAPHQL_BASE_ENDPOINT = "/"
@@ -67,6 +76,11 @@ id = "faa163999e9f40c6a26b3612940bc5ba"
 [env.staging]
 route = "api.jsconf.dev/*"
 logpush = true
+
+[env.stagign.services]
+services = [
+  { binding = "TRANSACTIONAL_EMAIL_SERVICE", service = "transactional-email-service" }
+]
 
 [env.staging.vars]
 GRAPHQL_BASE_ENDPOINT = "/"

@@ -238,6 +238,7 @@ export const yoga = createYoga<Env>({
     STRIPE_KEY,
     HYPERDRIVE,
     MERCADOPAGO_KEY,
+    TRANSACTIONAL_EMAIL_SERVICE,
   }) => {
     if (!MAIL_QUEUE) {
       throw new Error("Missing MAIL_QUEUE");
@@ -274,6 +275,9 @@ export const yoga = createYoga<Env>({
         ? NEON_URL
         : HYPERDRIVE.connectionString;
 
+    if (!TRANSACTIONAL_EMAIL_SERVICE) {
+      throw new Error("Missing TRANSACTIONAL_EMAIL_SERVICE");
+    }
     const GET_SANITY_CLIENT = () =>
       getSanityClient({
         projectId: SANITY_PROJECT_ID,
@@ -304,6 +308,7 @@ export const yoga = createYoga<Env>({
       GET_SANITY_CLIENT,
       GET_STRIPE_CLIENT,
       GET_MERCADOPAGO_CLIENT,
+      TRANSACTIONAL_EMAIL_SERVICE,
     };
   },
 });

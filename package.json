@@ -27,7 +27,7 @@
     "email:export": "email export --dir ./emails/templates --outDir ./emails/out --pretty true"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20231218.0",
+    "@cloudflare/workers-types": "^4.20240405.0",
     "@graphql-codegen/add": "^5.0.0",
     "@graphql-codegen/cli": "4.0.1",
     "@graphql-codegen/import-types-preset": "^2.2.6",

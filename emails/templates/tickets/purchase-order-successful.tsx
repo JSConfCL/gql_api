@@ -16,7 +16,7 @@ import * as React from "react";
 import { assetURL } from "emails/helpers";
 import { Footer, TicketTemplate } from "emails/helpers/tickets";
 
-interface WorkEmailValidationEmailProps {
+type WorkEmailValidationEmailProps = {
   purchaseOrderId: string;
   eventName: string;
   community: {
@@ -36,7 +36,7 @@ interface WorkEmailValidationEmailProps {
     url: string;
     name: string;
   };
-}
+};
 
 export const PurchaseOrderSuccessful = ({
   purchaseOrderId,
