@@ -22,7 +22,7 @@
     "noImplicitAny": true,
     "noEmit": true,
     "incremental": true,
-    "types": ["@cloudflare/workers-types/2022-11-30"],
+    "types": ["@cloudflare/workers-types"],
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"],

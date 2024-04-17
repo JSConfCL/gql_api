@@ -18,7 +18,8 @@
     "prettier:ci": "prettier ./src --cache --check",
     "prettier:fix": "prettier ./src --cache --write",
     "typecheck": "tsc",
-    "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info --port 50123",
+    "dev": "wrangler dev --log-level info --experimental-local",
+    "dev:mail": "wrangler dev --config ./workers/transactional_email_service/wrangler.toml",
     "dev:wall-of-fame": "wrangler dev --test-scheduled --config ./workers/wall_of_fame_cron/wrangler.toml",
     "dev:sanity": "wrangler dev --test-scheduled --config ./workers/sanity_asset_importer/wrangler.toml",
     "dev:auth": "wrangler dev --test-scheduled --config ./workers/auth_tokens/wrangler.toml",
@@ -64,7 +65,7 @@
     "uuid": "^9.0.1",
     "vite-tsconfig-paths": "^4.2.0",
     "vitest": "^0.33.0",
-    "wrangler": "^3.34.2"
+    "wrangler": "^3.50.0"
   },
   "engines": {
     "node": ">=18"

@@ -3,9 +3,9 @@ import { renderAsync } from "@react-email/render";
 import * as React from "react";
 
 import { WorkEmailValidationEmail } from "emails/templates/salaries/invite-email";
-import { sendTransactionalHTMLEmail } from "~workers/transactional_email_service/sendEmailToWorkers";
 import { EmailMessageType } from "~/datasources/queues/mail";
 import { APP_ENV } from "~/env";
+import { sendTransactionalHTMLEmail } from "~workers/transactional_email_service/sendEmailToWorkers";
 
 type ENV = {
   RESEND_EMAIL_KEY?: string;

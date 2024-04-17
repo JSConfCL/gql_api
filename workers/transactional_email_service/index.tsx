@@ -6,7 +6,16 @@ import * as React from "react";
 import { sendTransactionalHTMLEmail } from "./sendEmailToWorkers";
 import { PurchaseOrderSuccessful } from "../../emails/templates/tickets/purchase-order-successful";
 
-export class TransactionalEmailService extends WorkerEntrypoint {
+export default class EmailService extends WorkerEntrypoint {
+  fetch() {
+    console.log("Hi from Email RPC service");
+    return new Response();
+  }
+
+  ping = () => {
+    return "PONG from Email RPC service";
+  };
+
   sendPurchaseOrderSuccessful = async ({
     purchaseOrderId,
     purchaseOrder,
@@ -66,5 +75,3 @@ export class TransactionalEmailService extends WorkerEntrypoint {
     });
   };
 }
-
-export default TransactionalEmailService;
