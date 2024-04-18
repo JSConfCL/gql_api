@@ -232,15 +232,13 @@ export const yoga = createYoga<Env>({
     SANITY_SECRET_TOKEN,
     SUPABASE_JWT_DECODER,
     STRIPE_KEY,
+    HYPERDRIVE,
   }) => {
     if (!MAIL_QUEUE) {
       throw new Error("Missing MAIL_QUEUE");
     }
     if (!GOOGLE_PHOTOS_IMPORT_QUEUE) {
       throw new Error("Missing GOOGLE_PHOTOS_IMPORT_QUEUE");
-    }
-    if (!NEON_URL) {
-      throw new Error("Missing NEON_URL");
     }
     if (!NEON_URL) {
       throw new Error("Missing NEON_URL");
@@ -259,6 +257,12 @@ export const yoga = createYoga<Env>({
     ) {
       throw new Error("Missing Sanity Configuration");
     }
+    const DB_URL =
+      HYPERDRIVE?.connectionString?.startsWith("postgresql://fake-user:fake") &&
+      APP_ENV === "development"
+        ? NEON_URL
+        : HYPERDRIVE.connectionString;
+
     const GET_SANITY_CLIENT = () =>
       getSanityClient({
         projectId: SANITY_PROJECT_ID,
@@ -269,8 +273,8 @@ export const yoga = createYoga<Env>({
       });
 
     const GET_STRIPE_CLIENT = () => getStripeClient(STRIPE_KEY);
-    const DB = getDb({
-      neonUrl: NEON_URL,
+    const DB = await getDb({
+      neonUrl: DB_URL,
     });
     console.log("Getting user");
     const USER = await getUser({

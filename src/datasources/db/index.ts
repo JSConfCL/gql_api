@@ -1,33 +1,40 @@
-import { Pool } from "@neondatabase/serverless";
 import { ExtractTablesWithRelations } from "drizzle-orm";
 import {
-  NeonDatabase,
-  NeonQueryResultHKT,
+  NodePgDatabase,
+  NodePgQueryResultHKT,
   drizzle,
-} from "drizzle-orm/neon-serverless";
+} from "drizzle-orm/node-postgres";
 import { PgTransaction } from "drizzle-orm/pg-core";
+import { Client } from "pg";
 
 import * as schema from "./schema";
 
-export type ORM_TYPE = NeonDatabase<typeof schema>;
+export type ORM_TYPE = NodePgDatabase<typeof schema>;
 export type TRANSACTION_HANDLER = PgTransaction<
-  NeonQueryResultHKT,
+  NodePgQueryResultHKT,
   typeof schema,
   ExtractTablesWithRelations<typeof schema>
 >;
 
-export const getDb = ({ neonUrl }: { neonUrl: string }) => {
-  const client = new Pool({
+export const getDb = async ({ neonUrl }: { neonUrl: string }) => {
+  const client = new Client({
     connectionString: neonUrl,
   });
-  const db = drizzle(client, {
-    schema,
-    logger: {
-      logQuery(query, params) {
-        // eslint-disable-next-line no-console
-        console.log(query, params);
+  try {
+    await client.connect();
+    const db = drizzle(client, {
+      schema,
+      logger: {
+        logQuery(query, params) {
+          // eslint-disable-next-line no-console
+          console.log(query, params);
+        },
       },
-    },
-  });
-  return db;
+    });
+    return db;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Error connecting to database", error);
+    throw error;
+  }
 };

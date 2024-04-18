@@ -2,6 +2,7 @@
 name = "wall-of-fame-cron"
 compatibility_date = "2023-06-06"
 main = "./index.ts"
+node_compat = true
 
 [vars]
 # Variables should go here
