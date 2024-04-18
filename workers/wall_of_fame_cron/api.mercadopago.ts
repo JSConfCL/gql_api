@@ -26,7 +26,7 @@ const getFetch = (env: ENV) => async (url: string) => {
 };
 
 export const syncMercadopagoPaymentsAndSubscriptions = async (env: ENV) => {
-  const DB = getDb({
+  const DB = await getDb({
     neonUrl: env.NEON_URL,
   });
   const meliFetch = getFetch(env);

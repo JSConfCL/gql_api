@@ -14,6 +14,7 @@ export interface Env {
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
   RESEND_EMAIL_KEY: string;
   HIGHLIGHT_PROJECT_ID: string;
+  HYPERDRIVE: Hyperdrive;
 }
 
 declare global {

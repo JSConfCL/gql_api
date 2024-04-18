@@ -2,6 +2,7 @@
 name = "graphql-api"
 compatibility_date = "2023-06-06"
 main = "src/index.ts"
+node_compat = true
 
 [vars]
 GRAPHQL_BASE_ENDPOINT = "/"
@@ -20,6 +21,11 @@ binding = "MAIL_QUEUE"
 [[queues.producers]]
 queue = "google-photos-import-queue-dev"
 binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
+
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "f0bc5f4533eb4557976b7d0b59d880ad"
+localConnectionString="postgresql://fake-user:fake-pasword@fake:5432/fake-db"
 
 # =====================================
 # =====================================
@@ -48,6 +54,10 @@ binding = "MAIL_QUEUE"
 queue = "google-photos-import-queue-production"
 binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
 
+[[env.production.hyperdrive]]
+binding = "HYPERDRIVE"
+id = "faa163999e9f40c6a26b3612940bc5ba"
+
 
 # =====================================
 # =====================================
@@ -75,3 +85,7 @@ binding = "MAIL_QUEUE"
 [[env.staging.queues.producers]]
 queue = "google-photos-import-queue-staging"
 binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
+
+[[env.staging.hyperdrive]]
+binding = "HYPERDRIVE"
+id = "c693e76575c64a8eab15032d97ab938f"

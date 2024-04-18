@@ -11,7 +11,7 @@ import { ENV } from "./types";
 
 export const importFromSanity = async (env: ENV) => {
   try {
-    const DB = getDb({
+    const DB = await getDb({
       neonUrl: env.NEON_URL,
     });
 
