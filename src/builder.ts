@@ -11,7 +11,7 @@ import { USER } from "~/datasources/db/schema";
 import { getSanityClient } from "./datasources/sanity/client";
 import { getStripeClient } from "./datasources/stripe/client";
 
-type Context = {
+export type Context = {
   DB: ORM_TYPE;
   GET_SANITY_CLIENT: () => ReturnType<typeof getSanityClient>;
   GET_STRIPE_CLIENT: () => ReturnType<typeof getStripeClient>;

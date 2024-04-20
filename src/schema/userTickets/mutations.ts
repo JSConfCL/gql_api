@@ -19,6 +19,7 @@ import {
 } from "~/validations";
 
 import { RedeemUserTicketError } from "./types";
+import { createPaymentIntent } from "../purchaseOrder/actions";
 
 const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {
   fields: (t) => ({
@@ -33,6 +34,12 @@ const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {
 
 const TicketClaimInput = builder.inputType("TicketClaimInput", {
   fields: (t) => ({
+    generatePaymentLink: t.boolean({
+      description:
+        "If this field is passed, a purchase order payment link will be generated right away",
+      required: true,
+      defaultValue: false,
+    }),
     purchaseOrder: t.field({
       type: [PurchaseOrderInput],
       required: true,
@@ -223,8 +230,8 @@ builder.mutationFields((t) => ({
     },
     resolve: async (
       root,
-      { input: { purchaseOrder, idempotencyUUIDKey } },
-      { USER, DB },
+      { input: { purchaseOrder, idempotencyUUIDKey, generatePaymentLink } },
+      { USER, DB, GET_STRIPE_CLIENT },
     ) => {
       if (!USER) {
         throw new GraphQLError("User not found");
@@ -349,18 +356,29 @@ builder.mutationFields((t) => ({
 
               // If no errors were thrown, we can proceed to reserve the
               // tickets.
-              const newTickets = new Array(item.quantity).fill(false).map(() =>
-                insertUserTicketsSchema.parse({
-                  userId: USER.id,
-                  purchaseOrderId: createdPurchaseOrder.id,
-                  ticketTemplateId: ticketTemplate.id,
-                  paymentStatus: requiresPayment ? "unpaid" : "not_required",
-                  approvalStatus: requiresApproval ? "pending" : "approved",
-                }),
-              );
+              const newTickets = new Array(item.quantity)
+                .fill(false)
+                .map(() => {
+                  const result = insertUserTicketsSchema.safeParse({
+                    userId: USER.id,
+                    purchaseOrderId: createdPurchaseOrder.id,
+                    ticketTemplateId: ticketTemplate.id,
+                    paymentStatus: requiresPayment ? "unpaid" : "not_required",
+                    approvalStatus: requiresApproval ? "pending" : "approved",
+                  });
+                  if (result.success) {
+                    return result.data;
+                  }
+                  console.error("Could not parse user ticket", result.error);
+                })
+                .filter(Boolean);
+
               console.log(
                 `Creating ${newTickets.length} user tickets for ticket template with id ${item.ticketId}`,
               );
+              if (newTickets.length === 0) {
+                throw new Error("Could not create user tickets");
+              }
               const createdUserTickets = await trx
                 .insert(userTicketsSchema)
                 .values(newTickets)
@@ -396,6 +414,22 @@ builder.mutationFields((t) => ({
             }
             const selectedPurchaseOrder =
               selectPurchaseOrdersSchema.parse(foundPurchaseOrder);
+            if (generatePaymentLink) {
+              // payRightAway.currencyID
+              const { purchaseOrder, ticketsIds } = await createPaymentIntent({
+                DB,
+                USER,
+                purchaseOrderId: createdPurchaseOrder.id,
+                GET_STRIPE_CLIENT,
+              });
+              const tickets = await trx.query.userTicketsSchema.findMany({
+                where: (uts, { inArray }) => inArray(uts.id, ticketsIds),
+              });
+              return {
+                selectedPurchaseOrder: purchaseOrder,
+                claimedTickets: tickets,
+              };
+            }
             return { selectedPurchaseOrder, claimedTickets };
           } catch (e) {
             console.error("🚨Error", e);

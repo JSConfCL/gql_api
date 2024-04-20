@@ -9,6 +9,7 @@ import { authHelpers } from "./helpers";
 export class IsAuthenticated extends PreExecutionRule {
   error = new UnauthorizedError("User is not authenticated");
   public execute({ USER }: GraphqlContext) {
+    console.log("🚨 USER", USER);
     return !!USER;
   }
 }
