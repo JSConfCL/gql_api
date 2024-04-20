@@ -42,6 +42,16 @@ builder.objectType(CommunityRef, {
         return events.map((e) => selectEventsSchema.parse(e));
       },
     }),
+    logo: t.field({
+      type: "String",
+      nullable: true,
+      resolve: (root) => root.logoImageSanityRef,
+    }),
+    banner: t.field({
+      type: "String",
+      nullable: true,
+      resolve: (root) => root.bannerImageSanityRef,
+    }),
     users: t.field({
       type: [UserRef],
       resolve: async (root, args, ctx) => {
