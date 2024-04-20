@@ -1,19 +1,4 @@
-import { render } from "@react-email/components";
-import { eq } from "drizzle-orm";
-import { GraphQLError } from "graphql";
-import React from "react";
-
-import { PurchaseOrderSuccessful } from "emails/templates/tickets/purchase-order-successful";
 import { builder } from "~/builder";
-import { ORM_TYPE } from "~/datasources/db";
-import {
-  purchaseOrdersSchema,
-  selectPurchaseOrdersSchema,
-  userTicketsSchema,
-} from "~/datasources/db/schema";
-import { sendTransactionalHTMLEmail } from "~/datasources/email/sendEmailToWorkers";
-import { createPayment } from "~/datasources/stripe";
-import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
 
 import { createPaymentIntent } from "./actions";
 import { PurchaseOrderRef } from "./types";
