@@ -180,7 +180,7 @@ builder.mutationFields((t) => ({
           throw new GraphQLError("User not found");
         }
         if (!(await canRedeemUserTicket(USER?.id, userTicketId, DB))) {
-          throw new GraphQLError("You can't redeem this ticket");
+          throw new GraphQLError("No tienes permisos para redimir este ticket");
         }
 
         const ticket = await DB.query.userTicketsSchema.findFirst({
@@ -190,10 +190,10 @@ builder.mutationFields((t) => ({
           throw new GraphQLError("Unauthorized!");
         }
         if (ticket.approvalStatus === "cancelled") {
-          throw new GraphQLError("You cannot redeem a cancelled ticket");
+          throw new GraphQLError("No es posible redimir un ticket cancelado");
         }
         if (ticket.approvalStatus === "rejected") {
-          throw new GraphQLError("You cannot redeem a rejected ticket");
+          throw new GraphQLError("No es posible redimir un ticket rechazado");
         }
         if (ticket.redemptionStatus === "redeemed") {
           return selectUserTicketsSchema.parse(ticket);

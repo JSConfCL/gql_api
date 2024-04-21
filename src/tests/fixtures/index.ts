@@ -407,6 +407,9 @@ export const insertPurchaseOrder = async (
     purchaseOrderPaymentStatus:
       partialInput?.purchaseOrderPaymentStatus ?? "unpaid",
     paymentPlatformExpirationDate: partialInput?.paymentPlatformExpirationDate,
+    idempotencyUUIDKey: partialInput?.idempotencyUUIDKey,
+    status: partialInput?.status,
+    paymentPlatformPaymentLink: partialInput?.paymentPlatformPaymentLink,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertPurchaseOrdersSchema>;
 

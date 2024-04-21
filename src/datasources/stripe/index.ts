@@ -21,7 +21,7 @@ export const getPaymentStatusFromStripeSession = (
 
 export const getStatusFromStripeSession = (
   stripeStatus: Stripe.Response<Stripe.Checkout.Session>["status"],
-): (typeof purchaseOrderStatusEnum)[number] | null => {
+): (typeof purchaseOrderStatusEnum)[number] => {
   if (stripeStatus === "complete") {
     return "complete";
   } else if (stripeStatus === "expired") {
@@ -29,7 +29,7 @@ export const getStatusFromStripeSession = (
   } else if (stripeStatus === "open") {
     return "open";
   } else if (stripeStatus === null) {
-    return null;
+    return "open";
   }
   throw new Error("Unknown purchase order status", stripeStatus);
 };

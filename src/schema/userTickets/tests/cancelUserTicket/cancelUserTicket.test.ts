@@ -65,7 +65,7 @@ describe("Cancel User Ticket", () => {
     assert.equal(response.errors, undefined);
     assert.equal(
       response.data?.cancelUserTicket?.approvalStatus,
-      TicketApprovalStatus.Rejected,
+      TicketApprovalStatus.Cancelled,
     );
   });
   it("Should cancel a user ticket with role superadmin", async () => {
