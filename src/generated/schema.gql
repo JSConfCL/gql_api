@@ -1,4 +1,6 @@
-"""Representation of a workEmail"""
+"""
+Representation of a workEmail
+"""
 type AllowedCurrency {
   currency: String!
   id: String!
@@ -14,7 +16,9 @@ enum CommnunityStatus {
   inactive
 }
 
-"""Representation of a Community"""
+"""
+Representation of a Community
+"""
 type Community {
   banner: String
   description: String
@@ -26,7 +30,9 @@ type Community {
   users: [User!]!
 }
 
-"""Representation of a workEmail"""
+"""
+Representation of a workEmail
+"""
 type Company {
   description: String
   domain: String!
@@ -36,7 +42,9 @@ type Company {
   name: String
   salarySubmissions: Int!
 
-  """Not available to users"""
+  """
+  Not available to users
+  """
   status: CompanyStatus
   website: String
 }
@@ -47,7 +55,9 @@ enum CompanyStatus {
   inactive
 }
 
-"""Representation of a consolidated payment entry log calculation"""
+"""
+Representation of a consolidated payment entry log calculation
+"""
 type ConsolidatedPaymentLogEntry {
   currencyId: String!
   id: String!
@@ -135,7 +145,9 @@ type Event {
   tickets: [Ticket!]!
   users: [User!]!
 
-  """List of tickets that a user owns for this event."""
+  """
+  List of tickets that a user owns for this event.
+  """
   usersTickets(input: EventsTicketsSearchInput): [UserTicket!]!
   visibility: EventVisibility!
 }
@@ -172,7 +184,9 @@ input EventEditInput {
   visibility: EventVisibility
 }
 
-"""Search for tags"""
+"""
+Search for tags
+"""
 input EventImageSearch {
   eventId: String!
 }
@@ -219,49 +233,79 @@ enum Gender {
 }
 
 type Mutation {
-  """Approve a ticket"""
+  """
+  Approve a ticket
+  """
   approvalUserTicket(userTicketId: String!): UserTicket!
 
-  """Cancel a ticket"""
+  """
+  Cancel a ticket
+  """
   cancelUserTicket(userTicketId: String!): UserTicket!
 
-  """Check the status of a purchase order"""
+  """
+  Check the status of a purchase order
+  """
   checkPurchaseOrderStatus(input: CheckForPurchaseOrderInput!): PurchaseOrder!
 
-  """Attempt to claim a certain ammount of tickets"""
+  """
+  Attempt to claim a certain ammount of tickets
+  """
   claimUserTicket(input: TicketClaimInput!): RedeemUserTicketResponse!
 
-  """Create an community"""
+  """
+  Create an community
+  """
   createCommunity(input: CreateCommunityInput!): Community!
 
-  """Create a company"""
+  """
+  Create a company
+  """
   createCompany(input: CreateCompanyInput!): Company!
 
-  """Create an event"""
+  """
+  Create an event
+  """
   createEvent(input: EventCreateInput!): Event!
 
-  """Create a salary"""
+  """
+  Create a salary
+  """
   createSalary(input: CreateSalaryInput!): Salary!
 
-  """Create a ticket"""
+  """
+  Create a ticket
+  """
   createTicket(input: TicketCreateInput!): Ticket!
 
-  """Edit an community"""
+  """
+  Edit an community
+  """
   editCommunity(input: UpdateCommunityInput!): Community!
 
-  """Edit an event"""
+  """
+  Edit an event
+  """
   editEvent(input: EventEditInput!): Event!
 
-  """Edit a ticket"""
+  """
+  Edit a ticket
+  """
   editTicket(input: TicketEditInput!): Ticket!
 
-  """Enqueue images to import"""
+  """
+  Enqueue images to import
+  """
   enqueueGoogleAlbumImport(input: EnqueueGoogleAlbumImportInput!): Boolean!
 
-  """Create a purchase order"""
+  """
+  Create a purchase order
+  """
   payForPurchaseOrder(input: PayForPurchaseOrderInput!): PurchaseOrder!
 
-  """Redeem a ticket"""
+  """
+  Redeem a ticket
+  """
   redeemUserTicket(userTicketId: String!): UserTicket!
 
   """
@@ -269,19 +313,29 @@ type Mutation {
   """
   startWorkEmailValidation(email: String!): WorkEmail!
 
-  """Update a company"""
+  """
+  Update a company
+  """
   updateCompany(input: UpdateCompanyInput!): Company!
 
-  """Create a salary"""
+  """
+  Create a salary
+  """
   updateSalary(input: UpdateSalaryInput!): Salary!
 
-  """Update a user"""
+  """
+  Update a user
+  """
   updateUser(input: userEditInput!): User!
 
-  """Update a user role"""
+  """
+  Update a user role
+  """
   updateUserRoleInCommunity(input: updateUserRoleInCommunityInput!): User!
 
-  """Validates work email for a user"""
+  """
+  Validates work email for a user
+  """
   validateWorkEmail(confirmationToken: String!): WorkEmail!
 }
 
@@ -297,7 +351,9 @@ input PayForPurchaseOrderInput {
   purchaseOrderId: String!
 }
 
-"""Representation of a TicketPrice"""
+"""
+Representation of a TicketPrice
+"""
 type Price {
   amount: Int!
   currency: AllowedCurrency!
@@ -313,7 +369,9 @@ input PricingInputField {
   value_in_cents: Int!
 }
 
-"""Representation of a payment log entry"""
+"""
+Representation of a payment log entry
+"""
 type PublicFinanceEntryRef {
   createdAt: DateTime!
   currencyId: String!
@@ -323,7 +381,9 @@ type PublicFinanceEntryRef {
   transactionDate: DateTime
 }
 
-"""Representation of a Purchase Order"""
+"""
+Representation of a Purchase Order
+"""
 type PurchaseOrder {
   currency: AllowedCurrency
   finalPrice: Float
@@ -345,64 +405,102 @@ enum PurchaseOrderStatusEnum {
 }
 
 type Query {
-  """Get a list of communities. Filter by name, id, or status"""
+  """
+  Get a list of communities. Filter by name, id, or status
+  """
   communities(id: String, name: String, status: CommnunityStatus): [Community!]!
 
-  """Get a community by id"""
+  """
+  Get a community by id
+  """
   community(id: String!): Community
 
-  """Get all available companies"""
+  """
+  Get all available companies
+  """
   companies(input: SearchCompaniesInput): [Company!]!
 
-  """Get all available companies"""
+  """
+  Get all available companies
+  """
   company(companyId: String!): Company!
 
-  """Get an event by id"""
+  """
+  Get an event by id
+  """
   event(id: String!): Event
 
-  """Get a list of images, that are attached to an event"""
+  """
+  Get a list of images, that are attached to an event
+  """
   eventImages(input: EventImageSearch!): [SanityAssetRef!]!
 
-  """Get a list of events. Filter by name, id, status or date"""
+  """
+  Get a list of events. Filter by name, id, status or date
+  """
   events(input: EventsSearchInput): [Event!]!
 
-  """Get the current user"""
+  """
+  Get the current user
+  """
   me: User!
 
-  """Get a list of tickets for the current user"""
+  """
+  Get a list of tickets for the current user
+  """
   myTickets(input: MyTicketsSearchInput): [UserTicket!]!
 
-  """Get a list of salaries associated to the user"""
+  """
+  Get a list of salaries associated to the user
+  """
   salaries: [Salary!]!
 
   """
   Search a consolidated payment logs, by date, aggregated by platform and currency_id
   """
-  searchConsolidatedPaymentLogs(input: SearchPaymentLogsInput!): [ConsolidatedPaymentLogEntry!]!
+  searchConsolidatedPaymentLogs(
+    input: SearchPaymentLogsInput!
+  ): [ConsolidatedPaymentLogEntry!]!
 
-  """Search on the payment logs by date, and returns a list of payment logs"""
+  """
+  Search on the payment logs by date, and returns a list of payment logs
+  """
   searchPaymentLogs(input: SearchPaymentLogsInput!): [PublicFinanceEntryRef!]!
   status(name: String): String!
 
-  """Get a list of tags"""
+  """
+  Get a list of tags
+  """
   tags(input: TagSearchInput): [Tag!]!
 
-  """Get a list of users"""
+  """
+  Get a list of users
+  """
   userSearch(input: userSearchInput!): [User!]!
 
-  """Get a list of users"""
+  """
+  Get a list of users
+  """
   users: [User!]!
 
-  """Get a workEmail and check if its validated for this user"""
+  """
+  Get a workEmail and check if its validated for this user
+  """
   workEmail(email: String!): WorkEmail!
 
-  """Get a list of validated work emails for the user"""
+  """
+  Get a list of validated work emails for the user
+  """
   workEmails: [ValidatedWorkEmail!]!
 
-  """Get a a work role's seniorities"""
+  """
+  Get a a work role's seniorities
+  """
   workRoleSeniorities(input: WorkRoleSenioritiesInput!): [WorkSeniority!]!
 
-  """Get a list of possible work roles"""
+  """
+  Get a list of possible work roles
+  """
   workRoles: [WorkRole!]!
 }
 
@@ -413,7 +511,9 @@ type RedeemUserTicketError {
 
 union RedeemUserTicketResponse = PurchaseOrder | RedeemUserTicketError
 
-"""Representation of a workEmail"""
+"""
+Representation of a workEmail
+"""
 type Salary {
   amount: Int!
   company: Company!
@@ -429,7 +529,9 @@ type Salary {
   yearsOfExperience: Int!
 }
 
-"""Representation of a Sanity Asset"""
+"""
+Representation of a Sanity Asset
+"""
 type SanityAssetRef {
   assetId: String!
   id: String!
@@ -473,14 +575,18 @@ input TagSearchInput {
   name: String
 }
 
-"""Representation of a ticket"""
+"""
+Representation of a ticket
+"""
 type Ticket {
   description: String
   endDateTime: DateTime
   eventId: String!
   id: ID!
 
-  """Whether or not the ticket is free"""
+  """
+  Whether or not the ticket is free
+  """
   isFree: Boolean!
 
   """
@@ -490,7 +596,9 @@ type Ticket {
   name: String!
   prices: [Price!]
 
-  """The number of tickets available for this ticket type"""
+  """
+  The number of tickets available for this ticket type
+  """
   quantity: Int
   requiresApproval: Boolean!
   startDateTime: DateTime!
@@ -524,7 +632,9 @@ input TicketCreateInput {
   endDateTime: DateTime
   eventId: String!
 
-  """If the ticket is free, the price submitted will be ignored."""
+  """
+  If the ticket is free, the price submitted will be ignored.
+  """
   isFree: Boolean!
   name: String!
   prices: [PricingInputField!]
@@ -618,7 +728,9 @@ input UpdateSalaryInput {
   yearsOfExperience: Int
 }
 
-"""Representation of a user"""
+"""
+Representation of a user
+"""
 type User {
   bio: String
   communities: [Community!]!
@@ -629,7 +741,9 @@ type User {
   username: String!
 }
 
-"""Representation of a User ticket"""
+"""
+Representation of a User ticket
+"""
 type UserTicket {
   approvalStatus: TicketApprovalStatus!
   id: ID!
@@ -642,7 +756,9 @@ enum ValidPaymentMethods {
   stripe
 }
 
-"""Representation of a work email associated to the current user"""
+"""
+Representation of a work email associated to the current user
+"""
 type ValidatedWorkEmail {
   company: Company
   confirmationDate: DateTime
@@ -652,7 +768,9 @@ type ValidatedWorkEmail {
   workEmail: String!
 }
 
-"""Representation of a (yet to validate) work email"""
+"""
+Representation of a (yet to validate) work email
+"""
 type WorkEmail {
   id: String!
   isValidated: Boolean!
@@ -664,7 +782,9 @@ enum WorkMetodology {
   remote
 }
 
-"""Representation of a work role"""
+"""
+Representation of a work role
+"""
 type WorkRole {
   description: String
   id: String!
@@ -676,7 +796,9 @@ input WorkRoleSenioritiesInput {
   workRoleId: String!
 }
 
-"""Representation of a work seniority"""
+"""
+Representation of a work seniority
+"""
 type WorkSeniority {
   description: String
   id: String!
