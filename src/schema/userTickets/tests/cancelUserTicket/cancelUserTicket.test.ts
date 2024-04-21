@@ -1,7 +1,6 @@
 import { v4 } from "uuid";
 import { it, describe, assert } from "vitest";
 
-import { TicketStatus } from "~/generated/types";
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -20,6 +19,7 @@ import {
   CancelUserTicketMutation,
   CancelUserTicketMutationVariables,
 } from "./cancelUserTicket.generated";
+import { TicketApprovalStatus } from "../../../../generated/types";
 
 describe("Cancel User Ticket", () => {
   it("Should cancel a user ticket if user is the owner of the ticket", async () => {
@@ -47,7 +47,6 @@ describe("Cancel User Ticket", () => {
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      status: "active",
       purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
@@ -65,8 +64,8 @@ describe("Cancel User Ticket", () => {
 
     assert.equal(response.errors, undefined);
     assert.equal(
-      response.data?.cancelUserTicket?.status,
-      TicketStatus.Inactive,
+      response.data?.cancelUserTicket?.approvalStatus,
+      TicketApprovalStatus.Rejected,
     );
   });
   it("Should cancel a user ticket with role superadmin", async () => {
@@ -96,7 +95,6 @@ describe("Cancel User Ticket", () => {
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      status: "active",
       purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
@@ -114,8 +112,8 @@ describe("Cancel User Ticket", () => {
 
     assert.equal(response.errors, undefined);
     assert.equal(
-      response.data?.cancelUserTicket?.status,
-      TicketStatus.Inactive,
+      response.data?.cancelUserTicket?.approvalStatus,
+      TicketApprovalStatus.Cancelled,
     );
   });
   it("It should throw an error, if ticket does not exist", async () => {
@@ -176,7 +174,6 @@ describe("Cancel User Ticket", () => {
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      status: "active",
       purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<

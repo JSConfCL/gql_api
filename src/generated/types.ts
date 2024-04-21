@@ -44,6 +44,10 @@ export type AllowedCurrency = {
   validPaymentMethods: ValidPaymentMethods;
 };
 
+export type CheckForPurchaseOrderInput = {
+  purchaseOrderId: Scalars["String"]["input"];
+};
+
 export enum CommnunityStatus {
   Active = "active",
   Inactive = "inactive",
@@ -52,9 +56,11 @@ export enum CommnunityStatus {
 /** Representation of a Community */
 export type Community = {
   __typename?: "Community";
+  banner?: Maybe<Scalars["String"]["output"]>;
   description?: Maybe<Scalars["String"]["output"]>;
   events: Array<Event>;
   id: Scalars["String"]["output"];
+  logo?: Maybe<Scalars["String"]["output"]>;
   name?: Maybe<Scalars["String"]["output"]>;
   status: CommnunityStatus;
   users: Array<User>;
@@ -224,7 +230,6 @@ export type EventsTicketsSearchInput = {
   id?: InputMaybe<Scalars["String"]["input"]>;
   paymentStatus?: InputMaybe<TicketPaymentStatus>;
   redemptionStatus?: InputMaybe<TicketRedemptionStatus>;
-  status?: InputMaybe<TicketStatus>;
 };
 
 export enum Gender {
@@ -247,6 +252,8 @@ export type Mutation = {
   approvalUserTicket: UserTicket;
   /** Cancel a ticket */
   cancelUserTicket: UserTicket;
+  /** Check the status of a purchase order */
+  checkPurchaseOrderStatus: PurchaseOrder;
   /** Attempt to claim a certain ammount of tickets */
   claimUserTicket: RedeemUserTicketResponse;
   /** Create an community */
@@ -291,6 +298,10 @@ export type MutationApprovalUserTicketArgs = {
 
 export type MutationCancelUserTicketArgs = {
   userTicketId: Scalars["String"]["input"];
+};
+
+export type MutationCheckPurchaseOrderStatusArgs = {
+  input: CheckForPurchaseOrderInput;
 };
 
 export type MutationClaimUserTicketArgs = {
@@ -370,7 +381,6 @@ export type MyTicketsSearchInput = {
   eventId?: InputMaybe<Scalars["String"]["input"]>;
   paymentStatus?: InputMaybe<TicketPaymentStatus>;
   redemptionStatus?: InputMaybe<TicketRedemptionStatus>;
-  status?: InputMaybe<TicketStatus>;
 };
 
 export type PayForPurchaseOrderInput = {
@@ -420,7 +430,6 @@ export type PurchaseOrderInput = {
 };
 
 export enum PurchaseOrderStatusEnum {
-  Cancelled = "cancelled",
   NotRequired = "not_required",
   Paid = "paid",
   Unpaid = "unpaid",
@@ -623,11 +632,15 @@ export type Ticket = {
 
 export enum TicketApprovalStatus {
   Approved = "approved",
+  Cancelled = "cancelled",
+  NotRequired = "not_required",
   Pending = "pending",
   Rejected = "rejected",
 }
 
 export type TicketClaimInput = {
+  /** If this field is passed, a purchase order payment link will be generated right away */
+  generatePaymentLink?: Scalars["Boolean"]["input"];
   /** A unique key to prevent duplicate requests, it's optional to send, but it's recommended to send it to prevent duplicate requests. If not sent, it will be created by the server. */
   idempotencyUUIDKey?: InputMaybe<Scalars["String"]["input"]>;
   purchaseOrder: Array<PurchaseOrderInput>;
@@ -667,7 +680,6 @@ export type TicketEditInput = {
 };
 
 export enum TicketPaymentStatus {
-  Cancelled = "cancelled",
   NotRequired = "not_required",
   Paid = "paid",
   Unpaid = "unpaid",
@@ -676,12 +688,6 @@ export enum TicketPaymentStatus {
 export enum TicketRedemptionStatus {
   Pending = "pending",
   Redeemed = "redeemed",
-}
-
-export enum TicketStatus {
-  Active = "active",
-  Expired = "expired",
-  Inactive = "inactive",
 }
 
 export enum TicketTemplateStatus {
@@ -751,7 +757,6 @@ export type UserTicket = {
   id: Scalars["ID"]["output"];
   paymentStatus: TicketPaymentStatus;
   redemptionStatus: TicketRedemptionStatus;
-  status: TicketStatus;
 };
 
 export enum ValidPaymentMethods {

@@ -2,21 +2,20 @@ import { relations } from "drizzle-orm";
 import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-import { purchaseOrdersSchema, ticketsSchema, usersSchema } from "./schema";
+import {
+  puchaseOrderPaymentStatusEnum,
+  purchaseOrdersSchema,
+  ticketsSchema,
+  usersSchema,
+} from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
-export const userTicketsStatusEnum = ["active", "inactive", "expired"] as const;
-export const userTicketsPaymentStatusEnum = [
-  "paid",
-  "unpaid",
-  "cancelled",
-  "not_required",
-] as const;
 export const userTicketsApprovalStatusEnum = [
   "approved",
   "pending",
   "not_required",
   "rejected",
+  "cancelled",
 ] as const;
 export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;
 // USER-TICKETS-TABLE
@@ -29,16 +28,13 @@ export const userTicketsSchema = pgTable("user_tickets", {
   purchaseOrderId: uuid("purchase_order_id")
     .references(() => purchaseOrdersSchema.id)
     .notNull(),
-  status: text("status", { enum: userTicketsStatusEnum })
-    .default("inactive")
-    .notNull(),
-  paymentStatus: text("payment_status", { enum: userTicketsPaymentStatusEnum })
+  paymentStatus: text("payment_status", { enum: puchaseOrderPaymentStatusEnum })
     .default("unpaid")
     .notNull(),
   approvalStatus: text("approval_status", {
     enum: userTicketsApprovalStatusEnum,
   })
-    .default("not_required")
+    .default("pending")
     .notNull(),
   redemptionStatus: text("redemption_status", {
     enum: userTicketsRedemptionStatusEnum,

@@ -3,13 +3,9 @@ import {
   userTicketsApprovalStatusEnum,
   puchaseOrderPaymentStatusEnum,
   userTicketsRedemptionStatusEnum,
-  userTicketsStatusEnum,
 } from "~/datasources/db/schema";
 import { UserTicketRef } from "~/schema/shared/refs";
 
-export const TicketStatus = builder.enumType("TicketStatus", {
-  values: userTicketsStatusEnum,
-});
 export const TicketPaymentStatus = builder.enumType("TicketPaymentStatus", {
   values: puchaseOrderPaymentStatusEnum,
 });
@@ -27,10 +23,6 @@ builder.objectType(UserTicketRef, {
   description: "Representation of a User ticket",
   fields: (t) => ({
     id: t.exposeID("id"),
-    status: t.field({
-      type: TicketStatus,
-      resolve: (root) => root.status,
-    }),
     paymentStatus: t.field({
       type: TicketPaymentStatus,
       resolve: (root) => root.paymentStatus,

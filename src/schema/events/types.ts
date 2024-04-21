@@ -26,7 +26,6 @@ import {
   TicketApprovalStatus,
   TicketPaymentStatus,
   TicketRedemptionStatus,
-  TicketStatus,
 } from "~/schema/userTickets/types";
 
 export const EventStatus = builder.enumType("EventStatus", {
@@ -40,10 +39,6 @@ const AdminRoles = new Set(["admin", "collaborator"]);
 const EventsTicketsSearchInput = builder.inputType("EventsTicketsSearchInput", {
   fields: (t) => ({
     id: t.string({ required: false }),
-    status: t.field({
-      type: TicketStatus,
-      required: false,
-    }),
     paymentStatus: t.field({
       type: TicketPaymentStatus,
       required: false,
@@ -233,7 +228,7 @@ builder.objectType(EventRef, {
         input: t.arg({ type: EventsTicketsSearchInput, required: false }),
       },
       resolve: async (root, { input }, { DB, USER }) => {
-        const { id, status, paymentStatus, approvalStatus, redemptionStatus } =
+        const { id, paymentStatus, approvalStatus, redemptionStatus } =
           input ?? {};
         const wheres: SQL[] = [];
 
@@ -243,9 +238,6 @@ builder.objectType(EventRef, {
 
         if (id) {
           wheres.push(eq(userTicketsSchema.id, id));
-        }
-        if (status) {
-          wheres.push(eq(userTicketsSchema.status, status));
         }
         if (paymentStatus) {
           wheres.push(eq(userTicketsSchema.paymentStatus, paymentStatus));
