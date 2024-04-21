@@ -89,13 +89,10 @@ builder.mutationFields((t) => ({
         let ticket = await ctx.DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
         });
-        if (ticket?.status === "inactive") {
-          throw new GraphQLError("Ticket already cancelled");
-        }
         ticket = (
           await ctx.DB.update(userTicketsSchema)
             .set({
-              status: "inactive",
+              approvalStatus: "cancelled",
               deletedAt: new Date(),
             })
             .where(eq(userTicketsSchema.id, userTicketId))
@@ -183,7 +180,7 @@ builder.mutationFields((t) => ({
           throw new GraphQLError("User not found");
         }
         if (!(await canRedeemUserTicket(USER?.id, userTicketId, DB))) {
-          throw new GraphQLError("You can't redeem this ticket");
+          throw new GraphQLError("No tienes permisos para redimir este ticket");
         }
 
         const ticket = await DB.query.userTicketsSchema.findFirst({
@@ -192,12 +189,14 @@ builder.mutationFields((t) => ({
         if (!ticket) {
           throw new GraphQLError("Unauthorized!");
         }
-
-        if (ticket.redemptionStatus === "redeemed") {
-          throw new GraphQLError("Ticket already redeemed");
+        if (ticket.approvalStatus === "cancelled") {
+          throw new GraphQLError("No es posible redimir un ticket cancelado");
         }
-        if (ticket.status !== "active") {
-          throw new GraphQLError("Ticket is not active");
+        if (ticket.approvalStatus === "rejected") {
+          throw new GraphQLError("No es posible redimir un ticket rechazado");
+        }
+        if (ticket.redemptionStatus === "redeemed") {
+          return selectUserTicketsSchema.parse(ticket);
         }
         const updatedTicket = (
           await DB.update(userTicketsSchema)

@@ -7,7 +7,6 @@ import {
   TicketApprovalStatus,
   TicketPaymentStatus,
   TicketRedemptionStatus,
-  TicketStatus,
 } from "~/generated/types";
 import {
   executeGraphqlOperation,
@@ -178,14 +177,12 @@ describe("Event", () => {
           approvalStatus: ticket1.approvalStatus,
           paymentStatus: ticket1.paymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
-          status: ticket1.status,
         },
         {
           id: ticket2.id,
           approvalStatus: ticket2.approvalStatus,
           paymentStatus: ticket2.paymentStatus,
           redemptionStatus: ticket2.redemptionStatus,
-          status: ticket2.status,
         },
       ],
     } as EventQuery["event"]);
@@ -555,7 +552,6 @@ describe("Event tickets filter", () => {
           approvalStatus: ticket1.approvalStatus,
           paymentStatus: ticket1.paymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
-          status: ticket1.status,
         },
       ],
     } as EventQuery["event"]);
@@ -635,7 +631,6 @@ describe("Event tickets filter", () => {
           approvalStatus: ticket1.approvalStatus,
           paymentStatus: ticket1.paymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
-          status: ticket1.status,
         },
       ],
     } as EventQuery["event"]);
@@ -715,7 +710,6 @@ describe("Event tickets filter", () => {
           approvalStatus: ticket1.approvalStatus,
           paymentStatus: ticket1.paymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
-          status: ticket1.status,
         },
       ],
     } as EventQuery["event"]);
@@ -795,91 +789,6 @@ describe("Event tickets filter", () => {
           approvalStatus: ticket1.approvalStatus,
           paymentStatus: ticket1.paymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
-          status: ticket1.status,
-        },
-      ],
-    } as EventQuery["event"]);
-  });
-
-  it("Should filter event ticket by status", async () => {
-    const community1 = await insertCommunity();
-    const event1 = await insertEvent();
-    await insertEventToCommunity({
-      eventId: event1.id,
-      communityId: community1.id,
-    });
-    const user1 = await insertUser();
-    await insertUserToCommunity({
-      communityId: community1.id,
-      userId: user1.id,
-      role: "admin",
-    });
-    await insertUserToEvent({
-      eventId: event1.id,
-      userId: user1.id,
-      role: "admin",
-    });
-
-    const ticketTemplate1 = await insertTicketTemplate({
-      eventId: event1.id,
-    });
-    const purchaseOrder = await insertPurchaseOrder();
-    const ticket1 = await insertTicket({
-      ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
-      status: TicketStatus.Active,
-      purchaseOrderId: purchaseOrder.id,
-    });
-    await insertTicket({
-      ticketTemplateId: ticketTemplate1.id,
-      userId: user1.id,
-      status: TicketStatus.Inactive,
-      purchaseOrderId: purchaseOrder.id,
-    });
-
-    const response = await executeGraphqlOperationAsUser<
-      EventQuery,
-      EventQueryVariables
-    >(
-      {
-        document: Event,
-        variables: {
-          eventId: event1.id,
-          eventTickets: {
-            status: TicketStatus.Active,
-          },
-        },
-      },
-      user1,
-    );
-    assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.event?.usersTickets.length, 1);
-    assert.deepEqual(response.data?.event, {
-      id: event1.id,
-      name: event1.name,
-      description: event1.description,
-      status: event1.status,
-      visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: event1.endDateTime
-        ? toISODateWithoutMilliseconds(event1.endDateTime)
-        : null,
-      community: {
-        id: community1.id,
-      },
-      tags: [],
-      users: [
-        {
-          id: user1.id,
-        },
-      ],
-      usersTickets: [
-        {
-          id: ticket1.id,
-          approvalStatus: ticket1.approvalStatus,
-          paymentStatus: ticket1.paymentStatus,
-          redemptionStatus: ticket1.redemptionStatus,
-          status: ticket1.status,
         },
       ],
     } as EventQuery["event"]);

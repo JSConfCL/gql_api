@@ -2,19 +2,13 @@ import { relations } from "drizzle-orm";
 import { jsonb, pgTable, text, uuid, numeric, date } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-import {
-  allowedCurrencySchema,
-  ticketsSchema,
-  userTicketsStatusEnum,
-  usersSchema,
-} from "./schema";
+import { allowedCurrencySchema, ticketsSchema, usersSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
-
+export const purchaseOrderStatusEnum = ["complete", "expired", "open"] as const;
 export const purchaseOrderPaymentPlatforms = ["mercadopago", "stripe"] as const;
 export const puchaseOrderPaymentStatusEnum = [
   "paid",
   "unpaid",
-  "cancelled",
   "not_required",
 ] as const;
 
@@ -33,7 +27,9 @@ export const purchaseOrdersSchema = pgTable("purchase_orders", {
     enum: purchaseOrderPaymentPlatforms,
   }),
   totalPrice: numeric("total_price"),
-  status: text("status", { enum: userTicketsStatusEnum }),
+  status: text("status", { enum: purchaseOrderStatusEnum })
+    .notNull()
+    .default("open"),
   currencyId: uuid("currency_id").references(() => allowedCurrencySchema.id),
   paymentPlatformPaymentLink: text("payment_platform_payment_link"),
   paymentPlatformExpirationDate: date("payment_platform_expiration_date"),

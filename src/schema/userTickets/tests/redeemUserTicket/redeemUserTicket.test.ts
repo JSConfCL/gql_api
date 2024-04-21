@@ -46,7 +46,6 @@ describe("Redeem user ticket", () => {
       const ticket1 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
-        status: "active",
         purchaseOrderId: purchaseOrder.id,
       });
       const response = await executeGraphqlOperationAsUser<
@@ -93,7 +92,6 @@ describe("Redeem user ticket", () => {
       const ticket1 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
-        status: "active",
         purchaseOrderId: purchaseOrder.id,
       });
       const response = await executeGraphqlOperationAsUser<
@@ -142,7 +140,6 @@ describe("Redeem user ticket", () => {
       const ticket1 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
-        status: "active",
         purchaseOrderId: purchaseOrder.id,
       });
       const response = await executeGraphqlOperationAsUser<
@@ -189,7 +186,6 @@ describe("Redeem user ticket", () => {
       const ticket1 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
-        status: "active",
         purchaseOrderId: purchaseOrder.id,
       });
       const response = await executeGraphqlOperationAsUser<
@@ -236,7 +232,6 @@ describe("Redeem user ticket", () => {
       const ticket1 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
-        status: "active",
         purchaseOrderId: purchaseOrder.id,
       });
       const response = await executeGraphqlOperationAsUser<
@@ -286,7 +281,6 @@ describe("Redeem user ticket", () => {
       const ticket1 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
-        status: "active",
         purchaseOrderId: purchaseOrder.id,
       });
       const response = await executeGraphqlOperationAsUser<
@@ -301,12 +295,12 @@ describe("Redeem user ticket", () => {
         },
         user2,
       );
-      assert.deepInclude(
+      assert.equal(
         response.errors?.[0].message,
-        "You can't redeem this ticket",
+        "No tienes permisos para redimir este ticket",
       );
     });
-    it("if ticket is not active", async () => {
+    it("if ticket is already rejected", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
       await insertEventToCommunity({
@@ -331,8 +325,8 @@ describe("Redeem user ticket", () => {
       const ticket1 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
-        status: "inactive",
         purchaseOrderId: purchaseOrder.id,
+        approvalStatus: "rejected",
       });
       const response = await executeGraphqlOperationAsUser<
         RedeemUserTicketMutation,
@@ -346,7 +340,55 @@ describe("Redeem user ticket", () => {
         },
         user1,
       );
-      assert.equal(response.errors?.[0].message, "Ticket is not active");
+      assert.equal(
+        response.errors?.[0].message,
+        "No es posible redimir un ticket rechazado",
+      );
+    });
+    it("if ticket is cancelled", async () => {
+      const community1 = await insertCommunity();
+      const event1 = await insertEvent();
+      await insertEventToCommunity({
+        eventId: event1.id,
+        communityId: community1.id,
+      });
+      const user1 = await insertUser();
+      await insertUserToCommunity({
+        communityId: community1.id,
+        userId: user1.id,
+        role: "admin",
+      });
+      await insertUserToEvent({
+        eventId: event1.id,
+        userId: user1.id,
+        role: "admin",
+      });
+      const ticketTemplate1 = await insertTicketTemplate({
+        eventId: event1.id,
+      });
+      const purchaseOrder = await insertPurchaseOrder();
+      const ticket1 = await insertTicket({
+        ticketTemplateId: ticketTemplate1.id,
+        userId: user1.id,
+        purchaseOrderId: purchaseOrder.id,
+        approvalStatus: "cancelled",
+      });
+      const response = await executeGraphqlOperationAsUser<
+        RedeemUserTicketMutation,
+        RedeemUserTicketMutationVariables
+      >(
+        {
+          document: RedeemUserTicket,
+          variables: {
+            userTicketId: ticket1.id,
+          },
+        },
+        user1,
+      );
+      assert.equal(
+        response.errors?.[0].message,
+        "No es posible redimir un ticket cancelado",
+      );
     });
   });
 });

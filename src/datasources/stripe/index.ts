@@ -1,19 +1,37 @@
 import Stripe from "stripe";
 
-import { puchaseOrderPaymentStatusEnum } from "~/datasources/db/purchaseOrders";
+import {
+  puchaseOrderPaymentStatusEnum,
+  purchaseOrderStatusEnum,
+} from "~/datasources/db/schema";
 import { someMinutesIntoTheFuture } from "~/datasources/helpers";
 
-export const getPaymentStatusFromPaymentProviderStatus = (
-  stripeStatus: Stripe.Response<Stripe.Checkout.Session>["status"],
+export const getPaymentStatusFromStripeSession = (
+  stripeStatus: Stripe.Response<Stripe.Checkout.Session>["payment_status"],
 ): (typeof puchaseOrderPaymentStatusEnum)[number] => {
-  if (stripeStatus === "complete") {
+  if (stripeStatus === "paid") {
     return "paid";
-  } else if (stripeStatus === "expired") {
-    return "cancelled";
-  } else if (stripeStatus === "open") {
+  } else if (stripeStatus === "no_payment_required") {
+    return "not_required";
+  } else if (stripeStatus === "unpaid") {
     return "unpaid";
   }
-  return "unpaid";
+  throw new Error("Unknown payment status", stripeStatus);
+};
+
+export const getStatusFromStripeSession = (
+  stripeStatus: Stripe.Response<Stripe.Checkout.Session>["status"],
+): (typeof purchaseOrderStatusEnum)[number] => {
+  if (stripeStatus === "complete") {
+    return "complete";
+  } else if (stripeStatus === "expired") {
+    return "expired";
+  } else if (stripeStatus === "open") {
+    return "open";
+  } else if (stripeStatus === null) {
+    return "open";
+  }
+  throw new Error("Unknown purchase order status", stripeStatus);
 };
 
 const isIntegerLike = (numberInCents: number) => numberInCents % 100 === 0;
@@ -68,7 +86,7 @@ export const createStripeProductAndPrice = async ({
   return defaultPrice.id;
 };
 
-export const createPayment = async ({
+export const createStripePayment = async ({
   items,
   purchaseOrderId,
   getStripeClient,
@@ -111,4 +129,22 @@ export const createPayment = async ({
   });
 
   return paymentLink;
+};
+
+export const getStripePaymentStatus = async ({
+  paymentId,
+  getStripeClient,
+}: {
+  paymentId: string;
+  getStripeClient: () => Stripe;
+}) => {
+  const stripeClient = getStripeClient();
+  const payment = await stripeClient.checkout.sessions.retrieve(paymentId);
+  if (!payment) {
+    throw new Error(`Payment not found for id: ${paymentId}`);
+  }
+  return {
+    paymentStatus: getPaymentStatusFromStripeSession(payment.payment_status),
+    status: getStatusFromStripeSession(payment.status),
+  };
 };

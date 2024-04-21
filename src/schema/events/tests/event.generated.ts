@@ -12,7 +12,7 @@ export type EventQueryVariables = Types.Exact<{
 }>;
 
 
-export type EventQuery = { __typename?: 'Query', event: { __typename?: 'Event', id: string, name: string, description: string | null, visibility: Types.EventVisibility, status: Types.EventStatus, startDateTime: string, endDateTime: string | null, tags: Array<{ __typename?: 'Tag', id: string }>, community: { __typename?: 'Community', id: string } | null, users: Array<{ __typename?: 'User', id: string }>, usersTickets: Array<{ __typename?: 'UserTicket', id: string, approvalStatus: Types.TicketApprovalStatus, paymentStatus: Types.TicketPaymentStatus, redemptionStatus: Types.TicketRedemptionStatus, status: Types.TicketStatus }> } | null };
+export type EventQuery = { __typename?: 'Query', event: { __typename?: 'Event', id: string, name: string, description: string | null, visibility: Types.EventVisibility, status: Types.EventStatus, startDateTime: string, endDateTime: string | null, tags: Array<{ __typename?: 'Tag', id: string }>, community: { __typename?: 'Community', id: string } | null, users: Array<{ __typename?: 'User', id: string }>, usersTickets: Array<{ __typename?: 'UserTicket', id: string, approvalStatus: Types.TicketApprovalStatus, paymentStatus: Types.TicketPaymentStatus, redemptionStatus: Types.TicketRedemptionStatus }> } | null };
 
 
 export const Event = gql`
@@ -39,7 +39,6 @@ export const Event = gql`
       approvalStatus
       paymentStatus
       redemptionStatus
-      status
     }
   }
 }

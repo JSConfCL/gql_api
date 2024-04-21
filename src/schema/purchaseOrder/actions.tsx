@@ -4,19 +4,21 @@ import { GraphQLError } from "graphql";
 import React from "react";
 
 import { PurchaseOrderSuccessful } from "emails/templates/tickets/purchase-order-successful";
-import { Context, builder } from "~/builder";
+import { Context } from "~/builder";
 import { ORM_TYPE } from "~/datasources/db";
 import {
-  USER,
+  puchaseOrderPaymentStatusEnum,
+  purchaseOrderStatusEnum,
   purchaseOrdersSchema,
   selectPurchaseOrdersSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
 import { sendTransactionalHTMLEmail } from "~/datasources/email/sendEmailToWorkers";
-import { createPayment } from "~/datasources/stripe";
+import {
+  createStripePayment,
+  getStripePaymentStatus,
+} from "~/datasources/stripe";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
-
-import { PurchaseOrderRef } from "./types";
 
 const fetchPurchaseOrderInformation = async (
   purchaseOrderId: string,
@@ -70,10 +72,7 @@ export const createPaymentIntent = async ({
   if (purchaseOrder.purchaseOrderPaymentStatus === "paid") {
     throw new GraphQLError("Purchase order already paid");
   }
-  if (
-    purchaseOrder.purchaseOrderPaymentStatus === "not_required" &&
-    purchaseOrder.status !== "active"
-  ) {
+  if (purchaseOrder.purchaseOrderPaymentStatus === "not_required") {
     throw new GraphQLError("Purchase order payment not required");
   }
 
@@ -109,7 +108,6 @@ export const createPaymentIntent = async ({
     const updatedPOs = await DB.update(purchaseOrdersSchema)
       .set({
         purchaseOrderPaymentStatus: "not_required",
-        status: "active",
       })
       .where(eq(purchaseOrdersSchema.id, purchaseOrderId))
       .returning();
@@ -118,7 +116,6 @@ export const createPaymentIntent = async ({
       throw new GraphQLError("Purchase order not found");
     }
     await DB.update(userTicketsSchema).set({
-      status: "active",
       paymentStatus: "not_required",
     });
 
@@ -264,7 +261,7 @@ export const createPaymentIntent = async ({
   console.log("🚨 Attempting to create payment on platform");
   console.log(items, purchaseOrderId);
   // 2. We create a payment link on stripe.
-  const paymentLink = await createPayment({
+  const paymentLink = await createStripePayment({
     items,
     purchaseOrderId,
     getStripeClient: GET_STRIPE_CLIENT,
@@ -285,7 +282,6 @@ export const createPaymentIntent = async ({
       paymentPlatformReferenceID: paymentLink.id,
       paymentPlatformStatus: paymentLink.status,
       purchaseOrderPaymentStatus: "unpaid",
-      status: "active",
       paymentPlatformExpirationDate: new Date(
         paymentLink.expires_at,
       ).toISOString(),
@@ -302,4 +298,61 @@ export const createPaymentIntent = async ({
     purchaseOrder: selectPurchaseOrdersSchema.parse(updatedPurchaseOrder),
     ticketsIds: userTickets.map((t) => t.id),
   };
+};
+
+export const syncPurchaseOrderPaymentStatus = async ({
+  DB,
+  purchaseOrderId,
+  GET_STRIPE_CLIENT,
+}: {
+  DB: Context["DB"];
+  purchaseOrderId: string;
+  GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
+}) => {
+  const purchaseOrder = await DB.query.purchaseOrdersSchema.findFirst({
+    where: (po, { eq }) => eq(po.id, purchaseOrderId),
+  });
+
+  if (!purchaseOrder) {
+    throw new Error("OC No encontrada");
+  }
+
+  const { paymentPlatformReferenceID } = purchaseOrder;
+  if (!paymentPlatformReferenceID) {
+    throw new Error("No se ha inicializado un pago para esta OC");
+  }
+  let poPaymentStatus: (typeof puchaseOrderPaymentStatusEnum)[number] =
+    purchaseOrder.purchaseOrderPaymentStatus;
+  let poStatus: (typeof purchaseOrderStatusEnum)[number] = purchaseOrder.status;
+  if (purchaseOrder.paymentPlatform === "stripe") {
+    const stripeStatus = await getStripePaymentStatus({
+      paymentId: paymentPlatformReferenceID,
+      getStripeClient: GET_STRIPE_CLIENT,
+    });
+    poPaymentStatus = stripeStatus.paymentStatus;
+    poStatus = stripeStatus.status ?? poStatus;
+  }
+  if (purchaseOrder.paymentPlatform === "mercadopago") {
+    // TODO: Implement MercadoPago payment status
+  }
+
+  if (
+    poPaymentStatus !== purchaseOrder.purchaseOrderPaymentStatus ||
+    poStatus !== purchaseOrder.status
+  ) {
+    // we update the purchase order with the new status, only if they are different from the current status
+    const updatedPurchaseOrder = await DB.update(purchaseOrdersSchema)
+      .set({
+        purchaseOrderPaymentStatus: poPaymentStatus,
+        status: poStatus,
+      })
+      .where(eq(purchaseOrdersSchema.id, purchaseOrderId))
+      .returning();
+    const updatedPO = updatedPurchaseOrder[0];
+    if (!updatedPO) {
+      throw new Error("OC no encontrada");
+    }
+    return updatedPO;
+  }
+  return purchaseOrder;
 };

@@ -12,17 +12,12 @@ import {
   TicketApprovalStatus,
   TicketPaymentStatus,
   TicketRedemptionStatus,
-  TicketStatus,
 } from "./types";
 
 const MyTicketsSearchInput = builder.inputType("MyTicketsSearchInput", {
   fields: (t) => ({
     eventId: t.field({
       type: "String",
-      required: false,
-    }),
-    status: t.field({
-      type: TicketStatus,
       required: false,
     }),
     paymentStatus: t.field({
@@ -54,22 +49,14 @@ builder.queryFields((t) => ({
       rules: ["IsAuthenticated"],
     },
     resolve: async (root, { input }, ctx) => {
-      const {
-        eventId,
-        status,
-        paymentStatus,
-        approvalStatus,
-        redemptionStatus,
-      } = input ?? {};
+      const { eventId, paymentStatus, approvalStatus, redemptionStatus } =
+        input ?? {};
       if (!ctx.USER) {
         return [];
       }
       const wheres: SQL[] = [];
       if (eventId) {
         wheres.push(eq(eventsSchema.id, eventId));
-      }
-      if (status) {
-        wheres.push(eq(userTicketsSchema.status, status));
       }
       if (paymentStatus) {
         wheres.push(eq(userTicketsSchema.paymentStatus, paymentStatus));

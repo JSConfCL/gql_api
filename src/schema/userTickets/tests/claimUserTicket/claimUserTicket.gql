@@ -8,7 +8,6 @@ mutation ClaimUserTicket($input: TicketClaimInput!) {
         paymentStatus
         approvalStatus
         redemptionStatus
-        status
       }
     }
     ... on RedeemUserTicketError {

@@ -7,6 +7,10 @@ type AllowedCurrency {
   validPaymentMethods: ValidPaymentMethods!
 }
 
+input CheckForPurchaseOrderInput {
+  purchaseOrderId: String!
+}
+
 enum CommnunityStatus {
   active
   inactive
@@ -16,9 +20,11 @@ enum CommnunityStatus {
 Representation of a Community
 """
 type Community {
+  banner: String
   description: String
   events: [Event!]!
   id: String!
+  logo: String
   name: String
   status: CommnunityStatus!
   users: [User!]!
@@ -210,7 +216,6 @@ input EventsTicketsSearchInput {
   id: String
   paymentStatus: TicketPaymentStatus
   redemptionStatus: TicketRedemptionStatus
-  status: TicketStatus
 }
 
 enum Gender {
@@ -237,6 +242,11 @@ type Mutation {
   Cancel a ticket
   """
   cancelUserTicket(userTicketId: String!): UserTicket!
+
+  """
+  Check the status of a purchase order
+  """
+  checkPurchaseOrderStatus(input: CheckForPurchaseOrderInput!): PurchaseOrder!
 
   """
   Attempt to claim a certain ammount of tickets
@@ -334,7 +344,6 @@ input MyTicketsSearchInput {
   eventId: String
   paymentStatus: TicketPaymentStatus
   redemptionStatus: TicketRedemptionStatus
-  status: TicketStatus
 }
 
 input PayForPurchaseOrderInput {
@@ -390,7 +399,6 @@ input PurchaseOrderInput {
 }
 
 enum PurchaseOrderStatusEnum {
-  cancelled
   not_required
   paid
   unpaid
@@ -600,11 +608,18 @@ type Ticket {
 
 enum TicketApprovalStatus {
   approved
+  cancelled
+  not_required
   pending
   rejected
 }
 
 input TicketClaimInput {
+  """
+  If this field is passed, a purchase order payment link will be generated right away
+  """
+  generatePaymentLink: Boolean! = false
+
   """
   A unique key to prevent duplicate requests, it's optional to send, but it's recommended to send it to prevent duplicate requests. If not sent, it will be created by the server.
   """
@@ -655,7 +670,6 @@ input TicketEditInput {
 }
 
 enum TicketPaymentStatus {
-  cancelled
   not_required
   paid
   unpaid
@@ -664,12 +678,6 @@ enum TicketPaymentStatus {
 enum TicketRedemptionStatus {
   pending
   redeemed
-}
-
-enum TicketStatus {
-  active
-  expired
-  inactive
 }
 
 enum TicketTemplateStatus {
@@ -741,7 +749,6 @@ type UserTicket {
   id: ID!
   paymentStatus: TicketPaymentStatus!
   redemptionStatus: TicketRedemptionStatus!
-  status: TicketStatus!
 }
 
 enum ValidPaymentMethods {

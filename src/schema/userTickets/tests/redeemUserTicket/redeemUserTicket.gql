@@ -1,7 +1,6 @@
 mutation RedeemUserTicket($userTicketId: String!) {
   redeemUserTicket(userTicketId: $userTicketId) {
     id
-    status
     paymentStatus
     approvalStatus
     redemptionStatus

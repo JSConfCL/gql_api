@@ -89,7 +89,6 @@ import {
   TicketApprovalStatus,
   TicketPaymentStatus,
   TicketRedemptionStatus,
-  TicketStatus,
 } from "~/generated/types";
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
@@ -408,6 +407,9 @@ export const insertPurchaseOrder = async (
     purchaseOrderPaymentStatus:
       partialInput?.purchaseOrderPaymentStatus ?? "unpaid",
     paymentPlatformExpirationDate: partialInput?.paymentPlatformExpirationDate,
+    idempotencyUUIDKey: partialInput?.idempotencyUUIDKey,
+    status: partialInput?.status,
+    paymentPlatformPaymentLink: partialInput?.paymentPlatformPaymentLink,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertPurchaseOrdersSchema>;
 
@@ -436,7 +438,6 @@ export const insertTicket = async (
     paymentStatus: partialInput?.paymentStatus ?? TicketPaymentStatus.Unpaid,
     redemptionStatus:
       partialInput?.redemptionStatus ?? TicketRedemptionStatus.Pending,
-    status: partialInput?.status ?? TicketStatus.Inactive,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertUserTicketsSchema>;
 

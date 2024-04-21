@@ -21,7 +21,6 @@ query Event($eventId: String!, $eventTickets: EventsTicketsSearchInput) {
       approvalStatus
       paymentStatus
       redemptionStatus
-      status
     }
   }
 }

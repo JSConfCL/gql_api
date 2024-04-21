@@ -1,7 +1,6 @@
 mutation CancelUserTicket($userTicketId: String!) {
   cancelUserTicket(userTicketId: $userTicketId) {
     id
-    status
     paymentStatus
     approvalStatus
     redemptionStatus

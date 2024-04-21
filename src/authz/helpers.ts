@@ -22,6 +22,24 @@ const isCommuntiyAdmin = async ({
   return Boolean(isCommunityAdmin);
 };
 
+const isOwnerOfPurchaseOrder = async ({
+  user,
+  purchaseOrderId,
+  DB,
+}: {
+  user: USER;
+  purchaseOrderId: string;
+  DB: ORM_TYPE;
+}) => {
+  const isOwner = await DB.query.purchaseOrdersSchema.findFirst({
+    where: (po, { eq, and }) =>
+      and(eq(po.id, purchaseOrderId), eq(po.userId, user.id)),
+  });
+
+  return Boolean(isOwner);
+};
+
 export const authHelpers = {
   isCommuntiyAdmin,
+  isOwnerOfPurchaseOrder,
 };
