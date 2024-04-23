@@ -49,11 +49,13 @@ export const createPaymentIntent = async ({
   USER,
   purchaseOrderId,
   GET_STRIPE_CLIENT,
+  PURCHASE_CALLBACK_URL,
 }: {
   DB: Context["DB"];
   purchaseOrderId: string;
   USER: Context["USER"];
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
+  PURCHASE_CALLBACK_URL: string;
 }) => {
   const purchaseOrder = await DB.query.purchaseOrdersSchema.findFirst({
     where: (po, { eq, and }) =>
@@ -265,6 +267,7 @@ export const createPaymentIntent = async ({
     items,
     purchaseOrderId,
     getStripeClient: GET_STRIPE_CLIENT,
+    PURCHASE_CALLBACK_URL,
   });
 
   // 3. We update the purchase order with the payment link, and the total

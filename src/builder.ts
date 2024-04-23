@@ -18,6 +18,7 @@ export type Context = {
   USER: USER;
   MAIL_QUEUE: Queue;
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
+  PURCHASE_CALLBACK_URL: string;
 };
 
 export type GraphqlContext = Context &

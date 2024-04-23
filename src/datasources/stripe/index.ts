@@ -90,6 +90,7 @@ export const createStripePayment = async ({
   items,
   purchaseOrderId,
   getStripeClient,
+  PURCHASE_CALLBACK_URL,
 }: {
   items: Array<{
     price: string;
@@ -97,6 +98,7 @@ export const createStripePayment = async ({
   }>;
   purchaseOrderId: string;
   getStripeClient: () => Stripe;
+  PURCHASE_CALLBACK_URL: string;
 }) => {
   const stripeClient = getStripeClient();
   const exirationDate = someMinutesIntoTheFuture(31);
@@ -106,7 +108,7 @@ export const createStripePayment = async ({
     // complete. If you’d like to use information from the successful Checkout
     // Session on your page, read the guide on customizing your success page.
     // https://stripe.com/docs/payments/checkout/custom-success-page
-    success_url: `http://localhost:3000?session_id={CHECKOUT_SESSION_ID}&paymentId=${purchaseOrderId}`,
+    success_url: `${PURCHASE_CALLBACK_URL}?session_id={CHECKOUT_SESSION_ID}&purchaseOrderId=${purchaseOrderId}`,
     // The URL the customer will be directed to if they decide to cancel
     // payment and return to your website.
     // cancel_url: `https://jsconf.cl/tickets`,

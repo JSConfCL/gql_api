@@ -230,7 +230,7 @@ builder.mutationFields((t) => ({
     resolve: async (
       root,
       { input: { purchaseOrder, idempotencyUUIDKey, generatePaymentLink } },
-      { USER, DB, GET_STRIPE_CLIENT },
+      { USER, DB, GET_STRIPE_CLIENT, PURCHASE_CALLBACK_URL },
     ) => {
       if (!USER) {
         throw new GraphQLError("User not found");
@@ -420,6 +420,7 @@ builder.mutationFields((t) => ({
                 USER,
                 purchaseOrderId: createdPurchaseOrder.id,
                 GET_STRIPE_CLIENT,
+                PURCHASE_CALLBACK_URL,
               });
               const tickets = await trx.query.userTicketsSchema.findMany({
                 where: (uts, { inArray }) => inArray(uts.id, ticketsIds),
