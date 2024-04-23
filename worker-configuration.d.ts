@@ -5,6 +5,7 @@ export interface Env {
   OTEL_SERVICE_NAME: string;
   SUPABASE_JWT_DECODER: string | undefined;
   STRIPE_KEY: string | undefined;
+  MERCADOPAGO_KEY: string;
   ENFORCED_JWT_TOKEN: string | undefined;
   MAIL_QUEUE: Queue;
   SANITY_PROJECT_ID: string | undefined;

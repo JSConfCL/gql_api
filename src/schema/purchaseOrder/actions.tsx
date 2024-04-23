@@ -73,10 +73,12 @@ const createMercadoPagoPaymentIntent = async ({
 }) => {
   const pricesInCLP: Record<string, number | undefined> = {};
   for (const ticket of query) {
-    for (const ticketPrice of ticket.ticketTemplate.ticketsPrices) {
-      if (ticketPrice.price.currency?.currency === "CLP") {
+    if (!ticket.ticketTemplate.isFree) {
+      for (const ticketPrice of ticket.ticketTemplate.ticketsPrices) {
         pricesInCLP[ticket.id] = ticketPrice.price.price_in_cents;
       }
+    } else {
+      pricesInCLP[ticket.id] = 0;
     }
   }
 
@@ -88,10 +90,13 @@ const createMercadoPagoPaymentIntent = async ({
       unit_price: number;
     }
   > = {};
+
+  console.log("userTickets", userTickets);
+
   for (const ticket of userTickets) {
     if (!ticketsGroupedByTemplateId[ticket.ticketTemplate.id]) {
       const unitPrice = pricesInCLP[ticket.id];
-      if (!unitPrice) {
+      if (unitPrice !== 0 && !unitPrice) {
         throw new Error(`Unit price not found for ticket ${ticket.id}`);
       }
       ticketsGroupedByTemplateId[ticket.ticketTemplate.id] = {
