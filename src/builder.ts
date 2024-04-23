@@ -8,6 +8,7 @@ import * as rules from "~/authz";
 import { ORM_TYPE } from "~/datasources/db";
 import { USER } from "~/datasources/db/schema";
 
+import { getMercadoPagoClient } from "./datasources/mercadopago/client";
 import { getSanityClient } from "./datasources/sanity/client";
 import { getStripeClient } from "./datasources/stripe/client";
 
@@ -15,6 +16,7 @@ export type Context = {
   DB: ORM_TYPE;
   GET_SANITY_CLIENT: () => ReturnType<typeof getSanityClient>;
   GET_STRIPE_CLIENT: () => ReturnType<typeof getStripeClient>;
+  GET_MERCADOPAGO_CLIENT: () => ReturnType<typeof getMercadoPagoClient>;
   USER: USER;
   MAIL_QUEUE: Queue;
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;

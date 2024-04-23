@@ -32,13 +32,21 @@ const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {
   }),
 });
 
+const GeneratePaymentLinkInput = builder.inputType("GeneratePaymentLinkInput", {
+  fields: (t) => ({
+    currencyId: t.string({
+      required: true,
+    }),
+  }),
+});
+
 const TicketClaimInput = builder.inputType("TicketClaimInput", {
   fields: (t) => ({
-    generatePaymentLink: t.boolean({
+    generatePaymentLink: t.field({
+      type: GeneratePaymentLinkInput,
       description:
         "If this field is passed, a purchase order payment link will be generated right away",
       required: true,
-      defaultValue: false,
     }),
     purchaseOrder: t.field({
       type: [PurchaseOrderInput],
@@ -230,7 +238,13 @@ builder.mutationFields((t) => ({
     resolve: async (
       root,
       { input: { purchaseOrder, idempotencyUUIDKey, generatePaymentLink } },
-      { USER, DB, GET_STRIPE_CLIENT, PURCHASE_CALLBACK_URL },
+      {
+        USER,
+        DB,
+        GET_STRIPE_CLIENT,
+        PURCHASE_CALLBACK_URL,
+        GET_MERCADOPAGO_CLIENT,
+      },
     ) => {
       if (!USER) {
         throw new GraphQLError("User not found");
@@ -414,13 +428,14 @@ builder.mutationFields((t) => ({
             const selectedPurchaseOrder =
               selectPurchaseOrdersSchema.parse(foundPurchaseOrder);
             if (generatePaymentLink) {
-              // payRightAway.currencyID
               const { purchaseOrder, ticketsIds } = await createPaymentIntent({
                 DB,
                 USER,
                 purchaseOrderId: createdPurchaseOrder.id,
                 GET_STRIPE_CLIENT,
                 PURCHASE_CALLBACK_URL,
+                GET_MERCADOPAGO_CLIENT,
+                currencyId: generatePaymentLink.currencyId,
               });
               const tickets = await trx.query.userTicketsSchema.findMany({
                 where: (uts, { inArray }) => inArray(uts.id, ticketsIds),

@@ -34,12 +34,18 @@ builder.mutationField("payForPurchaseOrder", (t) =>
     resolve: async (
       parent,
       { input },
-      { DB, GET_STRIPE_CLIENT, USER, PURCHASE_CALLBACK_URL },
+      {
+        DB,
+        GET_STRIPE_CLIENT,
+        USER,
+        PURCHASE_CALLBACK_URL,
+        GET_MERCADOPAGO_CLIENT,
+      },
     ) => {
       if (!USER) {
         throw new Error("User is required");
       }
-      const { purchaseOrderId } = input;
+      const { purchaseOrderId, currencyID } = input;
 
       const { purchaseOrder, ticketsIds } = await createPaymentIntent({
         DB,
@@ -47,6 +53,8 @@ builder.mutationField("payForPurchaseOrder", (t) =>
         purchaseOrderId,
         GET_STRIPE_CLIENT,
         PURCHASE_CALLBACK_URL,
+        GET_MERCADOPAGO_CLIENT,
+        currencyId: currencyID,
       });
 
       // 4. We return the payment link.
