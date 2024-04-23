@@ -1,4 +1,5 @@
 NEON_URL="
+PURCHASE_CALLBACK_URL="https://tickets.communityos.io/purchase_callback"
 HIGHLIGHT_PROJECT_ID=""
 RESEND_EMAIL_KEY=""
 SANITY_PROJECT_ID=""

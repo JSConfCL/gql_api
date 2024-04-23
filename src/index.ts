@@ -224,6 +224,7 @@ export const yoga = createYoga<Env>({
   context: async ({
     request,
     NEON_URL,
+    PURCHASE_CALLBACK_URL,
     MAIL_QUEUE,
     GOOGLE_PHOTOS_IMPORT_QUEUE,
     SANITY_PROJECT_ID,
@@ -248,6 +249,9 @@ export const yoga = createYoga<Env>({
     }
     if (!STRIPE_KEY) {
       throw new Error("Missing STRIPE_KEY");
+    }
+    if (!PURCHASE_CALLBACK_URL) {
+      throw new Error("Missing PURCHASE_CALLBACK_URL");
     }
     if (
       !SANITY_PROJECT_ID ||
@@ -287,6 +291,7 @@ export const yoga = createYoga<Env>({
       ...initContextCache(),
       DB,
       USER,
+      PURCHASE_CALLBACK_URL,
       MAIL_QUEUE,
       GET_SANITY_CLIENT,
       GET_STRIPE_CLIENT,

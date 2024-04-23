@@ -15,6 +15,7 @@ export interface Env {
   RESEND_EMAIL_KEY: string;
   HIGHLIGHT_PROJECT_ID: string;
   HYPERDRIVE: Hyperdrive;
+  PURCHASE_CALLBACK_URL: string;
 }
 
 declare global {

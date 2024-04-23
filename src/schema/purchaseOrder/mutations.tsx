@@ -31,7 +31,11 @@ builder.mutationField("payForPurchaseOrder", (t) =>
         required: true,
       }),
     },
-    resolve: async (parent, { input }, { DB, GET_STRIPE_CLIENT, USER }) => {
+    resolve: async (
+      parent,
+      { input },
+      { DB, GET_STRIPE_CLIENT, USER, PURCHASE_CALLBACK_URL },
+    ) => {
       if (!USER) {
         throw new Error("User is required");
       }
@@ -42,6 +46,7 @@ builder.mutationField("payForPurchaseOrder", (t) =>
         USER,
         purchaseOrderId,
         GET_STRIPE_CLIENT,
+        PURCHASE_CALLBACK_URL,
       });
 
       // 4. We return the payment link.
