@@ -24,7 +24,7 @@ import { getStripeClient } from "./datasources/stripe/client";
 const getAuthToken = (request: Request) => {
   const authHeader = request.headers.get("Authorization");
   if (authHeader) {
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.split("Bearer ")[1];
     return token;
   }
   const cookieHeader = request.headers.get("Cookie");
