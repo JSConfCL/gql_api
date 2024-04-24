@@ -282,6 +282,12 @@ export const yoga = createYoga<Env>({
         useCdn: true,
       });
 
+    await TRANSACTIONAL_EMAIL_SERVICE.sendTestEmail({
+      test: "test",
+    });
+
+    console.log("sendTransactionalEmail");
+
     const GET_STRIPE_CLIENT = () => getStripeClient(STRIPE_KEY);
     const GET_MERCADOPAGO_CLIENT = getMercadoPagoFetch(MERCADOPAGO_KEY);
     const DB = await getDb({

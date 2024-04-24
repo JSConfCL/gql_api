@@ -74,4 +74,9 @@ export default class EmailService extends WorkerEntrypoint {
       subject: "Tus tickets están listos 🎉",
     });
   };
+
+  sendTestEmail = async ({ test }: { test: string }) => {
+    await Promise.resolve();
+    console.log("TEST");
+  };
 }

@@ -2,7 +2,7 @@
 name = "transactional-email-service"
 main = "./index.tsx"
 compatibility_flags = [ "nodejs_compat" ]
-compatibility_date = "2024-04-03"
+compatibility_date = "2024-03-04"
 
 [dev]
 port = 50124
