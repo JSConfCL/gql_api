@@ -1,9 +1,9 @@
+import { authHelpers } from "~/authz/helpers";
 import { builder } from "~/builder";
+import { selectPurchaseOrdersSchema } from "~/datasources/db/purchaseOrders";
 
 import { createPaymentIntent, syncPurchaseOrderPaymentStatus } from "./actions";
 import { PurchaseOrderRef } from "./types";
-import { authHelpers } from "../../authz/helpers";
-import { selectPurchaseOrdersSchema } from "../../datasources/db/purchaseOrders";
 
 const PayForPurchaseOrderInput = builder.inputType("PayForPurchaseOrderInput", {
   fields: (t) => ({
@@ -82,16 +82,20 @@ builder.mutationField("checkPurchaseOrderStatus", (t) =>
   t.field({
     description: "Check the status of a purchase order",
     type: PurchaseOrderRef,
-    // authz: {
-    //   rules: ["IsAuthenticated"],
-    // },
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
     args: {
       input: t.arg({
         type: CheckForPurchaseOrderInput,
         required: true,
       }),
     },
-    resolve: async (parent, { input }, { DB, GET_STRIPE_CLIENT, USER }) => {
+    resolve: async (
+      parent,
+      { input },
+      { DB, GET_STRIPE_CLIENT, GET_MERCADOPAGO_CLIENT, USER },
+    ) => {
       if (!USER) {
         throw new Error("User is required");
       }
@@ -101,14 +105,14 @@ builder.mutationField("checkPurchaseOrderStatus", (t) =>
         purchaseOrderId,
         DB,
       });
-      console.log("isOwner", isOwner);
       if (!isOwner) {
         throw new Error("User is not the owner of the purchase order");
       }
       const purchaseOrder = await syncPurchaseOrderPaymentStatus({
         DB,
-        GET_STRIPE_CLIENT,
         purchaseOrderId,
+        GET_STRIPE_CLIENT,
+        GET_MERCADOPAGO_CLIENT,
       });
 
       const tickets = await DB.query.userTicketsSchema.findMany({

@@ -18,12 +18,14 @@ import {
 } from "~/datasources/db/schema";
 import { sendTransactionalHTMLEmail } from "~/datasources/email/sendEmailToWorkers";
 import {
+  createMercadoPagoPayment,
+  getMercadoPagoPayment,
+} from "~/datasources/mercadopago";
+import {
   createStripePayment,
   getStripePaymentStatus,
 } from "~/datasources/stripe";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
-
-import { createMercadoPagoPayment } from "../../datasources/mercadopago";
 
 const fetchPurchaseOrderInformation = async (
   purchaseOrderId: string,
@@ -455,11 +457,14 @@ export const syncPurchaseOrderPaymentStatus = async ({
   DB,
   purchaseOrderId,
   GET_STRIPE_CLIENT,
+  GET_MERCADOPAGO_CLIENT,
 }: {
   DB: Context["DB"];
   purchaseOrderId: string;
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
+  GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
 }) => {
+  console.log("Finding purchase order:", purchaseOrderId);
   const purchaseOrder = await DB.query.purchaseOrdersSchema.findFirst({
     where: (po, { eq }) => eq(po.id, purchaseOrderId),
   });
@@ -469,6 +474,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
   }
 
   const { paymentPlatformReferenceID } = purchaseOrder;
+  console.log("paymentPlatformReferenceID:", paymentPlatformReferenceID);
   if (!paymentPlatformReferenceID) {
     throw new Error("No se ha inicializado un pago para esta OC");
   }
@@ -484,7 +490,12 @@ export const syncPurchaseOrderPaymentStatus = async ({
     poStatus = stripeStatus.status ?? poStatus;
   }
   if (purchaseOrder.paymentPlatform === "mercadopago") {
-    // TODO: Implement MercadoPago payment status
+    const mercadoPagoStatus = await getMercadoPagoPayment({
+      paymentId: paymentPlatformReferenceID,
+      getMercadoPagoClient: GET_MERCADOPAGO_CLIENT,
+    });
+    poPaymentStatus = mercadoPagoStatus.paymentStatus;
+    poStatus = mercadoPagoStatus.status ?? poStatus;
   }
 
   if (
