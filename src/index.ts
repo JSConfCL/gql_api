@@ -16,7 +16,7 @@ import { provider } from "~/obs/exporter";
 import { schema } from "~/schema";
 
 import { insertUsersSchema } from "./datasources/db/users";
-import { getMercadoPagoClient } from "./datasources/mercadopago/client";
+import { getMercadoPagoFetch } from "./datasources/mercadopago";
 import { getSanityClient } from "./datasources/sanity/client";
 import { getStripeClient } from "./datasources/stripe/client";
 
@@ -284,7 +284,7 @@ export const yoga = createYoga<Env>({
       });
 
     const GET_STRIPE_CLIENT = () => getStripeClient(STRIPE_KEY);
-    const GET_MERCADOPAGO_CLIENT = () => getMercadoPagoClient(MERCADOPAGO_KEY);
+    const GET_MERCADOPAGO_CLIENT = getMercadoPagoFetch(MERCADOPAGO_KEY);
     const DB = await getDb({
       neonUrl: DB_URL,
     });
@@ -300,10 +300,10 @@ export const yoga = createYoga<Env>({
       DB,
       USER,
       PURCHASE_CALLBACK_URL,
-      GET_MERCADOPAGO_CLIENT,
       MAIL_QUEUE,
       GET_SANITY_CLIENT,
       GET_STRIPE_CLIENT,
+      GET_MERCADOPAGO_CLIENT,
     };
   },
 });
