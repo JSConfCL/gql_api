@@ -6,7 +6,7 @@ import {
 } from "~/datasources/db/schema";
 import { someMinutesIntoTheFuture } from "~/datasources/helpers";
 
-export const getPaymentStatusFromStripeSession = (
+const getPaymentStatusFromStripeSession = (
   stripeStatus: Stripe.Response<Stripe.Checkout.Session>["payment_status"],
 ): (typeof puchaseOrderPaymentStatusEnum)[number] => {
   if (stripeStatus === "paid") {
@@ -19,7 +19,7 @@ export const getPaymentStatusFromStripeSession = (
   throw new Error("Unknown payment status", stripeStatus);
 };
 
-export const getStatusFromStripeSession = (
+const getPurchaseOrderStatusFromStripeSession = (
   stripeStatus: Stripe.Response<Stripe.Checkout.Session>["status"],
 ): (typeof purchaseOrderStatusEnum)[number] => {
   if (stripeStatus === "complete") {
@@ -147,6 +147,6 @@ export const getStripePaymentStatus = async ({
   }
   return {
     paymentStatus: getPaymentStatusFromStripeSession(payment.payment_status),
-    status: getStatusFromStripeSession(payment.status),
+    status: getPurchaseOrderStatusFromStripeSession(payment.status),
   };
 };

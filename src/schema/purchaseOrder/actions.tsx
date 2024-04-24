@@ -2,6 +2,7 @@ import { render } from "@react-email/components";
 import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import React from "react";
+import { AsyncReturnType } from "type-fest";
 
 import { PurchaseOrderSuccessful } from "emails/templates/tickets/purchase-order-successful";
 import { Context } from "~/builder";
@@ -11,9 +12,15 @@ import {
   purchaseOrderStatusEnum,
   purchaseOrdersSchema,
   selectPurchaseOrdersSchema,
+  selectTicketSchema,
+  selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
 import { sendTransactionalHTMLEmail } from "~/datasources/email/sendEmailToWorkers";
+import {
+  createMercadoPagoPayment,
+  getMercadoPagoPayment,
+} from "~/datasources/mercadopago";
 import {
   createStripePayment,
   getStripePaymentStatus,
@@ -44,10 +51,146 @@ const fetchPurchaseOrderInformation = async (
   });
 };
 
+const createMercadoPagoPaymentIntent = async ({
+  query,
+  userTickets,
+  purchaseOrderId,
+  USER,
+  PURCHASE_CALLBACK_URL,
+  GET_MERCADOPAGO_CLIENT,
+}: {
+  query: AsyncReturnType<typeof fetchPurchaseOrderInformation>;
+  userTickets: Array<
+    typeof selectUserTicketsSchema._type & {
+      ticketTemplate: typeof selectTicketSchema._type;
+    }
+  >;
+  purchaseOrderId: string;
+  GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
+  PURCHASE_CALLBACK_URL: string;
+  USER: {
+    email: string;
+    id: string;
+  };
+}) => {
+  const pricesInCLP: Record<string, number | undefined> = {};
+  for (const ticket of query) {
+    if (!ticket.ticketTemplate.isFree) {
+      for (const ticketPrice of ticket.ticketTemplate.ticketsPrices) {
+        pricesInCLP[ticket.id] = ticketPrice.price.price_in_cents;
+      }
+    } else {
+      pricesInCLP[ticket.id] = 0;
+    }
+  }
+
+  const ticketsGroupedByTemplateId: Record<
+    string,
+    {
+      title: string;
+      quantity: number;
+      unit_price: number;
+    }
+  > = {};
+
+  console.log("userTickets", userTickets);
+
+  for (const ticket of userTickets) {
+    if (!ticketsGroupedByTemplateId[ticket.ticketTemplate.id]) {
+      const unitPrice = pricesInCLP[ticket.id];
+      if (unitPrice !== 0 && !unitPrice) {
+        throw new Error(`Unit price not found for ticket ${ticket.id}`);
+      }
+      ticketsGroupedByTemplateId[ticket.ticketTemplate.id] = {
+        title: ticket.ticketTemplate.name,
+        quantity: 0,
+        unit_price: unitPrice,
+      };
+    }
+    ticketsGroupedByTemplateId[ticket.ticketTemplate.id].quantity += 1;
+  }
+  return await createMercadoPagoPayment({
+    eventId: "event-id",
+    getMercadoPagoClient: GET_MERCADOPAGO_CLIENT,
+    items: Object.entries(ticketsGroupedByTemplateId).map(([id, value]) => ({
+      id,
+      unit_price: value.unit_price,
+      title: value.title,
+      quantity: value.quantity,
+    })),
+    purchaseOrderId,
+    user: {
+      email: USER.email,
+      id: USER.id,
+    },
+    PURCHASE_CALLBACK_URL,
+  });
+};
+
+const createStripePaymentIntent = async ({
+  purchaseOrderId,
+  GET_STRIPE_CLIENT,
+  userTickets,
+  PURCHASE_CALLBACK_URL,
+}: {
+  userTickets: Array<
+    typeof selectUserTicketsSchema._type & {
+      ticketTemplate: typeof selectTicketSchema._type;
+    }
+  >;
+  purchaseOrderId: string;
+  GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
+  PURCHASE_CALLBACK_URL: string;
+}) => {
+  const ticketsGroupedByTemplateId: Record<
+    string,
+    {
+      templateId: string;
+      quantity: number;
+      stripeId: string | null;
+    }
+  > = {};
+
+  for (const ticket of userTickets) {
+    if (!ticketsGroupedByTemplateId[ticket.ticketTemplate.id]) {
+      ticketsGroupedByTemplateId[ticket.ticketTemplate.id] = {
+        templateId: ticket.ticketTemplate.id,
+        quantity: 0,
+        stripeId: ticket.ticketTemplate.stripeProductId,
+      };
+    }
+    ticketsGroupedByTemplateId[ticket.ticketTemplate.id].quantity += 1;
+  }
+  const items: Array<{ price: string; quantity: number }> = [];
+  for (const ticketGroup of Object.values(ticketsGroupedByTemplateId)) {
+    if (!ticketGroup.stripeId) {
+      throw new Error(
+        `Stripe Product ID not found for ticket ${ticketGroup.templateId}`,
+      );
+    }
+    items.push({
+      price: ticketGroup.stripeId,
+      quantity: ticketGroup.quantity,
+    });
+  }
+
+  console.log("🚨 Attempting to create payment on platform");
+  console.log(items, purchaseOrderId);
+  // 2. We create a payment link on stripe.
+  const paymentLink = await createStripePayment({
+    items,
+    purchaseOrderId,
+    getStripeClient: GET_STRIPE_CLIENT,
+    PURCHASE_CALLBACK_URL,
+  });
+  return paymentLink;
+};
 export const createPaymentIntent = async ({
   DB,
   USER,
   purchaseOrderId,
+  currencyId,
+  GET_MERCADOPAGO_CLIENT,
   GET_STRIPE_CLIENT,
   PURCHASE_CALLBACK_URL,
 }: {
@@ -55,7 +198,9 @@ export const createPaymentIntent = async ({
   purchaseOrderId: string;
   USER: Context["USER"];
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
+  GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
   PURCHASE_CALLBACK_URL: string;
+  currencyId: string;
 }) => {
   const purchaseOrder = await DB.query.purchaseOrdersSchema.findFirst({
     where: (po, { eq, and }) =>
@@ -65,17 +210,24 @@ export const createPaymentIntent = async ({
     },
   });
 
-  if (!purchaseOrder) {
-    throw new GraphQLError("Purchase order not found");
+  const currency = await DB.query.allowedCurrencySchema.findFirst({
+    where: (c, { eq }) => eq(c.id, currencyId),
+  });
+  const currencyCode = currency?.currency;
+  if (purchaseOrder?.userId !== USER.id) {
+    throw new GraphQLError("No authorizado");
   }
-  if (purchaseOrder.userId !== USER.id) {
-    throw new GraphQLError("Unauthorized");
+  if (!currencyCode) {
+    throw new GraphQLError("No encontramos un currency con ese ID");
+  }
+  if (!purchaseOrder) {
+    throw new GraphQLError("Orden de compra no encontrada");
   }
   if (purchaseOrder.purchaseOrderPaymentStatus === "paid") {
-    throw new GraphQLError("Purchase order already paid");
+    throw new GraphQLError("Orden de compra ya pagada");
   }
   if (purchaseOrder.purchaseOrderPaymentStatus === "not_required") {
-    throw new GraphQLError("Purchase order payment not required");
+    throw new GraphQLError("Pago no requerido");
   }
 
   // TODO: Depending on the currency ID, we update the totalPrice for the
@@ -93,17 +245,17 @@ export const createPaymentIntent = async ({
     }
   }
 
-  if (allTicketsAreFree && totalAmount !== 0) {
-    throw new GraphQLError(
-      "Purchase order payment not required, but total amount is not zero. This should not happen",
-    );
-  }
   if (!allTicketsAreFree && totalAmount === 0) {
     throw new GraphQLError(
       "Purchase order payment required, but total amount is zero. This should not happen",
     );
   }
   if (allTicketsAreFree) {
+    if (totalAmount !== 0) {
+      throw new GraphQLError(
+        "Purchase order payment not required, but total amount is not zero. This should not happen",
+      );
+    }
     console.log(
       "Purchase order payment not required, meaning all tickets are free, updating purchase order to reflect that",
     );
@@ -197,29 +349,34 @@ export const createPaymentIntent = async ({
     // TODO: Update purchase order to "auto-pay" or not be required.
   }
 
-  await DB.transaction(async (trx) => {
-    console.log("Purchase order requires payment");
-    // 1. We ensure that products are created in the database.
-    for (const ticket of query) {
-      for (const ticketPrice of ticket.ticketTemplate.ticketsPrices) {
-        console.log("🚨", ticketPrice.price.price_in_cents);
-        if (!ticketPrice.price.currency) {
-          throw new Error("Currency not found");
-        }
-        try {
-          await ensureProductsAreCreated({
-            price: ticketPrice.price.price_in_cents,
-            currencyCode: ticketPrice.price.currency.currency,
-            ticket: ticket.ticketTemplate,
-            getStripeClient: GET_STRIPE_CLIENT,
-            transactionHander: trx,
-          });
-        } catch (error) {
-          console.error("Could not create product", error);
+  // We only need to do this for USD, as we are using Stripe for USD payments.
+  if (currencyCode === "USD") {
+    await DB.transaction(async (trx) => {
+      console.log("Purchase order requires payment");
+      // 1. We ensure that products are created in the database.
+      for (const ticket of query) {
+        for (const ticketPrice of ticket.ticketTemplate.ticketsPrices) {
+          console.log("🚨", ticketPrice.price.price_in_cents);
+          if (!ticketPrice.price.currency) {
+            throw new Error(
+              `Currency no encontrada para ticket ${ticket.id}, ticketPrice ${ticketPrice.id}`,
+            );
+          }
+          try {
+            await ensureProductsAreCreated({
+              price: ticketPrice.price.price_in_cents,
+              currencyCode: ticketPrice.price.currency.currency,
+              ticket: ticket.ticketTemplate,
+              getStripeClient: GET_STRIPE_CLIENT,
+              transactionHander: trx,
+            });
+          } catch (error) {
+            console.error("Could not create product", error);
+          }
         }
       }
-    }
-  });
+    });
+  }
 
   const userTickets = await DB.query.userTicketsSchema.findMany({
     where: (t, { eq }) => eq(t.purchaseOrderId, purchaseOrderId),
@@ -228,66 +385,59 @@ export const createPaymentIntent = async ({
     },
   });
 
-  const ticketsGroupedByTemplateId: Record<
-    string,
-    {
-      templateId: string;
-      quantity: number;
-      stripeId: string | null;
-    }
-  > = {};
+  let totalPrice: string | undefined = undefined;
+  let paymentPlatform: "mercadopago" | "stripe" | undefined = undefined;
+  let paymentPlatformPaymentLink: string | undefined | null = undefined;
+  let paymentPlatformReferenceID: string | undefined = undefined;
+  let paymentPlatformStatus: string | undefined | null = undefined;
+  let paymentPlatformExpirationDate: string | undefined = undefined;
 
-  for (const ticket of userTickets) {
-    if (!ticketsGroupedByTemplateId[ticket.ticketTemplate.id]) {
-      ticketsGroupedByTemplateId[ticket.ticketTemplate.id] = {
-        templateId: ticket.ticketTemplate.id,
-        quantity: 0,
-        stripeId: ticket.ticketTemplate.stripeProductId,
-      };
-    }
-    ticketsGroupedByTemplateId[ticket.ticketTemplate.id].quantity += 1;
-  }
-  const items: Array<{ price: string; quantity: number }> = [];
-  for (const ticketGroup of Object.values(ticketsGroupedByTemplateId)) {
-    if (!ticketGroup.stripeId) {
-      throw new Error(
-        `Stripe Product ID not found for ticket ${ticketGroup.templateId}`,
-      );
-    }
-    items.push({
-      price: ticketGroup.stripeId,
-      quantity: ticketGroup.quantity,
+  if (currencyCode === "USD") {
+    const paymentLink = await createStripePaymentIntent({
+      userTickets,
+      purchaseOrderId,
+      GET_STRIPE_CLIENT,
+      PURCHASE_CALLBACK_URL,
     });
+    // 3. We update the purchase order with the payment link, and the total
+    //    price and status
+    if (!paymentLink.amount_total) {
+      throw new Error("Amount total not found");
+    }
+    paymentPlatform = "stripe";
+    totalPrice = paymentLink.amount_total.toString();
+    paymentPlatformPaymentLink = paymentLink.url;
+    paymentPlatformReferenceID = paymentLink.id;
+    paymentPlatformStatus = paymentLink.status;
+    paymentPlatformExpirationDate = new Date(
+      paymentLink.expires_at,
+    ).toISOString();
+  } else if (currencyCode === "CLP") {
+    const { preference, expirationDate } = await createMercadoPagoPaymentIntent(
+      {
+        query,
+        userTickets,
+        purchaseOrderId,
+        USER,
+        PURCHASE_CALLBACK_URL,
+        GET_MERCADOPAGO_CLIENT,
+      },
+    );
+    paymentPlatform = "mercadopago";
+    paymentPlatformPaymentLink = preference.init_point;
+    paymentPlatformReferenceID = preference.id;
+    paymentPlatformStatus = "none";
+    paymentPlatformExpirationDate = expirationDate;
   }
-
-  console.log("🚨 Attempting to create payment on platform");
-  console.log(items, purchaseOrderId);
-  // 2. We create a payment link on stripe.
-  const paymentLink = await createStripePayment({
-    items,
-    purchaseOrderId,
-    getStripeClient: GET_STRIPE_CLIENT,
-    PURCHASE_CALLBACK_URL,
-  });
-
-  // 3. We update the purchase order with the payment link, and the total
-  //    price and status
-  if (!paymentLink.amount_total) {
-    throw new Error("Amount total not found");
-  }
-  console.log("🚨 paymentLink", paymentLink);
   const updatedPurchaseOrders = await DB.update(purchaseOrdersSchema)
     .set({
-      totalPrice: paymentLink.amount_total.toString(),
-      paymentPlatform: "stripe",
-      // paymentPlatformExpirationDate: new Date(paymentLink.expires_at),
-      paymentPlatformPaymentLink: paymentLink.url,
-      paymentPlatformReferenceID: paymentLink.id,
-      paymentPlatformStatus: paymentLink.status,
+      totalPrice,
+      paymentPlatform,
+      paymentPlatformPaymentLink,
+      paymentPlatformReferenceID,
+      paymentPlatformStatus,
+      paymentPlatformExpirationDate,
       purchaseOrderPaymentStatus: "unpaid",
-      paymentPlatformExpirationDate: new Date(
-        paymentLink.expires_at,
-      ).toISOString(),
     })
     .where(eq(purchaseOrdersSchema.id, purchaseOrderId))
     .returning();
@@ -307,11 +457,14 @@ export const syncPurchaseOrderPaymentStatus = async ({
   DB,
   purchaseOrderId,
   GET_STRIPE_CLIENT,
+  GET_MERCADOPAGO_CLIENT,
 }: {
   DB: Context["DB"];
   purchaseOrderId: string;
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
+  GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
 }) => {
+  console.log("Finding purchase order:", purchaseOrderId);
   const purchaseOrder = await DB.query.purchaseOrdersSchema.findFirst({
     where: (po, { eq }) => eq(po.id, purchaseOrderId),
   });
@@ -321,6 +474,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
   }
 
   const { paymentPlatformReferenceID } = purchaseOrder;
+  console.log("paymentPlatformReferenceID:", paymentPlatformReferenceID);
   if (!paymentPlatformReferenceID) {
     throw new Error("No se ha inicializado un pago para esta OC");
   }
@@ -336,7 +490,12 @@ export const syncPurchaseOrderPaymentStatus = async ({
     poStatus = stripeStatus.status ?? poStatus;
   }
   if (purchaseOrder.paymentPlatform === "mercadopago") {
-    // TODO: Implement MercadoPago payment status
+    const mercadoPagoStatus = await getMercadoPagoPayment({
+      paymentId: paymentPlatformReferenceID,
+      getMercadoPagoClient: GET_MERCADOPAGO_CLIENT,
+    });
+    poPaymentStatus = mercadoPagoStatus.paymentStatus;
+    poStatus = mercadoPagoStatus.status ?? poStatus;
   }
 
   if (

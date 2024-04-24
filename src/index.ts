@@ -16,6 +16,7 @@ import { provider } from "~/obs/exporter";
 import { schema } from "~/schema";
 
 import { insertUsersSchema } from "./datasources/db/users";
+import { getMercadoPagoFetch } from "./datasources/mercadopago";
 import { getSanityClient } from "./datasources/sanity/client";
 import { getStripeClient } from "./datasources/stripe/client";
 
@@ -23,7 +24,7 @@ import { getStripeClient } from "./datasources/stripe/client";
 const getAuthToken = (request: Request) => {
   const authHeader = request.headers.get("Authorization");
   if (authHeader) {
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.split("Bearer ")[1];
     return token;
   }
   const cookieHeader = request.headers.get("Cookie");
@@ -98,6 +99,8 @@ const getUser = async ({
     console.error("Could not parse token");
     return null;
   }
+  console.log(payload.exp);
+  console.log(Date.now());
   const isExpired = payload.exp < Date.now() / 1000;
   console.log("isExpired", isExpired);
   // check if token is expired (exp)
@@ -234,6 +237,7 @@ export const yoga = createYoga<Env>({
     SUPABASE_JWT_DECODER,
     STRIPE_KEY,
     HYPERDRIVE,
+    MERCADOPAGO_KEY,
   }) => {
     if (!MAIL_QUEUE) {
       throw new Error("Missing MAIL_QUEUE");
@@ -249,6 +253,9 @@ export const yoga = createYoga<Env>({
     }
     if (!STRIPE_KEY) {
       throw new Error("Missing STRIPE_KEY");
+    }
+    if (!MERCADOPAGO_KEY) {
+      throw new Error("Missing MERCADOPAGO_KEY");
     }
     if (!PURCHASE_CALLBACK_URL) {
       throw new Error("Missing PURCHASE_CALLBACK_URL");
@@ -277,6 +284,7 @@ export const yoga = createYoga<Env>({
       });
 
     const GET_STRIPE_CLIENT = () => getStripeClient(STRIPE_KEY);
+    const GET_MERCADOPAGO_CLIENT = getMercadoPagoFetch(MERCADOPAGO_KEY);
     const DB = await getDb({
       neonUrl: DB_URL,
     });
@@ -295,6 +303,7 @@ export const yoga = createYoga<Env>({
       MAIL_QUEUE,
       GET_SANITY_CLIENT,
       GET_STRIPE_CLIENT,
+      GET_MERCADOPAGO_CLIENT,
     };
   },
 });
