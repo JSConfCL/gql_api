@@ -46,7 +46,7 @@ const TicketClaimInput = builder.inputType("TicketClaimInput", {
       type: GeneratePaymentLinkInput,
       description:
         "If this field is passed, a purchase order payment link will be generated right away",
-      required: true,
+      required: false,
     }),
     purchaseOrder: t.field({
       type: [PurchaseOrderInput],

@@ -644,7 +644,7 @@ export enum TicketApprovalStatus {
 
 export type TicketClaimInput = {
   /** If this field is passed, a purchase order payment link will be generated right away */
-  generatePaymentLink: GeneratePaymentLinkInput;
+  generatePaymentLink?: InputMaybe<GeneratePaymentLinkInput>;
   /** A unique key to prevent duplicate requests, it's optional to send, but it's recommended to send it to prevent duplicate requests. If not sent, it will be created by the server. */
   idempotencyUUIDKey?: InputMaybe<Scalars["String"]["input"]>;
   purchaseOrder: Array<PurchaseOrderInput>;
