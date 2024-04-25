@@ -1,0 +1,23 @@
+# 🚨 DEFAULT CONFIG 🚨
+name = "transactional-email-service"
+main = "./index.tsx"
+compatibility_flags = [ "nodejs_compat" ]
+compatibility_date = "2024-03-04"
+
+[dev]
+port = 50124
+
+[placement]
+mode = "off"
+
+# [vars]
+# # Variables should go here
+
+[define]
+_APP_ENV = "'development'"
+
+[env.production.define]
+_APP_ENV = "'production'"
+
+[env.staging.define]
+_APP_ENV = "'staging'"

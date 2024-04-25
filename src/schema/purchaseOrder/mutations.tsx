@@ -1,6 +1,6 @@
 import { authHelpers } from "~/authz/helpers";
 import { builder } from "~/builder";
-import { selectPurchaseOrdersSchema } from "~/datasources/db/purchaseOrders";
+import { selectPurchaseOrdersSchema } from "~/datasources/db/schema";
 
 import { createPaymentIntent, syncPurchaseOrderPaymentStatus } from "./actions";
 import { PurchaseOrderRef } from "./types";

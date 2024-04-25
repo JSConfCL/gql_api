@@ -2,7 +2,6 @@ import { useMaskedErrors } from "@envelop/core";
 import { useImmediateIntrospection } from "@envelop/immediate-introspection";
 import { useOpenTelemetry } from "@envelop/opentelemetry";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
-import { H } from "@highlight-run/cloudflare";
 import { initContextCache } from "@pothos/core";
 import { decode, verify } from "@tsndr/cloudflare-worker-jwt";
 import { createYoga, maskError } from "graphql-yoga";
@@ -151,10 +150,7 @@ const attachPossibleUserIdFromJWT = (request: Request) => {
   try {
     const { payload } = decode(JWT_TOKEN);
     const userId = (payload as { id: string })?.id ?? "ANONYMOUS";
-    console.log("User_ID", userId);
-    H.setAttributes({
-      userId: userId,
-    });
+    return userId;
   } catch (error) {
     console.error("Could not parse token", error);
     return null;
@@ -204,7 +200,6 @@ export const yoga = createYoga<Env>({
     useMaskedErrors({
       errorMessage: "Internal Server Error",
       maskError: (error, message) => {
-        H.consumeError(error as Error);
         console.error("🚨 APPLICATION ERROR", error, message);
         return maskError(error, message, APP_ENV !== "production");
       },
@@ -238,6 +233,7 @@ export const yoga = createYoga<Env>({
     STRIPE_KEY,
     HYPERDRIVE,
     MERCADOPAGO_KEY,
+    TRANSACTIONAL_EMAIL_SERVICE,
   }) => {
     if (!MAIL_QUEUE) {
       throw new Error("Missing MAIL_QUEUE");
@@ -274,6 +270,9 @@ export const yoga = createYoga<Env>({
         ? NEON_URL
         : HYPERDRIVE.connectionString;
 
+    if (!TRANSACTIONAL_EMAIL_SERVICE) {
+      throw new Error("Missing TRANSACTIONAL_EMAIL_SERVICE");
+    }
     const GET_SANITY_CLIENT = () =>
       getSanityClient({
         projectId: SANITY_PROJECT_ID,
@@ -282,6 +281,12 @@ export const yoga = createYoga<Env>({
         token: SANITY_SECRET_TOKEN,
         useCdn: true,
       });
+
+    await TRANSACTIONAL_EMAIL_SERVICE.sendTestEmail({
+      test: "test",
+    });
+
+    console.log("sendTransactionalEmail");
 
     const GET_STRIPE_CLIENT = () => getStripeClient(STRIPE_KEY);
     const GET_MERCADOPAGO_CLIENT = getMercadoPagoFetch(MERCADOPAGO_KEY);
@@ -295,6 +300,7 @@ export const yoga = createYoga<Env>({
       DB,
     });
     console.log("User Obtained:", USER?.id);
+
     return {
       ...initContextCache(),
       DB,
@@ -304,26 +310,25 @@ export const yoga = createYoga<Env>({
       GET_SANITY_CLIENT,
       GET_STRIPE_CLIENT,
       GET_MERCADOPAGO_CLIENT,
+      TRANSACTIONAL_EMAIL_SERVICE,
     };
   },
 });
 
 export default {
   fetch: async (req: Request, env: Env, ctx: ExecutionContext) => {
-    H.init(req, { HIGHLIGHT_PROJECT_ID: env.HIGHLIGHT_PROJECT_ID ?? "" }, ctx);
-    H.setAttributes({
-      APP_ENV: APP_ENV ?? "none",
-    });
-
-    attachPossibleUserIdFromJWT(req);
+    const userId = attachPossibleUserIdFromJWT(req);
     console.log("🏁 — Initialize Request");
+    console.log({
+      APP_ENV,
+      userId,
+    });
     const response = await yoga.fetch(
       // @ts-expect-error Los tipos de yoga están mal
       req,
       env,
       ctx,
     );
-    H.sendResponse(response);
     console.log("🏁 — End Request");
     return response;
   },
