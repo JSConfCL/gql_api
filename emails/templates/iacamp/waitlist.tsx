@@ -11,7 +11,7 @@ import {
 import * as React from "react";
 
 import { assetURL } from "emails/helpers";
-import { Footer, TicketTemplate } from "emails/helpers/tickets";
+import { BigFooter, Footer, TicketTemplate } from "emails/helpers/tickets";
 
 interface AddedToWaitlist {
   nombre?: string | null;
@@ -93,7 +93,7 @@ export const PurchaseOrderSuccessful = ({ nombre }: AddedToWaitlist) => {
             )}
           </Text>
         </Section> */}
-        <Footer />
+        <BigFooter />
       </Container>
     </TicketTemplate>
   );
