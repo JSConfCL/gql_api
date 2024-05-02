@@ -32,7 +32,7 @@ export const TicketTemplate = ({
             warning: "#FFC107",
             // Grays
             info: "#0DCAF0",
-            light: "#F8F9FA",
+            light: "#ebedf0",
             dark: "#0c0a09",
             muted: "#909090",
             // Neutrals
