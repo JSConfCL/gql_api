@@ -1,0 +1,20 @@
+name: Deploy to DEV
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  upload:
+    name: Upload assets to R2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Rclone action
+        uses: AnimMouse/setup-rclone@v1
+        with:
+          rclone_config: ${{ secrets.CLOUDFLARE_R2_RSYNC_CONFIG }}
+
+      - name: Upload assets to R2
+        run: rclone sync -vv ./emails/templates/static communityos_dev:emails
