@@ -66,5 +66,3 @@ app.get("/", (c) => {
 });
 
 export default app;
-
-// /7R5CR4Rl5vy7ym2wITZiJzT8Sbp07PBST4gUt0DxnU=
