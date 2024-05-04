@@ -1,4 +1,7 @@
-const baseURL = process.env.NODE_ENV === "production" ? "https://cdn.com" : "";
+const baseURL =
+  typeof _APP_ENV !== "undefined" && _APP_ENV == "production"
+    ? "https://assets.communityos.io"
+    : "";
 
 export const assetURL = (url: string) => {
   if (!url) {
