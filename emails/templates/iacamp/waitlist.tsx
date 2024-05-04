@@ -20,7 +20,7 @@ interface AddedToWaitlist {
 export const IACampWaitlist = ({ nombre }: AddedToWaitlist) => {
   return (
     <TicketTemplate>
-      <Container className="px-4 py-10">
+      <Container className="bg-dark px-10 py-10 w-full max-w-4xl">
         <Section className="text-light">
           <Preview>Estás en la lista de espera para IA Camp</Preview>
           <Row className="h-20 mb-14">

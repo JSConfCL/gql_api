@@ -21,4 +21,4 @@ jobs:
           rclone_config: ${{ secrets.CLOUDFLARE_R2_RSYNC_CONFIG }}
 
       - name: Upload assets to R2
-        run: rclone sync -vv ./emails/templates/static communityos:emails
+        run: rclone sync -vv ./emails/templates/static communityos:static
