@@ -1,0 +1,26 @@
+name: Deploy to PROD
+
+on:
+  workflow_run:
+    # Esto tiene q hacer match con los nombres de los workflows de tests
+    branches: [release]
+    types:
+      - completed
+
+jobs:
+  upload:
+    name: Upload assets to R2
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⏳ Cloning repo
+        uses: actions/checkout@v4
+        with:
+          show-progress: false
+
+      - name: Setup Rclone action
+        uses: AnimMouse/setup-rclone@v1
+        with:
+          rclone_config: ${{ secrets.CLOUDFLARE_R2_RSYNC_CONFIG }}
+
+      - name: Upload assets to R2
+        run: rclone sync -vv ./emails/templates/static communityos_dev:emails
