@@ -11,6 +11,11 @@ jobs:
     name: Upload assets to R2
     runs-on: ubuntu-latest
     steps:
+      - name: ⏳ Cloning repo
+        uses: actions/checkout@v4
+        with:
+          show-progress: false
+
       - name: Setup Rclone action
         uses: AnimMouse/setup-rclone@v1
         with:
