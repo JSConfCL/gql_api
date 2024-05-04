@@ -1,11 +1,9 @@
 name: Deploy to PROD
 
 on:
-  workflow_run:
-    # Esto tiene q hacer match con los nombres de los workflows de tests
-    branches: [release]
-    types:
-      - completed
+  push:
+    branches:
+      - release
 
 jobs:
   upload:
@@ -23,4 +21,4 @@ jobs:
           rclone_config: ${{ secrets.CLOUDFLARE_R2_RSYNC_CONFIG }}
 
       - name: Upload assets to R2
-        run: rclone sync -vv ./emails/templates/static communityos_dev:emails
+        run: rclone sync -vv ./emails/templates/static communityos:emails
