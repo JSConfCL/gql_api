@@ -17,7 +17,7 @@ interface AddedToWaitlist {
   nombre?: string | null;
 }
 
-export const PurchaseOrderSuccessful = ({ nombre }: AddedToWaitlist) => {
+export const IACampWaitlist = ({ nombre }: AddedToWaitlist) => {
   return (
     <TicketTemplate>
       <Container className="px-4 py-10">
@@ -99,4 +99,4 @@ export const PurchaseOrderSuccessful = ({ nombre }: AddedToWaitlist) => {
   );
 };
 
-export default PurchaseOrderSuccessful;
+export default IACampWaitlist;
