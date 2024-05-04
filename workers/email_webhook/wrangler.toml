@@ -1,5 +1,5 @@
 # 🚨 DEFAULT CONFIG 🚨
-name = "email-webhook"
+name = "webhook"
 compatibility_date = "2024-04-29"
 main = "./index.ts"
 node_compat = true
@@ -18,7 +18,7 @@ _APP_ENV = "'development'"
 # =====================================
 # =====================================
 [env.production]
-route = "email-webhook.communityos.io/*"
+route = "webhook.communityos.io/*"
 
 [env.production.placement]
 mode = "smart"
@@ -37,7 +37,7 @@ _APP_ENV = "'production'"
 # =====================================
 # =====================================
 [env.staging]
-route = "email-webhook.jsconf.dev/*"
+route = "webhook.jsconf.dev/*"
 
 [env.staging.placement]
 mode = "smart"
