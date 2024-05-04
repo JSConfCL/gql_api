@@ -11,7 +11,7 @@ import {
 import * as React from "react";
 
 import { assetURL } from "emails/helpers";
-import { BigFooter, Footer, TicketTemplate } from "emails/helpers/tickets";
+import { BigFooter, TicketTemplate } from "emails/helpers/tickets";
 
 interface AddedToWaitlist {
   nombre?: string | null;
@@ -20,7 +20,7 @@ interface AddedToWaitlist {
 export const IACampWaitlist = ({ nombre }: AddedToWaitlist) => {
   return (
     <TicketTemplate>
-      <Container className="bg-dark px-10 py-10 w-full max-w-4xl">
+      <Container className="bg-dark px-10 py-10 w-full max-w-2xl">
         <Section className="text-light">
           <Preview>Estás en la lista de espera para IA Camp</Preview>
           <Row className="h-20 mb-14">
@@ -56,43 +56,8 @@ export const IACampWaitlist = ({ nombre }: AddedToWaitlist) => {
             artificial más avanzados del mundo, desarrollando prototipos que nos
             ayuden a construir un futuro más sostenible
           </Text>
-          {/* <Row className="h-20 py-2">
-            <Column className="w-12">
-              <Img
-                alt="JSConf Chile 2024"
-                src={assetURL("/static/icons/location-white.png")}
-                className="w-12 h-12"
-              />
-            </Column>
-            <Column className="pl-4">
-              {place.name && (
-                <Text className="text-lg py-0 my-0">{place.name}</Text>
-              )}
-              {place.address && (
-                <Text className="text-md py-0 my-0">{place.address}</Text>
-              )}
-              {online?.name && online?.url && (
-                <Link href={online.url} className="text-md py-0 my-0">
-                  {online.name}
-                </Link>
-              )}
-            </Column>
-          </Row> */}
         </Section>
         <Hr className="my-8" />
-        {/* <Section>
-          <Text>
-            Este evento es parte de <strong>{community.name}</strong>.{" "}
-            {community.communityURL && (
-              <>
-                Conoce más en{" "}
-                <Link href={community.communityURL}>
-                  {community.communityURL}
-                </Link>
-              </>
-            )}
-          </Text>
-        </Section> */}
         <BigFooter />
       </Container>
     </TicketTemplate>
