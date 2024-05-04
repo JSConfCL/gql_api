@@ -1,4 +1,4 @@
-name: Deploy to DEV
+name: Upload assets to R2 — DEV
 
 on:
   push:
