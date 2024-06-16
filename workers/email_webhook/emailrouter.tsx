@@ -48,8 +48,9 @@ export const mailRouter = async (email_template: string, body: unknown) => {
     const {
       data: { fields },
     } = body as TallyWebhookProps;
-    const email = fields.find((field) => field.key === "question_rDkV6v")
+    const email = fields.find((field) => field.key === "question_jekLyE")
       ?.value;
+    const name = fields.find((field) => field.key === "question_rDkV6v")?.value;
     if (!email) {
       throw new Error("Email is required");
     }
@@ -57,12 +58,13 @@ export const mailRouter = async (email_template: string, body: unknown) => {
     return sendTransactionalHTMLEmail({
       htmlContent,
       from: {
-        name: "CommunityOS",
+        name: "IACamp - by CommunityOS",
         email: "sponsors@communityos.io",
       },
       subject: "Gracias por tu interés en auspiciar IA Camp.",
       to: [
         {
+          name,
           email,
         },
       ],
