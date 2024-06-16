@@ -22,7 +22,7 @@ export const SponsorsConfirmation = () => {
           <Row className="h-20 mb-14">
             <Column>
               <Img
-                alt="JSConf Chile 2024"
+                alt="IA Camp 2024 - With CommunityOS and OpenAI"
                 src={assetURL("/static/logos/iacamp-logo.png")}
                 className="w-full max-w-[100px]"
               />

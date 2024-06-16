@@ -26,7 +26,7 @@ export const IACampWaitlist = ({ nombre }: AddedToWaitlist) => {
           <Row className="h-20 mb-14">
             <Column>
               <Img
-                alt="JSConf Chile 2024"
+                alt="IA Camp 2024 - With CommunityOS and OpenAI"
                 src={assetURL(
                   "/static/logos/iacamp-logo-with-communityos-and-openai.png",
                 )}
