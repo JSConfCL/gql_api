@@ -46,14 +46,14 @@ export const IACampWaitlist = ({ nombre }: AddedToWaitlist) => {
           <Text className="text-xl mb-8">
             Nos aseguraremos de informarte sobre todos los detalles importantes,
             como las fechas y próximos pasos para que junto a un equipo, o solo,
-            maximises tus posibilidades de participar en la{" "}
+            maximices tus posibilidades de participar en la{" "}
             <strong>
               primera hackathon de OpenAI en Chile y Latinoamérica.
             </strong>
           </Text>
           <Text className="text-xl mb-8">
             El evento se llevará a cabo durante todo un fin de semana, donde
-            tendrás oportunidad única para colaborar en equipos
+            tendrás la oportunidad única para colaborar en equipos
             multidisciplinarios y trabajar con los modelos de inteligencia
             artificial más avanzados del mundo, desarrollando prototipos que nos
             ayuden a construir un futuro más sostenible
