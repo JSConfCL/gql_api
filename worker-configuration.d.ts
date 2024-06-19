@@ -13,7 +13,7 @@ export interface Env {
   SANITY_API_VERSION: string | undefined;
   SANITY_SECRET_TOKEN: string | undefined;
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
-  RESEND_EMAIL_KEY: string;
+  RESEND_API_KEY: string;
   HIGHLIGHT_PROJECT_ID: string;
   HYPERDRIVE: Hyperdrive;
   PURCHASE_CALLBACK_URL: string;

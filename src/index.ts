@@ -234,7 +234,7 @@ export const yoga = createYoga<Env>({
     GOOGLE_PHOTOS_IMPORT_QUEUE,
     SANITY_PROJECT_ID,
     SANITY_DATASET,
-    RESEND_EMAIL_KEY,
+    RESEND_API_KEY,
     SANITY_API_VERSION,
     SANITY_SECRET_TOKEN,
     SUPABASE_JWT_DECODER,
@@ -263,8 +263,8 @@ export const yoga = createYoga<Env>({
     if (!PURCHASE_CALLBACK_URL) {
       throw new Error("Missing PURCHASE_CALLBACK_URL");
     }
-    if (!RESEND_EMAIL_KEY) {
-      throw new Error("Missing RESEND_EMAIL_KEY");
+    if (!RESEND_API_KEY) {
+      throw new Error("Missing RESEND_API_KEY");
     }
     if (
       !SANITY_PROJECT_ID ||
@@ -294,7 +294,7 @@ export const yoga = createYoga<Env>({
     const DB = await getDb({
       neonUrl: DB_URL,
     });
-    const RESEND = new Resend(RESEND_EMAIL_KEY);
+    const RESEND = new Resend(RESEND_API_KEY);
     console.log("Getting user");
     const USER = await getUser({
       request,

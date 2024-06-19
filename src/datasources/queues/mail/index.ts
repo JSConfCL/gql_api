@@ -27,7 +27,7 @@ export const enqueueEmail = (
 };
 
 export const sendTransactionalEmail = async (
-  env: Pick<Env, "RESEND_EMAIL_KEY">,
+  env: Pick<Env, "RESEND_API_KEY">,
   config: {
     from: string;
     to: string | [string, ...string[]];
@@ -35,8 +35,8 @@ export const sendTransactionalEmail = async (
     html: string;
   },
 ) => {
-  if (!env.RESEND_EMAIL_KEY) {
-    throw new Error("RESEND_EMAIL_KEY is not defined");
+  if (!env.RESEND_API_KEY) {
+    throw new Error("RESEND_API_KEY is not defined");
   }
 
   try {
@@ -45,7 +45,7 @@ export const sendTransactionalEmail = async (
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${env.RESEND_EMAIL_KEY}`,
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
         from: config.from,
