@@ -107,6 +107,7 @@
     "pg": "^8.11.5",
     "postgres": "^3.4.3",
     "react": "^18.2.0",
+    "resend": "^3.3.0",
     "slugify": "^1.6.6",
     "stripe": "^14.2.0",
     "worker-auth-providers": "^0.0.13-beta.4",

@@ -240,6 +240,7 @@ builder.mutationFields((t) => ({
       { input: { purchaseOrder, idempotencyUUIDKey, generatePaymentLink } },
       {
         USER,
+        RESEND,
         DB,
         GET_STRIPE_CLIENT,
         PURCHASE_CALLBACK_URL,
@@ -431,6 +432,7 @@ builder.mutationFields((t) => ({
               const { purchaseOrder, ticketsIds } = await createPaymentIntent({
                 DB,
                 USER,
+                RESEND,
                 purchaseOrderId: createdPurchaseOrder.id,
                 GET_STRIPE_CLIENT,
                 PURCHASE_CALLBACK_URL,

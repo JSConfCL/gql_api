@@ -48,7 +48,6 @@ const processEmailQueue = async (
   if (!RESEND_EMAIL_KEY) {
     throw new Error("RESEND_EMAIL_KEY is not defined");
   }
-  // TODO: Send azure email
   const htmlContent = await renderAsync(
     <WorkEmailValidationEmail
       baseUrl=""
@@ -56,11 +55,12 @@ const processEmailQueue = async (
       userId={message.body.userId}
     />,
   );
-  await sendTransactionalHTMLEmail({
-    htmlContent: htmlContent,
-    to: [{ email: message.body.to }],
-    from: { name: "Javascript Chile", email: "team@jschile.org" },
-    subject: "Tu código de verificación",
-  });
+  // TODO: Uncomment this line to send emails.
+  // await sendTransactionalHTMLEmail({
+  //   htmlContent: htmlContent,
+  //   to: [{ email: message.body.to }],
+  //   from: { name: "Javascript Chile", email: "team@jschile.org" },
+  //   subject: "Tu código de verificación",
+  // });
   message.ack();
 };
