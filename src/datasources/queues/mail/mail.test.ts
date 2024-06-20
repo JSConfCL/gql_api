@@ -33,7 +33,7 @@ describe("Test email library", () => {
       global.fetch = spiedFetch;
       await sendTransactionalEmail(
         {
-          RESEND_EMAIL_KEY: "123",
+          RESEND_API_KEY: "123",
         },
         {
           from: "",
@@ -51,7 +51,7 @@ describe("Test email library", () => {
       try {
         await sendTransactionalEmail(
           {
-            RESEND_EMAIL_KEY: "123",
+            RESEND_API_KEY: "123",
           },
           {
             from: "",

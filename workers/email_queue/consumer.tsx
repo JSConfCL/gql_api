@@ -8,7 +8,7 @@ import { EmailMessageType } from "~/datasources/queues/mail";
 import { APP_ENV } from "~/env";
 
 type ENV = {
-  RESEND_EMAIL_KEY?: string;
+  RESEND_API_KEY?: string;
   HIGHLIGHT_PROJECT_ID?: string;
 };
 
@@ -44,11 +44,10 @@ const processEmailQueue = async (
   message: Message<EmailMessageType>,
   env: ENV,
 ) => {
-  const { RESEND_EMAIL_KEY } = env;
-  if (!RESEND_EMAIL_KEY) {
-    throw new Error("RESEND_EMAIL_KEY is not defined");
+  const { RESEND_API_KEY } = env;
+  if (!RESEND_API_KEY) {
+    throw new Error("RESEND_API_KEY is not defined");
   }
-  // TODO: Send azure email
   const htmlContent = await renderAsync(
     <WorkEmailValidationEmail
       baseUrl=""
@@ -56,11 +55,12 @@ const processEmailQueue = async (
       userId={message.body.userId}
     />,
   );
-  await sendTransactionalHTMLEmail({
-    htmlContent: htmlContent,
-    to: [{ email: message.body.to }],
-    from: { name: "Javascript Chile", email: "team@jschile.org" },
-    subject: "Tu código de verificación",
-  });
+  // TODO: Uncomment this line to send emails.
+  // await sendTransactionalHTMLEmail({
+  //   htmlContent: htmlContent,
+  //   to: [{ email: message.body.to }],
+  //   from: { name: "Javascript Chile", email: "team@jschile.org" },
+  //   subject: "Tu código de verificación",
+  // });
   message.ack();
 };

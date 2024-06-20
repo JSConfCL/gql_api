@@ -1,5 +1,6 @@
 const baseURL =
-  typeof _APP_ENV !== "undefined" && _APP_ENV == "production"
+  typeof _APP_ENV !== "undefined" &&
+  (_APP_ENV == "production" || _APP_ENV == "staging")
     ? "https://assets.communityos.io"
     : "";
 

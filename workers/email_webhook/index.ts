@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { Resend } from "resend";
 
 import { mailRouter } from "./emailrouter";
 import { ENV } from "./types";
@@ -26,7 +27,6 @@ async function calculateSignature(secret: string, data: string) {
     new TextEncoder().encode(data),
   );
 
-  console.log({ signature, key });
   return bufferToBase64(signature);
 }
 
@@ -40,12 +40,18 @@ app.post("/send/:template", async (c) => {
     const webhookPayload = await c.req.json<unknown>();
     const tallySignature = c.req.header("tally-signature");
     const yourSigningSecret = c.env.TALLY_SIGNING_SECRET;
+    const resendApiKey = c.env.RESEND_API_KEY;
+    const emailTemplate = c.req.param("template");
+    if (!resendApiKey) {
+      throw new Error("Resend API Key is required");
+    }
+    const resend = new Resend(resendApiKey);
     const base64Signature = await calculateSignature(
       yourSigningSecret,
       JSON.stringify(webhookPayload),
     );
     if (base64Signature === tallySignature) {
-      await mailRouter(c.req.param("template"), webhookPayload);
+      await mailRouter({ emailTemplate, body: webhookPayload, resend });
     }
     return c.json({ message: "Hello, World!" });
   } catch (error: any) {

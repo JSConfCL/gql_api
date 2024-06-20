@@ -2,6 +2,7 @@ import SchemaBuilder from "@pothos/core";
 import AuthzPlugin from "@pothos/plugin-authz";
 import TracingPlugin, { wrapResolver } from "@pothos/plugin-tracing";
 import { DateResolver, DateTimeResolver } from "graphql-scalars";
+import { Resend } from "resend";
 
 import { Env } from "worker-configuration";
 import * as rules from "~/authz";
@@ -17,7 +18,8 @@ export type Context = {
   GET_SANITY_CLIENT: () => ReturnType<typeof getSanityClient>;
   GET_STRIPE_CLIENT: () => ReturnType<typeof getStripeClient>;
   GET_MERCADOPAGO_CLIENT: MercadoPagoFetch;
-  USER: USER;
+  RESEND: Resend;
+  USER: USER | null;
   MAIL_QUEUE: Queue;
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
   PURCHASE_CALLBACK_URL: string;

@@ -5,6 +5,7 @@ import { H } from "@highlight-run/cloudflare";
 import { initContextCache } from "@pothos/core";
 import { decode, verify } from "@tsndr/cloudflare-worker-jwt";
 import { createYoga, maskError } from "graphql-yoga";
+import { Resend } from "resend";
 
 import { Env } from "worker-configuration";
 import * as rules from "~/authz";
@@ -13,6 +14,7 @@ import { updateUserProfileInfo } from "~/datasources/queries/users";
 import { APP_ENV } from "~/env";
 import { schema } from "~/schema";
 
+import { Context } from "./builder";
 import { insertUsersSchema } from "./datasources/db/users";
 import { getMercadoPagoFetch } from "./datasources/mercadopago";
 import { getSanityClient } from "./datasources/sanity/client";
@@ -218,6 +220,7 @@ export const yoga = createYoga<Env>({
     GOOGLE_PHOTOS_IMPORT_QUEUE,
     SANITY_PROJECT_ID,
     SANITY_DATASET,
+    RESEND_API_KEY,
     SANITY_API_VERSION,
     SANITY_SECRET_TOKEN,
     SUPABASE_JWT_DECODER,
@@ -245,6 +248,9 @@ export const yoga = createYoga<Env>({
     }
     if (!PURCHASE_CALLBACK_URL) {
       throw new Error("Missing PURCHASE_CALLBACK_URL");
+    }
+    if (!RESEND_API_KEY) {
+      throw new Error("Missing RESEND_API_KEY");
     }
     if (
       !SANITY_PROJECT_ID ||
@@ -274,6 +280,7 @@ export const yoga = createYoga<Env>({
     const DB = await getDb({
       neonUrl: DB_URL,
     });
+    const RESEND = new Resend(RESEND_API_KEY);
     console.log("Getting user");
     const USER = await getUser({
       request,
@@ -285,12 +292,14 @@ export const yoga = createYoga<Env>({
       ...initContextCache(),
       DB,
       USER,
+      RESEND,
       PURCHASE_CALLBACK_URL,
+      GOOGLE_PHOTOS_IMPORT_QUEUE,
       MAIL_QUEUE,
       GET_SANITY_CLIENT,
       GET_STRIPE_CLIENT,
       GET_MERCADOPAGO_CLIENT,
-    };
+    } satisfies Context;
   },
 });
 

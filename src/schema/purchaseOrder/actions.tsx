@@ -8,6 +8,7 @@ import { PurchaseOrderSuccessful } from "emails/templates/tickets/purchase-order
 import { Context } from "~/builder";
 import { ORM_TYPE } from "~/datasources/db";
 import {
+  USER,
   puchaseOrderPaymentStatusEnum,
   purchaseOrderStatusEnum,
   purchaseOrdersSchema,
@@ -191,17 +192,22 @@ export const createPaymentIntent = async ({
   purchaseOrderId,
   currencyId,
   GET_MERCADOPAGO_CLIENT,
+  RESEND,
   GET_STRIPE_CLIENT,
   PURCHASE_CALLBACK_URL,
 }: {
   DB: Context["DB"];
   purchaseOrderId: string;
-  USER: Context["USER"];
+  USER: USER;
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
   GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
+  RESEND: Context["RESEND"];
   PURCHASE_CALLBACK_URL: string;
   currencyId: string;
 }) => {
+  if (!USER) {
+    throw new GraphQLError("No autorizado");
+  }
   const purchaseOrder = await DB.query.purchaseOrdersSchema.findFirst({
     where: (po, { eq, and }) =>
       and(eq(po.id, purchaseOrderId), eq(po.userId, USER.id)),
@@ -308,7 +314,7 @@ export const createPaymentIntent = async ({
       console.error("Community not found");
     }
     if (communityInfo && eventInfo) {
-      await sendTransactionalHTMLEmail({
+      await sendTransactionalHTMLEmail(RESEND, {
         htmlContent: render(
           <PurchaseOrderSuccessful
             purchaseOrderId={purchaseOrderId}
@@ -336,6 +342,7 @@ export const createPaymentIntent = async ({
         ],
         from: {
           name: "CommunityOS",
+          email: "contacto@communityos.io",
         },
         subject: "Tus tickets están listos 🎉",
       });

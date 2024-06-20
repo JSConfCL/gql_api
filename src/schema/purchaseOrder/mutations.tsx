@@ -40,6 +40,7 @@ builder.mutationField("payForPurchaseOrder", (t) =>
         USER,
         PURCHASE_CALLBACK_URL,
         GET_MERCADOPAGO_CLIENT,
+        RESEND,
       },
     ) => {
       if (!USER) {
@@ -50,6 +51,7 @@ builder.mutationField("payForPurchaseOrder", (t) =>
       const { purchaseOrder, ticketsIds } = await createPaymentIntent({
         DB,
         USER,
+        RESEND,
         purchaseOrderId,
         GET_STRIPE_CLIENT,
         PURCHASE_CALLBACK_URL,

@@ -1,54 +1,61 @@
-const defaulFromtProps = { name: "Test Sender", email: "comms@communityos.io" };
-export async function sendTransactionalHTMLEmail({
-  htmlContent,
-  to,
-  from = defaulFromtProps,
-  subject,
-}: {
-  htmlContent: string;
-  from: { name: string; email?: string };
-  to: Array<{ name?: string; email: string }>;
-  subject: string;
-}) {
-  const emailFrom = {
-    ...defaulFromtProps,
-    ...from,
-  };
+import { backOff } from "exponential-backoff";
+import type { Resend } from "resend";
+
+const numOfAttempts = 5; // Maximum number of retries
+const delay = 1000; // Initial delay in milliseconds
+
+export async function sendTransactionalHTMLEmail(
+  resend: Resend,
+  {
+    htmlContent,
+    to,
+    from,
+    subject,
+  }: {
+    htmlContent: string;
+    from: { name: string; email: string };
+    to: Array<{ name?: string; email: string }>;
+    subject: string;
+  },
+) {
   if (process?.env?.NODE_ENV === "test") {
-    return true;
+    return;
   }
+  const resendPayload = {
+    to: to.map((t) => t.email),
+    from: `${from.name} <${from.email}>`,
+    subject,
+    html: htmlContent,
+  };
   try {
-    const send_request = new Request(
-      "https://api.mailchannels.net/tx/v1/send",
+    // No tengo claro si resend tiene un ratelimit de 2 o 10 emails por segundo. (Hay documentación conflictiva).
+    // Solo para estar seguros, usamos un backoff exponencial para reintentar el envío si falla, sumando 1 segundo
+    await backOff(
+      async () => {
+        const createEmailResponse = await resend.emails.send(resendPayload);
+        if (createEmailResponse.error) {
+          console.error(
+            "Error sending email via Resend",
+            createEmailResponse.error,
+          );
+          throw new Error("Error sending email via Resend");
+        } else {
+          console.log("Email sent", createEmailResponse);
+        }
+      },
       {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
+        retry: (e, attempt) => {
+          console.error(`Error sending email, attempt ${attempt}. Error:`, e);
+          return true;
         },
-        body: JSON.stringify({
-          personalizations: [
-            {
-              to,
-            },
-          ],
-          from: emailFrom,
-          subject,
-          content: [
-            {
-              type: "text/html",
-              value: htmlContent,
-            },
-          ],
-        }),
+        numOfAttempts,
+        maxDelay: delay,
+        jitter: "full",
+        delayFirstAttempt: false,
       },
     );
-
-    const response = await fetch(send_request);
-    const responseText = await response.text();
-    console.log("Email sent", responseText);
-    return true;
   } catch (e) {
     console.error("Error sending email", e);
-    return false;
+    throw new Error("Error sending email");
   }
 }
