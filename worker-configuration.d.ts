@@ -2,7 +2,6 @@
 export interface Env {
   GRAPHQL_BASE_ENDPOINT: "/";
   NEON_URL: string | undefined;
-  OTEL_SERVICE_NAME: string;
   SUPABASE_JWT_DECODER: string | undefined;
   STRIPE_KEY: string | undefined;
   MERCADOPAGO_KEY: string;
