@@ -1,4 +1,3 @@
-import { H } from "@highlight-run/cloudflare";
 import { renderAsync } from "@react-email/render";
 import * as React from "react";
 
@@ -17,10 +16,6 @@ export const queueConsumer: ExportedHandlerQueueHandler<
   EmailMessageType
 > = async (batch, env, ctx) => {
   const r = new Request("cloudflare:workers:email_queue_consumer");
-  H.init(r, { HIGHLIGHT_PROJECT_ID: env.HIGHLIGHT_PROJECT_ID ?? "" }, ctx);
-  H.setAttributes({
-    APP_ENV: APP_ENV ?? "none",
-  });
   for await (const msg of batch.messages) {
     console.log("Processing email for userId:", msg.body.userId);
     try {
@@ -34,7 +29,6 @@ export const queueConsumer: ExportedHandlerQueueHandler<
       }
     } catch (e) {
       console.error("Error processing message", e);
-      H.consumeError(e as Error);
       msg.retry();
     }
   }

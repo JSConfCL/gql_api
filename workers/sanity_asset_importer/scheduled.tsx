@@ -1,5 +1,3 @@
-import { H } from "@highlight-run/cloudflare";
-
 import { APP_ENV } from "~/env";
 import { ensureKeys } from "~workers/utils";
 
@@ -19,20 +17,9 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
     "SANITY_API_VERSION",
     "SANITY_SECRET_TOKEN",
   ]);
-  H.init(
-    new Request("about:blank"),
-    {
-      HIGHLIGHT_PROJECT_ID: env.HIGHLIGHT_PROJECT_ID ?? "",
-    },
-    ctx,
-  );
   try {
-    H.setAttributes({
-      APP_ENV: APP_ENV ?? "none",
-    });
     await Promise.all([importFromSanity(env)]);
   } catch (e) {
-    H.consumeError(e as Error);
     console.error(e);
   }
 };

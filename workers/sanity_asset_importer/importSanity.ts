@@ -1,6 +1,4 @@
 /* eslint-disable no-console */
-import { H } from "@highlight-run/cloudflare";
-
 import { getDb } from "~/datasources/db";
 import { eventsSchema } from "~/datasources/db/events";
 import { eventsToCommunitiesSchema } from "~/datasources/db/eventsCommunities";
@@ -94,7 +92,6 @@ export const importFromSanity = async (env: ENV) => {
     }
   } catch (e) {
     console.error(e);
-    H.consumeError(e as Error);
     throw e;
   }
 };

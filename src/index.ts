@@ -1,7 +1,6 @@
 import { useMaskedErrors } from "@envelop/core";
 import { useImmediateIntrospection } from "@envelop/immediate-introspection";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
-import { H } from "@highlight-run/cloudflare";
 import { initContextCache } from "@pothos/core";
 import { decode, verify } from "@tsndr/cloudflare-worker-jwt";
 import { createYoga, maskError } from "graphql-yoga";
@@ -91,7 +90,6 @@ const getUser = async ({
 }) => {
   const JWT_TOKEN = getAuthToken(request);
   if (!JWT_TOKEN) {
-    console.info("No token present");
     return null;
   }
   const payload = decodeJWT(JWT_TOKEN);
@@ -99,17 +97,13 @@ const getUser = async ({
     console.error("Could not parse token");
     return null;
   }
-  console.log(payload.exp);
-  console.log(Date.now());
   const isExpired = payload.exp < Date.now() / 1000;
-  console.log("isExpired", isExpired);
   // check if token is expired (exp)
   if (isExpired) {
     console.error("Token expired");
     return null;
   }
   const verified = await verify(JWT_TOKEN, SUPABASE_JWT_DECODER);
-  console.log("verified", verified);
   if (!verified) {
     console.error("Could not verify token");
     return null;
@@ -152,9 +146,6 @@ const attachPossibleUserIdFromJWT = (request: Request) => {
     const { payload } = decode(JWT_TOKEN);
     const userId = (payload as { id: string })?.id ?? "ANONYMOUS";
     console.log("User_ID", userId);
-    H.setAttributes({
-      userId: userId,
-    });
   } catch (error) {
     console.error("Could not parse token", error);
     return null;
@@ -204,7 +195,6 @@ export const yoga = createYoga<Env>({
     useMaskedErrors({
       errorMessage: "Internal Server Error",
       maskError: (error, message) => {
-        H.consumeError(error as Error);
         console.error("🚨 APPLICATION ERROR", error, message);
         return maskError(error, message, APP_ENV !== "production");
       },
@@ -305,11 +295,6 @@ export const yoga = createYoga<Env>({
 
 export default {
   fetch: async (req: Request, env: Env, ctx: ExecutionContext) => {
-    H.init(req, { HIGHLIGHT_PROJECT_ID: env.HIGHLIGHT_PROJECT_ID ?? "" }, ctx);
-    H.setAttributes({
-      APP_ENV: APP_ENV ?? "none",
-    });
-
     attachPossibleUserIdFromJWT(req);
     console.log("🏁 — Initialize Request");
     const response = await yoga.fetch(
@@ -318,7 +303,6 @@ export default {
       env,
       ctx,
     );
-    H.sendResponse(response);
     console.log("🏁 — End Request");
     return response;
   },
