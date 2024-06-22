@@ -3,7 +3,7 @@ import { useImmediateIntrospection } from "@envelop/immediate-introspection";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import { initContextCache } from "@pothos/core";
 import { decode, verify } from "@tsndr/cloudflare-worker-jwt";
-import { createYoga, maskError } from "graphql-yoga";
+import { createGraphQLError, createYoga, maskError } from "graphql-yoga";
 import { Resend } from "resend";
 
 import { Env } from "worker-configuration";
@@ -21,12 +21,12 @@ import { getStripeClient } from "./datasources/stripe/client";
 
 // We get the token either from the Authorization header or from the "community-os-access-token" cookie
 const getAuthToken = (request: Request) => {
+  const cookieHeader = request.headers.get("Cookie");
   const authHeader = request.headers.get("Authorization");
   if (authHeader) {
     const token = authHeader.split("Bearer ")[1];
     return token;
   }
-  const cookieHeader = request.headers.get("Cookie");
   if (cookieHeader) {
     const cookies = cookieHeader.split(";").map((c) => c.trim());
     const tokenCookie = cookies.find((c) =>
@@ -79,6 +79,19 @@ const decodeJWT = (JWT_TOKEN: string) => {
   }
 };
 
+const unauthorizedError = (
+  message: string,
+  options?: Parameters<typeof createGraphQLError>[1],
+) => {
+  console.error("Unauthorized Error:", message);
+  return createGraphQLError(message, {
+    extensions: {
+      code: "UNAUTHENTICATED",
+    },
+    ...options,
+  });
+};
+
 const getUser = async ({
   request,
   SUPABASE_JWT_DECODER,
@@ -95,26 +108,18 @@ const getUser = async ({
   const payload = decodeJWT(JWT_TOKEN);
   if (!payload) {
     console.error("Could not parse token");
-    return null;
-  }
-  const isExpired = payload.exp < Date.now() / 1000;
-  // check if token is expired (exp)
-  if (isExpired) {
-    console.error("Token expired");
-    return null;
+    return payload;
   }
   const verified = await verify(JWT_TOKEN, SUPABASE_JWT_DECODER);
   if (!verified) {
-    console.error("Could not verify token");
-    return null;
+    throw unauthorizedError("Could not verify token");
+  }
+  const isExpired = payload.exp < Date.now() / 1000;
+  if (isExpired) {
+    throw unauthorizedError("Token expired");
   }
   const { avatar_url, name, user_name, email_verified, sub, picture } =
     payload.user_metadata;
-
-  if (payload.exp < Date.now() / 1000) {
-    console.error("Token expired");
-    return null;
-  }
   const profileInfo = insertUsersSchema.safeParse({
     email: payload.email,
     emailVerified: email_verified,
