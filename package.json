@@ -77,7 +77,6 @@
     "@faker-js/faker": "^8.0.2",
     "@graphql-authz/envelop-plugin": "^1.0.4",
     "@graphql-yoga/plugin-csrf-prevention": "^2.0.3",
-    "@highlight-run/cloudflare": "^2.1.5",
     "@libsql/client": "^0.3.5",
     "@neondatabase/serverless": "^0.4.26",
     "@pothos/core": "^3.30.0",

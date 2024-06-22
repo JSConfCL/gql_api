@@ -1,10 +1,8 @@
 /* eslint-disable no-console */
-import { H } from "@highlight-run/cloudflare";
 import { v5 } from "uuid";
 
 import { GoogleImportQueueElement } from "~/datasources/queues/google_import";
 import { getSanityClient } from "~/datasources/sanity/client";
-import { APP_ENV } from "~/env";
 import { ensureKeys } from "~workers/utils";
 
 type ENV = {
@@ -20,11 +18,6 @@ export const queueConsumer: ExportedHandlerQueueHandler<
   GoogleImportQueueElement
 > = async (batch, env, ctx) => {
   try {
-    const r = new Request("cloudflare:workers:google_import_queue_consumer");
-    H.init(r, { HIGHLIGHT_PROJECT_ID: env.HIGHLIGHT_PROJECT_ID ?? "" }, ctx);
-    H.setAttributes({
-      APP_ENV: APP_ENV ?? "none",
-    });
     ensureKeys(env, [
       "SANITY_PROJECT_ID",
       "SANITY_DATASET",
@@ -84,13 +77,11 @@ export const queueConsumer: ExportedHandlerQueueHandler<
         msg.ack();
       } catch (e) {
         console.error(e);
-        H.consumeError(e as Error);
         throw e;
       }
     }
   } catch (e) {
     console.error(e);
-    H.consumeError(e as Error);
     throw e;
   }
 };
