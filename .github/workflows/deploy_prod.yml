@@ -33,26 +33,26 @@ jobs:
         run: npm ci --prefer-offline --no-audit --legacy-peer-deps --cache ~/.npm
       # Deploy the API
       - name: 🛳️ DEPLOY API WORKER
-        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production
+        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production --minify
       # Deploy the auth tokens worker
       - name: 🛳️ DEPLOY AUTH-TOKEN WORKER
-        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production --config ./workers/auth_tokens/wrangler.toml
+        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production --minify --config ./workers/auth_tokens/wrangler.toml
       # Deploy the wall of fame worker
       - name: 🛳️ DEPLOY WALL-OF-FAME WORKER
-        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production --config ./workers/wall_of_fame_cron/wrangler.toml
+        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production --minify --config ./workers/wall_of_fame_cron/wrangler.toml
       # Deploy the email webhook worker
       - name: 🛳️ DEPLOY EMAIL_WEBHOOK WORKER
-        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production --config ./workers/email_webhook/wrangler.toml
+        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production --minify --config ./workers/email_webhook/wrangler.toml
       # Deploy the sanity asset importer worker
       - name: 🛳️ DEPLOY SANITY-ASSET-IMPORTER WORKER
-        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy  --env=production --config ./workers/sanity_asset_importer/wrangler.toml
+        run: CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy  --env=production --minify --config ./workers/sanity_asset_importer/wrangler.toml
       # Redeploy the EMAIL queue consumer
       - name: 💀/🛳️ RE-DEPLOY queue consumer
         run: |
           CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler queues consumer remove mail-queue-production mail-queue-consumer-production && \
-          CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production --config ./workers/email_queue/wrangler.toml
+          CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production --minify --config ./workers/email_queue/wrangler.toml
       # Redeploy the Google Import consumer
       - name: 💀/🛳️ RE-DEPLOY GOOGLE-IMPORT queue consumer
         run: |
           CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler queues consumer remove google-photos-import-queue-production google-import-queue-consumer-production && \
-          CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production --config ./workers/google_import_queue_consumer/wrangler.toml
+          CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_WORKERS_JSCONF_DEV_DEPLOY }} npx wrangler deploy --env=production --minify --config ./workers/google_import_queue_consumer/wrangler.toml
