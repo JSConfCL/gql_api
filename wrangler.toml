@@ -3,6 +3,7 @@ name = "graphql-api"
 compatibility_date = "2023-06-06"
 main = "src/index.ts"
 node_compat = true
+upload_source_maps = true
 
 [vars]
 GRAPHQL_BASE_ENDPOINT = "/"

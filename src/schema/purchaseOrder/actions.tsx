@@ -95,7 +95,7 @@ const createMercadoPagoPaymentIntent = async ({
     }
   > = {};
 
-  console.log("userTickets", userTickets);
+  logger.info("userTickets", userTickets);
 
   for (const ticket of userTickets) {
     if (!ticketsGroupedByTemplateId[ticket.ticketTemplate.id]) {
@@ -176,8 +176,10 @@ const createStripePaymentIntent = async ({
     });
   }
 
-  console.log("🚨 Attempting to create payment on platform");
-  console.log(items, purchaseOrderId);
+  logger.info("🚨 Attempting to create payment on platform", {
+    items,
+    purchaseOrderId,
+  });
   // 2. We create a payment link on stripe.
   const paymentLink = await createStripePayment({
     items,
@@ -263,7 +265,7 @@ export const createPaymentIntent = async ({
         "Purchase order payment not required, but total amount is not zero. This should not happen",
       );
     }
-    console.log(
+    logger.info(
       "Purchase order payment not required, meaning all tickets are free, updating purchase order to reflect that",
     );
     const updatedPOs = await DB.update(purchaseOrdersSchema)

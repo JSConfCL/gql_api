@@ -2,6 +2,7 @@
 name = "mail-queue-consumer"
 compatibility_date = "2023-06-06"
 main = "./index.ts"
+upload_source_maps = true
 
 [vars]
 
@@ -27,6 +28,8 @@ dead_letter_queue = "deadletter-mail-queue-dev"
 # 🚨 PRODUCTION CONFIG 🚨
 # =====================================
 # =====================================
+[env.production]
+logpush = true
 
 [env.production.vars]
 
@@ -52,6 +55,8 @@ dead_letter_queue = "deadletter-mail-queue-production"
 # 🚨 STAGING CONFIG 🚨
 # =====================================
 # =====================================
+[env.staging]
+logpush = true
 
 [env.staging.vars]
 

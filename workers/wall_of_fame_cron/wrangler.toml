@@ -3,6 +3,7 @@ name = "wall-of-fame-cron"
 compatibility_date = "2023-06-06"
 main = "./index.ts"
 node_compat = true
+upload_source_maps = true
 
 [vars]
 # Variables should go here
@@ -21,6 +22,8 @@ _APP_ENV = "'development'"
 # 🚨 PRODUCTION CONFIG 🚨
 # =====================================
 # =====================================
+[env.production]
+logpush = true
 
 [env.production.vars]
 # Variables should go here
@@ -39,6 +42,9 @@ _APP_ENV = "'production'"
 # 🚨 STAGING CONFIG 🚨
 # =====================================
 # =====================================
+[env.staging]
+logpush = true
+
 [env.staging.vars]
 # Variables should go here
 
