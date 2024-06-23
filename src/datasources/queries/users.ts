@@ -8,6 +8,7 @@ import {
   usersSchema,
 } from "~/datasources/db/schema";
 import { getUsername } from "~/datasources/queries/utils/createUsername";
+import { logger } from "~/logging";
 
 export const updateUserProfileInfo = async (
   db: ORM_TYPE,
@@ -17,7 +18,7 @@ export const updateUserProfileInfo = async (
     where: (u, { eq }) => eq(u.email, parsedProfileInfo.email),
   });
   if (!result) {
-    console.log("User not found — creating new user");
+    logger.info("User not found — creating new user");
     // we create the user
     const createdUsers = await db
       .insert(usersSchema)
@@ -33,13 +34,13 @@ export const updateUserProfileInfo = async (
       .returning();
     const createdUser = createdUsers?.[0];
     if (!createdUser) {
-      console.error("Could not create user");
+      logger.error("Could not create user");
       throw new Error("Could not create user");
     }
 
     return selectUsersSchema.parse(createdUser);
   } else {
-    console.log("User found — updating user");
+    logger.info("User found — updating user");
     // we update the user
     const updatedUsers = await db
       .update(usersSchema)
@@ -55,7 +56,7 @@ export const updateUserProfileInfo = async (
       .returning();
     const updatedUser = updatedUsers?.[0];
     if (!updatedUser) {
-      console.error("Could not update user");
+      logger.error("Could not update user");
       throw new Error("Could not update user");
     }
     return selectUsersSchema.parse(updatedUser);

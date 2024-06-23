@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { ORM_TYPE, getDb } from "~/datasources/db";
 import {
   insertUsersToTagsSchema,
@@ -9,6 +8,7 @@ import {
   insertPaymentLogsSchema,
   paymentLogsSchema,
 } from "~/datasources/db/schema";
+import { logger } from "~/logging";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 
 import { ENV } from "./types";
@@ -36,8 +36,6 @@ export const syncMercadopagoPaymentsAndSubscriptions = async (env: ENV) => {
   results = [...results, ...(subscriptions?.results ?? [])];
   await savePaymentEntry(DB, results);
   await addTagsToDonorUsers(DB, results);
-
-  console.log("👉Results", results.length);
 };
 
 const addTagsToDonorUsers = async (DB: ORM_TYPE, results: ResultItem[]) => {
@@ -55,7 +53,6 @@ const addTagsToDonorUsers = async (DB: ORM_TYPE, results: ResultItem[]) => {
     throw new Error(`Missing TAG: ${AllowedUserTags.DONOR}`);
   }
 
-  console.log("Results", results.length);
   for await (const subscription of results) {
     try {
       const email = subscription.payer.email;
@@ -77,14 +74,13 @@ const addTagsToDonorUsers = async (DB: ORM_TYPE, results: ResultItem[]) => {
         .returning()
         .onConflictDoNothing();
     } catch (error) {
-      console.error("Error processing", error);
+      logger.error("Error processing", error);
     }
   }
 };
 
 const savePaymentEntry = async (DB: ORM_TYPE, results: ResultItem[]) => {
   try {
-    console.log("👉 Attempting to save", results.length, " items");
     const mappedResults = results.map((result) => {
       return insertPaymentLogsSchema.parse({
         externalId: result.id.toString(),
@@ -100,9 +96,10 @@ const savePaymentEntry = async (DB: ORM_TYPE, results: ResultItem[]) => {
       .values(mappedResults)
       .onConflictDoNothing()
       .returning();
-    console.log("👉Saved", saved.length, "financial entries from mercadopago");
+    logger.info("👉Saved", saved.length, "financial entries from mercadopago", {
+      saved,
+    });
   } catch (e) {
-    console.log("Error saving payment entries", e);
-    console.error(e);
+    logger.error("Error saving payment entries", e);
   }
 };

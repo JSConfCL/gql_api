@@ -1,4 +1,5 @@
 import { APP_ENV } from "~/env";
+import { logger } from "~/logging";
 import { ensureKeys } from "~workers/utils";
 
 import { importFromSanity } from "./importSanity";
@@ -20,6 +21,6 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   try {
     await Promise.all([importFromSanity(env)]);
   } catch (e) {
-    console.error(e);
+    logger.error(e);
   }
 };

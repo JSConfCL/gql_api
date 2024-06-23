@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { google, SocialProvider } from "worker-auth-providers";
 
+import { logger } from "~/logging";
+
 import { ENV } from "./types";
 
 type HONO_ENV = {
@@ -37,8 +39,7 @@ app.get("/auth/google", async (c) => {
       },
     });
   } catch (error: any) {
-    // eslint-disable-next-line no-console
-    console.log(error);
+    logger.error(error);
     throw error;
   }
 });

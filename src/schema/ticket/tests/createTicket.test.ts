@@ -397,8 +397,6 @@ describe("Should throw an error", () => {
       user1,
     );
 
-    console.log("response.errors", response.errors);
-    console.log("response", response);
     assert.equal(response.errors?.[0].message, "Not authorized");
   });
   it("If event does not exist", async () => {

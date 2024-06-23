@@ -5,6 +5,7 @@ import { WorkEmailValidationEmail } from "emails/templates/salaries/invite-email
 import { sendTransactionalHTMLEmail } from "~/datasources/email/sendEmailToWorkers";
 import { EmailMessageType } from "~/datasources/queues/mail";
 import { APP_ENV } from "~/env";
+import { logger } from "~/logging";
 
 type ENV = {
   RESEND_API_KEY?: string;
@@ -15,9 +16,8 @@ export const queueConsumer: ExportedHandlerQueueHandler<
   ENV,
   EmailMessageType
 > = async (batch, env, ctx) => {
-  const r = new Request("cloudflare:workers:email_queue_consumer");
   for await (const msg of batch.messages) {
-    console.log("Processing email for userId:", msg.body.userId);
+    logger.info("Processing email for userId:", msg.body.userId);
     try {
       switch (batch.queue) {
         case "mail-queue-staging":
@@ -28,7 +28,7 @@ export const queueConsumer: ExportedHandlerQueueHandler<
           throw new Error(`Unknown queue ${batch.queue}`);
       }
     } catch (e) {
-      console.error("Error processing message", e);
+      logger.error("Error processing message", e);
       msg.retry();
     }
   }

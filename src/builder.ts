@@ -8,6 +8,7 @@ import { Env } from "worker-configuration";
 import * as rules from "~/authz";
 import { ORM_TYPE } from "~/datasources/db";
 import { USER } from "~/datasources/db/schema";
+import { logger } from "~/logging";
 
 import { MercadoPagoFetch } from "./datasources/mercadopago";
 import { getSanityClient } from "./datasources/sanity/client";
@@ -49,8 +50,7 @@ export const builder = new SchemaBuilder<{
     default: () => true,
     wrap: (resolver, options, config) =>
       wrapResolver(resolver, (error, duration) => {
-        // eslint-disable-next-line no-console
-        console.log(
+        logger.debug(
           `[TRACING] ${config.parentType}.${config.name} in ${duration}ms`,
         );
       }),

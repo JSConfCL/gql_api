@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { Resend } from "resend";
 
+import { logger } from "~/logging";
+
 import { mailRouter } from "./emailrouter";
 import { ENV } from "./types";
 
@@ -55,8 +57,7 @@ app.post("/send/:template", async (c) => {
     }
     return c.json({ message: "Hello, World!" });
   } catch (error: any) {
-    // eslint-disable-next-line no-console
-    console.log(error);
+    logger.error(error);
     throw error;
   }
 });
@@ -65,8 +66,7 @@ app.get("/", (c) => {
   try {
     return c.json({ message: "Hello, World!" });
   } catch (error: any) {
-    // eslint-disable-next-line no-console
-    console.log(error);
+    logger.error(error);
     throw error;
   }
 });

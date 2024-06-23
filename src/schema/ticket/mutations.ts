@@ -13,6 +13,7 @@ import {
   ticketsSchema,
   updateTicketSchema,
 } from "~/datasources/db/schema";
+import { logger } from "~/logging";
 import { addToObjectIfPropertyExists } from "~/schema/shared/helpers";
 import { TicketRef } from "~/schema/shared/refs";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
@@ -194,7 +195,7 @@ builder.mutationField("createTicket", (t) =>
                 }
                 insertedPrices.push(newPrice);
               } catch (e) {
-                console.log("Error creating price:", e);
+                logger.error("Error creating price:", e);
                 throw new GraphQLError("Error creating price");
               }
             }
@@ -226,7 +227,10 @@ builder.mutationField("createTicket", (t) =>
 
           // Third, we attach the prices to the ticket.
           for (const price of insertedPrices) {
-            console.log("Attaching price to ticket: ", price);
+            logger.info(`Attaching price to ticket`, {
+              price,
+              ticket: insertedTicket,
+            });
             const ticketPriceToInsert = insertTicketPriceSchema.parse({
               ticketId: insertedTicket.id,
               priceId: price.id,
@@ -249,7 +253,7 @@ builder.mutationField("createTicket", (t) =>
                 currency: true,
               },
             });
-            console.log("Found price", foundPrice);
+            logger.info("Found price", foundPrice);
             if (foundPrice?.currency) {
               await ensureProductsAreCreated({
                 price: foundPrice.price_in_cents,
@@ -262,7 +266,7 @@ builder.mutationField("createTicket", (t) =>
           }
           return selectTicketSchema.parse(insertedTicket);
         } catch (e) {
-          console.log("Error creating tickets:", e);
+          logger.error("Error creating tickets:", e);
           throw new GraphQLError(
             e instanceof Error ? e.message : "Unknown error",
           );
@@ -391,7 +395,7 @@ builder.mutationField("editTicket", (t) =>
           )?.[0];
           return selectTicketSchema.parse(ticket);
         } else {
-          console.error("ERROR:", response.error);
+          logger.error("ERROR:", response.error);
           throw new Error("Invalid input", response.error);
         }
       } catch (e) {

@@ -35,7 +35,7 @@ module.exports = {
         // No nos sirve esta regla realmente y causa varios falsos positivos
         // https://typescript-eslint.io/rules/no-non-null-assertion/
         "@typescript-eslint/no-unsafe-arguments": "off",
-        // "no-console": "error", // We capture console.log on our logger system, so we allow it
+        "no-console": "error", // We capture console.log on our logger system, so we allow it
         curly: ["error", "all"],
 
         // turn on errors for missing imports

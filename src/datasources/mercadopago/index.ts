@@ -11,6 +11,7 @@ import {
   someMinutesIntoTheFuture,
   toISOStringWithTimezone,
 } from "~/datasources/helpers";
+import { logger } from "~/logging";
 
 const getPaymentStatusFromMercadoPago = (
   mercadoPagoStatus: PaymentResponse["status"],
@@ -79,7 +80,7 @@ export const getMercadoPagoFetch =
     if (!url.startsWith("/")) {
       parsedUrl = `/${url}`;
     }
-    console.log("Attempting to fetch URL:", parsedUrl);
+    logger.info("Attempting to fetch URL:", parsedUrl);
     const headers = new Headers();
     headers.set("Authorization", `Bearer ${token}`);
     headers.set("Content-Type", "application/json");
@@ -154,8 +155,7 @@ export const getMercadoPagoPreference = async ({
   const preference = await getMercadoPagoClient<PreferenceResponse>({
     url: `/checkout/preferences/${preferenceId}`,
   });
-  console.log("preference");
-  console.log(preference);
+  logger.info("preference", preference);
   return preference;
 };
 

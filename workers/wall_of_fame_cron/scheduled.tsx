@@ -1,4 +1,5 @@
 import { APP_ENV } from "~/env";
+import { logger } from "~/logging";
 import { ensureKeys } from "~workers/utils";
 
 import { syncMercadopagoPaymentsAndSubscriptions } from "./api.mercadopago";
@@ -22,6 +23,6 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
       syncStripePayments(env),
     ]);
   } catch (e) {
-    console.error(e);
+    logger.error(e);
   }
 };
