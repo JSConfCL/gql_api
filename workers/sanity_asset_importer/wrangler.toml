@@ -21,6 +21,8 @@ _APP_ENV = "'development'"
 # 🚨 PRODUCTION CONFIG 🚨
 # =====================================
 # =====================================
+[env.production]
+logpush = true
 
 [env.production.vars]
 # Variables should go here
@@ -39,6 +41,9 @@ _APP_ENV = "'production'"
 # 🚨 STAGING CONFIG 🚨
 # =====================================
 # =====================================
+[env.staging]
+logpush = true
+
 [env.staging.vars]
 # Variables should go here
 

@@ -11,6 +11,7 @@ import * as rules from "~/authz";
 import { ORM_TYPE, getDb } from "~/datasources/db";
 import { updateUserProfileInfo } from "~/datasources/queries/users";
 import { APP_ENV } from "~/env";
+import { logger } from "~/logging";
 import { schema } from "~/schema";
 
 import { Context } from "./builder";
@@ -74,7 +75,7 @@ const decodeJWT = (JWT_TOKEN: string) => {
     };
     return payload;
   } catch (e) {
-    console.error("Could not parse token", e);
+    logger.error("Could not parse token", e);
     return null;
   }
 };
@@ -83,7 +84,7 @@ const unauthorizedError = (
   message: string,
   options?: Parameters<typeof createGraphQLError>[1],
 ) => {
-  console.error("Unauthorized Error:", message);
+  logger.error("Unauthorized Error:", message);
   return createGraphQLError(message, {
     extensions: {
       code: "UNAUTHENTICATED",
@@ -107,7 +108,7 @@ const getUser = async ({
   }
   const payload = decodeJWT(JWT_TOKEN);
   if (!payload) {
-    console.error("Could not parse token");
+    logger.error("Could not parse token");
     return payload;
   }
   const verified = await verify(JWT_TOKEN, SUPABASE_JWT_DECODER);
@@ -130,10 +131,10 @@ const getUser = async ({
     publicMetadata: payload,
   });
   if (profileInfo.success === false) {
-    console.error("Could not parse profile info", profileInfo.error);
+    logger.error("Could not parse profile info", profileInfo.error);
     throw new Error("Could not parse profile info", profileInfo.error);
   }
-  console.log("Updating profile Info for user ID:", sub);
+  logger.info("Updating profile Info for user ID:", sub);
   return updateUserProfileInfo(DB, profileInfo.data);
 };
 
@@ -144,15 +145,15 @@ const attachPossibleUserIdFromJWT = (request: Request) => {
   }
   const JWT_TOKEN = getAuthToken(request);
   if (!JWT_TOKEN) {
-    console.info("No token present");
+    logger.info("No token present");
     return null;
   }
   try {
     const { payload } = decode(JWT_TOKEN);
     const userId = (payload as { id: string })?.id ?? "ANONYMOUS";
-    console.log("User_ID", userId);
+    logger.info("User_ID", userId);
   } catch (error) {
-    console.error("Could not parse token", error);
+    logger.error("Could not parse token", error);
     return null;
   }
 };
@@ -200,7 +201,7 @@ export const yoga = createYoga<Env>({
     useMaskedErrors({
       errorMessage: "Internal Server Error",
       maskError: (error, message) => {
-        console.error("🚨 APPLICATION ERROR", error, message);
+        logger.error("🚨 APPLICATION ERROR", error, message);
         return maskError(error, message, APP_ENV !== "production");
       },
     }),
@@ -276,13 +277,17 @@ export const yoga = createYoga<Env>({
       neonUrl: DB_URL,
     });
     const RESEND = new Resend(RESEND_API_KEY);
-    console.log("Getting user");
+    logger.info("Getting user");
     const USER = await getUser({
       request,
       SUPABASE_JWT_DECODER,
       DB,
     });
-    console.log("User Obtained:", USER?.id);
+    if (USER?.id) {
+      logger.info(`User Obtained. ${USER?.id}`);
+    } else {
+      logger.info("No user found");
+    }
     return {
       ...initContextCache(),
       DB,
@@ -301,14 +306,14 @@ export const yoga = createYoga<Env>({
 export default {
   fetch: async (req: Request, env: Env, ctx: ExecutionContext) => {
     attachPossibleUserIdFromJWT(req);
-    console.log("🏁 — Initialize Request");
+    logger.info("🏁 — Initialize Request");
     const response = await yoga.fetch(
       // @ts-expect-error Los tipos de yoga están mal
       req,
       env,
       ctx,
     );
-    console.log("🏁 — End Request");
+    logger.info("🏁 — End Request");
     return response;
   },
 };

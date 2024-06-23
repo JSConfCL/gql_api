@@ -19,6 +19,7 @@ _APP_ENV = "'development'"
 # =====================================
 [env.production]
 route = "webhook.communityos.io/*"
+logpush = true
 
 [env.production.placement]
 mode = "smart"
@@ -38,6 +39,7 @@ _APP_ENV = "'production'"
 # =====================================
 [env.staging]
 route = "webhook.jsconf.dev/*"
+logpush = true
 
 [env.staging.placement]
 mode = "smart"

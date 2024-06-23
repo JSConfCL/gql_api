@@ -7,6 +7,8 @@ import {
 import { PgTransaction } from "drizzle-orm/pg-core";
 import { Client } from "pg";
 
+import { logger } from "~/logging";
+
 import * as schema from "./schema";
 
 export type ORM_TYPE = NodePgDatabase<typeof schema>;
@@ -26,15 +28,13 @@ export const getDb = async ({ neonUrl }: { neonUrl: string }) => {
       schema,
       logger: {
         logQuery(query, params) {
-          // eslint-disable-next-line no-console
-          console.log(query, params);
+          logger.info(query, params);
         },
       },
     });
     return db;
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("Error connecting to database", error);
+    logger.error("Error connecting to database", error);
     throw error;
   }
 };

@@ -4,6 +4,7 @@ import Stripe from "stripe";
 import { TRANSACTION_HANDLER } from "~/datasources/db";
 import { selectTicketSchema, ticketsSchema } from "~/datasources/db/schema";
 import { createStripeProductAndPrice } from "~/datasources/stripe";
+import { logger } from "~/logging";
 
 export const ensureProductsAreCreated = async ({
   price,
@@ -37,7 +38,7 @@ export const ensureProductsAreCreated = async ({
       })
       .where(eq(ticketsSchema.id, ticket.id))
       .returning();
-    console.log(
+    logger.info(
       `Ticket ${ticket.id} updated with stripe ProductId ${stripeProductId}`,
     );
   }

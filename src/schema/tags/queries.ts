@@ -2,6 +2,7 @@ import { SQL, eq, ilike } from "drizzle-orm";
 
 import { builder } from "~/builder";
 import { selectTagsSchema, tagsSchema } from "~/datasources/db/schema";
+import { logger } from "~/logging";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 import { TagRef } from "~/schema/shared/refs";
 
@@ -41,7 +42,7 @@ builder.queryFields((t) => ({
         },
       });
 
-      console.log("QUERY -> ", query.toSQL());
+      logger.debug("QUERY -> ", query.toSQL());
       const users = await query;
       return users.map((u) => selectTagsSchema.parse(u));
     },

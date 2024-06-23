@@ -1,8 +1,8 @@
-/* eslint-disable no-console */
 import { v5 } from "uuid";
 
 import { GoogleImportQueueElement } from "~/datasources/queues/google_import";
 import { getSanityClient } from "~/datasources/sanity/client";
+import { logger } from "~/logging";
 import { ensureKeys } from "~workers/utils";
 
 type ENV = {
@@ -32,10 +32,10 @@ export const queueConsumer: ExportedHandlerQueueHandler<
       token: env.SANITY_SECRET_TOKEN,
       useCdn: true,
     });
-    console.log("Processing queue", batch.queue);
+    logger.info("Processing queue", batch.queue);
     for await (const msg of batch.messages) {
       try {
-        console.log("Processing message", msg);
+        logger.info("Processing message", msg);
         const { googleMedia, sanityEventId } = msg.body;
         const event = await sanityClient.getDocument(sanityEventId);
         if (!event) {
@@ -51,7 +51,7 @@ export const queueConsumer: ExportedHandlerQueueHandler<
           creditLine: "JavaScript Chile",
           extract: ["blurhash", "exif", "image", "location", "lqip", "palette"],
         });
-        console.log("Created asset", createdAsset, createdAsset.metadata);
+        logger.info("Created asset", createdAsset, createdAsset.metadata);
 
         const createdImage = await sanityClient.createOrReplace({
           _id: v5(googleMedia.id, v5.URL),
@@ -72,16 +72,16 @@ export const queueConsumer: ExportedHandlerQueueHandler<
           },
         });
 
-        console.log("Created image", createdImage);
+        logger.info("Created image", createdImage);
 
         msg.ack();
       } catch (e) {
-        console.error(e);
+        logger.error(e);
         throw e;
       }
     }
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     throw e;
   }
 };

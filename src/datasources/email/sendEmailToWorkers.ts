@@ -1,6 +1,8 @@
 import { backOff } from "exponential-backoff";
 import type { Resend } from "resend";
 
+import { logger } from "~/logging";
+
 const numOfAttempts = 5; // Maximum number of retries
 const delay = 1000; // Initial delay in milliseconds
 
@@ -34,18 +36,18 @@ export async function sendTransactionalHTMLEmail(
       async () => {
         const createEmailResponse = await resend.emails.send(resendPayload);
         if (createEmailResponse.error) {
-          console.error(
+          logger.error(
             "Error sending email via Resend",
             createEmailResponse.error,
           );
           throw new Error("Error sending email via Resend");
         } else {
-          console.log("Email sent", createEmailResponse);
+          logger.info("Email sent", createEmailResponse);
         }
       },
       {
         retry: (e, attempt) => {
-          console.error(`Error sending email, attempt ${attempt}. Error:`, e);
+          logger.error(`Error sending email, attempt ${attempt}. Error:`, e);
           return true;
         },
         numOfAttempts,
@@ -55,7 +57,7 @@ export async function sendTransactionalHTMLEmail(
       },
     );
   } catch (e) {
-    console.error("Error sending email", e);
+    logger.error("Error sending email", e);
     throw new Error("Error sending email");
   }
 }

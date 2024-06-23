@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+// Allowing console.log in this file as its a test setup file
 import * as uuid from "uuid";
 import { afterEach, beforeEach } from "vitest";
 

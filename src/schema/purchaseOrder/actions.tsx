@@ -26,6 +26,7 @@ import {
   createStripePayment,
   getStripePaymentStatus,
 } from "~/datasources/stripe";
+import { logger } from "~/logging";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
 
 const fetchPurchaseOrderInformation = async (
@@ -94,7 +95,7 @@ const createMercadoPagoPaymentIntent = async ({
     }
   > = {};
 
-  console.log("userTickets", userTickets);
+  logger.info("userTickets", userTickets);
 
   for (const ticket of userTickets) {
     if (!ticketsGroupedByTemplateId[ticket.ticketTemplate.id]) {
@@ -175,8 +176,10 @@ const createStripePaymentIntent = async ({
     });
   }
 
-  console.log("🚨 Attempting to create payment on platform");
-  console.log(items, purchaseOrderId);
+  logger.info("🚨 Attempting to create payment on platform", {
+    items,
+    purchaseOrderId,
+  });
   // 2. We create a payment link on stripe.
   const paymentLink = await createStripePayment({
     items,
@@ -262,7 +265,7 @@ export const createPaymentIntent = async ({
         "Purchase order payment not required, but total amount is not zero. This should not happen",
       );
     }
-    console.log(
+    logger.info(
       "Purchase order payment not required, meaning all tickets are free, updating purchase order to reflect that",
     );
     const updatedPOs = await DB.update(purchaseOrdersSchema)
@@ -307,11 +310,11 @@ export const createPaymentIntent = async ({
 
     const eventInfo = information?.userTickets[0].event;
     if (!eventInfo) {
-      console.error("Event not found");
+      logger.error("Event not found");
     }
     const communityInfo = eventInfo?.eventsToCommunities[0].community;
     if (!communityInfo) {
-      console.error("Community not found");
+      logger.error("Community not found");
     }
     if (communityInfo && eventInfo) {
       await sendTransactionalHTMLEmail(RESEND, {
@@ -348,7 +351,7 @@ export const createPaymentIntent = async ({
       });
     }
 
-    console.log(`Email sent to ${purchaseOrder.user.email}`);
+    logger.info(`Email sent to ${purchaseOrder.user.email}`);
     return {
       purchaseOrder: selectPurchaseOrdersSchema.parse(updatedPO),
       ticketsIds: userTicketsIds,
@@ -359,11 +362,10 @@ export const createPaymentIntent = async ({
   // We only need to do this for USD, as we are using Stripe for USD payments.
   if (currencyCode === "USD") {
     await DB.transaction(async (trx) => {
-      console.log("Purchase order requires payment");
+      logger.info("Purchase order requires payment");
       // 1. We ensure that products are created in the database.
       for (const ticket of query) {
         for (const ticketPrice of ticket.ticketTemplate.ticketsPrices) {
-          console.log("🚨", ticketPrice.price.price_in_cents);
           if (!ticketPrice.price.currency) {
             throw new Error(
               `Currency no encontrada para ticket ${ticket.id}, ticketPrice ${ticketPrice.id}`,
@@ -378,7 +380,7 @@ export const createPaymentIntent = async ({
               transactionHander: trx,
             });
           } catch (error) {
-            console.error("Could not create product", error);
+            logger.error("Could not create product", error);
           }
         }
       }
@@ -471,7 +473,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
   GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
 }) => {
-  console.log("Finding purchase order:", purchaseOrderId);
+  logger.info("Finding purchase order:", purchaseOrderId);
   const purchaseOrder = await DB.query.purchaseOrdersSchema.findFirst({
     where: (po, { eq }) => eq(po.id, purchaseOrderId),
   });
@@ -481,7 +483,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
   }
 
   const { paymentPlatformReferenceID } = purchaseOrder;
-  console.log("paymentPlatformReferenceID:", paymentPlatformReferenceID);
+  logger.info("Payment platform reference id:", paymentPlatformReferenceID);
   if (!paymentPlatformReferenceID) {
     throw new Error("No se ha inicializado un pago para esta OC");
   }

@@ -1,9 +1,9 @@
-/* eslint-disable no-console */
 import { getDb } from "~/datasources/db";
 import { eventsSchema } from "~/datasources/db/events";
 import { eventsToCommunitiesSchema } from "~/datasources/db/eventsCommunities";
 import { getSanityClient } from "~/datasources/sanity/client";
 import { SanityEvent } from "~/datasources/sanity/types";
+import { logger } from "~/logging";
 
 import { ENV } from "./types";
 
@@ -41,18 +41,18 @@ export const importFromSanity = async (env: ENV) => {
     });
 
     if (!community) {
-      console.error("JavaScript Community not found");
+      logger.error("JavaScript Community not found");
       return;
     }
     let i = 0;
     for (const event of events) {
       i++;
-      console.log("Finding event", event);
+      logger.info("Finding event", event);
       const foundEvent = await DB.query.eventsSchema.findFirst({
         where: (e, { eq }) => eq(eventsSchema.sanityEventId, event._id),
       });
       if (!foundEvent) {
-        console.log("Inserting event", event._id);
+        logger.info("Inserting event", event._id);
 
         const name = event.project?.title
           ? `${event.project?.title} - ${event.title}`
@@ -79,7 +79,7 @@ export const importFromSanity = async (env: ENV) => {
         )?.[0];
 
         if (!insertedEvent) {
-          console.error("Failed to insert event");
+          logger.error("Failed to insert event");
         } else {
           await DB.insert(eventsToCommunitiesSchema).values({
             eventId: insertedEvent.id,
@@ -87,11 +87,11 @@ export const importFromSanity = async (env: ENV) => {
           });
         }
       } else {
-        console.log("Event already exists", event._id);
+        logger.warn("Event already exists", event._id);
       }
     }
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     throw e;
   }
 };

@@ -5,6 +5,7 @@ import {
   insertPaymentLogsSchema,
   paymentLogsSchema,
 } from "~/datasources/db/schema";
+import { logger } from "~/logging";
 
 import { ENV } from "./types";
 
@@ -50,7 +51,6 @@ export const syncStripePayments = async (env: ENV) => {
 
 const savePaymentEntry = async (DB: ORM_TYPE, results: Stripe.Charge[]) => {
   try {
-    console.log("👉 Attempting to save", results.length, " items");
     const mappedResults = results.map((result: Stripe.Charge) => {
       return insertPaymentLogsSchema.parse({
         externalId: result.id,
@@ -66,9 +66,10 @@ const savePaymentEntry = async (DB: ORM_TYPE, results: Stripe.Charge[]) => {
       .values(mappedResults)
       .onConflictDoNothing()
       .returning();
-    console.log("👉Saved", saved.length, "financial entries from stripe");
+    logger.info("👉Saved", saved.length, "financial entries from stripe", {
+      saved,
+    });
   } catch (e) {
-    console.log("Error saving payment entries", e);
-    console.error(e);
+    logger.error("Error saving payment entries", e);
   }
 };

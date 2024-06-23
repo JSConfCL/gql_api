@@ -9,6 +9,7 @@ import {
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
+import { logger } from "~/logging";
 import { PurchaseOrderRef } from "~/schema/purchaseOrder/types";
 import { isValidUUID } from "~/schema/shared/helpers";
 import { UserTicketRef } from "~/schema/shared/refs";
@@ -383,12 +384,13 @@ builder.mutationFields((t) => ({
                   if (result.success) {
                     return result.data;
                   }
-                  console.error("Could not parse user ticket", result.error);
+                  logger.error("Could not parse user ticket", result.error);
                 })
                 .filter(Boolean);
 
-              console.log(
+              logger.info(
                 `Creating ${newTickets.length} user tickets for ticket template with id ${item.ticketId}`,
+                { newTickets, item },
               );
               if (newTickets.length === 0) {
                 throw new Error("Could not create user tickets");
@@ -449,7 +451,7 @@ builder.mutationFields((t) => ({
             }
             return { selectedPurchaseOrder, claimedTickets };
           } catch (e) {
-            console.error("🚨Error", e);
+            logger.error("🚨Error", e);
             transactionError =
               e instanceof Error
                 ? new GraphQLError(e.message, {
@@ -469,7 +471,7 @@ builder.mutationFields((t) => ({
         };
       } catch (e: unknown) {
         if (transactionError) {
-          console.error("🚨Transaction error", transactionError);
+          logger.error("🚨Transaction error", transactionError);
           return {
             error: true as const,
             errorMessage: (transactionError as GraphQLError).message,

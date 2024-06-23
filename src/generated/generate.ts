@@ -5,6 +5,7 @@ import {
   printSchema,
 } from "graphql/utilities";
 
+import { logger } from "~/logging";
 import { schema } from "~/schema";
 
 const start = async () => {
@@ -12,5 +13,4 @@ const start = async () => {
   await writeFile("./src/generated/schema.gql", schemaString, "utf-8");
 };
 
-// eslint-disable-next-line no-console
-start().catch(console.error);
+start().catch(logger.error);

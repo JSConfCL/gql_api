@@ -2,6 +2,7 @@
 name = "google-import-queue-consumer"
 compatibility_date = "2023-06-06"
 main = "./index.ts"
+upload_source_maps = true
 
 [define]
 _APP_ENV = "'development'"
@@ -25,6 +26,8 @@ dead_letter_queue = "deadletter-google-photos-import-queue-dev"
 # 🚨 PRODUCTION CONFIG 🚨
 # =====================================
 # =====================================
+[env.production]
+logpush = true
 
 [env.production.define]
 _APP_ENV = "'production'"
@@ -48,6 +51,9 @@ dead_letter_queue = "deadletter-google-photos-import-queue-production"
 # 🚨 STAGING CONFIG 🚨
 # =====================================
 # =====================================
+[env.staging]
+logpush = true
+
 [env.staging.define]
 _APP_ENV = "'staging'"
 

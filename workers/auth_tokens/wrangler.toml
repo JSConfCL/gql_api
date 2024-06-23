@@ -2,6 +2,8 @@
 name = "auth_tokens"
 compatibility_date = "2023-06-06"
 main = "./index.ts"
+upload_source_maps = true
+
 
 [placement]
 mode = "smart"
@@ -20,6 +22,7 @@ _APP_ENV = "'development'"
 # =====================================
 [env.production]
 route = "auth-tokens.jschile.org/*"
+logpush = true
 
 [env.production.placement]
 mode = "smart"
@@ -39,6 +42,7 @@ _APP_ENV = "'production'"
 # =====================================
 [env.staging]
 route = "auth-tokens.jsconf.dev/*"
+logpush = true
 
 [env.staging.placement]
 mode = "smart"
