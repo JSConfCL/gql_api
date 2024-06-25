@@ -5,7 +5,6 @@ import React from "react";
 import { AsyncReturnType } from "type-fest";
 
 import { PurchaseOrderSuccessful } from "emails/templates/tickets/purchase-order-successful";
-import { Context } from "~/builder";
 import { ORM_TYPE } from "~/datasources/db";
 import {
   USER,
@@ -28,6 +27,7 @@ import {
 } from "~/datasources/stripe";
 import { logger } from "~/logging";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
+import { Context } from "~/types";
 
 const fetchPurchaseOrderInformation = async (
   purchaseOrderId: string,

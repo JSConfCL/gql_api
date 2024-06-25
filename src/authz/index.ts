@@ -2,7 +2,7 @@
 import { PreExecutionRule, UnauthorizedError } from "@graphql-authz/core";
 import { GraphQLError } from "graphql";
 
-import { GraphqlContext } from "~/builder";
+import { GraphqlContext } from "~/types";
 
 import { authHelpers } from "./helpers";
 

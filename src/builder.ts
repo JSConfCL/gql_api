@@ -2,34 +2,10 @@ import SchemaBuilder from "@pothos/core";
 import AuthzPlugin from "@pothos/plugin-authz";
 import TracingPlugin, { wrapResolver } from "@pothos/plugin-tracing";
 import { DateResolver, DateTimeResolver } from "graphql-scalars";
-import { Resend } from "resend";
 
-import { Env } from "worker-configuration";
 import * as rules from "~/authz";
-import { ORM_TYPE } from "~/datasources/db";
-import { USER } from "~/datasources/db/schema";
 import { logger } from "~/logging";
-
-import { MercadoPagoFetch } from "./datasources/mercadopago";
-import { getSanityClient } from "./datasources/sanity/client";
-import { getStripeClient } from "./datasources/stripe/client";
-
-export type Context = {
-  DB: ORM_TYPE;
-  GET_SANITY_CLIENT: () => ReturnType<typeof getSanityClient>;
-  GET_STRIPE_CLIENT: () => ReturnType<typeof getStripeClient>;
-  GET_MERCADOPAGO_CLIENT: MercadoPagoFetch;
-  RESEND: Resend;
-  USER: USER | null;
-  MAIL_QUEUE: Queue;
-  GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
-  PURCHASE_CALLBACK_URL: string;
-};
-
-export type GraphqlContext = Context &
-  Env & {
-    request: Request;
-  };
+import { Context } from "~/types";
 
 export const builder = new SchemaBuilder<{
   Context: Context;
