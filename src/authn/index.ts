@@ -4,6 +4,7 @@ import { ORM_TYPE } from "~/datasources/db";
 import { insertUsersSchema } from "~/datasources/db/schema";
 import { updateUserProfileInfo } from "~/datasources/queries/users";
 import { unauthorizedError } from "~/errors";
+import { logger } from "~/logging";
 
 type TokenPayload = {
   payload: {
@@ -63,7 +64,7 @@ const decodeJWT = (JWT_TOKEN: string) => {
     const { payload } = decode(JWT_TOKEN) as TokenPayload;
     return payload;
   } catch (e) {
-    console.error("Could not parse token", e);
+    logger.error("Could not parse token", e);
     return null;
   }
 };
@@ -83,7 +84,7 @@ export const getUser = async ({
   }
   const payload = decodeJWT(JWT_TOKEN);
   if (!payload) {
-    console.error("Could not parse token");
+    logger.error("Could not parse token");
     return payload;
   }
   const verified = await verify(JWT_TOKEN, SUPABASE_JWT_DECODER);
@@ -106,10 +107,10 @@ export const getUser = async ({
     publicMetadata: payload,
   });
   if (profileInfo.success === false) {
-    console.error("Could not parse profile info", profileInfo.error);
+    logger.error("Could not parse profile info", profileInfo.error);
     throw new Error("Could not parse profile info", profileInfo.error);
   }
-  console.log("Updating profile Info for user ID:", sub);
+  logger.info(`Updating profile Info for user ID: ${sub}`);
   return updateUserProfileInfo(DB, profileInfo.data);
 };
 
@@ -120,15 +121,17 @@ export const logPossibleUserIdFromJWT = (request: Request) => {
   }
   const JWT_TOKEN = getAuthToken(request);
   if (!JWT_TOKEN) {
-    console.info("No token present");
+    logger.info("No token present");
     return null;
   }
   try {
     const { payload } = decode(JWT_TOKEN);
     const userId = (payload as { id: string })?.id ?? "ANONYMOUS";
-    console.log("User_ID", userId);
+    logger.info({
+      userId,
+    });
   } catch (error) {
-    console.error("Could not parse token", error);
+    logger.error("Could not parse token", error);
     return null;
   }
 };

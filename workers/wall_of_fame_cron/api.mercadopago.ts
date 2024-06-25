@@ -74,7 +74,7 @@ const addTagsToDonorUsers = async (DB: ORM_TYPE, results: ResultItem[]) => {
         .returning()
         .onConflictDoNothing();
     } catch (error) {
-      logger.error("Error processing", error);
+      logger.error("Error processing", (error as Error).message);
     }
   }
 };

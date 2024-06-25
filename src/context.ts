@@ -80,13 +80,11 @@ export const creageGraphqlContext = async ({
     neonUrl: DB_URL,
   });
   const RESEND = new Resend(RESEND_API_KEY);
-  console.log("Getting user");
   const USER = await getUser({
     request,
     SUPABASE_JWT_DECODER,
     DB,
   });
-  console.log("User Obtained:", USER?.id);
   return {
     ...initContextCache(),
     DB,
