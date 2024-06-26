@@ -22,42 +22,26 @@ export const IACampWaitlist = ({ nombre }: AddedToWaitlist) => {
     <TicketTemplate>
       <Container className="bg-dark px-10 py-10 w-full max-w-2xl">
         <Section className="text-light">
-          <Preview>Estás en la lista de espera para IA Camp</Preview>
-          <Row className="h-20 mb-14">
-            <Column>
-              <Img
-                alt="IA Camp 2024 - With CommunityOS and OpenAI"
-                src={assetURL(
-                  "/static/logos/iacamp-logo-with-communityos-and-openai.png",
-                )}
-                className="w-full max-w-[300px] mx-auto"
-              />
-            </Column>
-          </Row>
-          <Text className="text-4xl text-center mb-8">
-            Estás en la lista de espera para <br /> <strong>IA Camp</strong>!
-          </Text>
+          <Preview>Estás en la lista de espera para AI Hackathon</Preview>
+
+          <Text className="text-4xl mb-8 text-center">AI Hackathon</Text>
+
           {nombre && <Text className="text-xl mb-4">Hey {nombre}!</Text>}
+
           <Text className="text-xl mb-8">
-            Ya estás oficialmente en la lista de espera para{" "}
-            <strong>IA Camp</strong>, que se celebrará próximamente en Santiago,
-            Chile.
+            Confirmamos tu registro al webinar que tendremos el próximo 8 de
+            julio a las 6:00 pm (hora Santiago, Chile). Antes del evento te
+            enviaremos el link de acceso.
           </Text>
+
           <Text className="text-xl mb-8">
-            Nos aseguraremos de informarte sobre todos los detalles importantes,
-            como las fechas y próximos pasos para que junto a un equipo, o solo,
-            maximices tus posibilidades de participar en la{" "}
-            <strong>
-              primera hackathon de OpenAI en Chile y Latinoamérica.
-            </strong>
+            Durante este webinar resolveremos todas tus dudas y abriremos las
+            postulaciones para participar en la primera hackathon de OpenAI en
+            Latinoamérica.
           </Text>
-          <Text className="text-xl mb-8">
-            El evento se llevará a cabo durante todo un fin de semana, donde
-            tendrás la oportunidad única para colaborar en equipos
-            multidisciplinarios y trabajar con los modelos de inteligencia
-            artificial más avanzados del mundo, desarrollando prototipos que nos
-            ayuden a construir un futuro más sostenible
-          </Text>
+
+          <Text className="text-xl">Un saludo,</Text>
+          <Text className="text-xl mb-8">Equipo CommunityOS</Text>
         </Section>
         <Hr className="my-8" />
         <BigFooter />
