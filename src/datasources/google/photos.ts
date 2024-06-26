@@ -38,6 +38,7 @@ export const getAlbumImages = async (
       }),
     },
   );
+
   if (rawresponse.status >= 400) {
     throw new Error(
       `Error getting album images. Status ${
@@ -45,7 +46,9 @@ export const getAlbumImages = async (
       }. ${await rawresponse.text()}`,
     );
   }
+
   const response = await rawresponse.json();
+
   return response as {
     mediaItems: Array<GoogleMediaItemType>;
     nextPageToken: string | undefined;

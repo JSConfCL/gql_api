@@ -53,6 +53,7 @@ const createSalary = async () => {
     yearsOfExperience: 1,
     userId: user.id,
   });
+
   return {
     salaryId: salary.id,
     confirmationToken: insertedConfirmationToken.token,
@@ -146,6 +147,7 @@ describe("Salary creation", () => {
           },
         },
       });
+
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
     it("For a SuperAdmin", async () => {
@@ -173,6 +175,7 @@ describe("Salary creation", () => {
           },
         },
       });
+
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
     it("If the user using the code is not the same user that created it", async () => {
@@ -210,6 +213,7 @@ describe("Salary creation", () => {
         },
         user,
       );
+
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
     it("With a wrong code", async () => {
@@ -240,6 +244,7 @@ describe("Salary creation", () => {
         },
         user,
       );
+
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
     it("With a previously validated code", async () => {
@@ -277,6 +282,7 @@ describe("Salary creation", () => {
         },
         user,
       );
+
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
     it("With a rejected code", async () => {
@@ -314,6 +320,7 @@ describe("Salary creation", () => {
         },
         user,
       );
+
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
     it("With an expired code", async () => {
@@ -352,6 +359,7 @@ describe("Salary creation", () => {
         },
         user,
       );
+
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
     it("With an expired code — via date", async () => {
@@ -389,6 +397,7 @@ describe("Salary creation", () => {
         },
         user,
       );
+
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
   });

@@ -45,15 +45,19 @@ builder.queryFields((t) => ({
     resolve: async (root, { input }, { DB }) => {
       if (!input) {
         const companies = await DB.query.companiesSchema.findMany();
+
         return companies.map((c) => selectCompaniesSchema.parse(c));
       }
+
       const { companyName, description, domain, website } = input;
       const wheres: SQL[] = [];
+
       if (companyName) {
         wheres.push(
           ilike(companiesSchema.name, sanitizeForLikeSearch(companyName)),
         );
       }
+
       if (description) {
         wheres.push(
           ilike(
@@ -62,19 +66,23 @@ builder.queryFields((t) => ({
           ),
         );
       }
+
       if (domain) {
         wheres.push(
           ilike(companiesSchema.domain, sanitizeForLikeSearch(domain)),
         );
       }
+
       if (website) {
         wheres.push(
           ilike(companiesSchema.website, sanitizeForLikeSearch(website)),
         );
       }
+
       const companies = await DB.query.companiesSchema.findMany({
         where: (_, { and }) => and(...wheres),
       });
+
       return companies.map((c) => selectCompaniesSchema.parse(c));
     },
   }),
@@ -94,6 +102,7 @@ builder.queryFields((t) => ({
       const company = await DB.query.companiesSchema.findFirst({
         where: (c, { eq }) => eq(c.id, companyId),
       });
+
       return selectCompaniesSchema.parse(company);
     },
   }),

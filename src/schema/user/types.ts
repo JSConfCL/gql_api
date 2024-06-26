@@ -30,12 +30,14 @@ builder.objectType(UserRef, {
             return operators.asc(fields.createdAt);
           },
         });
+
         if (
           !communities?.usersToCommunities ||
           communities?.usersToCommunities.length === 0
         ) {
           return [];
         }
+
         return communities.usersToCommunities.map(({ community }) =>
           selectCommunitySchema.parse(community),
         );

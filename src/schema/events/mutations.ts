@@ -107,12 +107,15 @@ builder.mutationFields((t) => ({
         status,
         timeZone,
       } = input;
+
       if (!ctx.USER) {
         throw new GraphQLError("User not found");
       }
+
       if (!(await canCreateEvent(ctx.USER.id, communityId, ctx.DB))) {
         throw new GraphQLError("FORBIDDEN");
       }
+
       try {
         const result = await ctx.DB.transaction(async (trx) => {
           try {
@@ -148,6 +151,7 @@ builder.mutationFields((t) => ({
             );
           }
         });
+
         return selectEventsSchema.parse(result);
       } catch (e) {
         throw new GraphQLError(
@@ -183,12 +187,15 @@ builder.mutationFields((t) => ({
           status,
           timeZone,
         } = input;
+
         if (!ctx.USER) {
           throw new Error("User not found");
         }
+
         if (!(await canEditEvent(ctx.USER.id, eventId, ctx.DB))) {
           throw new Error("FORBIDDEN");
         }
+
         const updateValues = updateEventsSchema.safeParse({
           name,
           description,
@@ -203,9 +210,11 @@ builder.mutationFields((t) => ({
           status,
           timeZone,
         });
+
         if (!updateValues.success) {
           throw new Error("Invalid input");
         }
+
         const event = (
           await ctx.DB.update(eventsSchema)
             .set(updateValues.data)

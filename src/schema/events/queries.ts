@@ -47,21 +47,27 @@ builder.queryFields((t) => ({
         startDateTimeTo,
       } = input ?? {};
       const wheres: SQL[] = [];
+
       if (id) {
         wheres.push(eq(eventsSchema.id, id));
       }
+
       if (name) {
         wheres.push(ilike(eventsSchema.name, sanitizeForLikeSearch(name)));
       }
+
       if (status) {
         wheres.push(eq(eventsSchema.status, status));
       }
+
       if (visibility) {
         wheres.push(eq(eventsSchema.visibility, visibility));
       }
+
       if (startDateTimeFrom) {
         wheres.push(gte(eventsSchema.startDateTime, startDateTimeFrom));
       }
+
       if (startDateTimeTo) {
         wheres.push(lte(eventsSchema.startDateTime, startDateTimeTo));
       }
@@ -72,6 +78,7 @@ builder.queryFields((t) => ({
           return operators.asc(fields.createdAt);
         },
       });
+
       return events.map((u) => selectEventsSchema.parse(u));
     },
   }),
@@ -90,9 +97,11 @@ builder.queryFields((t) => ({
           return operators.asc(fields.createdAt);
         },
       });
+
       if (!event) {
         return null;
       }
+
       return selectEventsSchema.parse(event);
     },
   }),

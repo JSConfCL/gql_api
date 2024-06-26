@@ -32,15 +32,19 @@ export const queueConsumer: ExportedHandlerQueueHandler<
       token: env.SANITY_SECRET_TOKEN,
       useCdn: true,
     });
+
     logger.info("Processing queue", batch.queue);
+
     for await (const msg of batch.messages) {
       try {
         logger.info("Processing message", msg);
         const { googleMedia, sanityEventId } = msg.body;
         const event = await sanityClient.getDocument(sanityEventId);
+
         if (!event) {
           throw new Error(`Event ${sanityEventId} not found`);
         }
+
         const response = await fetch(googleMedia.baseUrl + "=w4096");
         const blob = await response.blob();
 
@@ -51,6 +55,7 @@ export const queueConsumer: ExportedHandlerQueueHandler<
           creditLine: "JavaScript Chile",
           extract: ["blurhash", "exif", "image", "location", "lqip", "palette"],
         });
+
         logger.info("Created asset", createdAsset, createdAsset.metadata);
 
         const createdImage = await sanityClient.createOrReplace({

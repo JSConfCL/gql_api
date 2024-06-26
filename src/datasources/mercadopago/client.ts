@@ -7,5 +7,6 @@ export const getMercadoPagoClient = (accessToken: string) => {
       accessToken,
     });
   }
+
   return mercadoPagoClient;
 };

@@ -23,14 +23,17 @@ export const getSubscriptions = async (env: ENV) => {
     let customerID = customer as string;
     let customerEmail: null | string = null;
     let deletedUser = false;
+
     if (typeof customer !== "string") {
       customerID = customer.id;
+
       if (!customer.deleted) {
         customerEmail = customer.email;
       } else {
         deletedUser = true;
       }
     }
+
     return {
       userId: customerID,
       deletedUser: deletedUser,
@@ -66,6 +69,7 @@ const savePaymentEntry = async (DB: ORM_TYPE, results: Stripe.Charge[]) => {
       .values(mappedResults)
       .onConflictDoNothing()
       .returning();
+
     logger.info("👉Saved", saved.length, "financial entries from stripe", {
       saved,
     });

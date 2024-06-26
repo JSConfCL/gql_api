@@ -44,6 +44,7 @@ describe("test the email validation process", () => {
       const workEmailEntry = await testDB.query.workEmailSchema.findFirst();
       const confirmationToken =
         await testDB.query.confirmationTokenSchema.findFirst();
+
       if (!workEmailEntry) {
         throw new Error("Work email entry not found");
       }
@@ -107,6 +108,7 @@ describe("test the email validation process", () => {
       const workEmailEntry = await testDB.query.workEmailSchema.findFirst();
       const confirmationToken =
         await testDB.query.confirmationTokenSchema.findFirst();
+
       if (!workEmailEntry) {
         throw new Error("Work email entry not found");
       }
@@ -160,6 +162,7 @@ describe("test the email validation process", () => {
           user,
         );
       const workEmailEntry = await testDB.query.workEmailSchema.findFirst();
+
       if (!workEmailEntry) {
         throw new Error("Work email entry not found");
       }
@@ -218,6 +221,7 @@ describe("test the email validation process", () => {
         },
         user2,
       );
+
       assert.equal(
         StartWorkEmailValidationResponse.errors?.[0]?.message,
         "Unexpected error.",

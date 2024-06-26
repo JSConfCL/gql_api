@@ -39,11 +39,13 @@ builder.mutationFields((t) => ({
       let shouldGetMore = true;
       let nextPageToken: string | undefined = undefined;
       const allImages: GoogleImportQueueElement[] = [];
+
       while (shouldGetMore) {
         const response: {
           mediaItems: Array<GoogleMediaItemType>;
           nextPageToken: string | undefined;
         } = await getAlbumImages(albumId, token, nextPageToken);
+
         response.mediaItems.forEach((mediaItem) => {
           allImages.push({
             googleMedia: mediaItem,
@@ -57,7 +59,9 @@ builder.mutationFields((t) => ({
           shouldGetMore = false;
         }
       }
+
       await enqueueGooglePhotoImageBatch(GOOGLE_PHOTOS_IMPORT_QUEUE, allImages);
+
       return true;
     },
   }),

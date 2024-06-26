@@ -44,10 +44,12 @@ const userSetup = async ({
     }));
   const community1 = community ?? (await insertCommunity());
   const event1 = event ?? (await insertEvent());
+
   await insertEventToCommunity({
     eventId: event1.id,
     communityId: community1.id,
   });
+
   return { user1, community1, event1 };
 };
 
@@ -55,6 +57,7 @@ const superAdminSetup = async () => {
   const user1 = await insertUser({
     isSuperAdmin: true,
   });
+
   return userSetup({ user: user1 });
 };
 
@@ -66,6 +69,7 @@ const correctStartAndEndDateTime = () => {
     refDate: startDateTime,
     years: 1,
   });
+
   return {
     startDateTime,
     endDateTime,
@@ -79,6 +83,7 @@ const communityAdminSetup = async () => {
     userId: setup.user1.id,
     role: "admin",
   });
+
   return { ...setup, userToCommunity };
 };
 
@@ -368,6 +373,7 @@ describe("Should throw an error", () => {
     });
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,

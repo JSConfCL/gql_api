@@ -103,13 +103,16 @@ builder.mutationField("createTicket", (t) =>
       if (!ctx.USER) {
         throw new GraphQLError("User not found");
       }
+
       const { eventId } = input;
       const event = await ctx.DB.query.eventsSchema.findFirst({
         where: (e, { eq }) => eq(e.id, eventId),
       });
+
       if (!event) {
         throw new GraphQLError("Event not found");
       }
+
       // Check if the user has permissions to create a ticket
       const hasPermissions = await canCreateTicket({
         user: ctx.USER,
@@ -120,14 +123,17 @@ builder.mutationField("createTicket", (t) =>
       if (!hasPermissions) {
         throw new GraphQLError("Not authorized");
       }
+
       const hasQuantity = input.quantity ? input.quantity !== 0 : false;
 
       if (input.endDateTime && input.startDateTime > input.endDateTime) {
         throw new GraphQLError("End date must be after start date");
       }
+
       if (input.startDateTime < new Date()) {
         throw new GraphQLError("Start date must be in the future");
       }
+
       if (input.unlimitedTickets) {
         if (hasQuantity) {
           throw new GraphQLError(
@@ -161,19 +167,23 @@ builder.mutationField("createTicket", (t) =>
           // First, we check if the user is trying to create a ticket with
           // price. If so, we create all the prices.
           const insertedPrices: Array<typeof selectPriceSchema._type> = [];
+
           if (Array.isArray(input.prices)) {
             if (input.prices.length === 0) {
               throw new GraphQLError("Prices array must not be empty");
             }
+
             for (const price of input.prices) {
               if (!price.value_in_cents) {
                 throw new GraphQLError("Price is required");
               }
+
               if (price.value_in_cents <= 0) {
                 throw new GraphQLError(
                   "Price must be greater than 0. If this is a free ticket, set isFree to true.",
                 );
               }
+
               if (!price.currencyId) {
                 throw new GraphQLError(
                   "CurrencyId is required when price is provided",
@@ -190,9 +200,11 @@ builder.mutationField("createTicket", (t) =>
                   .values(insertPriceValues)
                   .returning();
                 const newPrice = insertedPrice?.[0];
+
                 if (!newPrice) {
                   throw new GraphQLError("Price not created");
                 }
+
                 insertedPrices.push(newPrice);
               } catch (e) {
                 logger.error("Error creating price:", e);
@@ -240,6 +252,7 @@ builder.mutationField("createTicket", (t) =>
               .values(ticketPriceToInsert)
               .returning();
             const ticketPrice = insertedTicketPrice?.[0];
+
             if (!ticketPrice) {
               throw new GraphQLError("Could not attach price to ticket");
             }
@@ -253,7 +266,9 @@ builder.mutationField("createTicket", (t) =>
                 currency: true,
               },
             });
+
             logger.info("Found price", foundPrice);
+
             if (foundPrice?.currency) {
               await ensureProductsAreCreated({
                 price: foundPrice.price_in_cents,
@@ -264,6 +279,7 @@ builder.mutationField("createTicket", (t) =>
               });
             }
           }
+
           return selectTicketSchema.parse(insertedTicket);
         } catch (e) {
           logger.error("Error creating tickets:", e);
@@ -342,14 +358,17 @@ builder.mutationField("editTicket", (t) =>
     resolve: async (root, { input }, ctx) => {
       try {
         const { ticketId } = input;
+
         if (!ctx.USER) {
           throw new GraphQLError("User not found");
         }
+
         if (!(await canEditTicket(ctx.USER.id, ticketId, ctx.DB))) {
           throw new GraphQLError("Not authorized");
         }
 
         const updateFields = {};
+
         addToObjectIfPropertyExists(updateFields, "name", input.name);
         addToObjectIfPropertyExists(
           updateFields,
@@ -386,6 +405,7 @@ builder.mutationField("editTicket", (t) =>
         // );
 
         const response = updateTicketSchema.safeParse(updateFields);
+
         if (response.success) {
           const ticket = (
             await ctx.DB.update(ticketsSchema)
@@ -393,6 +413,7 @@ builder.mutationField("editTicket", (t) =>
               .where(eq(ticketsSchema.id, ticketId))
               .returning()
           )?.[0];
+
           return selectTicketSchema.parse(ticket);
         } else {
           logger.error("ERROR:", response.error);

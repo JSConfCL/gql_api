@@ -18,6 +18,7 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
     "SANITY_API_VERSION",
     "SANITY_SECRET_TOKEN",
   ]);
+
   try {
     await Promise.all([importFromSanity(env)]);
   } catch (e) {

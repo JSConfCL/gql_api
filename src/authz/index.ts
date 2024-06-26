@@ -22,6 +22,7 @@ export class IsSameUser extends PreExecutionRule {
     if (!USER || !fieldArgs.input.id) {
       return false;
     }
+
     return USER.id === fieldArgs.input.id;
   }
 }
@@ -35,10 +36,12 @@ export class IsTicketOwner extends PreExecutionRule {
     if (!USER || !fieldArgs.input.id) {
       return false;
     }
+
     const IsTicketOwner = await DB.query.userTicketsSchema.findFirst({
       where: (utc, { eq, and }) =>
         and(eq(utc.userId, USER.id), eq(utc.id, fieldArgs.input.id)),
     });
+
     return Boolean(IsTicketOwner);
   }
 }
@@ -48,6 +51,7 @@ export class IsSuperAdmin extends PreExecutionRule {
     if (!USER) {
       return false;
     }
+
     return Boolean(USER.isSuperAdmin);
   }
 }
@@ -60,6 +64,7 @@ export class CanCreateEvent extends PreExecutionRule {
     if (!USER || !fieldArgs?.input?.communityId) {
       return false;
     }
+
     const user = await DB.query.usersToCommunitiesSchema.findFirst({
       where: (utc, { eq, and }) =>
         and(eq(utc.userId, USER.id), eq(utc.role, "admin")),
@@ -77,6 +82,7 @@ export class isCommunityCollaborator extends PreExecutionRule {
     if (!USER || !fieldArgs?.input?.communityId) {
       return false;
     }
+
     const user = await DB.query.communitySchema.findFirst({
       with: {
         usersToCommunities: {
@@ -85,6 +91,7 @@ export class isCommunityCollaborator extends PreExecutionRule {
         },
       },
     });
+
     return Boolean(user);
   }
 }
@@ -97,6 +104,7 @@ export class isCommunityAdmin extends PreExecutionRule {
     if (!USER || !fieldArgs?.input?.communityId) {
       return false;
     }
+
     const isCommunityAdmin = await authHelpers.isCommuntiyAdmin({
       user: USER,
       communityId: fieldArgs.input.communityId,
@@ -115,6 +123,7 @@ export class isEventAdmin extends PreExecutionRule {
     if (!USER || !fieldArgs?.input?.eventId) {
       return false;
     }
+
     const isEventAdmin = await DB.query.eventsToUsersSchema.findFirst({
       where: (utc, { eq, and }) =>
         and(

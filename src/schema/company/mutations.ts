@@ -89,31 +89,41 @@ builder.mutationFields((t) => ({
       const company = await DB.query.companiesSchema.findFirst({
         where: (c, { eq }) => eq(c.id, companyId),
       });
+
       if (!company) {
         throw new Error("Company not found");
       }
+
       if (!USER?.isSuperAdmin && company.updatedAt !== null) {
         throw new Error("Cannot update an already updated company");
       }
+
       const dataToUpdate: Record<string, string | null | undefined> = {};
+
       if (domain) {
         dataToUpdate.domain = domain;
       }
+
       if (website) {
         dataToUpdate.website = website;
       }
+
       if (name) {
         dataToUpdate.name = name;
       }
+
       if (logo) {
         dataToUpdate.logo = logo;
       }
+
       if (description) {
         dataToUpdate.description = description;
       }
+
       if (Object.keys(dataToUpdate).length === 0) {
         throw new Error("Nothing to update");
       }
+
       const updatedCompany = (
         await DB.update(companiesSchema)
           .set(dataToUpdate)
@@ -140,27 +150,35 @@ builder.mutationFields((t) => ({
       const { description, logo, domain, website, name, status } = input;
 
       const dataToCreate: Record<string, string | null | undefined> = {};
+
       if (domain) {
         dataToCreate.domain = domain;
       }
+
       if (website) {
         dataToCreate.website = website;
       }
+
       if (logo) {
         dataToCreate.logo = logo;
       }
+
       if (description) {
         dataToCreate.description = description;
       }
+
       if (name) {
         dataToCreate.name = name;
       }
+
       if (status) {
         dataToCreate.status = status;
       }
+
       if (Object.keys(dataToCreate).length === 0) {
         throw new Error("No data to create a company");
       }
+
       const updateCompanyData = insertCompaniesSchema.parse(dataToCreate);
       const createCompany = (
         await DB.insert(companiesSchema).values(updateCompanyData).returning()

@@ -13,9 +13,11 @@ builder.queryFields((t) => ({
       if (!USER) {
         throw new Error("No user present");
       }
+
       const salaries = await DB.query.salariesSchema.findMany({
         where: (salary, { eq }) => eq(salary.userId, USER.id),
       });
+
       return salaries.map((salary) => selectSalariesSchema.parse(salary));
     },
   }),

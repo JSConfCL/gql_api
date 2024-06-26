@@ -33,6 +33,7 @@ const updateUserRoleInCommunityInput = builder.inputType(
     }),
   },
 );
+
 builder.mutationFields((t) => ({
   updateUser: t.field({
     description: "Update a user",
@@ -47,12 +48,15 @@ builder.mutationFields((t) => ({
     resolve: async (root, { input }, ctx) => {
       try {
         const { id, name, lastName, bio, username } = input;
+
         if (!ctx.USER) {
           throw new Error("User not found");
         }
+
         if (!isSameUser(id, ctx.USER.id)) {
           throw new Error("Not authorized");
         }
+
         const updateFields = {} as {
           name?: string;
           lastName?: string;
@@ -63,15 +67,19 @@ builder.mutationFields((t) => ({
         if (name) {
           updateFields.name = name;
         }
+
         if (lastName) {
           updateFields.lastName = lastName;
         }
+
         if (bio) {
           updateFields.bio = bio;
         }
+
         if (username) {
           updateFields.username = username;
         }
+
         const user = (
           await ctx.DB.update(usersSchema)
             .set(updateFields)
@@ -100,9 +108,11 @@ builder.mutationFields((t) => ({
     resolve: async (root, { input }, ctx) => {
       try {
         const { userId, communityId, role } = input;
+
         if (!ctx.USER) {
           throw new Error("User not found");
         }
+
         if (
           !(await canUpdateUserRoleInCommunity(
             ctx.USER?.id,
@@ -112,6 +122,7 @@ builder.mutationFields((t) => ({
         ) {
           throw new Error("Not authorized");
         }
+
         await ctx.DB.update(usersToCommunitiesSchema)
           .set({
             role: role as UserRoleCommunity,

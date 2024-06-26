@@ -20,6 +20,7 @@ const googleMediaType = {
     },
   },
 };
+
 describe("Test email library", () => {
   describe("enqueueEmail", () => {
     it("Should enqueue an email", async () => {
@@ -29,6 +30,7 @@ describe("Test email library", () => {
       const mockedQueue = {
         send: spy,
       } as unknown as Queue;
+
       await enqueueGooglePhotoImage(mockedQueue, {
         sanityEventId: "some-token",
         googleMedia: googleMediaType,
@@ -43,6 +45,7 @@ describe("Test email library", () => {
       const mockedQueue = {
         sendBatch: spy,
       } as unknown as Queue;
+
       await enqueueGooglePhotoImageBatch(mockedQueue, [
         {
           sanityEventId: "some-token",

@@ -33,6 +33,7 @@ describe("Company", () => {
           },
         },
       });
+
       expect(response.data?.createCompany).toBeDefined();
       expect(response.data?.createCompany?.name).toEqual(name);
       expect(response.data?.createCompany?.domain).toEqual(domain);
@@ -66,6 +67,7 @@ describe("Company", () => {
         },
         user,
       );
+
       expect(response.data?.createCompany).not.toBeDefined();
       expect(response.errors).toBeDefined();
       expect(response.errors?.[0].message).toBe("Unauthorized!");
@@ -89,6 +91,7 @@ describe("Company", () => {
           },
         },
       });
+
       expect(response.data?.createCompany).not.toBeDefined();
       expect(response.errors).toBeDefined();
       expect(response.errors?.[0].message).toBe("Unauthorized!");

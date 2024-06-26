@@ -46,6 +46,7 @@ describe("Search users by tag", () => {
         },
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.isArray(response.data?.userSearch);
     assert.equal(response.data?.userSearch?.length, 1);
@@ -75,6 +76,7 @@ describe("Search users by tag", () => {
         },
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.isArray(response.data?.userSearch);
     assert.equal(response.data?.userSearch?.length, 2);
@@ -108,6 +110,7 @@ describe("Search users by tag", () => {
         },
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.isArray(response.data?.userSearch);
     assert.equal(response.data?.userSearch?.length, 2);
@@ -124,6 +127,7 @@ describe("Search users by tag", () => {
         input: {},
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.isArray(response.data?.userSearch);
     assert.equal(response.data?.userSearch?.length, 0);
@@ -138,6 +142,7 @@ describe("Search users by tag", () => {
         input: {},
       },
     });
+
     assert.equal(response.errors?.length, 1);
     assert.equal(response.errors?.[0]?.message, "Unauthorized!");
   });
@@ -155,6 +160,7 @@ describe("Search users by tag", () => {
       },
       user,
     );
+
     assert.equal(response.errors?.length, 1);
     assert.equal(response.errors?.[0]?.message, "Unauthorized!");
   });

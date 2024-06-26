@@ -16,6 +16,7 @@ const getPaymentStatusFromStripeSession = (
   } else if (stripeStatus === "unpaid") {
     return "unpaid";
   }
+
   throw new Error("Unknown payment status", stripeStatus);
 };
 
@@ -31,6 +32,7 @@ const getPurchaseOrderStatusFromStripeSession = (
   } else if (stripeStatus === null) {
     return "open";
   }
+
   throw new Error("Unknown purchase order status", stripeStatus);
 };
 
@@ -39,6 +41,7 @@ const getUnitAmount = (unitAmount: number) => {
   if (isIntegerLike(unitAmount)) {
     return { unit_amount: unitAmount };
   }
+
   return { unit_amount_decimal: unitAmount.toString() };
 };
 
@@ -77,12 +80,15 @@ export const createStripeProductAndPrice = async ({
   });
 
   const defaultPrice = productData.default_price;
+
   if (!defaultPrice) {
     throw new Error("Stripe product and price could not be created.");
   }
+
   if (typeof defaultPrice === "string") {
     return defaultPrice;
   }
+
   return defaultPrice.id;
 };
 
@@ -142,9 +148,11 @@ export const getStripePaymentStatus = async ({
 }) => {
   const stripeClient = getStripeClient();
   const payment = await stripeClient.checkout.sessions.retrieve(paymentId);
+
   if (!payment) {
     throw new Error(`Payment not found for id: ${paymentId}`);
   }
+
   return {
     paymentStatus: getPaymentStatusFromStripeSession(payment.payment_status),
     status: getPurchaseOrderStatusFromStripeSession(payment.status),

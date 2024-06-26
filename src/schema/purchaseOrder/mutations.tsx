@@ -46,6 +46,7 @@ builder.mutationField("payForPurchaseOrder", (t) =>
       if (!USER) {
         throw new Error("User is required");
       }
+
       const { purchaseOrderId, currencyID } = input;
 
       const { purchaseOrder, ticketsIds } = await createPaymentIntent({
@@ -101,15 +102,18 @@ builder.mutationField("checkPurchaseOrderStatus", (t) =>
       if (!USER) {
         throw new Error("User is required");
       }
+
       const { purchaseOrderId } = input;
       const isOwner = await authHelpers.isOwnerOfPurchaseOrder({
         user: USER,
         purchaseOrderId,
         DB,
       });
+
       if (!isOwner) {
         throw new Error("User is not the owner of the purchase order");
       }
+
       const purchaseOrder = await syncPurchaseOrderPaymentStatus({
         DB,
         purchaseOrderId,

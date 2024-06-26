@@ -69,6 +69,7 @@ export const RedeemUserTicketResponse = builder.unionType(
       if ("errorMessage" in value) {
         return RedeemUserTicketError;
       }
+
       return PurchaseOrderRef;
     },
   },
@@ -92,12 +93,15 @@ builder.mutationFields((t) => ({
         if (!ctx.USER) {
           throw new GraphQLError("User not found");
         }
+
         if (!(await canCancelUserTicket(ctx.USER?.id, userTicketId, ctx.DB))) {
           throw new GraphQLError("You can't cancel this ticket");
         }
+
         let ticket = await ctx.DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
         });
+
         ticket = (
           await ctx.DB.update(userTicketsSchema)
             .set({
@@ -133,27 +137,34 @@ builder.mutationFields((t) => ({
         if (!USER) {
           throw new GraphQLError("User not found");
         }
+
         if (!(await canApproveTicket(USER.id, userTicketId, DB))) {
           throw new GraphQLError("Unauthorized!");
         }
+
         const ticket = await DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
           with: {
             ticketTemplate: true,
           },
         });
+
         if (!ticket) {
           throw new GraphQLError("Unauthorized!");
         }
+
         if (!USER) {
           throw new GraphQLError("User not found");
         }
+
         if (ticket.approvalStatus === "approved") {
           throw new GraphQLError("Ticket already approved");
         }
+
         if (!ticket.ticketTemplate?.requiresApproval) {
           throw new GraphQLError("Ticket does not require approval");
         }
+
         const updatedTicket = (
           await DB.update(userTicketsSchema)
             .set({
@@ -188,6 +199,7 @@ builder.mutationFields((t) => ({
         if (!USER) {
           throw new GraphQLError("User not found");
         }
+
         if (!(await canRedeemUserTicket(USER?.id, userTicketId, DB))) {
           throw new GraphQLError("No tienes permisos para redimir este ticket");
         }
@@ -195,18 +207,23 @@ builder.mutationFields((t) => ({
         const ticket = await DB.query.userTicketsSchema.findFirst({
           where: (t, { eq }) => eq(t.id, userTicketId),
         });
+
         if (!ticket) {
           throw new GraphQLError("Unauthorized!");
         }
+
         if (ticket.approvalStatus === "cancelled") {
           throw new GraphQLError("No es posible redimir un ticket cancelado");
         }
+
         if (ticket.approvalStatus === "rejected") {
           throw new GraphQLError("No es posible redimir un ticket rechazado");
         }
+
         if (ticket.redemptionStatus === "redeemed") {
           return selectUserTicketsSchema.parse(ticket);
         }
+
         const updatedTicket = (
           await DB.update(userTicketsSchema)
             .set({
@@ -251,9 +268,11 @@ builder.mutationFields((t) => ({
       if (!USER) {
         throw new GraphQLError("User not found");
       }
+
       if (idempotencyUUIDKey && !isValidUUID(idempotencyUUIDKey)) {
         throw new GraphQLError("Idempotency key is not a valid UUID");
       }
+
       // We try to reserve as many tickets as exist in purchaseOrder array. we
       // create a transaction to check on the tickets and reserve them. We
       // reverse the transacion if we find that:
@@ -261,6 +280,7 @@ builder.mutationFields((t) => ({
       // - We don't have enough tickets to fulfill the purchase order.
       // - Other General errors
       let transactionError: null | GraphQLError = null;
+
       try {
         const transactionResults = await DB.transaction(async (trx) => {
           try {
@@ -270,12 +290,14 @@ builder.mutationFields((t) => ({
                   where: (po, { eq }) =>
                     eq(po.idempotencyUUIDKey, idempotencyUUIDKey),
                 });
+
               if (existingPurchaseOrder) {
                 throw new Error(
                   `Purchase order with idempotency key ${idempotencyUUIDKey} already exists.`,
                 );
               }
             }
+
             // We create a purchase order to keep track of the tickets we create.
             const createdPurchaseOrders = await trx
               .insert(purchaseOrdersSchema)
@@ -289,6 +311,7 @@ builder.mutationFields((t) => ({
               [];
 
             const createdPurchaseOrder = createdPurchaseOrders[0];
+
             if (!createdPurchaseOrder) {
               throw new Error("Could not create purchase order");
             }
@@ -381,9 +404,11 @@ builder.mutationFields((t) => ({
                     paymentStatus: requiresPayment ? "unpaid" : "not_required",
                     approvalStatus: requiresApproval ? "pending" : "approved",
                   });
+
                   if (result.success) {
                     return result.data;
                   }
+
                   logger.error("Could not parse user ticket", result.error);
                 })
                 .filter(Boolean);
@@ -392,9 +417,11 @@ builder.mutationFields((t) => ({
                 `Creating ${newTickets.length} user tickets for ticket template with id ${item.ticketId}`,
                 { newTickets, item },
               );
+
               if (newTickets.length === 0) {
                 throw new Error("Could not create user tickets");
               }
+
               const createdUserTickets = await trx
                 .insert(userTicketsSchema)
                 .values(newTickets)
@@ -418,6 +445,7 @@ builder.mutationFields((t) => ({
                   );
                 }
               }
+
               claimedTickets = [...claimedTickets, ...createdUserTickets];
             }
 
@@ -425,11 +453,14 @@ builder.mutationFields((t) => ({
               await trx.query.purchaseOrdersSchema.findFirst({
                 where: (po, { eq }) => eq(po.id, createdPurchaseOrder.id),
               });
+
             if (!foundPurchaseOrder) {
               throw new Error("Could not find purchase order");
             }
+
             const selectedPurchaseOrder =
               selectPurchaseOrdersSchema.parse(foundPurchaseOrder);
+
             if (generatePaymentLink) {
               const { purchaseOrder, ticketsIds } = await createPaymentIntent({
                 DB,
@@ -444,11 +475,13 @@ builder.mutationFields((t) => ({
               const tickets = await trx.query.userTicketsSchema.findMany({
                 where: (uts, { inArray }) => inArray(uts.id, ticketsIds),
               });
+
               return {
                 selectedPurchaseOrder: purchaseOrder,
                 claimedTickets: tickets,
               };
             }
+
             return { selectedPurchaseOrder, claimedTickets };
           } catch (e) {
             logger.error("🚨Error", e);
@@ -465,6 +498,7 @@ builder.mutationFields((t) => ({
 
         const { claimedTickets, selectedPurchaseOrder } = transactionResults;
         const ticketsIds = claimedTickets.flatMap((t) => (t.id ? [t.id] : []));
+
         return {
           purchaseOrder: selectedPurchaseOrder,
           ticketsIds,
@@ -472,11 +506,13 @@ builder.mutationFields((t) => ({
       } catch (e: unknown) {
         if (transactionError) {
           logger.error("🚨Transaction error", transactionError);
+
           return {
             error: true as const,
             errorMessage: (transactionError as GraphQLError).message,
           };
         }
+
         throw new GraphQLError(
           e instanceof Error ? e.message : "Unknown error",
         );

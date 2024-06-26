@@ -35,10 +35,13 @@ export const mailRouter = async ({
       ?.value;
     const nombre = fields.find((field) => field.key === "question_vXd4kd")
       ?.value;
+
     if (!email) {
       throw new Error("Email is required");
     }
+
     const htmlContent = await renderAsync(<IACampWaitlist nombre={nombre} />);
+
     return sendTransactionalHTMLEmail(resend, {
       htmlContent,
       from: {
@@ -60,10 +63,13 @@ export const mailRouter = async ({
     const email = fields.find((field) => field.key === "question_jekLyE")
       ?.value;
     const name = fields.find((field) => field.key === "question_rDkV6v")?.value;
+
     if (!email) {
       throw new Error("Email is required");
     }
+
     const htmlContent = await renderAsync(<SponsorsConfirmation />);
+
     return sendTransactionalHTMLEmail(resend, {
       htmlContent,
       from: {
@@ -79,5 +85,6 @@ export const mailRouter = async ({
       ],
     });
   }
+
   return { message: "Hello, World!" };
 };

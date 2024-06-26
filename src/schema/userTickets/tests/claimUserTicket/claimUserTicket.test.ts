@@ -41,6 +41,7 @@ const createCommunityEventUserAndTicketTemplate = async ({
       maxAttendees: 40,
       status: "active",
     }));
+
   await insertEventToCommunity({
     eventId: createdEvent.id,
     communityId: createdCommunity.id,
@@ -85,6 +86,7 @@ describe("Claim a user ticket", () => {
     it("For a MEMBER user", async () => {
       const { community, user, ticketTemplate } =
         await createCommunityEventUserAndTicketTemplate();
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user.id,
@@ -113,8 +115,10 @@ describe("Claim a user ticket", () => {
         },
         user,
       );
+
       assert.equal(response.errors, undefined);
       assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+
       if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
         assert.equal(response.data?.claimUserTicket.tickets.length, 3);
       }
@@ -122,6 +126,7 @@ describe("Claim a user ticket", () => {
     it("For an ADMIN user", async () => {
       const { community, user, ticketTemplate } =
         await createCommunityEventUserAndTicketTemplate();
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user.id,
@@ -150,8 +155,10 @@ describe("Claim a user ticket", () => {
         },
         user,
       );
+
       assert.equal(response.errors, undefined);
       assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+
       if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
         assert.equal(response.data?.claimUserTicket.tickets.length, 3);
       }
@@ -159,6 +166,7 @@ describe("Claim a user ticket", () => {
     it("For a COLLABORATOR  user", async () => {
       const { community, user, ticketTemplate } =
         await createCommunityEventUserAndTicketTemplate();
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user.id,
@@ -187,8 +195,10 @@ describe("Claim a user ticket", () => {
         },
         user,
       );
+
       assert.equal(response.errors, undefined);
       assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+
       if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
         assert.equal(response.data?.claimUserTicket.tickets.length, 3);
       }
@@ -225,8 +235,10 @@ describe("Claim a user ticket", () => {
         },
         user,
       );
+
       assert.equal(response.errors, undefined);
       assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+
       if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
         assert.equal(response.data?.claimUserTicket.tickets.length, 3);
       }
@@ -242,6 +254,7 @@ describe("Claim a user ticket", () => {
         await createCommunityEventUserAndTicketTemplate({
           event: createdEvent,
         });
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user.id,
@@ -270,11 +283,13 @@ describe("Claim a user ticket", () => {
         },
         user,
       );
+
       assert.equal(response.errors, undefined);
       assert.equal(
         response.data?.claimUserTicket?.__typename,
         "RedeemUserTicketError",
       );
+
       if (
         response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
       ) {
@@ -298,6 +313,7 @@ describe("Claim a user ticket", () => {
           event: createdEvent,
           ticketTemplate: createdTicketTemplate,
         });
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user.id,
@@ -326,11 +342,13 @@ describe("Claim a user ticket", () => {
         },
         user,
       );
+
       assert.equal(response.errors, undefined);
       assert.equal(
         response.data?.claimUserTicket?.__typename,
         "RedeemUserTicketError",
       );
+
       if (
         response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
       ) {
@@ -349,6 +367,7 @@ describe("Claim a user ticket", () => {
         await createCommunityEventUserAndTicketTemplate({
           event: createdEvent,
         });
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user.id,
@@ -377,11 +396,13 @@ describe("Claim a user ticket", () => {
         },
         user,
       );
+
       assert.equal(response.errors, undefined);
       assert.equal(
         response.data?.claimUserTicket?.__typename,
         "RedeemUserTicketError",
       );
+
       if (
         response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
       ) {
@@ -394,6 +415,7 @@ describe("Claim a user ticket", () => {
     it("If the idempotency key is not a UUID", async () => {
       const { community, user, ticketTemplate } =
         await createCommunityEventUserAndTicketTemplate();
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user.id,
@@ -425,6 +447,7 @@ describe("Claim a user ticket", () => {
         },
         user,
       );
+
       assert.equal(
         response.errors?.[0]?.message,
         "Idempotency key is not a valid UUID",
@@ -433,6 +456,7 @@ describe("Claim a user ticket", () => {
     it("If the idempotency key is already used", async () => {
       const { community, user, ticketTemplate } =
         await createCommunityEventUserAndTicketTemplate();
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user.id,
@@ -464,6 +488,7 @@ describe("Claim a user ticket", () => {
         },
         user,
       );
+
       assert.equal(response.errors, undefined);
       const response2 = await executeGraphqlOperationAsUser<
         ClaimUserTicketMutation,
@@ -481,6 +506,7 @@ describe("Claim a user ticket", () => {
       assert(
         response2.data?.claimUserTicket?.__typename === "RedeemUserTicketError",
       );
+
       if (
         response2.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
       ) {

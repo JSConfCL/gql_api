@@ -30,27 +30,35 @@ export const creageGraphqlContext = async ({
   if (!MAIL_QUEUE) {
     throw new Error("Missing MAIL_QUEUE");
   }
+
   if (!GOOGLE_PHOTOS_IMPORT_QUEUE) {
     throw new Error("Missing GOOGLE_PHOTOS_IMPORT_QUEUE");
   }
+
   if (!NEON_URL) {
     throw new Error("Missing NEON_URL");
   }
+
   if (!SUPABASE_JWT_DECODER) {
     throw new Error("Missing SUPABASE_JWT_DECODER");
   }
+
   if (!STRIPE_KEY) {
     throw new Error("Missing STRIPE_KEY");
   }
+
   if (!MERCADOPAGO_KEY) {
     throw new Error("Missing MERCADOPAGO_KEY");
   }
+
   if (!PURCHASE_CALLBACK_URL) {
     throw new Error("Missing PURCHASE_CALLBACK_URL");
   }
+
   if (!RESEND_API_KEY) {
     throw new Error("Missing RESEND_API_KEY");
   }
+
   if (
     !SANITY_PROJECT_ID ||
     !SANITY_DATASET ||
@@ -59,6 +67,7 @@ export const creageGraphqlContext = async ({
   ) {
     throw new Error("Missing Sanity Configuration");
   }
+
   const DB_URL =
     HYPERDRIVE?.connectionString?.startsWith("postgresql://fake-user:fake") &&
     APP_ENV === "development"
@@ -85,6 +94,7 @@ export const creageGraphqlContext = async ({
     SUPABASE_JWT_DECODER,
     DB,
   });
+
   return {
     ...initContextCache(),
     DB,

@@ -24,17 +24,21 @@ builder.queryFields((t) => ({
     resolve: async (root, args, ctx) => {
       const { id, name, description } = args.input || {};
       const wheres: SQL[] = [];
+
       if (id) {
         wheres.push(eq(tagsSchema.id, id));
       }
+
       if (name) {
         wheres.push(ilike(tagsSchema.name, sanitizeForLikeSearch(name)));
       }
+
       if (description) {
         wheres.push(
           ilike(tagsSchema.description, sanitizeForLikeSearch(description)),
         );
       }
+
       const query = ctx.DB.query.tagsSchema.findMany({
         where: (c, { and }) => and(...wheres),
         orderBy(fields, operators) {
@@ -44,6 +48,7 @@ builder.queryFields((t) => ({
 
       logger.debug("QUERY -> ", query.toSQL());
       const users = await query;
+
       return users.map((u) => selectTagsSchema.parse(u));
     },
   }),

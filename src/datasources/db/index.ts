@@ -22,6 +22,7 @@ export const getDb = async ({ neonUrl }: { neonUrl: string }) => {
   const client = new Client({
     connectionString: neonUrl,
   });
+
   try {
     await client.connect();
     const db = drizzle(client, {
@@ -32,6 +33,7 @@ export const getDb = async ({ neonUrl }: { neonUrl: string }) => {
         },
       },
     });
+
     return db;
   } catch (error) {
     logger.error("Error connecting to database", error);

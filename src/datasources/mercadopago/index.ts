@@ -17,6 +17,7 @@ const getPaymentStatusFromMercadoPago = (
   mercadoPagoStatus: PaymentResponse["status"],
 ): (typeof puchaseOrderPaymentStatusEnum)[number] => {
   const theStatus = mercadoPagoStatus?.toLowerCase();
+
   if (!theStatus) {
     return "unpaid";
   } else if (theStatus === "pending") {
@@ -36,6 +37,7 @@ const getPaymentStatusFromMercadoPago = (
   } else if (theStatus === "approved") {
     return "paid";
   }
+
   throw new Error(`Unknown payment status: ${theStatus}`);
 };
 
@@ -43,6 +45,7 @@ const getPurchasOrderStatusFromMercadoPago = (
   mercadoPagoStatus: PaymentResponse["status"],
 ): (typeof purchaseOrderStatusEnum)[number] => {
   const theStatus = mercadoPagoStatus?.toLowerCase();
+
   if (!theStatus) {
     return "open";
   } else if (theStatus === "pending") {
@@ -62,6 +65,7 @@ const getPurchasOrderStatusFromMercadoPago = (
   } else if (theStatus === "approved") {
     return "complete";
   }
+
   throw new Error(`Unknown payment status: ${theStatus}`);
 };
 
@@ -77,11 +81,14 @@ export const getMercadoPagoFetch =
     body?: Record<string, unknown>;
   }) => {
     let parsedUrl = url;
+
     if (!url.startsWith("/")) {
       parsedUrl = `/${url}`;
     }
+
     logger.info("Attempting to fetch URL:", parsedUrl);
     const headers = new Headers();
+
     headers.set("Authorization", `Bearer ${token}`);
     headers.set("Content-Type", "application/json");
     const response = await fetch(`https://api.mercadopago.com${parsedUrl}`, {
@@ -90,6 +97,7 @@ export const getMercadoPagoFetch =
       body: JSON.stringify(body),
     });
     const json = await response.json<T>();
+
     return json;
   };
 
@@ -139,6 +147,7 @@ export const createMercadoPagoPayment = async ({
     method: "POST",
     body,
   });
+
   return {
     preference: mercadoPagoResponse,
     expirationDate: new Date(expirationDate).toISOString(),
@@ -155,7 +164,9 @@ export const getMercadoPagoPreference = async ({
   const preference = await getMercadoPagoClient<PreferenceResponse>({
     url: `/checkout/preferences/${preferenceId}`,
   });
+
   logger.info("preference", preference);
+
   return preference;
 };
 

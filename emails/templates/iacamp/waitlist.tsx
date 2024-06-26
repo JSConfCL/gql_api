@@ -1,16 +1,6 @@
-import {
-  Column,
-  Container,
-  Hr,
-  Img,
-  Preview,
-  Row,
-  Section,
-  Text,
-} from "@react-email/components";
+import { Container, Hr, Preview, Section, Text } from "@react-email/components";
 import * as React from "react";
 
-import { assetURL } from "emails/helpers";
 import { BigFooter, TicketTemplate } from "emails/helpers/tickets";
 
 interface AddedToWaitlist {

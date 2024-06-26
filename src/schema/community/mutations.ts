@@ -31,6 +31,7 @@ const UpdateCommunityInput = builder.inputType("UpdateCommunityInput", {
     description: t.string({ required: false }),
   }),
 });
+
 builder.mutationFields((t) => ({
   createCommunity: t.field({
     description: "Create an community",
@@ -45,18 +46,23 @@ builder.mutationFields((t) => ({
     resolve: async (root, { input }, { USER, DB }) => {
       try {
         const { name, slug, description } = input;
+
         if (!USER) {
           throw new Error("User not found");
         }
+
         if (!canCreateCommunity(USER)) {
           throw new Error("FORBIDDEN");
         }
+
         const existSlug = await DB.query.communitySchema.findFirst({
           where: (c, { eq }) => eq(c.slug, input.slug),
         });
+
         if (existSlug) {
           throw new Error("This slug already exist");
         }
+
         const newCommunity = insertCommunitySchema.parse({
           name,
           slug,
@@ -88,12 +94,15 @@ builder.mutationFields((t) => ({
     resolve: async (root, { input }, { USER, DB }) => {
       try {
         const { communityId, status, description, name, slug } = input;
+
         if (!USER) {
           throw new Error("User not found");
         }
+
         if (!(await canEditCommunity(USER, communityId, DB))) {
           throw new Error("FORBIDDEN");
         }
+
         const dataToUpdate: Record<string, string | null | undefined> = {};
 
         const foundCommunity = await DB.query.communitySchema.findFirst({
@@ -103,18 +112,23 @@ builder.mutationFields((t) => ({
         if (!foundCommunity) {
           throw new Error("Community not found");
         }
+
         if (status) {
           dataToUpdate.status = status;
         }
+
         if (description) {
           dataToUpdate.description = description;
         }
+
         if (name) {
           dataToUpdate.name = name;
         }
+
         if (slug) {
           dataToUpdate.slug = slug;
         }
+
         const community = (
           await DB.update(communitySchema)
             .set(dataToUpdate)

@@ -12,6 +12,7 @@ export const enqueueEmail = (
   emailMessage: EmailMessageType,
 ) => {
   logger.info("Enqueuing email", emailMessage, "to the queue: ", MAIL_QUEUE);
+
   // Solo hacemos esto porque en nuestros tests de graphql, no tenemos una cola
   // de cloudflare queues. Así que en ves de enviar el email, asumimos que se
   // encola correctamente.
@@ -19,10 +20,12 @@ export const enqueueEmail = (
     logger.info(
       "No mailing queue set. If this is a test, this is expected. If not, check your configuration.",
     );
+
     return;
   }
 
   logger.info("Sending email to the queue: ", MAIL_QUEUE);
+
   return MAIL_QUEUE.send(emailMessage, {
     contentType: "json",
   });
@@ -56,6 +59,7 @@ export const sendTransactionalEmail = async (
         html: config.html,
       }),
     });
+
     if (response.status >= 400) {
       throw new Error(`API Error Sending email. Status ${response.status}`);
     }

@@ -23,6 +23,7 @@ describe("Approval user ticket", () => {
     const user1 = await insertUser({
       isSuperAdmin: true,
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -57,6 +58,7 @@ describe("Approval user ticket", () => {
   it("Should approve a user ticket if is event admin", async () => {
     const event1 = await insertEvent();
     const user1 = await insertUser();
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -91,6 +93,7 @@ describe("Approval user ticket", () => {
   it("It should throw an error if the user is not an event admin or superadmin", async () => {
     const event1 = await insertEvent();
     const user1 = await insertUser();
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -126,6 +129,7 @@ describe("Approval user ticket", () => {
     const user1 = await insertUser({
       isSuperAdmin: true,
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -162,6 +166,7 @@ describe("Approval user ticket", () => {
     const user1 = await insertUser({
       isSuperAdmin: true,
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,

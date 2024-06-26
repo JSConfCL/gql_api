@@ -40,6 +40,7 @@ describe("Company", () => {
           },
         },
       });
+
       expect(response.data?.updateCompany).toBeDefined();
       expect(response.data?.updateCompany?.name).toEqual(name);
       expect(response.data?.updateCompany?.domain).toEqual(domain);
@@ -74,6 +75,7 @@ describe("Company", () => {
           },
         },
       });
+
       expect(response.data?.updateCompany).toBeDefined();
       expect(response.data?.updateCompany?.name).toEqual(name);
       expect(response.data?.updateCompany?.domain).toEqual(domain);
@@ -113,6 +115,7 @@ describe("Company", () => {
         },
         user,
       );
+
       expect(response.data?.updateCompany).toBeDefined();
       expect(response.data?.updateCompany?.name).toEqual(name);
       expect(response.data?.updateCompany?.domain).toEqual(domain);
@@ -151,6 +154,7 @@ describe("Company", () => {
         },
         user,
       );
+
       expect(response.data?.updateCompany).toBeUndefined();
       expect(response.errors).toBeDefined();
       expect(response.errors?.[0]?.message).toEqual("Unexpected error.");
@@ -178,6 +182,7 @@ describe("Company", () => {
           },
         },
       });
+
       expect(response.data?.updateCompany).toBeUndefined();
       expect(response.errors).toBeDefined();
     });

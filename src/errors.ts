@@ -21,6 +21,7 @@ export const applicationError = (
   options?: Parameters<typeof createGraphQLError>[1],
 ) => {
   logger.error(`Service error: ${errorType}: ${message}`);
+
   return createGraphQLError(message, {
     extensions: {
       code: error_codes[errorType],

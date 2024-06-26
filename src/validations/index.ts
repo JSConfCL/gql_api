@@ -59,14 +59,17 @@ export async function canCreateEvent(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
+
   if (user?.isSuperAdmin) {
     return true;
   }
+
   const communityAdmin = await isCommunityAdmin({
     userId,
     communityId,
     DB,
   });
+
   return Boolean(communityAdmin);
 }
 export async function canEditEvent(
@@ -77,21 +80,26 @@ export async function canEditEvent(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
+
   if (user?.isSuperAdmin) {
     return true;
   }
+
   const eventsToCommunities =
     await DB.query.eventsToCommunitiesSchema.findFirst({
       where: (utc, { eq }) => eq(utc.eventId, eventId),
     });
+
   if (!eventsToCommunities) {
     return false;
   }
+
   const communityAdmin = await isCommunityAdmin({
     userId,
     communityId: eventsToCommunities.communityId,
     DB,
   });
+
   return Boolean(communityAdmin);
 }
 
@@ -107,6 +115,7 @@ export async function canCancelUserTicket(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
+
   if (user?.isSuperAdmin) {
     return true;
   }
@@ -121,6 +130,7 @@ export async function canCancelUserTicket(
   if (!userTicket) {
     return false;
   }
+
   if (userId === userTicket.userId) {
     return true;
   }
@@ -138,6 +148,7 @@ export async function canCancelUserTicket(
     communityId: community.id,
     DB,
   });
+
   return Boolean(communityAdmin);
 }
 
@@ -149,6 +160,7 @@ export async function canApproveTicket(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
+
   if (user?.isSuperAdmin) {
     return true;
   }
@@ -159,6 +171,7 @@ export async function canApproveTicket(
       ticketTemplate: true,
     },
   });
+
   if (!userTicket || !userTicket.ticketTemplate) {
     return false;
   }
@@ -183,6 +196,7 @@ export async function canUpdateUserRoleInCommunity(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
+
   if (user?.isSuperAdmin) {
     return true;
   }
@@ -192,6 +206,7 @@ export async function canUpdateUserRoleInCommunity(
     communityId,
     DB,
   });
+
   return Boolean(communityAdmin);
 }
 
@@ -207,6 +222,7 @@ export async function canCreateTicket({
   if (user.isSuperAdmin) {
     return true;
   }
+
   const results = await DB.query.eventsToCommunitiesSchema.findFirst({
     where: (utc, { eq }) => eq(utc.eventId, eventId),
     with: {
@@ -223,6 +239,7 @@ export async function canCreateTicket({
   const communityAdminAssignments =
     results?.community?.usersToCommunities.length ?? 0;
   const isEventAdmin = communityAdminAssignments > 0;
+
   return Boolean(isEventAdmin);
 }
 
@@ -234,6 +251,7 @@ export async function canEditTicket(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
+
   if (user?.isSuperAdmin) {
     return true;
   }
@@ -241,20 +259,25 @@ export async function canEditTicket(
   const ticket = await DB.query.ticketsSchema.findFirst({
     where: (t, { eq }) => eq(t.id, ticketId),
   });
+
   if (!ticket) {
     return false;
   }
+
   const eventToCommunity = await DB.query.eventsToCommunitiesSchema.findFirst({
     where: (utc, { eq }) => eq(utc.eventId, ticket?.eventId),
   });
+
   if (!eventToCommunity) {
     return false;
   }
+
   const communityAdmin = await isCommunityAdmin({
     userId,
     communityId: eventToCommunity?.communityId,
     DB,
   });
+
   return Boolean(communityAdmin);
 }
 
@@ -266,21 +289,26 @@ export async function canRedeemUserTicket(
   const user = await DB.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
   });
+
   if (user?.isSuperAdmin) {
     return true;
   }
+
   const userTicket = await DB.query.userTicketsSchema.findFirst({
     where: (utc, { eq }) => eq(utc.id, ticketId),
     with: {
       ticketTemplate: true,
     },
   });
+
   if (!userTicket) {
     return false;
   }
+
   const eventToCommunitie = await DB.query.eventsToCommunitiesSchema.findFirst({
     where: (utc, { eq }) => eq(utc.eventId, userTicket?.ticketTemplate.eventId),
   });
+
   if (!eventToCommunitie) {
     return false;
   }
@@ -312,6 +340,7 @@ export function canCreateCommunity(
   if (!user) {
     return false;
   }
+
   return user.isSuperAdmin || false;
 }
 export async function canEditCommunity(
@@ -322,14 +351,17 @@ export async function canEditCommunity(
   if (!user) {
     return false;
   }
+
   if (user.isSuperAdmin) {
     return true;
   }
+
   const communityAdmin = await isCommunityAdmin({
     userId: user.id,
     communityId,
     DB,
   });
+
   return Boolean(communityAdmin);
 }
 
@@ -350,5 +382,6 @@ const isCommunityAdmin = async ({
         eq(utc.communityId, communityId),
       ),
   });
+
   return Boolean(isCommunityAdmin);
 };

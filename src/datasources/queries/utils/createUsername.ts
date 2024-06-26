@@ -47,6 +47,7 @@ const genderDecision = ["masculino", "femenino"] as const;
 
 const randomArrayItem = (array: string[] | readonly string[]) => {
   const indiceAleatorio = Math.floor(Math.random() * array.length);
+
   return array[indiceAleatorio];
 };
 

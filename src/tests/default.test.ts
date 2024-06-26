@@ -15,6 +15,7 @@ describe("Default Tests", () => {
     >({
       document: Status,
     });
+
     assert.equal(response?.data?.status, "Hello, . We are up and running!");
   });
 });

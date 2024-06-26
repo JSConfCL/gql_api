@@ -110,6 +110,7 @@ describe("Community", () => {
       const msg = JSON.parse(response.errors?.[0]?.message || "") as {
         message: string;
       }[];
+
       assert.equal(response.errors?.length, 1);
       assert.equal(
         msg[0].message,
@@ -134,6 +135,7 @@ describe("Community", () => {
       const msg = JSON.parse(response.errors?.[0]?.message || "") as {
         message: string;
       }[];
+
       assert.equal(response.errors?.length, 1);
       assert.equal(
         msg[0].message,

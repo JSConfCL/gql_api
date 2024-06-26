@@ -25,11 +25,13 @@ describe("Cancel User Ticket", () => {
   it("Should cancel a user ticket if user is the owner of the ticket", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
     });
     const user1 = await insertUser();
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
@@ -71,6 +73,7 @@ describe("Cancel User Ticket", () => {
   it("Should cancel a user ticket with role superadmin", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
@@ -78,6 +81,7 @@ describe("Cancel User Ticket", () => {
     const user1 = await insertUser({
       isSuperAdmin: true,
     });
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
@@ -119,11 +123,13 @@ describe("Cancel User Ticket", () => {
   it("It should throw an error, if ticket does not exist", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
     });
     const user1 = await insertUser();
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
@@ -146,17 +152,20 @@ describe("Cancel User Ticket", () => {
       },
       user1,
     );
+
     assert.equal(response.errors?.[0].message, "You can't cancel this ticket");
   });
   it("It should throw a error, if is not authorized", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
     });
     const user1 = await insertUser();
     const user2 = await insertUser();
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
@@ -188,6 +197,7 @@ describe("Cancel User Ticket", () => {
       },
       user2,
     );
+
     assert.deepInclude(
       response.errors?.[0].message,
       "You can't cancel this ticket",

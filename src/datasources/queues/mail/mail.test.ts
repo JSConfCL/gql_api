@@ -11,6 +11,7 @@ describe("Test email library", () => {
       const mockedQueue = {
         send: spy,
       };
+
       await enqueueEmail(
         // @ts-expect-error Estamos mockeando la cola de cloudflare
         mockedQueue,
@@ -30,6 +31,7 @@ describe("Test email library", () => {
       const spiedFetch = vi.fn().mockImplementation(() => {
         return { status: 200 };
       });
+
       global.fetch = spiedFetch;
       await sendTransactionalEmail(
         {
@@ -47,7 +49,9 @@ describe("Test email library", () => {
       const spiedFetch = vi.fn().mockImplementation(() => {
         return { status: 400 };
       });
+
       global.fetch = spiedFetch;
+
       try {
         await sendTransactionalEmail(
           {

@@ -24,9 +24,11 @@ beforeAll((t) => {});
 beforeEach(async ({ expect }) => {
   const { currentTestName } = expect.getState();
   let databaseName: string | undefined;
+
   if (currentTestName) {
     databaseName = `test_${uuid.v5(currentTestName, MY_NAMESPACE)}`;
   }
+
   await getTestDB(databaseName);
   console.log("DB for test: ", currentTestName, " ->", databaseName);
 });

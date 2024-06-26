@@ -119,6 +119,7 @@ const createExecutor = (user?: Awaited<ReturnType<typeof insertUser>>) =>
       schema,
       context: async () => {
         const DB = await getTestDB();
+
         return {
           ...initContextCache(),
           DB,
@@ -137,6 +138,7 @@ export const executeGraphqlOperation = <
   params: ExecutionRequest<TVariables, unknown, unknown, undefined, unknown>,
 ): Promise<ExecutionResult<TResult>> => {
   const executor = createExecutor();
+
   // @ts-expect-error This is ok. Executor returns a promise with they types passed
   return executor(params);
 };
@@ -149,6 +151,7 @@ export const executeGraphqlOperationAsUser = <
   user: Awaited<ReturnType<typeof insertUser>>,
 ): Promise<ExecutionResult<TResult>> => {
   const executor = createExecutor(user);
+
   // @ts-expect-error This error is ok. Executor returns a promise with they types passed
   return executor(params);
 };
@@ -161,6 +164,7 @@ export const executeGraphqlOperationAsSuperAdmin = async <
 ): Promise<ExecutionResult<TResult>> => {
   const user = await insertUser({ isSuperAdmin: true });
   const executor = createExecutor(user);
+
   // @ts-expect-error This error is ok. Executor returns a promise with they types passed
   return executor(params);
 };
@@ -195,9 +199,11 @@ async function findById<D extends PgTable<any>>(
   id: string | undefined,
 ) {
   const testDB = await getTestDB();
+
   if (!id) {
     throw new Error(`FindById cannot be called without an id`);
   }
+
   const data = await testDB
     .select()
     .from(dbSchema)
@@ -223,6 +229,7 @@ export const insertUser = async (
     imageUrl: partialInput?.imageUrl,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertUsersSchema>;
+
   return insertOne(
     insertUsersSchema,
     selectUsersSchema,
@@ -239,6 +246,7 @@ export const insertUserTag = async (
     userId: partialInput?.userId ?? faker.string.uuid(),
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertUsersToTagsSchema>;
+
   return insertOne(
     insertUsersToTagsSchema,
     selectUsersToTagsSchema,
@@ -258,6 +266,7 @@ export const insertCommunity = async (
     slug: partialInput?.slug,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertCommunitySchema>;
+
   return insertOne(
     insertCommunitySchema,
     selectCommunitySchema,
@@ -275,6 +284,7 @@ export const insertUserToCommunity = async (
     role: partialInput?.role,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertUsersToCommunitiesSchema>;
+
   return insertOne(
     insertUsersToCommunitiesSchema,
     selectUsersToCommunitiesSchema,
@@ -292,6 +302,7 @@ export const insertUserToEvent = async (
     role: partialInput?.role,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertEventsToUsersSchema>;
+
   return insertOne(
     insertEventsToUsersSchema,
     selectEventsToUsersSchema,
@@ -320,6 +331,7 @@ export const insertTag = async (
     description: partialInput?.description,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertTagsSchema>;
+
   return insertOne(
     insertTagsSchema,
     selectTagsSchema,
@@ -337,6 +349,7 @@ export const insertPrice = async (
     price_in_cents: partialInput?.price_in_cents ?? faker.number.int(),
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertPriceSchema>;
+
   return insertOne(
     insertPriceSchema,
     selectPriceSchema,
@@ -356,6 +369,7 @@ export const insertTicketPrice = async (
     // price: partialInput?.price ?? faker.number.int(),
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertTicketPriceSchema>;
+
   return insertOne(
     insertTicketPriceSchema,
     selectTicketPriceSchema,
@@ -468,6 +482,7 @@ export const insertEvent = async (
     timeZone: partialInput?.timeZone,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertEventsSchema>;
+
   return insertOne(
     insertEventsSchema,
     selectEventsSchema,
@@ -485,6 +500,7 @@ export const insertEventTag = async (
     tagId: partialInput?.tagId,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertEventsToTagsSchema>;
+
   return insertOne(
     insertEventsToTagsSchema,
     selectEventsToTagsSchema,
@@ -506,6 +522,7 @@ export const insertCompany = async (
     status: partialInput?.status,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertCompaniesSchema>;
+
   return insertOne(
     insertCompaniesSchema,
     selectCompaniesSchema,
@@ -527,6 +544,7 @@ export const insertWorkEmail = async (
     companyId: partialInput?.companyId,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertWorkEmailSchema>;
+
   return insertOne(
     insertWorkEmailSchema,
     selectWorkEmailSchema,
@@ -549,6 +567,7 @@ export const insertConfirmationToken = async (
     confirmationDate: partialInput?.confirmationDate,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertConfirmationTokenSchema>;
+
   return insertOne(
     insertConfirmationTokenSchema,
     selectConfirmationTokenSchema,
@@ -566,6 +585,7 @@ export const insertWorkRole = async (
     description: partialInput?.description ?? faker.person.jobDescriptor(),
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertWorkRoleSchema>;
+
   return insertOne(
     insertWorkRoleSchema,
     selectWorkRoleSchema,
@@ -583,6 +603,7 @@ export const insertWorkSeniority = async (
     description: partialInput?.description ?? faker.person.jobDescriptor(),
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertWorkSenioritySchema>;
+
   return insertOne(
     insertWorkSenioritySchema,
     selectWorkSenioritySchema,
@@ -604,6 +625,7 @@ export const insertWorkSeniorityAndRole = async (
     workSeniorityId,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertWorkSeniorityAndRoleSchema>;
+
   return insertOne(
     insertWorkSeniorityAndRoleSchema,
     selectWorkSeniorityAndRoleSchema,
@@ -623,6 +645,7 @@ export const insertAllowedCurrency = async (
       faker.helpers.arrayElement(validPaymentMethodsEnum),
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertAllowedCurrencySchema>;
+
   return insertOne(
     insertAllowedCurrencySchema,
     selectAllowedCurrencySchema,
@@ -658,6 +681,7 @@ export const insertSalary = async (
     currencyCode: partialInput?.currencyCode ?? faker.finance.currencyCode(),
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertSalariesSchema>;
+
   return insertOne(
     insertSalariesSchema,
     selectSalariesSchema,
@@ -672,8 +696,11 @@ export const toISODateWithoutMilliseconds = <T extends Date | null>(
   if (!date) {
     return null as T extends Date ? string : null;
   }
+
   const dateWithoutMilliseconds = new Date(date);
+
   dateWithoutMilliseconds.setMilliseconds(0);
+
   return dateWithoutMilliseconds.toISOString() as T extends Date
     ? string
     : null;

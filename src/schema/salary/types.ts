@@ -34,9 +34,11 @@ builder.objectType(SalaryRef, {
             company: true,
           },
         });
+
         if (!salaryWithCompany || !salaryWithCompany?.company) {
           throw new Error("Company not found");
         }
+
         return selectCompaniesSchema.parse(salaryWithCompany.company);
       },
     }),
@@ -55,9 +57,11 @@ builder.objectType(SalaryRef, {
             },
           },
         });
+
         if (!salaryWithRole || !salaryWithRole?.workSeniorityAndRole?.role) {
           throw new Error("Role not found");
         }
+
         return selectWorkRoleSchema.parse(
           salaryWithRole.workSeniorityAndRole?.role,
         );
@@ -77,12 +81,14 @@ builder.objectType(SalaryRef, {
             },
           },
         });
+
         if (
           !salaryWithRole ||
           !salaryWithRole?.workSeniorityAndRole?.seniority
         ) {
           throw new Error("Role not found");
         }
+
         return selectWorkSenioritySchema.parse(
           salaryWithRole.workSeniorityAndRole?.seniority,
         );

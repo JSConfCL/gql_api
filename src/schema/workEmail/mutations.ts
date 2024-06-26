@@ -28,7 +28,9 @@ builder.mutationFields((t) => ({
       if (!USER) {
         throw new Error("User is required");
       }
+
       const emailDomain = email.split("@")?.[1];
+
       if (!emailDomain) {
         throw new Error("Invalid email");
       }
@@ -38,6 +40,7 @@ builder.mutationFields((t) => ({
         where: (c, { eq }) => eq(c.domain, emailDomain),
       });
       let companyId = possibleCompany?.id;
+
       // We need the get the company id via the email domain, (or we create a company if it doesn't exist)
       if (!companyId) {
         logger.info(
@@ -73,14 +76,18 @@ builder.mutationFields((t) => ({
           confirmationToken: true,
         },
       });
+
       if (workEmail) {
         logger.info(
           `Validation for this work email: ${workEmail.id} already exists`,
         );
         const currentDate = new Date();
+
         currentDate.setHours(currentDate.getHours() + 1);
+
         if (workEmail.confirmationToken) {
           logger.info(`There is a token also for work email ${workEmail.id}`);
+
           if (new Date(workEmail.confirmationToken.validUntil) > currentDate) {
             throw new Error(
               "You can only request a new confirmation email once per hour",
@@ -103,6 +110,7 @@ builder.mutationFields((t) => ({
         } else {
           logger.info("There is a valid validation token");
         }
+
         const insertWorkEmailToken = insertConfirmationTokenSchema.parse({
           source: "onboarding",
           sourceId: workEmail.id,
@@ -131,6 +139,7 @@ builder.mutationFields((t) => ({
           userId: USER.id,
           to: email.toLowerCase(),
         });
+
         return selectWorkEmailSchema.parse(updatedWorkEmail);
       } else {
         logger.info(
@@ -177,6 +186,7 @@ builder.mutationFields((t) => ({
         });
 
         logger.info("Enqueued email to send");
+
         return selectWorkEmailSchema.parse(insertedWorkEmail);
       }
     },
@@ -194,6 +204,7 @@ builder.mutationFields((t) => ({
       if (!USER) {
         throw new Error("User is required");
       }
+
       if (!confirmationToken) {
         throw new Error("confirmationToken is required");
       }
@@ -207,6 +218,7 @@ builder.mutationFields((t) => ({
               inArray(c.source, ["onboarding", "work_email"]),
             ),
         });
+
       if (!foundConfirmationToken) {
         throw new Error("Invalid token");
       }
@@ -217,6 +229,7 @@ builder.mutationFields((t) => ({
       ) {
         throw new Error("Invalid token");
       }
+
       const possibleWorkSchema = await DB.query.workEmailSchema.findFirst({
         where: (wes, { eq, and }) =>
           and(
@@ -224,11 +237,13 @@ builder.mutationFields((t) => ({
             eq(wes.userId, USER.id),
           ),
       });
+
       if (possibleWorkSchema) {
         // TODO: Consider also checking if the confirmationDate is over a year old.
         if (possibleWorkSchema.status === "confirmed") {
           throw new Error("Email is already validated");
         }
+
         const updatedWorkEmail = (
           await DB.update(workEmailSchema)
             .set({
