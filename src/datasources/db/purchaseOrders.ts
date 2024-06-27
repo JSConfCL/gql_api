@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm";
-import { jsonb, pgTable, text, uuid, numeric, date } from "drizzle-orm/pg-core";
+import {
+  jsonb,
+  pgTable,
+  text,
+  uuid,
+  numeric,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { allowedCurrencySchema, ticketsSchema, usersSchema } from "./schema";
@@ -32,7 +39,7 @@ export const purchaseOrdersSchema = pgTable("purchase_orders", {
     .default("open"),
   currencyId: uuid("currency_id").references(() => allowedCurrencySchema.id),
   paymentPlatformPaymentLink: text("payment_platform_payment_link"),
-  paymentPlatformExpirationDate: date("payment_platform_expiration_date"),
+  paymentPlatformExpirationDate: timestamp("payment_platform_expiration_date"),
   paymentPlatformReferenceID: text("payment_platform_reference_id"),
   paymentPlatformStatus: text("payment_platform_status"),
   paymentPlatformMetadata: jsonb("payment_platform_metadata"),

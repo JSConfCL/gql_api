@@ -1,5 +1,5 @@
 import { render } from "@react-email/components";
-import { eq } from "drizzle-orm";
+import { and, eq, lt } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import React from "react";
 import { AsyncReturnType } from "type-fest";
@@ -399,7 +399,7 @@ export const createPaymentIntent = async ({
   let paymentPlatformPaymentLink: string | undefined | null = undefined;
   let paymentPlatformReferenceID: string | undefined = undefined;
   let paymentPlatformStatus: string | undefined | null = undefined;
-  let paymentPlatformExpirationDate: string | undefined = undefined;
+  let paymentPlatformExpirationDate: Date | undefined = undefined;
 
   if (currencyCode === "USD") {
     const paymentLink = await createStripePaymentIntent({
@@ -418,9 +418,7 @@ export const createPaymentIntent = async ({
     paymentPlatformPaymentLink = paymentLink.url;
     paymentPlatformReferenceID = paymentLink.id;
     paymentPlatformStatus = paymentLink.status;
-    paymentPlatformExpirationDate = new Date(
-      paymentLink.expires_at,
-    ).toISOString();
+    paymentPlatformExpirationDate = new Date(paymentLink.expires_at);
   } else if (currencyCode === "CLP") {
     const { preference, expirationDate } = await createMercadoPagoPaymentIntent(
       {
@@ -436,7 +434,7 @@ export const createPaymentIntent = async ({
     paymentPlatformPaymentLink = preference.init_point;
     paymentPlatformReferenceID = preference.id;
     paymentPlatformStatus = "none";
-    paymentPlatformExpirationDate = expirationDate;
+    paymentPlatformExpirationDate = new Date(expirationDate);
   }
   const updatedPurchaseOrders = await DB.update(purchaseOrdersSchema)
     .set({
@@ -526,4 +524,30 @@ export const syncPurchaseOrderPaymentStatus = async ({
     return updatedPO;
   }
   return purchaseOrder;
+};
+
+export const clearExpiredPurchaseOrders = async ({
+  DB,
+}: {
+  DB: Context["DB"];
+}) => {
+  const currentDateonISO = new Date();
+  // Actualiza todas las OCs que no se han pagado y su tiempo de expiración venció.
+  const expiredOrders = await DB.update(purchaseOrdersSchema)
+    .set({
+      status: "expired",
+    })
+    .where(
+      and(
+        eq(purchaseOrdersSchema.purchaseOrderPaymentStatus, "unpaid"),
+        eq(purchaseOrdersSchema.status, "open"),
+        lt(
+          purchaseOrdersSchema.paymentPlatformExpirationDate,
+          currentDateonISO,
+        ),
+      ),
+    )
+    .returning();
+
+  return expiredOrders;
 };
