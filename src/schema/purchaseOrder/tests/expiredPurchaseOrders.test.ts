@@ -24,7 +24,7 @@ describe("clearExpiredPurchaseOrders", () => {
       purchaseOrderPaymentStatus: "unpaid",
       paymentPlatformExpirationDate: someMinutesIntoTheFuture(60 * 24),
     });
-    
+
     const result = await clearExpiredPurchaseOrders({
       DB,
     });
