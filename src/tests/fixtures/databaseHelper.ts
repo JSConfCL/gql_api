@@ -31,8 +31,7 @@ export const getTestDB = async (maybeDatabaseName?: string) => {
 
   if (db) {
     console.log("Retornando BDD previa");
-
-    return db;
+    return db as unknown as ORM_TYPE;
   }
 
   console.log("🆕 Creando una nueva BDD");
