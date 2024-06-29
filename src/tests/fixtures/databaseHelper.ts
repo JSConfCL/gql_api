@@ -31,6 +31,7 @@ export const getTestDB = async (maybeDatabaseName?: string) => {
 
   if (db) {
     console.log("Retornando BDD previa");
+
     return db as unknown as ORM_TYPE;
   }
 
