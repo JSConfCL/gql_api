@@ -23,6 +23,7 @@ builder.objectType(CompanyRef, {
         if (USER?.isSuperAdmin && root.status) {
           return root.status;
         }
+
         return null;
       },
     }),
@@ -33,9 +34,11 @@ builder.objectType(CompanyRef, {
         const company = await DB.query.companiesSchema.findFirst({
           where: (c, { eq }) => eq(c.id, root.id),
         });
+
         if (!company) {
           return false;
         }
+
         return Boolean(company.updatedAt);
       },
     }),
@@ -49,6 +52,7 @@ builder.objectType(CompanyRef, {
           },
           where: (sS, { eq }) => eq(sS.companyId, root.id),
         });
+
         return submissions.length;
       },
     }),

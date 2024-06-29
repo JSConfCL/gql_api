@@ -25,6 +25,7 @@ describe("Users Communities Graphql Tests", () => {
     const user = await insertUser();
     const user2 = await insertUser();
     const community1 = await insertCommunity();
+
     await insertUserToCommunity({
       userId: user.id,
       communityId: community1.id,
@@ -36,6 +37,7 @@ describe("Users Communities Graphql Tests", () => {
     >({
       document: UsersAndCommunities,
     });
+
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.users.length, 2);
     assert.equal(response.data?.users[0].id, user.id);
@@ -50,6 +52,7 @@ describe("Users Communities Graphql Tests", () => {
     const user2 = await insertUser();
     const community1 = await insertCommunity();
     const community2 = await insertCommunity();
+
     await insertUserToCommunity({
       userId: user1.id,
       communityId: community1.id,
@@ -67,6 +70,7 @@ describe("Users Communities Graphql Tests", () => {
     });
     const userIds =
       response?.data?.communities?.[0]?.users?.map((el) => el.id) ?? [];
+
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.communities.length, 2);
     assert.equal(response.data?.communities[0].id, community1.id);
@@ -87,6 +91,7 @@ describe("Users Communities Graphql Tests", () => {
         id: community2.id,
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.equal(response?.data?.community?.users.length, 0);
   });

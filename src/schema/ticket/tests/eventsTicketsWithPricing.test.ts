@@ -60,6 +60,7 @@ describe("Should get an event and its tickets", () => {
     });
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
@@ -73,6 +74,7 @@ describe("Should get an event and its tickets", () => {
       price_in_cents: 100_00,
       currencyId: insertedCurrency.id,
     });
+
     await insertTicketPrice({
       ticketId: ticket.id,
       priceId: insertedPrice.id,

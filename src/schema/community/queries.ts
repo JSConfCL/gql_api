@@ -28,21 +28,26 @@ builder.queryFields((t) => ({
     resolve: async (root, args, ctx) => {
       const { id, name, status } = args;
       const wheres: SQL[] = [];
+
       if (id) {
         wheres.push(eq(communitySchema.id, id));
       }
+
       if (name) {
         wheres.push(ilike(communitySchema.name, sanitizeForLikeSearch(name)));
       }
+
       if (status) {
         wheres.push(eq(communitySchema.status, status));
       }
+
       const communities = await ctx.DB.query.communitySchema.findMany({
         where: (c, { and }) => and(...wheres),
         orderBy(fields, operators) {
           return operators.asc(fields.createdAt);
         },
       });
+
       return communities.map((u) => selectCommunitySchema.parse(u));
     },
   }),
@@ -61,9 +66,11 @@ builder.queryFields((t) => ({
           return operators.asc(fields.createdAt);
         },
       });
+
       if (!community) {
         return null;
       }
+
       return selectCommunitySchema.parse(community);
     },
   }),

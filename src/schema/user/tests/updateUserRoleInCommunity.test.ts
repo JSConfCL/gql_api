@@ -22,6 +22,7 @@ describe("User update role in communities", () => {
     const user2 = await insertUser();
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
@@ -62,6 +63,7 @@ describe("User update role in communities", () => {
     const user2 = await insertUser();
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
@@ -104,6 +106,7 @@ describe("User update role in communities", () => {
     const user2 = await insertUser();
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
@@ -144,6 +147,7 @@ describe("User update role in communities", () => {
     const user2 = await insertUser();
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,

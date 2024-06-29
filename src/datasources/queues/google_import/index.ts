@@ -11,10 +11,13 @@ const splitIntoChunks = <T>(array: T[], chunkSize: number) => {
   const chunks: T[][] = [];
   let i = 0;
   const n = array.length;
+
   while (i < n) {
     const slicedArray = array.slice(i, (i += chunkSize));
+
     chunks.push(slicedArray);
   }
+
   return chunks;
 };
 
@@ -54,6 +57,7 @@ export const enqueueGooglePhotoImageBatch = async (
     };
   });
   const chunks = splitIntoChunks(batch, 100);
+
   return pMap(
     chunks,
     (chunk) => {

@@ -17,6 +17,7 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
     "MP_PUBLIC_KEY",
     "HIGHLIGHT_PROJECT_ID",
   ]);
+
   try {
     await Promise.all([
       syncMercadopagoPaymentsAndSubscriptions(env),

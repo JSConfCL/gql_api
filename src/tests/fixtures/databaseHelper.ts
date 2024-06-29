@@ -16,9 +16,11 @@ const dbUrl = `postgres://postgres:postgres@${
 
 const ensureDBIsClean = async (databaseName: string) => {
   const pgClient = postgres(dbUrl);
+
   await pgClient.unsafe(`DROP DATABASE IF EXISTS "${databaseName}";`);
   await pgClient.unsafe(`CREATE DATABASE "${databaseName}"`);
   await pgClient.end();
+
   return databaseName;
 };
 
@@ -26,19 +28,24 @@ let db: PostgresJsDatabase<typeof schema> | null = null;
 let client: postgres.Sql<Record<string, unknown>> | null = null;
 export const getTestDB = async (maybeDatabaseName?: string) => {
   const databaseName = maybeDatabaseName || `test_${v4()}`;
+
   if (db) {
     console.log("Retornando BDD previa");
+
     return db as unknown as ORM_TYPE;
   }
+
   console.log("🆕 Creando una nueva BDD");
   await ensureDBIsClean(databaseName);
   const migrationClient = postgres(`${dbUrl}/${databaseName}`, { max: 1 });
+
   client = migrationClient;
   db = drizzle(migrationClient, { schema: { ...schema } });
   await migrate(db, {
     migrationsFolder,
     migrationsTable: "migrations",
   });
+
   return db as unknown as ORM_TYPE;
 };
 

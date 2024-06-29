@@ -31,6 +31,7 @@ describe("Event", () => {
         .toISOString();
       const user1 = await insertUser();
       const community = await insertCommunity();
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user1.id,
@@ -63,6 +64,7 @@ describe("Event", () => {
 
       assert.equal(response.errors, undefined);
       const event = await findEventById(response?.data?.createEvent?.id);
+
       assert.equal(response.data?.createEvent.id, event.id);
       assert.equal(response.data?.createEvent.description, event.description);
     });
@@ -97,6 +99,7 @@ describe("Event", () => {
 
       assert.equal(response.errors, undefined);
       const event = await findEventById(response?.data?.createEvent?.id);
+
       assert.equal(response.data?.createEvent.id, event.id);
       assert.equal(response.data?.createEvent.description, event.description);
     });
@@ -110,6 +113,7 @@ describe("Event", () => {
         .toISOString();
       const user1 = await insertUser();
       const community = await insertCommunity();
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user1.id,
@@ -151,6 +155,7 @@ describe("Event", () => {
         .toISOString();
       const user1 = await insertUser();
       const community = await insertCommunity();
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user1.id,
@@ -223,12 +228,15 @@ describe("Event", () => {
         communityId: community.id,
       },
     });
+
     if (!response.data) {
       throw new Error("No data");
     }
+
     if (!communityResponse.data) {
       throw new Error("No data");
     }
+
     assert.equal(response.errors, undefined);
     assert.equal(communityResponse.errors, undefined);
     assert.equal(communityResponse.data.community?.events?.length, 1);

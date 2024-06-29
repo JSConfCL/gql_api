@@ -30,6 +30,7 @@ describe("Communities", () => {
     >({
       document: Communities,
     });
+
     response;
 
     assert.equal(response.errors, undefined);
@@ -40,6 +41,7 @@ describe("Communities", () => {
   });
   it("Should return a filtered list by id", async () => {
     const community1 = await insertCommunity();
+
     await insertCommunity();
     const response = await executeGraphqlOperation<
       CommunitiesQuery,
@@ -64,6 +66,7 @@ describe("Communities", () => {
     const community2 = await insertCommunity({
       name: "Community 2",
     });
+
     await insertCommunity({
       name: "COMPLETELY_NON_RELATED_NAME",
     });
@@ -105,6 +108,7 @@ describe("Communities", () => {
         communityStatus: CommnunityStatus.Inactive,
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.communities.length, 1);
     assert.equal(response.data?.communities[0].id, community3.id);
@@ -149,6 +153,7 @@ describe("Communities", () => {
         communityName: "RANDOM",
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.communities.length, 1);
     assert.equal(response.data?.communities[0].id, community3.id);
@@ -160,6 +165,7 @@ describe("Communities", () => {
 
       for (let i = 0; i < numberOfEvents; i++) {
         const event = await insertEvent();
+
         await insertEventToCommunity({
           communityId: community.id,
           eventId: event.id,
@@ -188,6 +194,7 @@ describe("Communities", () => {
     assert.equal(response.data?.communities.length, communitiesData.length);
 
     const responseData = response.data;
+
     if (!responseData) {
       return;
     }
@@ -221,6 +228,7 @@ describe("Community search", () => {
   });
   it("Should filter by a community ID", async () => {
     const community1 = await insertCommunity();
+
     await insertCommunity();
     const response = await executeGraphqlOperation<
       CommunityQuery,
@@ -231,6 +239,7 @@ describe("Community search", () => {
         communityID: community1.id,
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.community, {
       description: community1.description,

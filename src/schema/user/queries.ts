@@ -31,9 +31,11 @@ builder.queryFields((t) => ({
       if (!USER) {
         throw new Error("User not found");
       }
+
       const user = await DB.query.usersSchema.findFirst({
         where: (u, { eq }) => eq(u.id, USER.id),
       });
+
       return selectUsersSchema.parse(user);
     },
   }),
@@ -46,6 +48,7 @@ builder.queryFields((t) => ({
           return operators.asc(fields.createdAt);
         },
       });
+
       return users.map((u) => selectUsersSchema.parse(u));
     },
   }),
@@ -61,12 +64,15 @@ builder.queryFields((t) => ({
     resolve: async (root, { input }, { DB }) => {
       const { tags } = input;
       const wheres: SQL[] = [];
+
       if (!tags || !tags.length) {
         return [];
       }
+
       if (tags && tags.length !== 0) {
         wheres.push(inArray(tagsSchema.name, tags));
       }
+
       const tagsUsers = await DB.query.tagsSchema.findMany({
         where: (_, { and }) => and(...wheres),
         with: {
@@ -77,6 +83,7 @@ builder.queryFields((t) => ({
           },
         },
       });
+
       return tagsUsers.flatMap((tu) =>
         tu.tagsToUsers.map((tagsToUser) =>
           selectUsersSchema.parse(tagsToUser?.user),

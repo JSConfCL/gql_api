@@ -34,11 +34,13 @@ builder.queryFields((t) => ({
     },
     resolve: async (_, { input }, { DB }) => {
       const wheres: SQL[] = [];
+
       if (input.startDate) {
         wheres.push(
           gte(paymentLogsSchema.externalCreationDate, input.startDate),
         );
       }
+
       if (input.endDate) {
         wheres.push(lte(paymentLogsSchema.externalCreationDate, input.endDate));
       }
@@ -46,6 +48,7 @@ builder.queryFields((t) => ({
       const paymentLogs = await DB.query.paymentLogsSchema.findMany({
         where: (_, { and }) => and(...wheres),
       });
+
       return paymentLogs.map((p) => selectPaymentLogsSchema.parse(p));
     },
   }),
@@ -59,11 +62,13 @@ builder.queryFields((t) => ({
     },
     resolve: async (_, { input }, { DB }) => {
       const wheres: SQL[] = [];
+
       if (input.startDate) {
         wheres.push(
           gte(paymentLogsSchema.externalCreationDate, input.startDate),
         );
       }
+
       if (input.endDate) {
         wheres.push(lte(paymentLogsSchema.externalCreationDate, input.endDate));
       }
@@ -81,8 +86,10 @@ builder.queryFields((t) => ({
           currencyId: string;
         }
       > = {};
+
       paymentLogs.forEach((p) => {
         const key = `${p.platform}-${p.currencyId}`;
+
         if (!consolidatedPayments[key]) {
           consolidatedPayments[key] = {
             id: key,
@@ -91,6 +98,7 @@ builder.queryFields((t) => ({
             currencyId: p.currencyId,
           };
         }
+
         consolidatedPayments[key].totalTransactionAmount += parseFloat(
           p.transactionAmount,
         );

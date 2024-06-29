@@ -25,5 +25,6 @@ export const getSanityClient = ({
       token,
     });
   }
+
   return client;
 };

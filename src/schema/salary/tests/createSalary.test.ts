@@ -35,6 +35,7 @@ describe("Salary creation", () => {
         status: "pending",
         sourceId: "123",
       });
+
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
@@ -90,6 +91,7 @@ describe("Salary creation", () => {
         status: "pending",
         sourceId: "123",
       });
+
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
@@ -140,6 +142,7 @@ describe("Salary creation", () => {
         status: "pending",
         sourceId: "123",
       });
+
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
@@ -194,6 +197,7 @@ describe("Salary creation", () => {
         status: "pending",
         sourceId: "123",
       });
+
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
@@ -247,6 +251,7 @@ describe("Salary creation", () => {
         status: "confirmed",
         sourceId: "123",
       });
+
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
@@ -300,6 +305,7 @@ describe("Salary creation", () => {
         status: "rejected",
         sourceId: "123",
       });
+
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
@@ -353,6 +359,7 @@ describe("Salary creation", () => {
         status: "expired",
         sourceId: "123",
       });
+
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,
@@ -406,6 +413,7 @@ describe("Salary creation", () => {
         status: "expired",
         sourceId: "123",
       });
+
       await insertWorkEmail({
         confirmationTokenId: insertedConfirmationToken.id,
         userId: user.id,

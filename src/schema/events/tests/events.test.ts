@@ -42,6 +42,7 @@ describe("Event", () => {
         eventTickets: {},
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.event, {
       id: event1.id,
@@ -65,6 +66,7 @@ describe("Event", () => {
     const tag2 = await insertTag({
       name: "ZTAG 2",
     });
+
     await insertEventTag({
       eventId: event1.id,
       tagId: tag1.id,
@@ -83,6 +85,7 @@ describe("Event", () => {
         eventTickets: {},
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.event?.tags?.length, 2);
     assert.deepEqual(response.data?.event, {
@@ -109,12 +112,14 @@ describe("Event", () => {
   it("Should get an event tickets", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
     });
     const user1 = await insertUser();
     const user2 = await insertUser();
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
@@ -152,6 +157,7 @@ describe("Event", () => {
       },
       user1,
     );
+
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.event?.usersTickets?.length, 2);
     assert.deepEqual(response.data?.event, {
@@ -190,6 +196,7 @@ describe("Event", () => {
   it("Should get an event community", async () => {
     const event1 = await insertEvent();
     const community1 = await insertCommunity();
+
     await insertEventToCommunity({
       communityId: community1.id,
       eventId: event1.id,
@@ -204,6 +211,7 @@ describe("Event", () => {
         eventTickets: {},
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.notEqual(response.data?.event?.community, null);
     assert.deepEqual(response.data?.event, {
@@ -234,6 +242,7 @@ describe("Event", () => {
         eventTickets: {},
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.event, {
       id: event1.id,
@@ -260,6 +269,7 @@ describe("Event", () => {
         eventTickets: {},
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.event, null);
   });
@@ -317,6 +327,7 @@ describe("Events", () => {
     const event1 = await insertEvent({
       name: "MY CONFERENCE 1",
     });
+
     await insertEvent({
       name: "MY MEETUP 2",
     });
@@ -351,6 +362,7 @@ describe("Events", () => {
     const event1 = await insertEvent({
       visibility: "private",
     });
+
     await insertEvent({
       visibility: "unlisted",
     });
@@ -385,6 +397,7 @@ describe("Events", () => {
     const event1 = await insertEvent({
       status: EventStatus.Active,
     });
+
     await insertEvent({
       status: EventStatus.Inactive,
     });
@@ -417,6 +430,7 @@ describe("Events", () => {
       startDateTime: new Date("2021-02-02"),
       endDateTime: new Date("2021-02-03"),
     });
+
     await insertEvent({
       startDateTime: new Date("2021-02-04"),
       endDateTime: new Date("2021-02-05"),
@@ -450,6 +464,7 @@ describe("Events", () => {
     const event1 = await insertEvent({
       name: "MY CONFERENCE 1",
     });
+
     await insertEvent({
       name: "SOME OTHER NAME",
     });
@@ -483,11 +498,13 @@ describe("Event tickets filter", () => {
   it("Should filter event ticket by id", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
     });
     const user1 = await insertUser();
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
@@ -507,6 +524,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
     });
+
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
@@ -527,6 +545,7 @@ describe("Event tickets filter", () => {
       },
       user1,
     );
+
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.event?.usersTickets.length, 1);
     assert.deepEqual(response.data?.event, {
@@ -560,11 +579,13 @@ describe("Event tickets filter", () => {
   it("Should filter event ticket by approval status", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
     });
     const user1 = await insertUser();
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
@@ -585,6 +606,7 @@ describe("Event tickets filter", () => {
       approvalStatus: TicketApprovalStatus.Approved,
       purchaseOrderId: purchaseOrder.id,
     });
+
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
@@ -606,6 +628,7 @@ describe("Event tickets filter", () => {
       },
       user1,
     );
+
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.event?.usersTickets.length, 1);
     assert.deepEqual(response.data?.event, {
@@ -639,11 +662,13 @@ describe("Event tickets filter", () => {
   it("Should filter event ticket by payment status", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
     });
     const user1 = await insertUser();
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
@@ -664,6 +689,7 @@ describe("Event tickets filter", () => {
       paymentStatus: TicketPaymentStatus.Paid,
       purchaseOrderId: purchaseOrder.id,
     });
+
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
@@ -685,6 +711,7 @@ describe("Event tickets filter", () => {
       },
       user1,
     );
+
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.event?.usersTickets.length, 1);
     assert.deepEqual(response.data?.event, {
@@ -718,11 +745,13 @@ describe("Event tickets filter", () => {
   it("Should filter event ticket by redemption status", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
     });
     const user1 = await insertUser();
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
@@ -743,6 +772,7 @@ describe("Event tickets filter", () => {
       redemptionStatus: TicketRedemptionStatus.Redeemed,
       purchaseOrderId: purchaseOrder.id,
     });
+
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
@@ -764,6 +794,7 @@ describe("Event tickets filter", () => {
       },
       user1,
     );
+
     assert.equal(response.errors, undefined);
     assert.deepEqual(response.data?.event?.usersTickets.length, 1);
     assert.deepEqual(response.data?.event, {

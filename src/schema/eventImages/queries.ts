@@ -20,20 +20,25 @@ builder.queryFields((t) => ({
     },
     resolve: async (root, args, ctx) => {
       const { eventId } = args.input || {};
+
       if (!eventId) {
         return [];
       }
+
       const event = await ctx.DB.query.eventsSchema.findFirst({
         where: (c, { eq }) => eq(c.id, eventId),
         orderBy(fields, operators) {
           return operators.asc(fields.createdAt);
         },
       });
+
       if (!event) {
         return [];
       }
+
       const { sanityEventId } = event;
       const client = ctx.GET_SANITY_CLIENT();
+
       return getImagesBySanityEventId({
         client,
         sanityEventId,

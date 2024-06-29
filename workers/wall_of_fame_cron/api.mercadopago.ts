@@ -16,12 +16,14 @@ import { ResultItem, SearchResponse } from "./types/mercadopago.api.types";
 
 const getFetch = (env: ENV) => async (url: string) => {
   const headers = new Headers();
+
   headers.set("Authorization", `Bearer ${env.MP_ACCESS_TOKEN}`);
   headers.set("Content-Type", "application/json");
   const response = await fetch(url, {
     headers,
   });
   const json = await response.json();
+
   return json;
 };
 
@@ -33,6 +35,7 @@ export const syncMercadopagoPaymentsAndSubscriptions = async (env: ENV) => {
   let results: ResultItem[] = [];
   const url = `https://api.mercadopago.com/v1/payments/search?sort=date_created&criteria=desc`;
   const subscriptions = (await meliFetch(url)) as SearchResponse;
+
   results = [...results, ...(subscriptions?.results ?? [])];
   await savePaymentEntry(DB, results);
   await addTagsToDonorUsers(DB, results);
@@ -49,6 +52,7 @@ const addTagsToDonorUsers = async (DB: ORM_TYPE, results: ResultItem[]) => {
   const tag = await DB.query.tagsSchema.findFirst({
     where: (tags, { eq }) => eq(tags.name, AllowedUserTags.DONOR),
   });
+
   if (!tag) {
     throw new Error(`Missing TAG: ${AllowedUserTags.DONOR}`);
   }
@@ -56,19 +60,24 @@ const addTagsToDonorUsers = async (DB: ORM_TYPE, results: ResultItem[]) => {
   for await (const subscription of results) {
     try {
       const email = subscription.payer.email;
+
       if (!email) {
         throw new Error("Email not found for subscription");
       }
+
       const user = await DB.query.usersSchema.findFirst({
         where: (u, { ilike }) => ilike(u.name, sanitizeForLikeSearch(email)),
       });
+
       if (!user) {
         throw new Error("User not found");
       }
+
       const userTag = insertUsersToTagsSchema.parse({
         tagId: tag.id,
         userId: user.id,
       });
+
       await DB.insert(usersTagsSchema)
         .values(userTag)
         .returning()
@@ -96,6 +105,7 @@ const savePaymentEntry = async (DB: ORM_TYPE, results: ResultItem[]) => {
       .values(mappedResults)
       .onConflictDoNothing()
       .returning();
+
     logger.info("👉Saved", saved.length, "financial entries from mercadopago", {
       saved,
     });

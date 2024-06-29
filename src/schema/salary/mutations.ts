@@ -126,6 +126,7 @@ builder.mutationFields((t) => ({
       if (!USER) {
         throw new Error("User is required");
       }
+
       const {
         confirmationToken,
         companyId,
@@ -152,9 +153,11 @@ builder.mutationFields((t) => ({
               inArray(c.source, ["onboarding", "salary_submission"]),
             ),
         });
+
       if (!foundConfirmationToken) {
         throw new Error("Invalid token");
       }
+
       if (new Date(foundConfirmationToken.validUntil) <= new Date()) {
         throw new Error("Invalid token");
       }
@@ -195,6 +198,7 @@ builder.mutationFields((t) => ({
       if (!USER) {
         throw new Error("User is required");
       }
+
       const userId = USER.id;
 
       const {
@@ -224,12 +228,14 @@ builder.mutationFields((t) => ({
       if (!foundConfirmationToken) {
         throw new Error("Invalid token");
       }
+
       if (
         new Date(foundConfirmationToken.validUntil) <= new Date() ||
         foundConfirmationToken.userId !== USER.id
       ) {
         throw new Error("Invalid token");
       }
+
       const foundSalary = await DB.query.salariesSchema.findFirst({
         where: (c, { eq }) => eq(c.id, salaryId),
       });

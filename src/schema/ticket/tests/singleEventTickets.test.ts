@@ -59,6 +59,7 @@ describe("Should get an event and its tickets", () => {
     });
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
@@ -85,12 +86,14 @@ describe("Should get an event and its tickets", () => {
   it("as an ADMIN", async () => {
     const user1 = await insertUser({});
     const community1 = await insertCommunity();
+
     await insertUserToCommunity({
       userId: user1.id,
       communityId: community1.id,
       role: "admin",
     });
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
@@ -123,12 +126,14 @@ describe("Should get an event and its tickets", () => {
   it("as a Collaborator", async () => {
     const user1 = await insertUser({});
     const community1 = await insertCommunity();
+
     await insertUserToCommunity({
       userId: user1.id,
       communityId: community1.id,
       role: "collaborator",
     });
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
@@ -155,6 +160,7 @@ describe("Should get an event and its tickets", () => {
   it("as an anonymous query", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,

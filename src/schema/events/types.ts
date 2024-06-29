@@ -53,6 +53,7 @@ const EventsTicketsSearchInput = builder.inputType("EventsTicketsSearchInput", {
     }),
   }),
 });
+
 builder.objectType(EventRef, {
   description:
     "Representation of an Event (Events and Users, is what tickets are linked to)",
@@ -84,6 +85,7 @@ builder.objectType(EventRef, {
       type: [SanityAssetRef],
       resolve: async ({ sanityEventId }, args, ctx) => {
         const client = ctx.GET_SANITY_CLIENT();
+
         return getImagesBySanityEventId({
           client,
           sanityEventId,
@@ -106,9 +108,11 @@ builder.objectType(EventRef, {
             },
           },
         });
+
         if (!community) {
           return null;
         }
+
         return selectCommunitySchema.parse(community);
       },
     }),
@@ -147,6 +151,7 @@ builder.objectType(EventRef, {
             return operators.asc(fields.username);
           },
         });
+
         return users.map((u) => selectUsersSchema.parse(u));
       },
     }),
@@ -163,6 +168,7 @@ builder.objectType(EventRef, {
             return operators.desc(fields.name);
           },
         });
+
         return tags.map((t) => selectTagsSchema.parse(t));
       },
     }),
@@ -172,12 +178,14 @@ builder.objectType(EventRef, {
       type: [TicketRef],
       resolve: async (root, _, { DB, USER }) => {
         const wheres: SQL[] = [];
+
         wheres.push(eq(ticketsSchema.eventId, root.id));
 
         // If the user is an admin, they can see all tickets, otherwise, only
         // active tickets are shown.
         let statusCheck = eq(ticketsSchema.status, "active");
         let visibilityCheck = eq(ticketsSchema.visibility, "public");
+
         if (USER) {
           const eventCommunity =
             await DB.query.eventsToCommunitiesSchema.findFirst({
@@ -186,12 +194,14 @@ builder.objectType(EventRef, {
                 community: true,
               },
             });
+
           if (eventCommunity) {
             const isAdmin = await authHelpers.isCommuntiyAdmin({
               user: USER,
               communityId: eventCommunity.communityId,
               DB,
             });
+
             if (isAdmin) {
               statusCheck = inArray(ticketsSchema.status, [
                 "active",
@@ -239,15 +249,19 @@ builder.objectType(EventRef, {
         if (id) {
           wheres.push(eq(userTicketsSchema.id, id));
         }
+
         if (paymentStatus) {
           wheres.push(eq(userTicketsSchema.paymentStatus, paymentStatus));
         }
+
         if (approvalStatus) {
           wheres.push(eq(userTicketsSchema.approvalStatus, approvalStatus));
         }
+
         if (redemptionStatus) {
           wheres.push(eq(userTicketsSchema.redemptionStatus, redemptionStatus));
         }
+
         const roleUserEvent = await DB.query.eventsToUsersSchema.findFirst({
           where: (etc, { eq, and }) =>
             and(eq(etc.eventId, root.id), eq(etc.userId, USER.id)),
@@ -255,9 +269,11 @@ builder.objectType(EventRef, {
         const community = await DB.query.eventsToCommunitiesSchema.findFirst({
           where: (etc, { eq }) => eq(etc.eventId, root.id),
         });
+
         if (!community) {
           return [];
         }
+
         const roleUserCommunity =
           await DB.query.usersToCommunitiesSchema.findFirst({
             where: (etc, { eq, and }) =>
@@ -266,6 +282,7 @@ builder.objectType(EventRef, {
                 eq(etc.userId, USER.id),
               ),
           });
+
         if (
           !(roleUserEvent?.role && AdminRoles.has(roleUserEvent.role)) ||
           !(roleUserCommunity?.role && AdminRoles.has(roleUserCommunity.role))
@@ -295,6 +312,7 @@ builder.objectType(EventRef, {
           where: (c, { eq }) => eq(c.eventId, root.id),
         });
         const ticketTemplateIds = ticketsTemplates.map((t) => t.id);
+
         if (ticketTemplateIds.length === 0) {
           return [];
         }

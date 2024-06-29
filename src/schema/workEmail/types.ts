@@ -49,15 +49,19 @@ builder.objectType(ValidatedWorkEmailRef, {
       nullable: true,
       resolve: async (root, args, { DB }) => {
         const { companyId } = root;
+
         if (!companyId) {
           return null;
         }
+
         const company = await DB.query.companiesSchema.findFirst({
           where: (c, { eq }) => eq(c.id, companyId),
         });
+
         if (!company) {
           return null;
         }
+
         return selectCompaniesSchema.parse(company);
       },
     }),

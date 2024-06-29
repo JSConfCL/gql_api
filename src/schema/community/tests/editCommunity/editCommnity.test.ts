@@ -43,6 +43,7 @@ describe("Edit community", () => {
     it("As an community admin", async () => {
       const user1 = await insertUser();
       const community1 = await insertCommunity();
+
       await insertUserToCommunity({
         communityId: community1.id,
         role: "admin",

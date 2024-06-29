@@ -5,5 +5,6 @@ export const getStripeClient = (stripeKey: string) => {
   if (!stripeClient) {
     stripeClient = new Stripe(stripeKey);
   }
+
   return stripeClient;
 };

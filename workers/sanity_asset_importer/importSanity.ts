@@ -42,15 +42,19 @@ export const importFromSanity = async (env: ENV) => {
 
     if (!community) {
       logger.error("JavaScript Community not found");
+
       return;
     }
+
     let i = 0;
+
     for (const event of events) {
       i++;
       logger.info("Finding event", event);
       const foundEvent = await DB.query.eventsSchema.findFirst({
         where: (e, { eq }) => eq(eventsSchema.sanityEventId, event._id),
       });
+
       if (!foundEvent) {
         logger.info("Inserting event", event._id);
 

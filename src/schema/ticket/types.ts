@@ -23,6 +23,7 @@ builder.objectType(PriceRef, {
         const currency = await ctx.DB.query.allowedCurrencySchema.findFirst({
           where: (acs, { eq }) => eq(acs.id, root.currencyId),
         });
+
         return selectAllowedCurrencySchema.parse(currency);
       },
     }),
@@ -75,6 +76,7 @@ builder.objectType(TicketRef, {
         if (root.isFree) {
           return null;
         }
+
         const prices = await ctx.DB.query.ticketsPricesSchema.findMany({
           where: (tps, { eq }) => eq(tps.ticketId, root.id),
           with: {
@@ -89,6 +91,7 @@ builder.objectType(TicketRef, {
             currencyId: p.price.currencyId,
           }))
           .filter((p) => p.amount !== null || p.currencyId !== null);
+
         // this "AS" is an unnecessary type cast, but it's here bc the "filter"
         // does not do proper type narrowing.
         return pasedPrices as {

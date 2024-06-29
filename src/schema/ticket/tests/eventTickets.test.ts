@@ -58,6 +58,7 @@ describe("Should get events and its tickets", () => {
     });
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,
@@ -80,6 +81,7 @@ describe("Should get events and its tickets", () => {
   it("as an anonymous query", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
+
     await insertEventToCommunity({
       eventId: event1.id,
       communityId: community1.id,

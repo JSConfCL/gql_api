@@ -8,6 +8,7 @@ export default () => {
   }
 
   const files = readdirSync(`./${testDatabasesFolder}`);
+
   for (const file of files) {
     unlinkSync(`./${testDatabasesFolder}/${file}`);
   }

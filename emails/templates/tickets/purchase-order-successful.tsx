@@ -76,6 +76,7 @@ export const PurchaseOrderSuccessful = ({
         locale: es,
       })
     : null;
+
   return (
     <TicketTemplate>
       <Container>

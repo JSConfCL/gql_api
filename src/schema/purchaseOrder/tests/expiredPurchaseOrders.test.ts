@@ -18,11 +18,13 @@ describe("clearExpiredPurchaseOrders", () => {
       purchaseOrderPaymentStatus: "unpaid",
       paymentPlatformExpirationDate: someMinutesIntoTheFuture(-11),
     });
+
     await insertPurchaseOrder({
       status: "open",
       purchaseOrderPaymentStatus: "unpaid",
       paymentPlatformExpirationDate: someMinutesIntoTheFuture(60 * 24),
     });
+
     const result = await clearExpiredPurchaseOrders({
       DB,
     });

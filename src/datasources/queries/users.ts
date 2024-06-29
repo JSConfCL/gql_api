@@ -17,6 +17,7 @@ export const updateUserProfileInfo = async (
   const result = await db.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.email, parsedProfileInfo.email),
   });
+
   if (!result) {
     logger.info("User not found — creating new user");
     // we create the user
@@ -33,6 +34,7 @@ export const updateUserProfileInfo = async (
       })
       .returning();
     const createdUser = createdUsers?.[0];
+
     if (!createdUser) {
       logger.error("Could not create user");
       throw new Error("Could not create user");
@@ -55,10 +57,12 @@ export const updateUserProfileInfo = async (
       .where(eq(usersSchema.email, parsedProfileInfo.email))
       .returning();
     const updatedUser = updatedUsers?.[0];
+
     if (!updatedUser) {
       logger.error("Could not update user");
       throw new Error("Could not update user");
     }
+
     return selectUsersSchema.parse(updatedUser);
   }
 };

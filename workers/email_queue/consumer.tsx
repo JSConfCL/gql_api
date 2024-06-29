@@ -18,6 +18,7 @@ export const queueConsumer: ExportedHandlerQueueHandler<
 > = async (batch, env, ctx) => {
   for await (const msg of batch.messages) {
     logger.info("Processing email for userId:", msg.body.userId);
+
     try {
       switch (batch.queue) {
         case "mail-queue-staging":
@@ -39,9 +40,11 @@ const processEmailQueue = async (
   env: ENV,
 ) => {
   const { RESEND_API_KEY } = env;
+
   if (!RESEND_API_KEY) {
     throw new Error("RESEND_API_KEY is not defined");
   }
+
   const htmlContent = await renderAsync(
     <WorkEmailValidationEmail
       baseUrl=""
@@ -49,6 +52,7 @@ const processEmailQueue = async (
       userId={message.body.userId}
     />,
   );
+
   // TODO: Uncomment this line to send emails.
   // await sendTransactionalHTMLEmail({
   //   htmlContent: htmlContent,

@@ -15,15 +15,19 @@ app.get("/auth/google", async (c) => {
   try {
     const { GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URL, GOOGLE_CLIENT_SECRET } =
       c.env;
+
     if (!GOOGLE_CLIENT_ID) {
       throw new Error("Missing GOOGLE_CLIENT_ID");
     }
+
     if (!GOOGLE_REDIRECT_URL) {
       throw new Error("Missing GOOGLE_REDIRECT_URL");
     }
+
     if (!GOOGLE_CLIENT_SECRET) {
       throw new Error("Missing GOOGLE_CLIENT_SECRET");
     }
+
     const location = await (google as SocialProvider<string>).redirect({
       options: {
         clientId: GOOGLE_CLIENT_ID,
@@ -45,15 +49,19 @@ app.get("/auth/google", async (c) => {
 });
 app.all("/auth/google/success", async (c) => {
   const { GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URL, GOOGLE_CLIENT_SECRET } = c.env;
+
   if (!GOOGLE_CLIENT_ID) {
     throw new Error("Missing GOOGLE_CLIENT_ID");
   }
+
   if (!GOOGLE_REDIRECT_URL) {
     throw new Error("Missing GOOGLE_REDIRECT_URL");
   }
+
   if (!GOOGLE_CLIENT_SECRET) {
     throw new Error("Missing GOOGLE_CLIENT_SECRET");
   }
+
   const { code } = c.req.query();
   const { access_token: accessToken } = await (
     google as SocialProvider<string>
@@ -62,6 +70,7 @@ app.all("/auth/google/success", async (c) => {
     clientSecret: GOOGLE_CLIENT_SECRET,
     redirectUrl: GOOGLE_REDIRECT_URL,
   });
+
   return c.text(accessToken);
 });
 

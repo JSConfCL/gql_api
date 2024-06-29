@@ -45,10 +45,12 @@ builder.objectType(PurchaseOrderRef, {
       nullable: true,
       resolve: async (root, args, ctx) => {
         const currencyId = root.purchaseOrder.currencyId;
+
         if (root.purchaseOrder.totalPrice && currencyId) {
           const currency = await ctx.DB.query.allowedCurrencySchema.findFirst({
             where: (acs, { eq }) => eq(acs.id, currencyId),
           });
+
           if (currency) {
             return selectAllowedCurrencySchema.parse(currency);
           }
@@ -69,6 +71,7 @@ builder.objectType(PurchaseOrderRef, {
           where: (ut, { eq, and }) =>
             and(eq(ut.purchaseOrderId, root.purchaseOrder.id)),
         });
+
         return userTickets.map((ut) => selectUserTicketsSchema.parse(ut));
       },
     }),

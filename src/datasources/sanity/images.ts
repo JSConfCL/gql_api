@@ -13,6 +13,7 @@ export const getImagesBySanityEventId = async ({
   if (!sanityEventId) {
     return [];
   }
+
   const images = await client.fetch<
     {
       id: string;
@@ -37,6 +38,7 @@ export const getImagesBySanityEventId = async ({
       eventId: sanityEventId,
     },
   );
+
   return images
     .map((image) => {
       const parsed = SanityAssetZodSchema.safeParse({
@@ -48,9 +50,11 @@ export const getImagesBySanityEventId = async ({
         assetId: image.assetId,
         path: image.path,
       });
+
       if (parsed.success) {
         return parsed.data;
       }
+
       return null;
     })
     .filter(Boolean);

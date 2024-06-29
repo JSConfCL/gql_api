@@ -15,9 +15,11 @@ builder.queryFields((t) => ({
       if (!USER) {
         throw new Error("No user present");
       }
+
       const workEmail = await DB.query.workEmailSchema.findMany({
         where: (wes, { eq }) => eq(wes.userId, USER.id),
       });
+
       return workEmail.map((we) => selectWorkEmailSchema.parse(we));
     },
   }),
@@ -34,6 +36,7 @@ builder.queryFields((t) => ({
       if (!USER) {
         throw new Error("No user present");
       }
+
       const userId = USER.id;
       const workEmail = await DB.query.workEmailSchema.findFirst({
         where: (wes, { and, ilike }) =>
@@ -46,6 +49,7 @@ builder.queryFields((t) => ({
       if (!workEmail) {
         throw new Error("You don't have access");
       }
+
       return selectWorkEmailSchema.parse(workEmail);
     },
   }),

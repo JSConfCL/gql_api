@@ -42,6 +42,7 @@ export const ensureProductsAreCreated = async ({
       `Ticket ${ticket.id} updated with stripe ProductId ${stripeProductId}`,
     );
   }
+
   if (currencyCode === "CLP") {
     // TODO: createMercadoPagoProduct
   }

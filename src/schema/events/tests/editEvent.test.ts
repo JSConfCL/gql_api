@@ -29,6 +29,7 @@ describe("Event", () => {
         visibility: EventVisibility.Private,
         maxAttendees: 5,
       });
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user1.id,
@@ -89,6 +90,7 @@ describe("Event", () => {
         visibility: EventVisibility.Private,
         maxAttendees: 5,
       });
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user1.id,
@@ -148,6 +150,7 @@ describe("Event", () => {
         visibility: EventVisibility.Private,
         maxAttendees: 5,
       });
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user1.id,
@@ -202,6 +205,7 @@ describe("Event", () => {
         visibility: EventVisibility.Private,
         maxAttendees: 5,
       });
+
       await insertUserToCommunity({
         communityId: community.id,
         userId: user1.id,
@@ -258,6 +262,7 @@ describe("Event", () => {
       visibility: EventVisibility.Private,
       maxAttendees: 5,
     });
+
     await insertUserToCommunity({
       communityId: community.id,
       userId: user1.id,

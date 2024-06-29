@@ -17,6 +17,7 @@ describe("Users Graphql Tests", () => {
     >({
       document: Users,
     });
+
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.users.length, 2);
     assert.equal(response.data?.users[0].id, user.id);

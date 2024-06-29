@@ -14,12 +14,14 @@ const createTags = async () => {
   const tag3 = await insertTag({
     description: "description tag3 with some text",
   });
+
   return {
     tag1,
     tag2,
     tag3,
   };
 };
+
 describe("Tags", () => {
   it("Should return an unfiltered list", async () => {
     const { tag1, tag2, tag3 } = await createTags();
@@ -29,6 +31,7 @@ describe("Tags", () => {
     >({
       document: Tags,
     });
+
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.tags.length, 3);
     assert.equal(response.data?.tags[0].id, tag1.id);
@@ -49,6 +52,7 @@ describe("Tags", () => {
         },
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.tags.length, 1);
     assert.equal(response.data?.tags[0].id, tag2.id);
@@ -66,6 +70,7 @@ describe("Tags", () => {
         },
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.tags.length, 1);
     assert.equal(response.data?.tags[0].id, tag2.id);
@@ -83,6 +88,7 @@ describe("Tags", () => {
         },
       },
     });
+
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.tags.length, 1);
     assert.equal(response.data?.tags[0].id, tag2.id);

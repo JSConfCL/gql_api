@@ -25,7 +25,9 @@ builder.queryFields((t) => ({
       if (!USER) {
         throw new Error("No user present");
       }
+
       const workRoles = await DB.query.workRoleSchema.findMany();
+
       return workRoles.map((wr) => selectWorkRoleSchema.parse(wr));
     },
   }),
@@ -45,6 +47,7 @@ builder.queryFields((t) => ({
       if (!USER) {
         throw new Error("No user present");
       }
+
       const { workRoleId } = input;
       const workSenioritiesAndRoles =
         await DB.query.workSeniorityAndRoleSchema.findMany({

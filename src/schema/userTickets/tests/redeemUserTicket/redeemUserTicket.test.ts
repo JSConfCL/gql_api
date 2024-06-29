@@ -24,11 +24,13 @@ describe("Redeem user ticket", () => {
     it("if user is admin of community", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
+
       await insertEventToCommunity({
         eventId: event1.id,
         communityId: community1.id,
       });
       const user1 = await insertUser();
+
       await insertUserToCommunity({
         communityId: community1.id,
         userId: user1.id,
@@ -70,11 +72,13 @@ describe("Redeem user ticket", () => {
     it("if user is collaborator of community", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
+
       await insertEventToCommunity({
         eventId: event1.id,
         communityId: community1.id,
       });
       const user1 = await insertUser();
+
       await insertUserToCommunity({
         communityId: community1.id,
         userId: user1.id,
@@ -116,6 +120,7 @@ describe("Redeem user ticket", () => {
     it("if user is super admin, and member of community", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
+
       await insertEventToCommunity({
         eventId: event1.id,
         communityId: community1.id,
@@ -123,6 +128,7 @@ describe("Redeem user ticket", () => {
       const user1 = await insertUser({
         isSuperAdmin: true,
       });
+
       await insertUserToCommunity({
         communityId: community1.id,
         userId: user1.id,
@@ -164,11 +170,13 @@ describe("Redeem user ticket", () => {
     it("if user is event admin", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
+
       await insertEventToCommunity({
         eventId: event1.id,
         communityId: community1.id,
       });
       const user1 = await insertUser();
+
       await insertUserToCommunity({
         communityId: community1.id,
         userId: user1.id,
@@ -210,11 +218,13 @@ describe("Redeem user ticket", () => {
     it("if user is event collaborator", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
+
       await insertEventToCommunity({
         eventId: event1.id,
         communityId: community1.id,
       });
       const user1 = await insertUser();
+
       await insertUserToCommunity({
         communityId: community1.id,
         userId: user1.id,
@@ -258,12 +268,14 @@ describe("Redeem user ticket", () => {
     it("if is not authorized", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
+
       await insertEventToCommunity({
         eventId: event1.id,
         communityId: community1.id,
       });
       const user1 = await insertUser();
       const user2 = await insertUser();
+
       await insertUserToCommunity({
         communityId: community1.id,
         userId: user1.id,
@@ -295,6 +307,7 @@ describe("Redeem user ticket", () => {
         },
         user2,
       );
+
       assert.equal(
         response.errors?.[0].message,
         "No tienes permisos para redimir este ticket",
@@ -303,11 +316,13 @@ describe("Redeem user ticket", () => {
     it("if ticket is already rejected", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
+
       await insertEventToCommunity({
         eventId: event1.id,
         communityId: community1.id,
       });
       const user1 = await insertUser();
+
       await insertUserToCommunity({
         communityId: community1.id,
         userId: user1.id,
@@ -340,6 +355,7 @@ describe("Redeem user ticket", () => {
         },
         user1,
       );
+
       assert.equal(
         response.errors?.[0].message,
         "No es posible redimir un ticket rechazado",
@@ -348,11 +364,13 @@ describe("Redeem user ticket", () => {
     it("if ticket is cancelled", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
+
       await insertEventToCommunity({
         eventId: event1.id,
         communityId: community1.id,
       });
       const user1 = await insertUser();
+
       await insertUserToCommunity({
         communityId: community1.id,
         userId: user1.id,
@@ -385,6 +403,7 @@ describe("Redeem user ticket", () => {
         },
         user1,
       );
+
       assert.equal(
         response.errors?.[0].message,
         "No es posible redimir un ticket cancelado",
