@@ -29,11 +29,17 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   });
   const GET_STRIPE_CLIENT = () => getStripeClient(env.STRIPE_KEY);
   const GET_MERCADOPAGO_CLIENT = getMercadoPagoFetch(env.MERCADOPAGO_KEY);
+
   // Busca todas las OCs que no estén pagadas.
   logger.info(`Getting upaid purchase orders...`);
   const getUnpaidPurchaseOrders = await DB.query.purchaseOrdersSchema.findMany({
-    where: (po, { eq }) => eq(po.purchaseOrderPaymentStatus, "unpaid"),
+    where: (po, { eq, and, isNotNull }) =>
+      and(
+        eq(po.purchaseOrderPaymentStatus, "unpaid"),
+        isNotNull(po.paymentPlatformReferenceID),
+      ),
   });
+
   logger.info(
     `Obtained ${getUnpaidPurchaseOrders.length} unpaid purchase orders`,
   );
