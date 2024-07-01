@@ -1,4 +1,4 @@
-import { SQL, eq } from "drizzle-orm";
+import { SQL, and, eq } from "drizzle-orm";
 
 import { builder } from "~/builder";
 import {
@@ -6,6 +6,11 @@ import {
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
+import { paginationDBHelper } from "~/datasources/helpers/paginationQuery";
+import {
+  createPaginationObjectType,
+  createPaginationInputType,
+} from "~/schema/pagination/types";
 import { UserTicketRef } from "~/schema/shared/refs";
 
 import {
@@ -14,7 +19,7 @@ import {
   TicketRedemptionStatus,
 } from "./types";
 
-const MyTicketsSearchInput = builder.inputType("MyTicketsSearchInput", {
+const MyTicketsSearchValues = builder.inputType("MyTicketsSearchValues", {
   fields: (t) => ({
     eventId: t.field({
       type: "String",
@@ -35,26 +40,19 @@ const MyTicketsSearchInput = builder.inputType("MyTicketsSearchInput", {
   }),
 });
 
+const PaginatedUserTicketsRef = createPaginationObjectType(UserTicketRef);
+
 builder.queryFields((t) => ({
   myTickets: t.field({
     description: "Get a list of tickets for the current user",
-    type: [UserTicketRef],
-    args: {
-      input: t.arg({
-        type: MyTicketsSearchInput,
-        required: false,
-      }),
-    },
+    type: PaginatedUserTicketsRef,
+    args: createPaginationInputType(t, MyTicketsSearchValues),
     authz: {
       rules: ["IsAuthenticated"],
     },
     resolve: async (root, { input }, ctx) => {
-      const { eventId, paymentStatus, approvalStatus, redemptionStatus } =
-        input ?? {};
-
-      if (!ctx.USER) {
-        return [];
-      }
+      const { approvalStatus, eventId, paymentStatus, redemptionStatus } =
+        input.search ?? {};
 
       const wheres: SQL[] = [];
 
@@ -78,18 +76,21 @@ builder.queryFields((t) => ({
         wheres.push(eq(userTicketsSchema.userId, ctx.USER.id));
       }
 
-      const myTickets = await ctx.DB.query.userTicketsSchema.findMany({
-        where: (_, { and }) => and(...wheres),
-        with: {
-          ticketTemplate: {
-            with: {
-              event: true,
-            },
-          },
-        },
-      });
+      const { data, pagination } = await paginationDBHelper(
+        ctx.DB,
+        ctx.DB.select()
+          .from(userTicketsSchema)
+          .where(and(...wheres)),
+        input.pagination,
+      );
 
-      return myTickets.map((t) => selectUserTicketsSchema.parse(t));
+      const results = data.map((t) => selectUserTicketsSchema.parse(t));
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return {
+        data: results,
+        pagination,
+      } as any;
     },
   }),
 }));
