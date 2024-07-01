@@ -33,11 +33,7 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   // Busca todas las OCs que no estén pagadas.
   logger.info(`Getting upaid purchase orders...`);
   const getUnpaidPurchaseOrders = await DB.query.purchaseOrdersSchema.findMany({
-    where: (po, { eq, and, isNotNull }) =>
-      and(
-        eq(po.purchaseOrderPaymentStatus, "unpaid"),
-        isNotNull(po.paymentPlatformReferenceID),
-      ),
+    where: (po, { eq }) => eq(po.purchaseOrderPaymentStatus, "unpaid"),
   });
 
   logger.info(
