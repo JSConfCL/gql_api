@@ -506,7 +506,8 @@ export const syncPurchaseOrderPaymentStatus = async ({
 }) => {
   logger.info("Finding purchase order:", purchaseOrderId);
   const purchaseOrder = await DB.query.purchaseOrdersSchema.findFirst({
-    where: (po, { eq }) => eq(po.id, purchaseOrderId),
+    where: (po, { eq, isNotNull }) =>
+      and(eq(po.id, purchaseOrderId), isNotNull(po.paymentPlatformReferenceID)),
   });
 
   if (!purchaseOrder) {
@@ -518,7 +519,9 @@ export const syncPurchaseOrderPaymentStatus = async ({
   logger.info("Payment platform reference id:", paymentPlatformReferenceID);
 
   if (!paymentPlatformReferenceID) {
-    throw new Error("No se ha inicializado un pago para esta OC");
+    throw new Error(
+      `No se ha inicializado un pago para la OC ${purchaseOrderId}`,
+    );
   }
 
   let poPaymentStatus: (typeof puchaseOrderPaymentStatusEnum)[number] =
