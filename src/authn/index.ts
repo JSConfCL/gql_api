@@ -96,15 +96,13 @@ export const getUser = async ({
   if (!payload) {
     logger.error("Could not parse token");
 
-    return null;
+    return payload;
   }
 
   const verified = await verify(JWT_TOKEN, SUPABASE_JWT_DECODER);
 
   if (!verified) {
-    logger.error("Could not verify token");
-
-    return null;
+    throw unauthorizedError("Could not verify token");
   }
 
   const isExpired = payload.exp < Date.now() / 1000;
