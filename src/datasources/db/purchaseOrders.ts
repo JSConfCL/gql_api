@@ -9,7 +9,12 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-import { allowedCurrencySchema, ticketsSchema, usersSchema } from "./schema";
+import {
+  allowedCurrencySchema,
+  ticketsSchema,
+  userTicketsSchema,
+  usersSchema,
+} from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 export const purchaseOrderStatusEnum = ["complete", "expired", "open"] as const;
 export const purchaseOrderPaymentPlatforms = ["mercadopago", "stripe"] as const;
@@ -54,7 +59,8 @@ export const purchaseOrdersSchema = pgTable("purchase_orders", {
 export const purchaseOrdersRelations = relations(
   purchaseOrdersSchema,
   ({ one, many }) => ({
-    userTickets: many(ticketsSchema),
+    tickets: many(ticketsSchema),
+    userTickets: many(userTicketsSchema),
     user: one(usersSchema, {
       fields: [purchaseOrdersSchema.userId],
       references: [usersSchema.id],
