@@ -1,8 +1,6 @@
 import {
   ImplementableObjectRef,
-  InputFieldRef,
   InputObjectRef,
-  ObjectRef,
   QueryFieldBuilder,
 } from "@pothos/core";
 
@@ -112,7 +110,7 @@ export const createPaginationInputType = <
 
 export const createPaginationObjectType = <
   T extends ImplementableObjectRef<any, TShape>,
-  TShape
+  TShape,
 >(
   objectReference: T,
 ) => {
