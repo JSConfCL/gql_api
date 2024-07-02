@@ -94,14 +94,14 @@ export const getUser = async ({
   const payload = decodeJWT(JWT_TOKEN);
 
   if (!payload) {
-    throw unauthorizedError("Could not parse token");
+    logger.error("Could not parse token");
+
+    return payload;
   }
 
-  try {
-    await verify(JWT_TOKEN, SUPABASE_JWT_DECODER, {
-      throwError: true,
-    });
-  } catch (error) {
+  const verified = await verify(JWT_TOKEN, SUPABASE_JWT_DECODER);
+
+  if (!verified) {
     throw unauthorizedError("Could not verify token");
   }
 
