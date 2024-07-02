@@ -83,12 +83,12 @@ builder.objectType(PaginationRef, {
   }),
 });
 
-const CreatePaginationRef = <T>(name: string) => {
+const CreatePaginationRef = <TShape>(name: string) => {
   const capitalizedName = capitalizeFirstLetter(name);
 
   return builder.objectRef<{
     pagination: PaginationResponseType;
-    data: T[];
+    data: TShape[];
   }>(`Paginated${capitalizedName}`);
 };
 
@@ -111,11 +111,12 @@ export const createPaginationInputType = <
 };
 
 export const createPaginationObjectType = <
-  T extends ImplementableObjectRef<any, any>,
+  T extends ImplementableObjectRef<any, TShape>,
+  TShape
 >(
   objectReference: T,
 ) => {
-  const ref = CreatePaginationRef<T>(objectReference["name"]);
+  const ref = CreatePaginationRef<TShape>(objectReference["name"]);
 
   builder.objectType(ref, {
     description:
