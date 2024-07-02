@@ -4,7 +4,8 @@ import {
   puchaseOrderPaymentStatusEnum,
   userTicketsRedemptionStatusEnum,
 } from "~/datasources/db/schema";
-import { TicketRef, UserTicketRef } from "~/schema/shared/refs";
+import { UserTicketRef } from "~/schema/shared/refs";
+import { TicketLoadableObject } from "~/schema/ticket/types";
 
 export const TicketPaymentStatus = builder.enumType("TicketPaymentStatus", {
   values: puchaseOrderPaymentStatusEnum,
@@ -36,7 +37,7 @@ builder.objectType(UserTicketRef, {
       resolve: (root) => root.redemptionStatus,
     }),
     ticketTemplate: t.field({
-      type: TicketRef,
+      type: TicketLoadableObject,
       resolve: async (root, args, ctx) => {
         // TODO: Consider data loaders
         const ticketTemplate = await ctx.DB.query.ticketsSchema.findFirst({

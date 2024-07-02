@@ -30,8 +30,12 @@ builder.objectType(PriceRef, {
   }),
 });
 
-builder.objectType(TicketRef, {
+export const TicketLoadableObject = builder.loadableObject(TicketRef, {
   description: "Representation of a ticket",
+  load: (ids: string[], context) =>
+    context.DB.query.ticketsSchema.findMany({
+      where: (t, { inArray }) => inArray(t.id, ids),
+    }),
   fields: (t) => ({
     id: t.exposeID("id"),
     name: t.exposeString("name"),
