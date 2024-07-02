@@ -8,16 +8,18 @@ export const paginationDBHelper = async <
 >(
   DB: ORM_TYPE,
   select: T,
-  {
-    page,
-    pageSize,
-  }: {
+  pagination: {
     page: number;
     pageSize: number;
+  } = {
+    page: 0,
+    pageSize: 30,
   },
 ) => {
+  const safePageSize = Math.max(pagination.pageSize, 1);
+  const safePage = Math.max(pagination.page, 0);
   const query = select as unknown as PgSelect;
-  const offset = Math.max(page, 0) * pageSize;
+  const offset = safePage * safePageSize;
   const subQuery = query.as("sub");
   const totalRecordsQuery = DB.select({
     total: sql<number>`count(*)`,
@@ -25,18 +27,18 @@ export const paginationDBHelper = async <
 
   // TODO: Considerar parallelizar estas queries en un Promise.all
   const totalRecordsResult = await totalRecordsQuery.execute();
-  const results = await query.limit(pageSize).offset(offset).execute();
+  const results = await query.limit(safePageSize).offset(offset).execute();
 
   const totalRecords = Number(totalRecordsResult[0].total);
-  const totalPages = Math.ceil(totalRecords / pageSize);
+  const totalPages = Math.ceil(totalRecords / safePageSize);
 
   return {
     data: results as unknown as Awaited<ReturnType<T["execute"]>>,
     pagination: {
-      totalRecords: totalRecords,
-      totalPages: totalPages,
-      currentPage: page,
-      pageSize: pageSize,
+      totalRecords,
+      totalPages,
+      currentPage: safePage,
+      pageSize: safePageSize,
     },
   };
 };
