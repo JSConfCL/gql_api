@@ -86,11 +86,10 @@ builder.queryFields((t) => ({
 
       const results = data.map((t) => selectUserTicketsSchema.parse(t));
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return {
         data: results,
         pagination,
-      } as any;
+      };
     },
   }),
 }));
