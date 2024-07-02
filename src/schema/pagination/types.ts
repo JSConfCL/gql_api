@@ -109,8 +109,8 @@ export const createPaginationInputType = <
 };
 
 export const createPaginationObjectType = <
-  T extends ImplementableObjectRef<any, TShape>,
   TShape,
+  T extends ImplementableObjectRef<any, TShape>,
 >(
   objectReference: T,
 ) => {
