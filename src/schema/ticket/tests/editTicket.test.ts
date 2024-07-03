@@ -86,7 +86,9 @@ describe("User", () => {
       requiresApproval: fakeInput.requiresApproval,
       status: fakeInput.status,
       visibility: fakeInput.visibility,
-      eventId: event1.id,
+      event: {
+        id: event1.id,
+      },
       isUnlimited: false,
       quantity: 100,
     });
@@ -140,7 +142,9 @@ describe("User", () => {
       quantity: ticket.quantity || null,
       status: ticket.status as TicketTemplateStatus,
       visibility: ticket.visibility as TicketTemplateVisibility,
-      eventId: event1.id,
+      event: {
+        id: event1.id,
+      },
       isUnlimited: false,
     });
   });
@@ -191,7 +195,9 @@ describe("User", () => {
       quantity: ticket.quantity,
       status: ticket.status as TicketTemplateStatus,
       visibility: ticket.visibility as TicketTemplateVisibility,
-      eventId: event1.id,
+      event: {
+        id: event1.id,
+      },
       isUnlimited: false,
     });
   });

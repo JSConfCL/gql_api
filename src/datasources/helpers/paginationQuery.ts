@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { sql } from "drizzle-orm";
 import { PgSelect } from "drizzle-orm/pg-core";
 

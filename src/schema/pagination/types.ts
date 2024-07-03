@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ObjectRef, InputObjectRef, QueryFieldBuilder } from "@pothos/core";
 
 import { builder } from "~/builder";

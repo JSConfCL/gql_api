@@ -11,7 +11,9 @@ mutation CreateTicket($input: TicketCreateInput!) {
     isFree
     requiresApproval
     quantity
-    eventId
+    event {
+      id
+    }
     prices {
       id
       amount

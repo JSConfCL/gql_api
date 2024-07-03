@@ -380,11 +380,38 @@ export type MutationValidateWorkEmailArgs = {
   confirmationToken: Scalars["String"]["input"];
 };
 
-export type MyTicketsSearchInput = {
+export type MyTicketsSearchValues = {
   approvalStatus?: InputMaybe<TicketApprovalStatus>;
   eventId?: InputMaybe<Scalars["String"]["input"]>;
   paymentStatus?: InputMaybe<TicketPaymentStatus>;
   redemptionStatus?: InputMaybe<TicketRedemptionStatus>;
+};
+
+export type PaginatedInputMyTicketsSearchValues = {
+  pagination?: PaginationSearchInputParams;
+  search?: InputMaybe<MyTicketsSearchValues>;
+};
+
+/** Type used for querying the paginated leaves and it's paginated meta data */
+export type PaginatedUserTicket = {
+  __typename?: "PaginatedUserTicket";
+  data: Array<UserTicket>;
+  pagination: Pagination;
+};
+
+/** Pagination meta data */
+export type Pagination = {
+  __typename?: "Pagination";
+  currentPage: Scalars["Int"]["output"];
+  pageSize: Scalars["Int"]["output"];
+  totalPages: Scalars["Int"]["output"];
+  totalRecords: Scalars["Int"]["output"];
+};
+
+export type PaginationSearchInputParams = {
+  /** Page number, starts at 0 */
+  page: Scalars["Int"]["input"];
+  pageSize: Scalars["Int"]["input"];
 };
 
 export type PayForPurchaseOrderInput = {
@@ -458,7 +485,7 @@ export type Query = {
   /** Get the current user */
   me: User;
   /** Get a list of tickets for the current user */
-  myTickets: Array<UserTicket>;
+  myTickets: PaginatedUserTicket;
   /** Get a list of salaries associated to the user */
   salaries: Array<Salary>;
   /** Search a consolidated payment logs, by date, aggregated by platform and currency_id */
@@ -513,7 +540,7 @@ export type QueryEventsArgs = {
 };
 
 export type QueryMyTicketsArgs = {
-  input?: InputMaybe<MyTicketsSearchInput>;
+  input: PaginatedInputMyTicketsSearchValues;
 };
 
 export type QuerySearchConsolidatedPaymentLogsArgs = {
@@ -618,7 +645,7 @@ export type Ticket = {
   __typename?: "Ticket";
   description?: Maybe<Scalars["String"]["output"]>;
   endDateTime?: Maybe<Scalars["DateTime"]["output"]>;
-  eventId: Scalars["String"]["output"];
+  event: Event;
   id: Scalars["ID"]["output"];
   /** Whether or not the ticket is free */
   isFree: Scalars["Boolean"]["output"];
@@ -760,7 +787,9 @@ export type UserTicket = {
   approvalStatus: TicketApprovalStatus;
   id: Scalars["ID"]["output"];
   paymentStatus: TicketPaymentStatus;
+  purchaseOrder?: Maybe<PurchaseOrder>;
   redemptionStatus: TicketRedemptionStatus;
+  ticketTemplate: Ticket;
 };
 
 export enum ValidPaymentMethods {
