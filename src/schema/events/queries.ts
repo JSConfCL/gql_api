@@ -1,7 +1,22 @@
-import { SQL, eq, and, gte, ilike, lte } from "drizzle-orm";
+import {
+  SQL,
+  eq,
+  and,
+  gte,
+  ilike,
+  lte,
+  sql,
+  exists,
+  inArray,
+} from "drizzle-orm";
 
 import { builder } from "~/builder";
-import { eventsSchema, selectEventsSchema } from "~/datasources/db/schema";
+import {
+  eventsSchema,
+  selectEventsSchema,
+  ticketsSchema,
+  userTicketsSchema,
+} from "~/datasources/db/schema";
 import { paginationDBHelper } from "~/datasources/helpers/paginationQuery";
 import {
   createPaginationInputType,
@@ -16,6 +31,7 @@ const EventsSearchInput = builder.inputType("EventsSearchInput", {
   fields: (t) => ({
     id: t.string({ required: false }),
     name: t.string({ required: false }),
+    userHasTickets: t.boolean({ required: false }),
     status: t.field({
       type: EventStatus,
       required: false,
@@ -53,8 +69,11 @@ builder.queryField("searchEvents", (t) =>
         visibility,
         startDateTimeFrom,
         startDateTimeTo,
+        userHasTickets,
       } = input?.search ?? {};
       const wheres: SQL[] = [];
+
+      const query = ctx.DB.select().from(eventsSchema);
 
       if (id) {
         wheres.push(eq(eventsSchema.id, id));
@@ -62,6 +81,24 @@ builder.queryField("searchEvents", (t) =>
 
       if (name) {
         wheres.push(ilike(eventsSchema.name, sanitizeForLikeSearch(name)));
+      }
+
+      if (userHasTickets) {
+        const subquery = ctx.DB.select({
+          id: ticketsSchema.id,
+        })
+          .from(ticketsSchema)
+          .where(and(eq(ticketsSchema.eventId, eventsSchema.id)));
+
+        const existsQuery = exists(
+          ctx.DB.select({
+            ticket_template_id: userTicketsSchema.ticketTemplateId,
+          })
+            .from(userTicketsSchema)
+            .where(inArray(userTicketsSchema.ticketTemplateId, subquery)),
+        );
+
+        wheres.push(existsQuery);
       }
 
       if (status) {
@@ -82,9 +119,7 @@ builder.queryField("searchEvents", (t) =>
 
       const { data, pagination } = await paginationDBHelper(
         ctx.DB,
-        ctx.DB.select()
-          .from(eventsSchema)
-          .where(and(...wheres)),
+        query.where(and(...wheres)),
         input.pagination,
       );
 

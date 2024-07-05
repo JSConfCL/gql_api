@@ -363,6 +363,66 @@ describe("Events", () => {
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
   });
+
+  it("Should Filter by events that the user has purchased tickets", async () => {
+    const event1 = await insertEvent({
+      name: "MY CONFERENCE 1",
+    });
+
+    await insertEvent({
+      name: "MY CONFERENCE 2",
+    });
+    await insertEvent({
+      name: "MY CONFERENCE 3",
+    });
+    const ticketTemplate1 = await insertTicketTemplate({
+      eventId: event1.id,
+    });
+
+    const purchaseOrder = await insertPurchaseOrder();
+    const user1 = await insertUser();
+
+    await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
+    });
+
+    await insertEvent({
+      name: "MY MEETUP 2",
+    });
+    await insertEvent({
+      name: "MY MEETUP 3",
+    });
+    const response = await executeGraphqlOperationAsUser<
+      EventsQuery,
+      EventsQueryVariables
+    >(
+      {
+        document: Events,
+        variables: {
+          input: {
+            search: {
+              userHasTickets: true,
+            },
+          },
+        },
+      },
+      user1,
+    );
+
+    assert.equal(response.errors, undefined);
+    assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+    assert.deepEqual(response.data?.searchEvents.data?.at(0), {
+      id: event1.id,
+      name: event1.name,
+      description: event1.description,
+      status: event1.status,
+      visibility: event1.visibility,
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+    } as EventsQuery["searchEvents"]["data"][0]);
+  });
   it("Should Filter by Visibility", async () => {
     const event1 = await insertEvent({
       visibility: "private",

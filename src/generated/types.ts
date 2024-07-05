@@ -222,6 +222,7 @@ export type EventsSearchInput = {
   startDateTimeFrom?: InputMaybe<Scalars["DateTime"]["input"]>;
   startDateTimeTo?: InputMaybe<Scalars["DateTime"]["input"]>;
   status?: InputMaybe<EventStatus>;
+  userHasTickets?: InputMaybe<Scalars["Boolean"]["input"]>;
   visibility?: InputMaybe<EventVisibility>;
 };
 
