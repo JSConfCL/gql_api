@@ -1,11 +1,19 @@
-query Events($input: EventsSearchInput) {
-  events(input: $input) {
-    id
-    name
-    description
-    visibility
-    status
-    startDateTime
-    endDateTime
+query Events($input: PaginatedInputEventsSearchInput!) {
+  searchEvents(input: $input) {
+    data {
+      id
+      name
+      description
+      visibility
+      status
+      startDateTime
+      endDateTime
+    }
+    pagination {
+      currentPage
+      pageSize
+      totalPages
+      totalRecords
+    }
   }
 }

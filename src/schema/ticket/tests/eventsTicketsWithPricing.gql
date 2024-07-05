@@ -1,15 +1,17 @@
-query SingleEventWithPricing {
-  events {
-    id
-    tickets {
+query SingleEventWithPricing($input: PaginatedInputEventsSearchInput!) {
+  searchEvents(input: $input) {
+    data {
       id
-      prices {
+      tickets {
         id
-        amount
-        currency {
+        prices {
           id
-          currency
-          validPaymentMethods
+          amount
+          currency {
+            id
+            currency
+            validPaymentMethods
+          }
         }
       }
     }

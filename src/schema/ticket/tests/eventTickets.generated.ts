@@ -6,21 +6,25 @@ import type * as Types from '../../../generated/types';
 
 import type { JsonObject } from "type-fest";
 import gql from 'graphql-tag';
-export type EventTicketsQueryVariables = Types.Exact<{ [key: string]: never; }>;
+export type EventTicketsQueryVariables = Types.Exact<{
+  input: Types.PaginatedInputEventsSearchInput;
+}>;
 
 
-export type EventTicketsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, name: string, tickets: Array<{ __typename?: 'Ticket', id: string, name: string, quantity: number | null }> }> };
+export type EventTicketsQuery = { __typename?: 'Query', searchEvents: { __typename?: 'PaginatedEvent', data: Array<{ __typename?: 'Event', id: string, name: string, tickets: Array<{ __typename?: 'Ticket', id: string, name: string, quantity: number | null }> }> } };
 
 
 export const EventTickets = gql`
-    query EventTickets {
-  events {
-    id
-    name
-    tickets {
+    query EventTickets($input: PaginatedInputEventsSearchInput!) {
+  searchEvents(input: $input) {
+    data {
       id
       name
-      quantity
+      tickets {
+        id
+        name
+        quantity
+      }
     }
   }
 }

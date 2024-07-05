@@ -6,25 +6,29 @@ import type * as Types from '../../../generated/types';
 
 import type { JsonObject } from "type-fest";
 import gql from 'graphql-tag';
-export type SingleEventWithPricingQueryVariables = Types.Exact<{ [key: string]: never; }>;
+export type SingleEventWithPricingQueryVariables = Types.Exact<{
+  input: Types.PaginatedInputEventsSearchInput;
+}>;
 
 
-export type SingleEventWithPricingQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, tickets: Array<{ __typename?: 'Ticket', id: string, prices: Array<{ __typename?: 'Price', id: string, amount: number, currency: { __typename?: 'AllowedCurrency', id: string, currency: string, validPaymentMethods: Types.ValidPaymentMethods } }> | null }> }> };
+export type SingleEventWithPricingQuery = { __typename?: 'Query', searchEvents: { __typename?: 'PaginatedEvent', data: Array<{ __typename?: 'Event', id: string, tickets: Array<{ __typename?: 'Ticket', id: string, prices: Array<{ __typename?: 'Price', id: string, amount: number, currency: { __typename?: 'AllowedCurrency', id: string, currency: string, validPaymentMethods: Types.ValidPaymentMethods } }> | null }> }> } };
 
 
 export const SingleEventWithPricing = gql`
-    query SingleEventWithPricing {
-  events {
-    id
-    tickets {
+    query SingleEventWithPricing($input: PaginatedInputEventsSearchInput!) {
+  searchEvents(input: $input) {
+    data {
       id
-      prices {
+      tickets {
         id
-        amount
-        currency {
+        prices {
           id
-          currency
-          validPaymentMethods
+          amount
+          currency {
+            id
+            currency
+            validPaymentMethods
+          }
         }
       }
     }

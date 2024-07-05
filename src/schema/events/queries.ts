@@ -1,7 +1,12 @@
-import { SQL, eq, gte, ilike, lte } from "drizzle-orm";
+import { SQL, eq, and, gte, ilike, lte } from "drizzle-orm";
 
 import { builder } from "~/builder";
 import { eventsSchema, selectEventsSchema } from "~/datasources/db/schema";
+import { paginationDBHelper } from "~/datasources/helpers/paginationQuery";
+import {
+  createPaginationInputType,
+  createPaginationObjectType,
+} from "~/schema/pagination/types";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 import { EventRef } from "~/schema/shared/refs";
 
@@ -30,13 +35,16 @@ const EventsSearchInput = builder.inputType("EventsSearchInput", {
   }),
 });
 
-builder.queryFields((t) => ({
-  events: t.field({
+const PaginatedEventRef = createPaginationObjectType(EventRef);
+
+builder.queryField("searchEvents", (t) =>
+  t.field({
     description: "Get a list of events. Filter by name, id, status or date",
-    type: [EventRef],
-    args: {
-      input: t.arg({ type: EventsSearchInput, required: false }),
-    },
+    type: PaginatedEventRef,
+    args: createPaginationInputType(t, EventsSearchInput),
+    // args: {
+    //   input: t.arg({ type: EventsSearchInput, required: false }),
+    // },
     resolve: async (root, { input }, ctx) => {
       const {
         id,
@@ -45,7 +53,7 @@ builder.queryFields((t) => ({
         visibility,
         startDateTimeFrom,
         startDateTimeTo,
-      } = input ?? {};
+      } = input?.search ?? {};
       const wheres: SQL[] = [];
 
       if (id) {
@@ -72,17 +80,26 @@ builder.queryFields((t) => ({
         wheres.push(lte(eventsSchema.startDateTime, startDateTimeTo));
       }
 
-      const events = await ctx.DB.query.eventsSchema.findMany({
-        where: (c, { and }) => and(...wheres),
-        orderBy(fields, operators) {
-          return operators.asc(fields.createdAt);
-        },
-      });
+      const { data, pagination } = await paginationDBHelper(
+        ctx.DB,
+        ctx.DB.select()
+          .from(eventsSchema)
+          .where(and(...wheres)),
+        input.pagination,
+      );
 
-      return events.map((u) => selectEventsSchema.parse(u));
+      const parsedResults = data.map((u) => selectEventsSchema.parse(u));
+
+      return {
+        data: parsedResults,
+        pagination,
+      };
     },
   }),
-  event: t.field({
+);
+
+builder.queryField("event", (t) =>
+  t.field({
     description: "Get an event by id",
     type: EventRef,
     nullable: true,
@@ -105,4 +122,4 @@ builder.queryFields((t) => ({
       return selectEventsSchema.parse(event);
     },
   }),
-}));
+);

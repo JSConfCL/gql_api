@@ -291,11 +291,14 @@ describe("Events", () => {
       EventsQueryVariables
     >({
       document: Events,
+      variables: {
+        input: {},
+      },
     });
 
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.events?.length, 3);
-    assert.deepEqual(response.data?.events?.at(0), {
+    assert.deepEqual(response.data?.searchEvents.data?.length, 3);
+    assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
       description: event1.description,
@@ -303,8 +306,8 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
-    } as EventsQuery["events"][0]);
-    assert.deepEqual(response.data?.events?.at(1), {
+    } as EventsQuery["searchEvents"]["data"][0]);
+    assert.deepEqual(response.data?.searchEvents.data?.at(1), {
       id: event2.id,
       name: event2.name,
       description: event2.description,
@@ -312,8 +315,8 @@ describe("Events", () => {
       visibility: event2.visibility,
       startDateTime: toISODateWithoutMilliseconds(event2.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event2.endDateTime),
-    } as EventsQuery["events"][0]);
-    assert.deepEqual(response.data?.events?.at(2), {
+    } as EventsQuery["searchEvents"]["data"][0]);
+    assert.deepEqual(response.data?.searchEvents.data?.at(2), {
       id: event3.id,
       name: event3.name,
       description: event3.description,
@@ -321,7 +324,7 @@ describe("Events", () => {
       visibility: event3.visibility,
       startDateTime: toISODateWithoutMilliseconds(event3.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event3.endDateTime),
-    } as EventsQuery["events"][0]);
+    } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by ID", async () => {
     const event1 = await insertEvent({
@@ -341,14 +344,16 @@ describe("Events", () => {
       document: Events,
       variables: {
         input: {
-          id: event1.id,
+          search: {
+            id: event1.id,
+          },
         },
       },
     });
 
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.events?.length, 1);
-    assert.deepEqual(response.data?.events?.at(0), {
+    assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+    assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
       description: event1.description,
@@ -356,7 +361,7 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
-    } as EventsQuery["events"][0]);
+    } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by Visibility", async () => {
     const event1 = await insertEvent({
@@ -376,14 +381,16 @@ describe("Events", () => {
       document: Events,
       variables: {
         input: {
-          visibility: EventVisibility.Private,
+          search: {
+            visibility: EventVisibility.Private,
+          },
         },
       },
     });
 
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.events?.length, 1);
-    assert.deepEqual(response.data?.events?.at(0), {
+    assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+    assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
       description: event1.description,
@@ -391,7 +398,7 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
-    } as EventsQuery["events"][0]);
+    } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by Status", async () => {
     const event1 = await insertEvent({
@@ -408,14 +415,16 @@ describe("Events", () => {
       document: Events,
       variables: {
         input: {
-          status: EventStatus.Active,
+          search: {
+            status: EventStatus.Active,
+          },
         },
       },
     });
 
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.events?.length, 1);
-    assert.deepEqual(response.data?.events?.at(0), {
+    assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+    assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
       description: event1.description,
@@ -423,7 +432,7 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
-    } as EventsQuery["events"][0]);
+    } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by Date", async () => {
     const event1 = await insertEvent({
@@ -442,15 +451,17 @@ describe("Events", () => {
       document: Events,
       variables: {
         input: {
-          startDateTimeFrom: new Date("2021-02-02").toISOString(),
-          startDateTimeTo: new Date("2021-02-03").toISOString(),
+          search: {
+            startDateTimeFrom: new Date("2021-02-02").toISOString(),
+            startDateTimeTo: new Date("2021-02-03").toISOString(),
+          },
         },
       },
     });
 
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.events?.length, 1);
-    assert.deepEqual(response.data?.events?.at(0), {
+    assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+    assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
       description: event1.description,
@@ -458,7 +469,7 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
-    } as EventsQuery["events"][0]);
+    } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by Name", async () => {
     const event1 = await insertEvent({
@@ -475,14 +486,16 @@ describe("Events", () => {
       document: Events,
       variables: {
         input: {
-          name: "CONFERENCE",
+          search: {
+            name: "CONFERENCE",
+          },
         },
       },
     });
 
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.events?.length, 1);
-    assert.deepEqual(response.data?.events?.at(0), {
+    assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+    assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
       description: event1.description,
@@ -490,7 +503,7 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
-    } as EventsQuery["events"][0]);
+    } as EventsQuery["searchEvents"]["data"][0]);
   });
 });
 //Event tickets filter test

@@ -387,6 +387,18 @@ export type MyTicketsSearchValues = {
   redemptionStatus?: InputMaybe<TicketRedemptionStatus>;
 };
 
+/** Type used for querying the paginated leaves and it's paginated meta data */
+export type PaginatedEvent = {
+  __typename?: "PaginatedEvent";
+  data: Array<Event>;
+  pagination: Pagination;
+};
+
+export type PaginatedInputEventsSearchInput = {
+  pagination?: PaginationSearchInputParams;
+  search?: InputMaybe<EventsSearchInput>;
+};
+
 export type PaginatedInputMyTicketsSearchValues = {
   pagination?: PaginationSearchInputParams;
   search?: InputMaybe<MyTicketsSearchValues>;
@@ -480,8 +492,6 @@ export type Query = {
   event?: Maybe<Event>;
   /** Get a list of images, that are attached to an event */
   eventImages: Array<SanityAssetRef>;
-  /** Get a list of events. Filter by name, id, status or date */
-  events: Array<Event>;
   /** Get the current user */
   me: User;
   /** Get a list of tickets for the current user */
@@ -490,6 +500,8 @@ export type Query = {
   salaries: Array<Salary>;
   /** Search a consolidated payment logs, by date, aggregated by platform and currency_id */
   searchConsolidatedPaymentLogs: Array<ConsolidatedPaymentLogEntry>;
+  /** Get a list of events. Filter by name, id, status or date */
+  searchEvents: PaginatedEvent;
   /** Search on the payment logs by date, and returns a list of payment logs */
   searchPaymentLogs: Array<PublicFinanceEntryRef>;
   status: Scalars["String"]["output"];
@@ -535,16 +547,16 @@ export type QueryEventImagesArgs = {
   input: EventImageSearch;
 };
 
-export type QueryEventsArgs = {
-  input?: InputMaybe<EventsSearchInput>;
-};
-
 export type QueryMyTicketsArgs = {
   input: PaginatedInputMyTicketsSearchValues;
 };
 
 export type QuerySearchConsolidatedPaymentLogsArgs = {
   input: SearchPaymentLogsInput;
+};
+
+export type QuerySearchEventsArgs = {
+  input: PaginatedInputEventsSearchInput;
 };
 
 export type QuerySearchPaymentLogsArgs = {
