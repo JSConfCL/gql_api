@@ -368,10 +368,10 @@ describe("Events", () => {
     const event1 = await insertEvent({
       name: "MY CONFERENCE 1",
     });
-
-    await insertEvent({
+    const event2 = await insertEvent({
       name: "MY CONFERENCE 2",
     });
+
     await insertEvent({
       name: "MY CONFERENCE 3",
     });
@@ -382,10 +382,24 @@ describe("Events", () => {
     const purchaseOrder = await insertPurchaseOrder();
     const user1 = await insertUser();
 
+    const ticketTemplate2 = await insertTicketTemplate({
+      eventId: event2.id,
+    });
+
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: "approved",
+    });
+
+    const purchaseOrder2 = await insertPurchaseOrder();
+
+    await insertTicket({
+      ticketTemplateId: ticketTemplate2.id,
+      userId: user1.id,
+      purchaseOrderId: purchaseOrder2.id,
+      approvalStatus: "cancelled",
     });
 
     await insertEvent({

@@ -88,14 +88,19 @@ builder.queryField("searchEvents", (t) =>
           id: ticketsSchema.id,
         })
           .from(ticketsSchema)
-          .where(and(eq(ticketsSchema.eventId, eventsSchema.id)));
+          .where(eq(ticketsSchema.eventId, eventsSchema.id));
 
         const existsQuery = exists(
           ctx.DB.select({
             ticket_template_id: userTicketsSchema.ticketTemplateId,
           })
             .from(userTicketsSchema)
-            .where(inArray(userTicketsSchema.ticketTemplateId, subquery)),
+            .where(
+              and(
+                inArray(userTicketsSchema.ticketTemplateId, subquery),
+                eq(userTicketsSchema.approvalStatus, "approved"),
+              ),
+            ),
         );
 
         wheres.push(existsQuery);
