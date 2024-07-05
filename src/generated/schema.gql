@@ -343,11 +343,42 @@ type Mutation {
   validateWorkEmail(confirmationToken: String!): WorkEmail!
 }
 
-input MyTicketsSearchInput {
+input MyTicketsSearchValues {
   approvalStatus: TicketApprovalStatus
   eventId: String
   paymentStatus: TicketPaymentStatus
   redemptionStatus: TicketRedemptionStatus
+}
+
+input PaginatedInputMyTicketsSearchValues {
+  pagination: PaginationSearchInputParams! = { page: 0, pageSize: 20 }
+  search: MyTicketsSearchValues
+}
+
+"""
+Type used for querying the paginated leaves and it's paginated meta data
+"""
+type PaginatedUserTicket {
+  data: [UserTicket!]!
+  pagination: Pagination!
+}
+
+"""
+Pagination meta data
+"""
+type Pagination {
+  currentPage: Int!
+  pageSize: Int!
+  totalPages: Int!
+  totalRecords: Int!
+}
+
+input PaginationSearchInputParams {
+  """
+  Page number, starts at 0
+  """
+  page: Int!
+  pageSize: Int!
 }
 
 input PayForPurchaseOrderInput {
@@ -452,7 +483,7 @@ type Query {
   """
   Get a list of tickets for the current user
   """
-  myTickets(input: MyTicketsSearchInput): [UserTicket!]!
+  myTickets(input: PaginatedInputMyTicketsSearchValues!): PaginatedUserTicket!
 
   """
   Get a list of salaries associated to the user
@@ -585,7 +616,7 @@ Representation of a ticket
 type Ticket {
   description: String
   endDateTime: DateTime
-  eventId: String!
+  event: Event!
   id: ID!
 
   """
@@ -752,7 +783,9 @@ type UserTicket {
   approvalStatus: TicketApprovalStatus!
   id: ID!
   paymentStatus: TicketPaymentStatus!
+  purchaseOrder: PurchaseOrder
   redemptionStatus: TicketRedemptionStatus!
+  ticketTemplate: Ticket!
 }
 
 enum ValidPaymentMethods {

@@ -166,7 +166,7 @@ describe("As a SUPER_ADMIN", () => {
       assert.equal(response.data?.createTicket?.quantity, input.quantity);
       assert.equal(response.data?.createTicket?.status, input.status);
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
-      assert.equal(response.data?.createTicket.eventId, input.eventId);
+      assert.equal(response.data?.createTicket.event.id, input.eventId);
       assert.equal(response.data?.createTicket.prices?.[0].amount, value1);
       assert.deepEqual(response.data?.createTicket.prices?.[0].currency, {
         currency: currency1.currency,
@@ -234,7 +234,7 @@ describe("As a SUPER_ADMIN", () => {
       assert.equal(response.data?.createTicket?.quantity, input.quantity);
       assert.equal(response.data?.createTicket?.status, input.status);
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
-      assert.equal(response.data?.createTicket.eventId, input.eventId);
+      assert.equal(response.data?.createTicket.event.id, input.eventId);
       assert.equal(response.data?.createTicket.prices, null);
     });
   });
@@ -303,7 +303,7 @@ describe("As a SUPER_ADMIN", () => {
       assert.equal(response.data?.createTicket?.isFree, false);
       assert.equal(response.data?.createTicket?.status, input.status);
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
-      assert.equal(response.data?.createTicket.eventId, input.eventId);
+      assert.equal(response.data?.createTicket.event.id, input.eventId);
       assert.equal(response.data?.createTicket.prices?.[0].amount, value1);
       assert.deepEqual(response.data?.createTicket.prices?.[0].currency, {
         currency: currency1.currency,
@@ -360,7 +360,7 @@ describe("As a SUPER_ADMIN", () => {
       assert.equal(response.data?.createTicket?.isFree, true);
       assert.equal(response.data?.createTicket?.status, input.status);
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
-      assert.equal(response.data?.createTicket.eventId, input.eventId);
+      assert.equal(response.data?.createTicket.event.id, input.eventId);
       assert.equal(response.data?.createTicket.prices, null);
     });
   });
@@ -889,7 +889,7 @@ describe("As an ADMIN-USER", () => {
       assert.equal(response.data?.createTicket?.quantity, input.quantity);
       assert.equal(response.data?.createTicket?.status, input.status);
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
-      assert.equal(response.data?.createTicket.eventId, input.eventId);
+      assert.equal(response.data?.createTicket.event.id, input.eventId);
       assert.equal(response.data?.createTicket.prices?.[0].amount, value1);
       assert.deepEqual(response.data?.createTicket.prices?.[0].currency, {
         currency: currency1.currency,
@@ -957,7 +957,7 @@ describe("As an ADMIN-USER", () => {
       assert.equal(response.data?.createTicket?.quantity, input.quantity);
       assert.equal(response.data?.createTicket?.status, input.status);
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
-      assert.equal(response.data?.createTicket.eventId, input.eventId);
+      assert.equal(response.data?.createTicket.event.id, input.eventId);
       assert.equal(response.data?.createTicket.prices, null);
     });
   });
@@ -1026,7 +1026,7 @@ describe("As an ADMIN-USER", () => {
       assert.equal(response.data?.createTicket?.isFree, false);
       assert.equal(response.data?.createTicket?.status, input.status);
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
-      assert.equal(response.data?.createTicket.eventId, input.eventId);
+      assert.equal(response.data?.createTicket.event.id, input.eventId);
       assert.equal(response.data?.createTicket.prices?.[0].amount, value1);
       assert.deepEqual(response.data?.createTicket.prices?.[0].currency, {
         currency: currency1.currency,
@@ -1083,7 +1083,7 @@ describe("As an ADMIN-USER", () => {
       assert.equal(response.data?.createTicket?.isFree, true);
       assert.equal(response.data?.createTicket?.status, input.status);
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
-      assert.equal(response.data?.createTicket.eventId, input.eventId);
+      assert.equal(response.data?.createTicket.event.id, input.eventId);
       assert.equal(response.data?.createTicket.prices, null);
     });
   });

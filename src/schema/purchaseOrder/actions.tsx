@@ -314,7 +314,7 @@ export const createPaymentIntent = async ({
       where: (po, { eq }) => eq(po.id, purchaseOrderId),
       with: {
         user: true,
-        userTickets: {
+        tickets: {
           with: {
             event: {
               with: {
@@ -330,7 +330,7 @@ export const createPaymentIntent = async ({
       },
     });
 
-    const eventInfo = information?.userTickets[0].event;
+    const eventInfo = information?.tickets[0].event;
 
     if (!eventInfo) {
       logger.error("Event not found");

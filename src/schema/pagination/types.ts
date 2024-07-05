@@ -1,8 +1,5 @@
-import {
-  ImplementableObjectRef,
-  InputObjectRef,
-  QueryFieldBuilder,
-} from "@pothos/core";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ObjectRef, InputObjectRef, QueryFieldBuilder } from "@pothos/core";
 
 import { builder } from "~/builder";
 
@@ -109,7 +106,7 @@ export const createPaginationInputType = <
 };
 
 export const createPaginationObjectType = <
-  T extends ImplementableObjectRef<any, TShape>,
+  T extends ObjectRef<any, TShape>,
   TShape,
 >(
   objectReference: T,

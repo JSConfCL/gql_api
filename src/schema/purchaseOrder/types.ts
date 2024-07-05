@@ -16,8 +16,28 @@ export const PurchaseOrderRef = builder.objectRef<{
   purchaseOrder: typeof selectPurchaseOrdersSchema._type;
 }>("PurchaseOrder");
 
-builder.objectType(PurchaseOrderRef, {
+export const PurchaseOrderLoadable = builder.loadableObject(PurchaseOrderRef, {
   description: "Representation of a Purchase Order",
+  load: async (ids: string[], context) => {
+    const purchaseOrders = await context.DB.query.purchaseOrdersSchema.findMany(
+      {
+        where: (t, { inArray }) => inArray(t.id, ids),
+        with: {
+          userTickets: true,
+        },
+      },
+    );
+
+    return purchaseOrders.map((po) => {
+      const parsedPurchaseOrder = selectPurchaseOrdersSchema.parse(po);
+      const ticketsIds = po.userTickets.map((ut) => ut.id);
+
+      return {
+        ticketsIds,
+        purchaseOrder: parsedPurchaseOrder,
+      };
+    });
+  },
   fields: (t) => ({
     id: t.field({
       type: "ID",

@@ -4,7 +4,9 @@ import {
   puchaseOrderPaymentStatusEnum,
   userTicketsRedemptionStatusEnum,
 } from "~/datasources/db/schema";
-import { TicketRef, UserTicketRef } from "~/schema/shared/refs";
+import { PurchaseOrderLoadable } from "~/schema/purchaseOrder/types";
+import { UserTicketRef } from "~/schema/shared/refs";
+import { TicketLoadable } from "~/schema/ticket/types";
 
 export const TicketPaymentStatus = builder.enumType("TicketPaymentStatus", {
   values: puchaseOrderPaymentStatusEnum,
@@ -36,19 +38,13 @@ builder.objectType(UserTicketRef, {
       resolve: (root) => root.redemptionStatus,
     }),
     ticketTemplate: t.field({
-      type: TicketRef,
-      resolve: async (root, args, ctx) => {
-        // TODO: Consider data loaders
-        const ticketTemplate = await ctx.DB.query.ticketsSchema.findFirst({
-          where: (c, { eq }) => eq(c.id, root.ticketTemplateId),
-        });
-
-        if (!ticketTemplate) {
-          throw new Error("Ticket template not found");
-        }
-
-        return ticketTemplate;
-      },
+      type: TicketLoadable,
+      resolve: (root) => root.ticketTemplateId,
+    }),
+    purchaseOrder: t.field({
+      type: PurchaseOrderLoadable,
+      nullable: true,
+      resolve: (root) => root.purchaseOrderId,
     }),
   }),
 });

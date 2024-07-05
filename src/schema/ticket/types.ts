@@ -1,5 +1,6 @@
 import { builder } from "~/builder";
 import { selectAllowedCurrencySchema } from "~/datasources/db/schema";
+import { EventLoadable } from "~/schema/events/types";
 import { AllowedCurrencyRef, PriceRef, TicketRef } from "~/schema/shared/refs";
 
 export const TicketTemplateStatus = builder.enumType("TicketTemplateStatus", {
@@ -30,8 +31,12 @@ builder.objectType(PriceRef, {
   }),
 });
 
-builder.objectType(TicketRef, {
+export const TicketLoadable = builder.loadableObject(TicketRef, {
   description: "Representation of a ticket",
+  load: (ids: string[], context) =>
+    context.DB.query.ticketsSchema.findMany({
+      where: (t, { inArray }) => inArray(t.id, ids),
+    }),
   fields: (t) => ({
     id: t.exposeID("id"),
     name: t.exposeString("name"),
@@ -68,7 +73,10 @@ builder.objectType(TicketRef, {
         "Whether or not the ticket has an unlimited quantity. This is reserved for things loike online events.",
       nullable: false,
     }),
-    eventId: t.exposeString("eventId", { nullable: false }),
+    event: t.field({
+      type: EventLoadable,
+      resolve: (root) => root.eventId,
+    }),
     prices: t.field({
       type: [PriceRef],
       nullable: true,

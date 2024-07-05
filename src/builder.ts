@@ -1,5 +1,6 @@
 import SchemaBuilder from "@pothos/core";
 import AuthzPlugin from "@pothos/plugin-authz";
+import DataloaderPlugin from "@pothos/plugin-dataloader";
 import TracingPlugin, { wrapResolver } from "@pothos/plugin-tracing";
 import { DateResolver, DateTimeResolver } from "graphql-scalars";
 
@@ -21,7 +22,7 @@ export const builder = new SchemaBuilder<{
     };
   };
 }>({
-  plugins: [TracingPlugin, AuthzPlugin],
+  plugins: [TracingPlugin, AuthzPlugin, DataloaderPlugin],
   tracing: {
     default: () => true,
     wrap: (resolver, options, config) =>

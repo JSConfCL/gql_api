@@ -11,7 +11,7 @@ export type CreateTicketMutationVariables = Types.Exact<{
 }>;
 
 
-export type CreateTicketMutation = { __typename?: 'Mutation', createTicket: { __typename?: 'Ticket', id: string, name: string, description: string | null, status: Types.TicketTemplateStatus, visibility: Types.TicketTemplateVisibility, startDateTime: string, endDateTime: string | null, isUnlimited: boolean, isFree: boolean, requiresApproval: boolean, quantity: number | null, eventId: string, prices: Array<{ __typename?: 'Price', id: string, amount: number, currency: { __typename?: 'AllowedCurrency', id: string, currency: string, validPaymentMethods: Types.ValidPaymentMethods } }> | null } };
+export type CreateTicketMutation = { __typename?: 'Mutation', createTicket: { __typename?: 'Ticket', id: string, name: string, description: string | null, status: Types.TicketTemplateStatus, visibility: Types.TicketTemplateVisibility, startDateTime: string, endDateTime: string | null, isUnlimited: boolean, isFree: boolean, requiresApproval: boolean, quantity: number | null, event: { __typename?: 'Event', id: string }, prices: Array<{ __typename?: 'Price', id: string, amount: number, currency: { __typename?: 'AllowedCurrency', id: string, currency: string, validPaymentMethods: Types.ValidPaymentMethods } }> | null } };
 
 
 export const CreateTicket = gql`
@@ -28,7 +28,9 @@ export const CreateTicket = gql`
     isFree
     requiresApproval
     quantity
-    eventId
+    event {
+      id
+    }
     prices {
       id
       amount

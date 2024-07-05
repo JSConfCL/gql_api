@@ -54,9 +54,13 @@ const EventsTicketsSearchInput = builder.inputType("EventsTicketsSearchInput", {
   }),
 });
 
-builder.objectType(EventRef, {
+export const EventLoadable = builder.loadableObject(EventRef, {
   description:
     "Representation of an Event (Events and Users, is what tickets are linked to)",
+  load: (ids: string[], context) =>
+    context.DB.query.eventsSchema.findMany({
+      where: (t, { inArray }) => inArray(t.id, ids),
+    }),
   fields: (t) => ({
     id: t.exposeString("id", { nullable: false }),
     name: t.exposeString("name", { nullable: false }),
