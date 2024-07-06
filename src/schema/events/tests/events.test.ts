@@ -109,7 +109,7 @@ describe("Event", () => {
       usersTickets: [],
     } as EventQuery["event"]);
   });
-  it("Should get an event tickets", async () => {
+  it("a user should get only their own event tickets", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
 
@@ -138,11 +138,33 @@ describe("Event", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: "approved",
+    });
+
+    await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
+      approvalStatus: "cancelled",
+    });
+    await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
+      approvalStatus: "pending",
     });
     const ticket2 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
+      approvalStatus: "not_required",
+    });
+
+    await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
       userId: user2.id,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: "approved",
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,

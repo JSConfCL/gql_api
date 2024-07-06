@@ -27,6 +27,7 @@ import {
   TicketPaymentStatus,
   TicketRedemptionStatus,
 } from "~/schema/userTickets/types";
+import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 
 export const EventStatus = builder.enumType("EventStatus", {
   values: ["active", "inactive"] as const,
@@ -242,92 +243,23 @@ export const EventLoadable = builder.loadableObject(EventRef, {
         input: t.arg({ type: EventsTicketsSearchInput, required: false }),
       },
       resolve: async (root, { input }, { DB, USER }) => {
-        const { id, paymentStatus, approvalStatus, redemptionStatus } =
-          input ?? {};
-        const wheres: SQL[] = [];
+        const { paymentStatus, redemptionStatus } = input ?? {};
+
+        // TODO: (Felipe) Agregar el no filtrar por user_id si el usuario
+        // requestor es admin de la comunidad donde se encuentra el evento.
 
         if (!USER) {
           return [];
         }
 
-        if (id) {
-          wheres.push(eq(userTicketsSchema.id, id));
-        }
-
-        if (paymentStatus) {
-          wheres.push(eq(userTicketsSchema.paymentStatus, paymentStatus));
-        }
-
-        if (approvalStatus) {
-          wheres.push(eq(userTicketsSchema.approvalStatus, approvalStatus));
-        }
-
-        if (redemptionStatus) {
-          wheres.push(eq(userTicketsSchema.redemptionStatus, redemptionStatus));
-        }
-
-        const roleUserEvent = await DB.query.eventsToUsersSchema.findFirst({
-          where: (etc, { eq, and }) =>
-            and(eq(etc.eventId, root.id), eq(etc.userId, USER.id)),
-        });
-        const community = await DB.query.eventsToCommunitiesSchema.findFirst({
-          where: (etc, { eq }) => eq(etc.eventId, root.id),
-        });
-
-        if (!community) {
-          return [];
-        }
-
-        const roleUserCommunity =
-          await DB.query.usersToCommunitiesSchema.findFirst({
-            where: (etc, { eq, and }) =>
-              and(
-                eq(etc.communityId, community?.communityId),
-                eq(etc.userId, USER.id),
-              ),
-          });
-
-        if (
-          !(roleUserEvent?.role && AdminRoles.has(roleUserEvent.role)) ||
-          !(roleUserCommunity?.role && AdminRoles.has(roleUserCommunity.role))
-        ) {
-          wheres.push(eq(userTicketsSchema.userId, USER.id));
-        }
-
-        // TODO: (Felipe) — Esta es otra manera de hacerlo, aun no se cual es
-        // mejor. La diferencia es que con esta query, no es facil obtener un
-        // tipado fuerte en comparación a las relational queries.
-        // https://orm.drizzle.team/docs/rqb
-        //
-        // Es probable que podamos hacerlo si usamos el builder de drizzle-orm
-        // para generar el schema de la query, pero aun no lo he intentado.
-        //
-        // const withJoin = await DB.select()
-        //   .from(eventsSchema)
-        //   .innerJoin(ticketsSchema, eq(eventsSchema.id, ticketsSchema.eventId))
-        //   .innerJoin(
-        //     userTicketsSchema,
-        //     eq(ticketsSchema.id, userTicketsSchema.ticketTemplateId),
-        //   )
-        //   .where(eq(eventsSchema.id, root.id))
-        //   .run();
-
-        const ticketsTemplates = await DB.query.ticketsSchema.findMany({
-          where: (c, { eq }) => eq(c.eventId, root.id),
-        });
-        const ticketTemplateIds = ticketsTemplates.map((t) => t.id);
-
-        if (ticketTemplateIds.length === 0) {
-          return [];
-        }
-
-        wheres.push(
-          inArray(userTicketsSchema.ticketTemplateId, ticketTemplateIds),
-        );
-        const tickets = await DB.query.userTicketsSchema.findMany({
-          where: (c, { and }) => and(...wheres),
-          orderBy(fields, operators) {
-            return operators.asc(fields.createdAt);
+        const tickets = await userTicketFetcher.searchUserTickets({
+          DB,
+          search: {
+            eventIds: [root.id],
+            userIds: [USER.id],
+            paymentStatus: paymentStatus ? [paymentStatus] : undefined,
+            approvalStatus: ["approved", "not_required"],
+            redemptionStatus: redemptionStatus ? [redemptionStatus] : undefined,
           },
         });
 

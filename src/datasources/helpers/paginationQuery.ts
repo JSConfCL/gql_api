@@ -4,15 +4,17 @@ import { PgSelect } from "drizzle-orm/pg-core";
 
 import { ORM_TYPE } from "~/datasources/db";
 
+export type PaginationOptionsType = {
+  page: number;
+  pageSize: number;
+};
+
 export const paginationDBHelper = async <
   T extends { execute: (...args: any) => any },
 >(
   DB: ORM_TYPE,
   select: T,
-  pagination: {
-    page: number;
-    pageSize: number;
-  } = {
+  pagination: PaginationOptionsType = {
     page: 0,
     pageSize: 30,
   },
