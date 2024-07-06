@@ -245,8 +245,9 @@ export const EventLoadable = builder.loadableObject(EventRef, {
       resolve: async (root, { input }, { DB, USER }) => {
         const { paymentStatus, redemptionStatus } = input ?? {};
 
-        // TODO: (Felipe) Agregar el no filtrar por user_id si el usuario
-        // requestor es admin de la comunidad donde se encuentra el evento.
+        // TODO: (Felipe) Agregar:
+        // No filtrar por user_id para admins de la comunidad / superadmins.
+        // Permitir otros approvalStatus para los admin de la comunidad / superadmins.
 
         if (!USER) {
           return [];

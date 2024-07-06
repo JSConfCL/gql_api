@@ -3,6 +3,8 @@ import {
   ColumnDataType,
   SQL,
   and,
+  asc,
+  desc,
   eq,
   exists,
   inArray,
@@ -53,16 +55,24 @@ const getSearchUserTicketsQuery = (
   }
 
   if (eventIds) {
-    const existsQuery = DB.select()
+    // subquery to get all the tickets associated with events
+    const existsQuery = DB.select({
+      id: userTicketsSchema.id,
+    })
       .from(userTicketsSchema)
-      .leftJoin(
+      .innerJoin(
         ticketsSchema,
         eq(ticketsSchema.id, userTicketsSchema.ticketTemplateId),
       )
-      .leftJoin(eventsSchema, eq(eventsSchema.id, ticketsSchema.eventId))
-      .where(inArray(eventsSchema.id, eventIds));
+      .innerJoin(eventsSchema, eq(eventsSchema.id, ticketsSchema.eventId))
+      .where(
+        and(
+          inArray(eventsSchema.id, eventIds),
+          inArray(userTicketsSchema.userId, userIds ?? []),
+        ),
+      );
 
-    wheres.push(exists(existsQuery));
+    wheres.push(inArray(userTicketsSchema.id, existsQuery));
   }
 
   if (paymentStatus) {

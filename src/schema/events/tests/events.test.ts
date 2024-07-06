@@ -301,12 +301,15 @@ describe("Events", () => {
   it("Should get a list of events with a default query", async () => {
     const event1 = await insertEvent({
       name: "MY CONFERENCE 1",
+      startDateTime: new Date("2021-02-02"),
     });
     const event2 = await insertEvent({
       name: "MY MEETUP 2",
+      startDateTime: new Date("2022-02-02"),
     });
     const event3 = await insertEvent({
       name: "MY MEETTUP 3",
+      createdAt: new Date("2023-02-02"),
     });
     const response = await executeGraphqlOperation<
       EventsQuery,
@@ -632,6 +635,7 @@ describe("Event tickets filter", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: TicketApprovalStatus.Approved,
     });
 
     await insertTicket({
@@ -797,6 +801,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       paymentStatus: TicketPaymentStatus.Paid,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: TicketApprovalStatus.Approved,
     });
 
     await insertTicket({
@@ -804,6 +809,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       paymentStatus: TicketPaymentStatus.Unpaid,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: TicketApprovalStatus.Approved,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -880,6 +886,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       redemptionStatus: TicketRedemptionStatus.Redeemed,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: TicketApprovalStatus.Approved,
     });
 
     await insertTicket({
@@ -887,6 +894,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       redemptionStatus: TicketRedemptionStatus.Pending,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: TicketApprovalStatus.Approved,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,

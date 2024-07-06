@@ -5,9 +5,9 @@ import {
   gte,
   ilike,
   lte,
-  sql,
   exists,
   inArray,
+  asc,
 } from "drizzle-orm";
 
 import { builder } from "~/builder";
@@ -124,7 +124,7 @@ builder.queryField("searchEvents", (t) =>
 
       const { data, pagination } = await paginationDBHelper(
         ctx.DB,
-        query.where(and(...wheres)),
+        query.where(and(...wheres)).orderBy(asc(eventsSchema.startDateTime)),
         input.pagination,
       );
 
