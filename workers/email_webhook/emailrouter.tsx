@@ -3,6 +3,8 @@ import { renderAsync } from "@react-email/render";
 import React from "react";
 import type { Resend } from "resend";
 
+import { AIHackathonPostulationWithTeamEmail } from "../../emails/templates/iacamp/postulation-with-team";
+import { AIHackathonPostulationWithoutTeamEmail } from "../../emails/templates/iacamp/postulation-without-team";
 import { SponsorsConfirmation } from "../../emails/templates/iacamp/sponsors";
 import { IACampWaitlist } from "../../emails/templates/iacamp/waitlist";
 import { sendTransactionalHTMLEmail } from "../../src/datasources/email/sendEmailToWorkers";
@@ -77,6 +79,69 @@ export const mailRouter = async ({
         email: "sponsors@communityos.io",
       },
       subject: "Gracias por tu interés en auspiciar IA Camp.",
+      to: [
+        {
+          name,
+          email,
+        },
+      ],
+    });
+  } else if (emailTemplate === "postulacion-ai-hackathon-con-equipo") {
+    const {
+      data: { fields },
+    } = body as TallyWebhookProps;
+    const email = fields.find((field) => field.label.toLowerCase() === "correo")
+      ?.value;
+    const name = fields.find((field) => field.label.toLowerCase() === "nombre")
+      ?.value;
+
+    if (!email) {
+      throw new Error("Email is required");
+    }
+
+    const htmlContent = await renderAsync(
+      <AIHackathonPostulationWithTeamEmail name={name || ""} />,
+    );
+
+    return sendTransactionalHTMLEmail(resend, {
+      htmlContent,
+      from: {
+        name: "AI Hackathon - by CommunityOS",
+        email: "contacto@communityos.io",
+      },
+      subject: "Hemos recibido tu postulación a AI Hackathon.",
+      to: [
+        {
+          name,
+          email,
+        },
+      ],
+    });
+  } else if (emailTemplate === "postulacion-ai-hackathon-sin-equipo") {
+    const {
+      data: { fields },
+    } = body as TallyWebhookProps;
+    const email = fields.find(
+      (field) => field.label.toLowerCase() === "correo electrónico",
+    )?.value;
+    const name = fields.find((field) => field.label.toLowerCase() === "nombre")
+      ?.value;
+
+    if (!email) {
+      throw new Error("Email is required");
+    }
+
+    const htmlContent = await renderAsync(
+      <AIHackathonPostulationWithoutTeamEmail name={name || ""} />,
+    );
+
+    return sendTransactionalHTMLEmail(resend, {
+      htmlContent,
+      from: {
+        name: "AI Hackathon - by CommunityOS",
+        email: "contacto@communityos.io",
+      },
+      subject: "Hemos recibido tu registro a AI Hackathon.",
       to: [
         {
           name,
