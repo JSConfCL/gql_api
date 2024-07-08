@@ -90,10 +90,9 @@ export const mailRouter = async ({
     const {
       data: { fields },
     } = body as TallyWebhookProps;
-    const email = fields.find((field) => field.label.toLowerCase() === "correo")
+    const email = fields.find((field) => field.key === "question_gb24KM")
       ?.value;
-    const name = fields.find((field) => field.label.toLowerCase() === "nombre")
-      ?.value;
+    const name = fields.find((field) => field.key === "question_J1705z")?.value;
 
     if (!email) {
       throw new Error("Email is required");
@@ -121,11 +120,9 @@ export const mailRouter = async ({
     const {
       data: { fields },
     } = body as TallyWebhookProps;
-    const email = fields.find(
-      (field) => field.label.toLowerCase() === "correo electrónico",
-    )?.value;
-    const name = fields.find((field) => field.label.toLowerCase() === "nombre")
+    const email = fields.find((field) => field.key === "question_OQOXWa")
       ?.value;
+    const name = fields.find((field) => field.key === "question_q50RA7")?.value;
 
     if (!email) {
       throw new Error("Email is required");
