@@ -14,6 +14,16 @@ builder.objectType(UserRef, {
     lastName: t.exposeString("lastName", { nullable: true }),
     bio: t.exposeString("bio", { nullable: true }),
     isSuperAdmin: t.exposeBoolean("isSuperAdmin", { nullable: true }),
+    imageUrl: t.exposeString("imageUrl", { nullable: true }),
+    email: t.field({
+      type: "String",
+      nullable: true,
+      resolve: (root, args, ctx) => {
+        if (ctx.USER?.id === root.id || ctx.USER?.isSuperAdmin) {
+          return root.email;
+        }
+      },
+    }),
     communities: t.field({
       type: [CommunityRef],
       resolve: async (root, args, ctx) => {
