@@ -208,6 +208,7 @@ input EventsSearchInput {
   startDateTimeFrom: DateTime
   startDateTimeTo: DateTime
   status: EventStatus
+  userHasTickets: Boolean
   visibility: EventVisibility
 }
 
@@ -350,6 +351,19 @@ input MyTicketsSearchValues {
   redemptionStatus: TicketRedemptionStatus
 }
 
+"""
+Type used for querying the paginated leaves and it's paginated meta data
+"""
+type PaginatedEvent {
+  data: [Event!]!
+  pagination: Pagination!
+}
+
+input PaginatedInputEventsSearchInput {
+  pagination: PaginationSearchInputParams! = { page: 0, pageSize: 20 }
+  search: EventsSearchInput
+}
+
 input PaginatedInputMyTicketsSearchValues {
   pagination: PaginationSearchInputParams! = { page: 0, pageSize: 20 }
   search: MyTicketsSearchValues
@@ -471,11 +485,6 @@ type Query {
   eventImages(input: EventImageSearch!): [SanityAssetRef!]!
 
   """
-  Get a list of events. Filter by name, id, status or date
-  """
-  events(input: EventsSearchInput): [Event!]!
-
-  """
   Get the current user
   """
   me: User!
@@ -496,6 +505,11 @@ type Query {
   searchConsolidatedPaymentLogs(
     input: SearchPaymentLogsInput!
   ): [ConsolidatedPaymentLogEntry!]!
+
+  """
+  Get a list of events. Filter by name, id, status or date
+  """
+  searchEvents(input: PaginatedInputEventsSearchInput!): PaginatedEvent!
 
   """
   Search on the payment logs by date, and returns a list of payment logs

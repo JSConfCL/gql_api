@@ -109,7 +109,7 @@ describe("Event", () => {
       usersTickets: [],
     } as EventQuery["event"]);
   });
-  it("Should get an event tickets", async () => {
+  it("a user should get only their own event tickets", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
 
@@ -138,11 +138,33 @@ describe("Event", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: "approved",
+    });
+
+    await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
+      approvalStatus: "cancelled",
+    });
+    await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
+      approvalStatus: "pending",
     });
     const ticket2 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
+      approvalStatus: "not_required",
+    });
+
+    await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
       userId: user2.id,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: "approved",
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -279,23 +301,29 @@ describe("Events", () => {
   it("Should get a list of events with a default query", async () => {
     const event1 = await insertEvent({
       name: "MY CONFERENCE 1",
+      startDateTime: new Date("2021-02-02"),
     });
     const event2 = await insertEvent({
       name: "MY MEETUP 2",
+      startDateTime: new Date("2022-02-02"),
     });
     const event3 = await insertEvent({
       name: "MY MEETTUP 3",
+      createdAt: new Date("2023-02-02"),
     });
     const response = await executeGraphqlOperation<
       EventsQuery,
       EventsQueryVariables
     >({
       document: Events,
+      variables: {
+        input: {},
+      },
     });
 
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.events?.length, 3);
-    assert.deepEqual(response.data?.events?.at(0), {
+    assert.deepEqual(response.data?.searchEvents.data?.length, 3);
+    assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
       description: event1.description,
@@ -303,8 +331,8 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
-    } as EventsQuery["events"][0]);
-    assert.deepEqual(response.data?.events?.at(1), {
+    } as EventsQuery["searchEvents"]["data"][0]);
+    assert.deepEqual(response.data?.searchEvents.data?.at(1), {
       id: event2.id,
       name: event2.name,
       description: event2.description,
@@ -312,8 +340,8 @@ describe("Events", () => {
       visibility: event2.visibility,
       startDateTime: toISODateWithoutMilliseconds(event2.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event2.endDateTime),
-    } as EventsQuery["events"][0]);
-    assert.deepEqual(response.data?.events?.at(2), {
+    } as EventsQuery["searchEvents"]["data"][0]);
+    assert.deepEqual(response.data?.searchEvents.data?.at(2), {
       id: event3.id,
       name: event3.name,
       description: event3.description,
@@ -321,7 +349,7 @@ describe("Events", () => {
       visibility: event3.visibility,
       startDateTime: toISODateWithoutMilliseconds(event3.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event3.endDateTime),
-    } as EventsQuery["events"][0]);
+    } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by ID", async () => {
     const event1 = await insertEvent({
@@ -341,14 +369,16 @@ describe("Events", () => {
       document: Events,
       variables: {
         input: {
-          id: event1.id,
+          search: {
+            id: event1.id,
+          },
         },
       },
     });
 
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.events?.length, 1);
-    assert.deepEqual(response.data?.events?.at(0), {
+    assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+    assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
       description: event1.description,
@@ -356,7 +386,81 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
-    } as EventsQuery["events"][0]);
+    } as EventsQuery["searchEvents"]["data"][0]);
+  });
+
+  it("Should Filter by events that the user has purchased tickets", async () => {
+    const event1 = await insertEvent({
+      name: "MY CONFERENCE 1",
+    });
+    const event2 = await insertEvent({
+      name: "MY CONFERENCE 2",
+    });
+
+    await insertEvent({
+      name: "MY CONFERENCE 3",
+    });
+    const ticketTemplate1 = await insertTicketTemplate({
+      eventId: event1.id,
+    });
+
+    const purchaseOrder = await insertPurchaseOrder();
+    const user1 = await insertUser();
+
+    const ticketTemplate2 = await insertTicketTemplate({
+      eventId: event2.id,
+    });
+
+    await insertTicket({
+      ticketTemplateId: ticketTemplate1.id,
+      userId: user1.id,
+      purchaseOrderId: purchaseOrder.id,
+      approvalStatus: "approved",
+    });
+
+    const purchaseOrder2 = await insertPurchaseOrder();
+
+    await insertTicket({
+      ticketTemplateId: ticketTemplate2.id,
+      userId: user1.id,
+      purchaseOrderId: purchaseOrder2.id,
+      approvalStatus: "cancelled",
+    });
+
+    await insertEvent({
+      name: "MY MEETUP 2",
+    });
+    await insertEvent({
+      name: "MY MEETUP 3",
+    });
+    const response = await executeGraphqlOperationAsUser<
+      EventsQuery,
+      EventsQueryVariables
+    >(
+      {
+        document: Events,
+        variables: {
+          input: {
+            search: {
+              userHasTickets: true,
+            },
+          },
+        },
+      },
+      user1,
+    );
+
+    assert.equal(response.errors, undefined);
+    assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+    assert.deepEqual(response.data?.searchEvents.data?.at(0), {
+      id: event1.id,
+      name: event1.name,
+      description: event1.description,
+      status: event1.status,
+      visibility: event1.visibility,
+      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
+      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+    } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by Visibility", async () => {
     const event1 = await insertEvent({
@@ -376,14 +480,16 @@ describe("Events", () => {
       document: Events,
       variables: {
         input: {
-          visibility: EventVisibility.Private,
+          search: {
+            visibility: EventVisibility.Private,
+          },
         },
       },
     });
 
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.events?.length, 1);
-    assert.deepEqual(response.data?.events?.at(0), {
+    assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+    assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
       description: event1.description,
@@ -391,7 +497,7 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
-    } as EventsQuery["events"][0]);
+    } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by Status", async () => {
     const event1 = await insertEvent({
@@ -408,14 +514,16 @@ describe("Events", () => {
       document: Events,
       variables: {
         input: {
-          status: EventStatus.Active,
+          search: {
+            status: EventStatus.Active,
+          },
         },
       },
     });
 
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.events?.length, 1);
-    assert.deepEqual(response.data?.events?.at(0), {
+    assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+    assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
       description: event1.description,
@@ -423,7 +531,7 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
-    } as EventsQuery["events"][0]);
+    } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by Date", async () => {
     const event1 = await insertEvent({
@@ -442,15 +550,17 @@ describe("Events", () => {
       document: Events,
       variables: {
         input: {
-          startDateTimeFrom: new Date("2021-02-02").toISOString(),
-          startDateTimeTo: new Date("2021-02-03").toISOString(),
+          search: {
+            startDateTimeFrom: new Date("2021-02-02").toISOString(),
+            startDateTimeTo: new Date("2021-02-03").toISOString(),
+          },
         },
       },
     });
 
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.events?.length, 1);
-    assert.deepEqual(response.data?.events?.at(0), {
+    assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+    assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
       description: event1.description,
@@ -458,7 +568,7 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
-    } as EventsQuery["events"][0]);
+    } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by Name", async () => {
     const event1 = await insertEvent({
@@ -475,14 +585,16 @@ describe("Events", () => {
       document: Events,
       variables: {
         input: {
-          name: "CONFERENCE",
+          search: {
+            name: "CONFERENCE",
+          },
         },
       },
     });
 
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.events?.length, 1);
-    assert.deepEqual(response.data?.events?.at(0), {
+    assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+    assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
       description: event1.description,
@@ -490,7 +602,7 @@ describe("Events", () => {
       visibility: event1.visibility,
       startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
-    } as EventsQuery["events"][0]);
+    } as EventsQuery["searchEvents"]["data"][0]);
   });
 });
 //Event tickets filter test
@@ -523,6 +635,7 @@ describe("Event tickets filter", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: TicketApprovalStatus.Approved,
     });
 
     await insertTicket({
@@ -688,6 +801,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       paymentStatus: TicketPaymentStatus.Paid,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: TicketApprovalStatus.Approved,
     });
 
     await insertTicket({
@@ -695,6 +809,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       paymentStatus: TicketPaymentStatus.Unpaid,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: TicketApprovalStatus.Approved,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -771,6 +886,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       redemptionStatus: TicketRedemptionStatus.Redeemed,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: TicketApprovalStatus.Approved,
     });
 
     await insertTicket({
@@ -778,6 +894,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       redemptionStatus: TicketRedemptionStatus.Pending,
       purchaseOrderId: purchaseOrder.id,
+      approvalStatus: TicketApprovalStatus.Approved,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,

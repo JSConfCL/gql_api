@@ -7,23 +7,31 @@ import type * as Types from '../../../generated/types';
 import type { JsonObject } from "type-fest";
 import gql from 'graphql-tag';
 export type EventsQueryVariables = Types.Exact<{
-  input: Types.InputMaybe<Types.EventsSearchInput>;
+  input: Types.PaginatedInputEventsSearchInput;
 }>;
 
 
-export type EventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, name: string, description: string | null, visibility: Types.EventVisibility, status: Types.EventStatus, startDateTime: string, endDateTime: string | null }> };
+export type EventsQuery = { __typename?: 'Query', searchEvents: { __typename?: 'PaginatedEvent', data: Array<{ __typename?: 'Event', id: string, name: string, description: string | null, visibility: Types.EventVisibility, status: Types.EventStatus, startDateTime: string, endDateTime: string | null }>, pagination: { __typename?: 'Pagination', currentPage: number, pageSize: number, totalPages: number, totalRecords: number } } };
 
 
 export const Events = gql`
-    query Events($input: EventsSearchInput) {
-  events(input: $input) {
-    id
-    name
-    description
-    visibility
-    status
-    startDateTime
-    endDateTime
+    query Events($input: PaginatedInputEventsSearchInput!) {
+  searchEvents(input: $input) {
+    data {
+      id
+      name
+      description
+      visibility
+      status
+      startDateTime
+      endDateTime
+    }
+    pagination {
+      currentPage
+      pageSize
+      totalPages
+      totalRecords
+    }
   }
 }
     `;

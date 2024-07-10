@@ -1,11 +1,13 @@
-query EventTickets {
-  events {
-    id
-    name
-    tickets {
+query EventTickets($input: PaginatedInputEventsSearchInput!) {
+  searchEvents(input: $input) {
+    data {
       id
       name
-      quantity
+      tickets {
+        id
+        name
+        quantity
+      }
     }
   }
 }

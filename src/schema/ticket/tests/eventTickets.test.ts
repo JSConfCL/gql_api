@@ -70,13 +70,19 @@ describe("Should get events and its tickets", () => {
     >(
       {
         document: EventTickets,
+        variables: {
+          input: {},
+        },
       },
       user1,
     );
 
     assert.equal(response.errors, undefined);
-    assert.equal(response.data?.events[0]?.tickets?.length, 1);
-    assert.equal(response.data?.events[0]?.tickets[0]?.id, ticket.id);
+    assert.equal(response.data?.searchEvents.data[0]?.tickets?.length, 1);
+    assert.equal(
+      response.data?.searchEvents.data[0]?.tickets[0]?.id,
+      ticket.id,
+    );
   });
   it("as an anonymous query", async () => {
     const community1 = await insertCommunity();
@@ -92,10 +98,16 @@ describe("Should get events and its tickets", () => {
       EventTicketsQueryVariables
     >({
       document: EventTickets,
+      variables: {
+        input: {},
+      },
     });
 
     assert.equal(response.errors, undefined);
-    assert.equal(response.data?.events[0]?.tickets?.length, 1);
-    assert.equal(response.data?.events[0]?.tickets[0]?.id, ticket.id);
+    assert.equal(response.data?.searchEvents.data[0]?.tickets?.length, 1);
+    assert.equal(
+      response.data?.searchEvents.data[0]?.tickets[0]?.id,
+      ticket.id,
+    );
   });
 });

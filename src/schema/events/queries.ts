@@ -1,7 +1,27 @@
-import { SQL, eq, gte, ilike, lte } from "drizzle-orm";
+import {
+  SQL,
+  eq,
+  and,
+  gte,
+  ilike,
+  lte,
+  exists,
+  inArray,
+  asc,
+} from "drizzle-orm";
 
 import { builder } from "~/builder";
-import { eventsSchema, selectEventsSchema } from "~/datasources/db/schema";
+import {
+  eventsSchema,
+  selectEventsSchema,
+  ticketsSchema,
+  userTicketsSchema,
+} from "~/datasources/db/schema";
+import { paginationDBHelper } from "~/datasources/helpers/paginationQuery";
+import {
+  createPaginationInputType,
+  createPaginationObjectType,
+} from "~/schema/pagination/types";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 import { EventRef } from "~/schema/shared/refs";
 
@@ -11,6 +31,7 @@ const EventsSearchInput = builder.inputType("EventsSearchInput", {
   fields: (t) => ({
     id: t.string({ required: false }),
     name: t.string({ required: false }),
+    userHasTickets: t.boolean({ required: false }),
     status: t.field({
       type: EventStatus,
       required: false,
@@ -30,13 +51,16 @@ const EventsSearchInput = builder.inputType("EventsSearchInput", {
   }),
 });
 
-builder.queryFields((t) => ({
-  events: t.field({
+const PaginatedEventRef = createPaginationObjectType(EventRef);
+
+builder.queryField("searchEvents", (t) =>
+  t.field({
     description: "Get a list of events. Filter by name, id, status or date",
-    type: [EventRef],
-    args: {
-      input: t.arg({ type: EventsSearchInput, required: false }),
-    },
+    type: PaginatedEventRef,
+    args: createPaginationInputType(t, EventsSearchInput),
+    // args: {
+    //   input: t.arg({ type: EventsSearchInput, required: false }),
+    // },
     resolve: async (root, { input }, ctx) => {
       const {
         id,
@@ -45,8 +69,11 @@ builder.queryFields((t) => ({
         visibility,
         startDateTimeFrom,
         startDateTimeTo,
-      } = input ?? {};
+        userHasTickets,
+      } = input?.search ?? {};
       const wheres: SQL[] = [];
+
+      const query = ctx.DB.select().from(eventsSchema);
 
       if (id) {
         wheres.push(eq(eventsSchema.id, id));
@@ -54,6 +81,29 @@ builder.queryFields((t) => ({
 
       if (name) {
         wheres.push(ilike(eventsSchema.name, sanitizeForLikeSearch(name)));
+      }
+
+      if (userHasTickets) {
+        const subquery = ctx.DB.select({
+          id: ticketsSchema.id,
+        })
+          .from(ticketsSchema)
+          .where(eq(ticketsSchema.eventId, eventsSchema.id));
+
+        const existsQuery = exists(
+          ctx.DB.select({
+            ticket_template_id: userTicketsSchema.ticketTemplateId,
+          })
+            .from(userTicketsSchema)
+            .where(
+              and(
+                inArray(userTicketsSchema.ticketTemplateId, subquery),
+                eq(userTicketsSchema.approvalStatus, "approved"),
+              ),
+            ),
+        );
+
+        wheres.push(existsQuery);
       }
 
       if (status) {
@@ -72,17 +122,24 @@ builder.queryFields((t) => ({
         wheres.push(lte(eventsSchema.startDateTime, startDateTimeTo));
       }
 
-      const events = await ctx.DB.query.eventsSchema.findMany({
-        where: (c, { and }) => and(...wheres),
-        orderBy(fields, operators) {
-          return operators.asc(fields.createdAt);
-        },
-      });
+      const { data, pagination } = await paginationDBHelper(
+        ctx.DB,
+        query.where(and(...wheres)).orderBy(asc(eventsSchema.startDateTime)),
+        input.pagination,
+      );
 
-      return events.map((u) => selectEventsSchema.parse(u));
+      const parsedResults = data.map((u) => selectEventsSchema.parse(u));
+
+      return {
+        data: parsedResults,
+        pagination,
+      };
     },
   }),
-  event: t.field({
+);
+
+builder.queryField("event", (t) =>
+  t.field({
     description: "Get an event by id",
     type: EventRef,
     nullable: true,
@@ -105,4 +162,4 @@ builder.queryFields((t) => ({
       return selectEventsSchema.parse(event);
     },
   }),
-}));
+);
