@@ -83,7 +83,9 @@ builder.queryField("searchEvents", (t) =>
         wheres.push(ilike(eventsSchema.name, sanitizeForLikeSearch(name)));
       }
 
-      if (userHasTickets) {
+      const userId = ctx.USER?.id;
+
+      if (userHasTickets && userId) {
         const subquery = ctx.DB.select({
           id: ticketsSchema.id,
         })
@@ -99,6 +101,7 @@ builder.queryField("searchEvents", (t) =>
               and(
                 inArray(userTicketsSchema.ticketTemplateId, subquery),
                 eq(userTicketsSchema.approvalStatus, "approved"),
+                eq(userTicketsSchema.userId, userId),
               ),
             ),
         );
