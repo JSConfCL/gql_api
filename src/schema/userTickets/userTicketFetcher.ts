@@ -1,14 +1,4 @@
-import {
-  ColumnBaseConfig,
-  ColumnDataType,
-  SQL,
-  and,
-  asc,
-  desc,
-  eq,
-  exists,
-  inArray,
-} from "drizzle-orm";
+import { SQL, and, eq, inArray } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
 import { eventsSchema } from "~/datasources/db/events";
@@ -27,6 +17,7 @@ import {
 export type UserTicketSearch = {
   userIds?: string[];
   eventIds?: string[];
+  userTicketIds?: string[];
   ticketIds?: string[];
   eventName?: string;
   approvalStatus?: (typeof userTicketsApprovalStatusEnum)[number][];
@@ -40,6 +31,7 @@ const getSearchUserTicketsQuery = (
   const {
     userIds,
     eventIds,
+    userTicketIds,
     ticketIds,
     approvalStatus,
     redemptionStatus,
@@ -55,6 +47,8 @@ const getSearchUserTicketsQuery = (
   }
 
   if (eventIds) {
+    const shouldFilterByUserIds = userIds && userIds.length > 0;
+
     // subquery to get all the tickets associated with events
     const existsQuery = DB.select({
       id: userTicketsSchema.id,
@@ -68,7 +62,9 @@ const getSearchUserTicketsQuery = (
       .where(
         and(
           inArray(eventsSchema.id, eventIds),
-          inArray(userTicketsSchema.userId, userIds ?? []),
+          shouldFilterByUserIds
+            ? inArray(userTicketsSchema.userId, userIds)
+            : undefined,
         ),
       );
 
@@ -89,6 +85,10 @@ const getSearchUserTicketsQuery = (
 
   if (ticketIds) {
     wheres.push(inArray(userTicketsSchema.id, ticketIds));
+  }
+
+  if (userTicketIds) {
+    wheres.push(inArray(userTicketsSchema.id, userTicketIds));
   }
 
   return query.where(and(...wheres));
