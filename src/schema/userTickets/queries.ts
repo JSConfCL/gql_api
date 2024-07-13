@@ -1,17 +1,11 @@
-import { SQL, and, eq } from "drizzle-orm";
-
 import { builder } from "~/builder";
+import { selectUserTicketsSchema } from "~/datasources/db/schema";
 import {
-  eventsSchema,
-  selectUserTicketsSchema,
-  userTicketsSchema,
-} from "~/datasources/db/schema";
-import { paginationDBHelper } from "~/datasources/helpers/paginationQuery";
-import {
-  createPaginationObjectType,
   createPaginationInputType,
+  createPaginationObjectType,
 } from "~/schema/pagination/types";
 import { UserTicketRef } from "~/schema/shared/refs";
+import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 
 import {
   TicketApprovalStatus,
@@ -42,6 +36,11 @@ const MyTicketsSearchValues = builder.inputType("MyTicketsSearchValues", {
 
 const PaginatedUserTicketsRef = createPaginationObjectType(UserTicketRef);
 
+const normalUserAllowedAppovalStatus = new Set([
+  "approved",
+  "not_required",
+] as const);
+
 builder.queryFields((t) => ({
   myTickets: t.field({
     description: "Get a list of tickets for the current user",
@@ -50,39 +49,36 @@ builder.queryFields((t) => ({
     authz: {
       rules: ["IsAuthenticated"],
     },
-    resolve: async (root, { input }, ctx) => {
+    resolve: async (root, { input }, { DB, USER }) => {
       const { approvalStatus, eventId, paymentStatus, redemptionStatus } =
         input.search ?? {};
 
-      const wheres: SQL[] = [];
-
-      if (eventId) {
-        wheres.push(eq(eventsSchema.id, eventId));
+      if (!USER) {
+        throw new Error("User not found");
       }
 
-      if (paymentStatus) {
-        wheres.push(eq(userTicketsSchema.paymentStatus, paymentStatus));
-      }
+      const queryApprovalStatus = approvalStatus
+        ? USER.isSuperAdmin
+          ? approvalStatus
+          : normalUserAllowedAppovalStatus.has(approvalStatus)
+          ? approvalStatus
+          : undefined
+        : undefined;
 
-      if (approvalStatus) {
-        wheres.push(eq(userTicketsSchema.approvalStatus, approvalStatus));
-      }
-
-      if (redemptionStatus) {
-        wheres.push(eq(userTicketsSchema.redemptionStatus, redemptionStatus));
-      }
-
-      if (ctx.USER) {
-        wheres.push(eq(userTicketsSchema.userId, ctx.USER.id));
-      }
-
-      const { data, pagination } = await paginationDBHelper(
-        ctx.DB,
-        ctx.DB.select()
-          .from(userTicketsSchema)
-          .where(and(...wheres)),
-        input.pagination,
-      );
+      const { data, pagination } =
+        await userTicketFetcher.searchPaginatedUserTickets({
+          DB,
+          search: {
+            eventIds: eventId ? [eventId] : undefined,
+            userIds: [USER.id],
+            paymentStatus: paymentStatus ? [paymentStatus] : undefined,
+            approvalStatus: queryApprovalStatus
+              ? [queryApprovalStatus]
+              : undefined,
+            redemptionStatus: redemptionStatus ? [redemptionStatus] : undefined,
+          },
+          pagination: input.pagination,
+        });
 
       const results = data.map((t) => selectUserTicketsSchema.parse(t));
 
