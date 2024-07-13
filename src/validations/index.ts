@@ -4,6 +4,7 @@ import { z } from "zod";
 import { ORM_TYPE } from "~/datasources/db";
 import { selectUsersSchema } from "~/datasources/db/users";
 import { EventStatus } from "~/generated/types";
+import { eventsFetcher } from "~/schema/events/eventsFetcher";
 
 export type UserRoleEvent = "admin" | "member" | "collaborator";
 export type UserRoleCommunity = "admin" | "member" | "collaborator";
@@ -12,9 +13,14 @@ export async function isEventActive(
   eventId: string,
   DB: ORM_TYPE,
 ): Promise<boolean> {
-  const event = await DB.query.eventsSchema.findFirst({
-    where: (t, { eq }) => eq(t.id, eventId),
+  const events = await eventsFetcher.searchEvents({
+    DB,
+    search: {
+      eventIds: [eventId],
+    },
   });
+
+  const event = events[0];
 
   return event?.status === EventStatus.Active;
 }

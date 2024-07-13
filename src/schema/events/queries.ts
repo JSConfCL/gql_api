@@ -1,28 +1,10 @@
-import {
-  SQL,
-  eq,
-  and,
-  gte,
-  ilike,
-  lte,
-  exists,
-  inArray,
-  asc,
-} from "drizzle-orm";
-
 import { builder } from "~/builder";
-import {
-  eventsSchema,
-  selectEventsSchema,
-  ticketsSchema,
-  userTicketsSchema,
-} from "~/datasources/db/schema";
-import { paginationDBHelper } from "~/datasources/helpers/paginationQuery";
+import { selectEventsSchema } from "~/datasources/db/schema";
+import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import {
   createPaginationInputType,
   createPaginationObjectType,
 } from "~/schema/pagination/types";
-import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 import { EventRef } from "~/schema/shared/refs";
 
 import { EventStatus, EventVisibility } from "./types";
@@ -58,9 +40,6 @@ builder.queryField("searchEvents", (t) =>
     description: "Get a list of events. Filter by name, id, status or date",
     type: PaginatedEventRef,
     args: createPaginationInputType(t, EventsSearchInput),
-    // args: {
-    //   input: t.arg({ type: EventsSearchInput, required: false }),
-    // },
     resolve: async (root, { input }, ctx) => {
       const {
         id,
@@ -71,65 +50,21 @@ builder.queryField("searchEvents", (t) =>
         startDateTimeTo,
         userHasTickets,
       } = input?.search ?? {};
-      const wheres: SQL[] = [];
 
-      const query = ctx.DB.select().from(eventsSchema);
-
-      if (id) {
-        wheres.push(eq(eventsSchema.id, id));
-      }
-
-      if (name) {
-        wheres.push(ilike(eventsSchema.name, sanitizeForLikeSearch(name)));
-      }
-
-      const userId = ctx.USER?.id;
-
-      if (userHasTickets && userId) {
-        const subquery = ctx.DB.select({
-          id: ticketsSchema.id,
-        })
-          .from(ticketsSchema)
-          .where(eq(ticketsSchema.eventId, eventsSchema.id));
-
-        const existsQuery = exists(
-          ctx.DB.select({
-            ticket_template_id: userTicketsSchema.ticketTemplateId,
-          })
-            .from(userTicketsSchema)
-            .where(
-              and(
-                inArray(userTicketsSchema.ticketTemplateId, subquery),
-                eq(userTicketsSchema.approvalStatus, "approved"),
-                eq(userTicketsSchema.userId, userId),
-              ),
-            ),
-        );
-
-        wheres.push(existsQuery);
-      }
-
-      if (status) {
-        wheres.push(eq(eventsSchema.status, status));
-      }
-
-      if (visibility) {
-        wheres.push(eq(eventsSchema.visibility, visibility));
-      }
-
-      if (startDateTimeFrom) {
-        wheres.push(gte(eventsSchema.startDateTime, startDateTimeFrom));
-      }
-
-      if (startDateTimeTo) {
-        wheres.push(lte(eventsSchema.startDateTime, startDateTimeTo));
-      }
-
-      const { data, pagination } = await paginationDBHelper(
-        ctx.DB,
-        query.where(and(...wheres)).orderBy(asc(eventsSchema.startDateTime)),
-        input.pagination,
-      );
+      const { data, pagination } = await eventsFetcher.searchPaginatedEvents({
+        DB: ctx.DB,
+        pagination: input.pagination,
+        search: {
+          userId: ctx.USER?.id,
+          eventIds: id ? [id] : undefined,
+          eventName: name ?? undefined,
+          eventStatus: status ? [status] : undefined,
+          eventVisibility: visibility ? [visibility] : undefined,
+          startDateTimeFrom: startDateTimeFrom ?? undefined,
+          startDateTimeTo: startDateTimeTo ?? undefined,
+          userHasTickets: userHasTickets ?? false,
+        },
+      });
 
       const parsedResults = data.map((u) => selectEventsSchema.parse(u));
 
@@ -151,12 +86,14 @@ builder.queryField("event", (t) =>
     },
     resolve: async (root, args, ctx) => {
       const { id } = args;
-      const event = await ctx.DB.query.eventsSchema.findFirst({
-        where: (c, { eq }) => eq(c.id, id),
-        orderBy(fields, operators) {
-          return operators.asc(fields.createdAt);
+      const events = await eventsFetcher.searchEvents({
+        DB: ctx.DB,
+        search: {
+          eventIds: [id],
         },
       });
+
+      const event = events[0];
 
       if (!event) {
         return null;
