@@ -3,8 +3,9 @@ import { selectEventsSchema, selectUsersSchema } from "~/datasources/db/schema";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import { CommunityRef, EventRef, UserRef } from "~/schema/shared/refs";
 
+export const communityStatus = ["active", "inactive"] as const;
 export const CommnunityStatus = builder.enumType("CommnunityStatus", {
-  values: ["active", "inactive"] as const,
+  values: communityStatus,
 });
 
 builder.objectType(CommunityRef, {
