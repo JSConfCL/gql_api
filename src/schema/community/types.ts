@@ -1,16 +1,11 @@
-import { eq, inArray } from "drizzle-orm";
-
 import { builder } from "~/builder";
-import {
-  eventsSchema,
-  eventsToCommunitiesSchema,
-  selectEventsSchema,
-  selectUsersSchema,
-} from "~/datasources/db/schema";
+import { selectEventsSchema, selectUsersSchema } from "~/datasources/db/schema";
+import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import { CommunityRef, EventRef, UserRef } from "~/schema/shared/refs";
 
+export const communityStatus = ["active", "inactive"] as const;
 export const CommnunityStatus = builder.enumType("CommnunityStatus", {
-  values: ["active", "inactive"] as const,
+  values: communityStatus,
 });
 
 builder.objectType(CommunityRef, {
@@ -27,15 +22,10 @@ builder.objectType(CommunityRef, {
     events: t.field({
       type: [EventRef],
       resolve: async (root, args, ctx) => {
-        const events = await ctx.DB.query.eventsSchema.findMany({
-          where: inArray(
-            eventsSchema.id,
-            ctx.DB.select({ id: eventsToCommunitiesSchema.eventId })
-              .from(eventsToCommunitiesSchema)
-              .where(eq(eventsToCommunitiesSchema.communityId, root.id)),
-          ),
-          orderBy(fields, operators) {
-            return operators.asc(fields.createdAt);
+        const events = await eventsFetcher.searchEvents({
+          DB: ctx.DB,
+          search: {
+            communityIds: [root.id],
           },
         });
 

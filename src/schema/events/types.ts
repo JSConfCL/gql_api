@@ -9,10 +9,10 @@ import {
   selectUserTicketsSchema,
   selectUsersSchema,
   ticketsSchema,
-  userTicketsSchema,
   usersSchema,
 } from "~/datasources/db/schema";
 import { getImagesBySanityEventId } from "~/datasources/sanity/images";
+import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import {
   CommunityRef,
   EventRef,
@@ -28,12 +28,15 @@ import {
   TicketRedemptionStatus,
 } from "~/schema/userTickets/types";
 import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
+export const eventStatus = ["active", "inactive"] as const;
 
 export const EventStatus = builder.enumType("EventStatus", {
-  values: ["active", "inactive"] as const,
+  values: eventStatus,
 });
+
+export const eventVisibility = ["public", "private", "unlisted"] as const;
 export const EventVisibility = builder.enumType("EventVisibility", {
-  values: ["public", "private", "unlisted"] as const,
+  values: eventVisibility,
 });
 const AdminRoles = new Set(["admin", "collaborator"]);
 
@@ -59,9 +62,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
   description:
     "Representation of an Event (Events and Users, is what tickets are linked to)",
   load: (ids: string[], context) =>
-    context.DB.query.eventsSchema.findMany({
-      where: (t, { inArray }) => inArray(t.id, ids),
-    }),
+    eventsFetcher.searchEvents({ DB: context.DB, search: { eventIds: ids } }),
   fields: (t) => ({
     id: t.exposeString("id", { nullable: false }),
     name: t.exposeString("name", { nullable: false }),

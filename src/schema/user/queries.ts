@@ -8,6 +8,7 @@ import {
 } from "~/datasources/db/schema";
 import { UserRef } from "~/schema/shared/refs";
 import { SearchableUserTags } from "~/schema/user/types";
+import { usersFetcher } from "~/schema/user/userFetcher";
 
 const userSearchInput = builder
   .inputRef<{
@@ -32,9 +33,18 @@ builder.queryFields((t) => ({
         throw new Error("User not found");
       }
 
-      const user = await DB.query.usersSchema.findFirst({
-        where: (u, { eq }) => eq(u.id, USER.id),
+      const users = await usersFetcher.searchUsers({
+        DB: DB,
+        search: {
+          userIds: [USER.id],
+        },
       });
+
+      const user = users[0];
+
+      if (!user) {
+        throw new Error("User not found");
+      }
 
       return selectUsersSchema.parse(user);
     },
@@ -42,11 +52,13 @@ builder.queryFields((t) => ({
   users: t.field({
     description: "Get a list of users",
     type: [UserRef],
-    resolve: async (root, args, ctx) => {
-      const users = await ctx.DB.query.usersSchema.findMany({
-        orderBy(fields, operators) {
-          return operators.asc(fields.createdAt);
-        },
+    authz: {
+      rules: ["IsSuperAdmin"],
+    },
+    resolve: async (root, args, { DB }) => {
+      const users = await usersFetcher.searchUsers({
+        DB: DB,
+        search: {},
       });
 
       return users.map((u) => selectUsersSchema.parse(u));
