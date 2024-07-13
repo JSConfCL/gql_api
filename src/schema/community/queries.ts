@@ -1,6 +1,6 @@
 import { builder } from "~/builder";
 import { selectCommunitySchema } from "~/datasources/db/schema";
-import { communitysFetcher } from "~/schema/community/communityFetcher";
+import { communitiesFetcher } from "~/schema/community/communityFetcher";
 import { CommunityRef } from "~/schema/shared/refs";
 
 import { CommnunityStatus } from "./types";
@@ -23,7 +23,7 @@ builder.queryFields((t) => ({
     resolve: async (root, args, ctx) => {
       const { id, name, status } = args;
 
-      const communities = await communitysFetcher.searchCommunities({
+      const communities = await communitiesFetcher.searchCommunities({
         DB: ctx.DB,
         search: {
           communityIds: id ? [id] : undefined,
@@ -44,7 +44,7 @@ builder.queryFields((t) => ({
     },
     resolve: async (root, args, ctx) => {
       const { id } = args;
-      const communities = await communitysFetcher.searchCommunities({
+      const communities = await communitiesFetcher.searchCommunities({
         DB: ctx.DB,
         search: {
           communityIds: id ? [id] : undefined,

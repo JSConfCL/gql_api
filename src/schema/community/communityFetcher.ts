@@ -79,7 +79,7 @@ const searchPaginatedCommunities = async ({
   return results;
 };
 
-export const communitysFetcher = {
+export const communitiesFetcher = {
   searchCommunities,
   searchPaginatedCommunities,
 };

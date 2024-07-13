@@ -9,7 +9,6 @@ import {
   selectUserTicketsSchema,
   selectUsersSchema,
   ticketsSchema,
-  userTicketsSchema,
   usersSchema,
 } from "~/datasources/db/schema";
 import { getImagesBySanityEventId } from "~/datasources/sanity/images";
@@ -62,7 +61,8 @@ const EventsTicketsSearchInput = builder.inputType("EventsTicketsSearchInput", {
 export const EventLoadable = builder.loadableObject(EventRef, {
   description:
     "Representation of an Event (Events and Users, is what tickets are linked to)",
-  load: (ids: string[], context) => eventsFetcher.searchEvents({ DB: context.DB, search: { eventIds: ids } }),
+  load: (ids: string[], context) =>
+    eventsFetcher.searchEvents({ DB: context.DB, search: { eventIds: ids } }),
   fields: (t) => ({
     id: t.exposeString("id", { nullable: false }),
     name: t.exposeString("name", { nullable: false }),
