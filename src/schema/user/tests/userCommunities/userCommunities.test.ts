@@ -15,7 +15,6 @@ import {
 } from "~/schema/user/tests/userCommunities/getUsersCommunities.generated";
 import {
   executeGraphqlOperation,
-  executeGraphqlOperationAsUser,
   insertCommunity,
   insertUser,
   insertUserToCommunity,
@@ -23,9 +22,7 @@ import {
 
 describe("Users Communities Graphql Tests", () => {
   it("Should return a list of users with their communities", async () => {
-    const user = await insertUser({
-      isSuperAdmin: true,
-    });
+    const user = await insertUser();
     const user2 = await insertUser();
     const community1 = await insertCommunity();
 
@@ -34,15 +31,12 @@ describe("Users Communities Graphql Tests", () => {
       communityId: community1.id,
       role: "member",
     });
-    const response = await executeGraphqlOperationAsUser<
+    const response = await executeGraphqlOperation<
       UsersAndCommunitiesQuery,
       UsersAndCommunitiesQueryVariables
-    >(
-      {
-        document: UsersAndCommunities,
-      },
-      user,
-    );
+    >({
+      document: UsersAndCommunities,
+    });
 
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.users.length, 2);

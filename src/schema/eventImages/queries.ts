@@ -1,6 +1,5 @@
 import { builder } from "~/builder";
 import { getImagesBySanityEventId } from "~/datasources/sanity/images";
-import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import { SanityAssetRef } from "~/schema/shared/refs";
 
 const EventImageSearch = builder.inputType("EventImageSearch", {
@@ -26,14 +25,12 @@ builder.queryFields((t) => ({
         return [];
       }
 
-      const events = await eventsFetcher.searchEvents({
-        DB: ctx.DB,
-        search: {
-          eventIds: [eventId],
+      const event = await ctx.DB.query.eventsSchema.findFirst({
+        where: (c, { eq }) => eq(c.id, eventId),
+        orderBy(fields, operators) {
+          return operators.asc(fields.createdAt);
         },
       });
-
-      const event = events[0];
 
       if (!event) {
         return [];

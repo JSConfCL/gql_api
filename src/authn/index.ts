@@ -84,7 +84,7 @@ export const getUser = async ({
     payload.user_metadata;
   const profileInfo = insertUsersSchema.safeParse({
     email: payload.email,
-    isEmailVerified: email_verified,
+    emailVerified: email_verified,
     imageUrl: avatar_url ? avatar_url : picture ? picture : "",
     externalId: sub,
     name,

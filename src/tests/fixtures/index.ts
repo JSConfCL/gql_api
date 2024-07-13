@@ -223,7 +223,7 @@ export const insertUser = async (
     email: partialInput?.email ?? faker.internet.email(),
     name: partialInput?.name,
     isSuperAdmin: partialInput?.isSuperAdmin,
-    isEmailVerified: partialInput?.isEmailVerified,
+    emailVerified: partialInput?.emailVerified,
     lastName: partialInput?.lastName,
     publicMetadata: partialInput?.publicMetadata,
     imageUrl: partialInput?.imageUrl,

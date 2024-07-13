@@ -29,7 +29,7 @@ export const updateUserProfileInfo = async (
         username: parsedProfileInfo.username ?? getUsername(),
         name: parsedProfileInfo.name,
         imageUrl: parsedProfileInfo.imageUrl,
-        isEmailVerified: parsedProfileInfo.isEmailVerified,
+        emailVerified: parsedProfileInfo.emailVerified,
         publicMetadata: parsedProfileInfo.publicMetadata ?? {},
       })
       .returning();
@@ -50,7 +50,7 @@ export const updateUserProfileInfo = async (
         externalId: parsedProfileInfo.externalId,
         name: parsedProfileInfo.name,
         imageUrl: parsedProfileInfo.imageUrl,
-        isEmailVerified: parsedProfileInfo.isEmailVerified,
+        emailVerified: parsedProfileInfo.emailVerified,
         publicMetadata: parsedProfileInfo.publicMetadata ?? {},
         updatedAt: sql`current_timestamp`,
       })

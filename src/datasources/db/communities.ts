@@ -9,8 +9,7 @@ import {
 } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
-export const communityStatusEnum = ["active", "inactive"] as const;
-
+const communityStatusEnum = ["active", "inactive"] as const;
 // COMMUNITY-TABLE
 export const communitySchema = pgTable("communities", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),

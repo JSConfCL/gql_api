@@ -1,6 +1,11 @@
+import { SQL, eq, ilike } from "drizzle-orm";
+
 import { builder } from "~/builder";
-import { selectCommunitySchema } from "~/datasources/db/schema";
-import { communitiesFetcher } from "~/schema/community/communityFetcher";
+import {
+  communitySchema,
+  selectCommunitySchema,
+} from "~/datasources/db/schema";
+import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 import { CommunityRef } from "~/schema/shared/refs";
 
 import { CommnunityStatus } from "./types";
@@ -22,13 +27,24 @@ builder.queryFields((t) => ({
     },
     resolve: async (root, args, ctx) => {
       const { id, name, status } = args;
+      const wheres: SQL[] = [];
 
-      const communities = await communitiesFetcher.searchCommunities({
-        DB: ctx.DB,
-        search: {
-          communityIds: id ? [id] : undefined,
-          communityName: name ?? undefined,
-          communityStatus: status ? [status] : undefined,
+      if (id) {
+        wheres.push(eq(communitySchema.id, id));
+      }
+
+      if (name) {
+        wheres.push(ilike(communitySchema.name, sanitizeForLikeSearch(name)));
+      }
+
+      if (status) {
+        wheres.push(eq(communitySchema.status, status));
+      }
+
+      const communities = await ctx.DB.query.communitySchema.findMany({
+        where: (c, { and }) => and(...wheres),
+        orderBy(fields, operators) {
+          return operators.asc(fields.createdAt);
         },
       });
 
@@ -44,16 +60,18 @@ builder.queryFields((t) => ({
     },
     resolve: async (root, args, ctx) => {
       const { id } = args;
-      const communities = await communitiesFetcher.searchCommunities({
-        DB: ctx.DB,
-        search: {
-          communityIds: id ? [id] : undefined,
+      const community = await ctx.DB.query.communitySchema.findFirst({
+        where: (c, { eq }) => eq(c.id, id),
+        orderBy(fields, operators) {
+          return operators.asc(fields.createdAt);
         },
       });
 
-      const commmunity = communities[0];
+      if (!community) {
+        return null;
+      }
 
-      return commmunity ? selectCommunitySchema.parse(commmunity) : null;
+      return selectCommunitySchema.parse(community);
     },
   }),
 }));

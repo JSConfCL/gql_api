@@ -5,23 +5,18 @@ import {
   UsersQuery,
   UsersQueryVariables,
 } from "~/schema/user/tests/getUsers.generated";
-import { executeGraphqlOperationAsUser, insertUser } from "~/tests/fixtures";
+import { executeGraphqlOperation, insertUser } from "~/tests/fixtures";
 
 describe("Users Graphql Tests", () => {
   it("Should return a list of users", async () => {
-    const user = await insertUser({
-      isSuperAdmin: true,
-    });
+    const user = await insertUser();
     const user2 = await insertUser();
-    const response = await executeGraphqlOperationAsUser<
+    const response = await executeGraphqlOperation<
       UsersQuery,
       UsersQueryVariables
-    >(
-      {
-        document: Users,
-      },
-      user,
-    );
+    >({
+      document: Users,
+    });
 
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.users.length, 2);

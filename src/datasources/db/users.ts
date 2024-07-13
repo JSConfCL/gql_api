@@ -19,7 +19,7 @@ export const usersSchema = pgTable("users", {
   }),
   genderOtherText: text("gender_other_text"),
   isSuperAdmin: boolean("isSuperAdmin").default(false),
-  isEmailVerified: boolean("emailVerified"),
+  emailVerified: boolean("emailVerified"),
   imageUrl: text("imageUrl"),
   username: text("username").unique().notNull(),
   publicMetadata: jsonb("publicMetadata"),
