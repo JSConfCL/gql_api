@@ -28,15 +28,15 @@ builder.queryFields((t) => ({
     authz: {
       rules: ["IsAuthenticated"],
     },
-    resolve: async (root, args, { USER, DB }) => {
-      if (!USER) {
+    resolve: async (root, args, { ORIGINAL_USER, DB }) => {
+      if (!ORIGINAL_USER) {
         throw new Error("User not found");
       }
 
       const users = await usersFetcher.searchUsers({
         DB: DB,
         search: {
-          userIds: [USER.id],
+          userIds: [ORIGINAL_USER.id],
         },
       });
 

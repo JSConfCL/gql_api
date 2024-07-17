@@ -10,6 +10,14 @@ import {
 import { getUsername } from "~/datasources/queries/utils/createUsername";
 import { logger } from "~/logging";
 
+export const findUserByID = async (db: ORM_TYPE, id: string) => {
+  const result = await db.query.usersSchema.findFirst({
+    where: (u, { eq }) => eq(u.id, id),
+  });
+
+  return result ? selectUsersSchema.parse(result) : null;
+};
+
 export const updateUserProfileInfo = async (
   db: ORM_TYPE,
   parsedProfileInfo: z.infer<typeof insertUsersSchema>,
