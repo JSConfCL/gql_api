@@ -13,24 +13,12 @@ import { logger } from "~/logging";
 // Obtener el token de autorización de la solicitud, ya sea del encabezado de
 // autorización o de la cookie "community-os-access-token"
 const getAuthToken = (request: Request) => {
-  const cookieHeader = request.headers.get("Cookie");
   const authHeader = request.headers.get("Authorization");
 
   if (authHeader) {
     const token = authHeader.split("Bearer ")[1];
 
     return token;
-  }
-
-  if (cookieHeader) {
-    const cookies = cookieHeader.split(";").map((c) => c.trim());
-    const tokenCookie = cookies.find((c) =>
-      c.startsWith("community-os-access-token="),
-    );
-
-    if (tokenCookie) {
-      return tokenCookie.split("=")[1];
-    }
   }
 
   return null;
@@ -74,18 +62,14 @@ export const getUserFromRequest = async ({
   request: Request;
   DB: ORM_TYPE;
 }) => {
-  if (!ORIGINAL_USER) {
-    return ORIGINAL_USER;
-  }
-
-  if (ORIGINAL_USER.isSuperAdmin) {
+  if (ORIGINAL_USER?.isSuperAdmin) {
     const user = await getImpersonatedUserFromRequest(request, DB);
 
     if (user) {
       logger.info(`User: ${ORIGINAL_USER.id} is impersonating user ${user.id}`);
-    }
 
-    return user;
+      return user;
+    }
   }
 
   return ORIGINAL_USER;
