@@ -12,11 +12,12 @@ export type UserTicketSearch = {
   userIds?: string[];
   eventIds?: string[];
   userName?: string;
+  email?: string;
   name?: string;
 };
 
 const getSearchUsersQuery = (DB: ORM_TYPE, search: UserTicketSearch = {}) => {
-  const { userIds, userName, name } = search;
+  const { userIds, userName, name, email } = search;
 
   const wheres: SQL[] = [];
   const query = DB.select().from(usersSchema);
@@ -38,6 +39,10 @@ const getSearchUsersQuery = (DB: ORM_TYPE, search: UserTicketSearch = {}) => {
       );
 
     wheres.push(inArray(usersSchema.id, userNameSelect));
+  }
+
+  if (email) {
+    wheres.push(ilike(usersSchema.email, sanitizeForLikeSearch(email)));
   }
 
   if (userName) {
