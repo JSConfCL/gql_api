@@ -3,7 +3,7 @@ import { YogaInitialContext } from "graphql-yoga";
 import { Resend } from "resend";
 
 import { Env } from "worker-configuration";
-import { getUser } from "~/authn";
+import { getUserFromRequest, upsertUserFromRequest } from "~/authn";
 import { getDb } from "~/datasources/db";
 import { getMercadoPagoFetch } from "~/datasources/mercadopago";
 import { getSanityClient } from "~/datasources/sanity/client";
@@ -89,9 +89,19 @@ export const creageGraphqlContext = async ({
     neonUrl: DB_URL,
   });
   const RESEND = new Resend(RESEND_API_KEY);
-  const USER = await getUser({
+  const ORIGINAL_USER = await upsertUserFromRequest({
     request,
     SUPABASE_JWT_DECODER,
+    DB,
+  });
+  // This is the user that will be used for mostly all queries across the
+  // application. However, in some cases, we might want to use the original
+  // user. (Like on the "me" query)
+  // Function does a passthrough to the ORIGINAL_USER if the user does not have
+  // impersonation capabilities.
+  const USER = await getUserFromRequest({
+    ORIGINAL_USER,
+    request,
     DB,
   });
 
@@ -99,6 +109,7 @@ export const creageGraphqlContext = async ({
     ...initContextCache(),
     DB,
     USER,
+    ORIGINAL_USER,
     RESEND,
     PURCHASE_CALLBACK_URL,
     GOOGLE_PHOTOS_IMPORT_QUEUE,

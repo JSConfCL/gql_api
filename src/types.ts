@@ -14,6 +14,7 @@ export type Context = {
   GET_MERCADOPAGO_CLIENT: MercadoPagoFetch;
   RESEND: Resend;
   USER: USER | null;
+  ORIGINAL_USER: USER | null;
   MAIL_QUEUE: Queue;
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
   PURCHASE_CALLBACK_URL: string;

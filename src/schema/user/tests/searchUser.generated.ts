@@ -7,21 +7,23 @@ import type * as Types from '../../../generated/types';
 import type { JsonObject } from "type-fest";
 import gql from 'graphql-tag';
 export type UserSearchQueryVariables = Types.Exact<{
-  input: Types.UserSearchInput;
+  input: Types.PaginatedInputUserSearchValues;
 }>;
 
 
-export type UserSearchQuery = { __typename?: 'Query', userSearch: Array<{ __typename?: 'User', id: string, name: string | null, lastName: string | null, bio: string | null, username: string }> };
+export type UserSearchQuery = { __typename?: 'Query', userSearch: { __typename?: 'PaginatedUser', data: Array<{ __typename?: 'User', id: string, name: string | null, lastName: string | null, bio: string | null, username: string }> } };
 
 
 export const UserSearch = gql`
-    query UserSearch($input: userSearchInput!) {
+    query UserSearch($input: PaginatedInputUserSearchValues!) {
   userSearch(input: $input) {
-    id
-    name
-    lastName
-    bio
-    username
+    data {
+      id
+      name
+      lastName
+      bio
+      username
+    }
   }
 }
     `;

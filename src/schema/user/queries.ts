@@ -1,25 +1,31 @@
-import { SQL, inArray } from "drizzle-orm";
-
 import { builder } from "~/builder";
+import { selectUsersSchema } from "~/datasources/db/schema";
 import {
-  AllowedUserTags,
-  selectUsersSchema,
-  tagsSchema,
-} from "~/datasources/db/schema";
+  createPaginationInputType,
+  createPaginationObjectType,
+} from "~/schema/pagination/types";
 import { UserRef } from "~/schema/shared/refs";
 import { SearchableUserTags } from "~/schema/user/types";
 import { usersFetcher } from "~/schema/user/userFetcher";
 
-const userSearchInput = builder
-  .inputRef<{
-    name?: string;
-    tags?: AllowedUserTags[];
-  }>("userSearchInput")
-  .implement({
-    fields: (t) => ({
-      tags: t.field({ type: [SearchableUserTags], required: false }),
+const UserSearchValues = builder.inputType("UserSearchValues", {
+  fields: (t) => ({
+    name: t.field({
+      type: "String",
+      required: false,
     }),
-  });
+    tags: t.field({
+      type: [SearchableUserTags],
+      required: false,
+    }),
+    userName: t.field({
+      type: "String",
+      required: false,
+    }),
+  }),
+});
+
+const PaginatedUsersRef = createPaginationObjectType(UserRef);
 
 builder.queryFields((t) => ({
   me: t.field({
@@ -28,15 +34,15 @@ builder.queryFields((t) => ({
     authz: {
       rules: ["IsAuthenticated"],
     },
-    resolve: async (root, args, { USER, DB }) => {
-      if (!USER) {
+    resolve: async (root, args, { ORIGINAL_USER, DB }) => {
+      if (!ORIGINAL_USER) {
         throw new Error("User not found");
       }
 
       const users = await usersFetcher.searchUsers({
         DB: DB,
         search: {
-          userIds: [USER.id],
+          userIds: [ORIGINAL_USER.id],
         },
       });
 
@@ -66,41 +72,29 @@ builder.queryFields((t) => ({
   }),
   userSearch: t.field({
     description: "Get a list of users",
-    type: [UserRef],
+    type: PaginatedUsersRef,
     authz: {
       rules: ["IsSuperAdmin"],
     },
-    args: {
-      input: t.arg({ type: userSearchInput, required: true }),
-    },
+    args: createPaginationInputType(t, UserSearchValues),
     resolve: async (root, { input }, { DB }) => {
-      const { tags } = input;
-      const wheres: SQL[] = [];
+      const { name, tags } = input.search ?? {};
 
-      if (!tags || !tags.length) {
-        return [];
-      }
-
-      if (tags && tags.length !== 0) {
-        wheres.push(inArray(tagsSchema.name, tags));
-      }
-
-      const tagsUsers = await DB.query.tagsSchema.findMany({
-        where: (_, { and }) => and(...wheres),
-        with: {
-          tagsToUsers: {
-            with: {
-              user: true,
-            },
-          },
+      const { data, pagination } = await usersFetcher.searchPaginatedUsers({
+        DB,
+        search: {
+          name: name ?? undefined,
+          tags: tags ?? undefined,
         },
+        pagination: input.pagination,
       });
 
-      return tagsUsers.flatMap((tu) =>
-        tu.tagsToUsers.map((tagsToUser) =>
-          selectUsersSchema.parse(tagsToUser?.user),
-        ),
-      );
+      const results = data.map((t) => selectUsersSchema.parse(t));
+
+      return {
+        data: results,
+        pagination,
+      };
     },
   }),
 }));

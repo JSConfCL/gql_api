@@ -2,15 +2,17 @@ import { decode, verify } from "@tsndr/cloudflare-worker-jwt";
 
 import { TokenPayload } from "~/authn/types";
 import { ORM_TYPE } from "~/datasources/db";
-import { insertUsersSchema } from "~/datasources/db/schema";
-import { updateUserProfileInfo } from "~/datasources/queries/users";
+import { insertUsersSchema, USER } from "~/datasources/db/schema";
+import {
+  findUserByID,
+  updateUserProfileInfo,
+} from "~/datasources/queries/users";
 import { unauthorizedError } from "~/errors";
 import { logger } from "~/logging";
 
 // Obtener el token de autorización de la solicitud, ya sea del encabezado de
 // autorización o de la cookie "community-os-access-token"
 const getAuthToken = (request: Request) => {
-  const cookieHeader = request.headers.get("Cookie");
   const authHeader = request.headers.get("Authorization");
 
   if (authHeader) {
@@ -19,15 +21,21 @@ const getAuthToken = (request: Request) => {
     return token;
   }
 
-  if (cookieHeader) {
-    const cookies = cookieHeader.split(";").map((c) => c.trim());
-    const tokenCookie = cookies.find((c) =>
-      c.startsWith("community-os-access-token="),
-    );
+  return null;
+};
 
-    if (tokenCookie) {
-      return tokenCookie.split("=")[1];
-    }
+// Obtener el token de autorización de la solicitud, ya sea del encabezado de
+// autorización o de la cookie "community-os-access-token"
+const getImpersonatedUserFromRequest = async (
+  request: Request,
+  DB: ORM_TYPE,
+) => {
+  const authHeader = request.headers.get("x-impersonated-user-id");
+
+  if (authHeader) {
+    const user = await findUserByID(DB, authHeader);
+
+    return user;
   }
 
   return null;
@@ -45,7 +53,29 @@ const decodeJWT = (JWT_TOKEN: string) => {
   }
 };
 
-export const getUser = async ({
+export const getUserFromRequest = async ({
+  ORIGINAL_USER,
+  request,
+  DB,
+}: {
+  ORIGINAL_USER: USER | null;
+  request: Request;
+  DB: ORM_TYPE;
+}) => {
+  if (ORIGINAL_USER?.isSuperAdmin) {
+    const user = await getImpersonatedUserFromRequest(request, DB);
+
+    if (user) {
+      logger.info(`User: ${ORIGINAL_USER.id} is impersonating user ${user.id}`);
+
+      return user;
+    }
+  }
+
+  return ORIGINAL_USER;
+};
+
+export const upsertUserFromRequest = async ({
   request,
   SUPABASE_JWT_DECODER,
   DB,

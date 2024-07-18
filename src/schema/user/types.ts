@@ -24,6 +24,15 @@ builder.objectType(UserRef, {
         }
       },
     }),
+    impersonatedUser: t.field({
+      type: UserRef,
+      nullable: true,
+      resolve: (root, args, ctx) => {
+        if (ctx.ORIGINAL_USER?.isSuperAdmin) {
+          return ctx.USER;
+        }
+      },
+    }),
     communities: t.field({
       type: [CommunityRef],
       resolve: async (root, args, ctx) => {

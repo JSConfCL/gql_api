@@ -42,14 +42,16 @@ describe("Search users by tag", () => {
       document: UserSearch,
       variables: {
         input: {
-          tags: [SearchableUserTags.CoreTeam],
+          search: {
+            tags: [SearchableUserTags.CoreTeam],
+          },
         },
       },
     });
 
     assert.equal(response.errors, undefined);
-    assert.isArray(response.data?.userSearch);
-    assert.equal(response.data?.userSearch?.length, 1);
+    assert.isArray(response.data?.userSearch.data);
+    assert.equal(response.data?.userSearch?.data.length, 1);
   });
   it("Should return correct of users when passed 1 tag", async () => {
     const user = await insertUser();
@@ -72,14 +74,16 @@ describe("Search users by tag", () => {
       document: UserSearch,
       variables: {
         input: {
-          tags: [SearchableUserTags.CoreTeam],
+          search: {
+            tags: [SearchableUserTags.CoreTeam],
+          },
         },
       },
     });
 
     assert.equal(response.errors, undefined);
-    assert.isArray(response.data?.userSearch);
-    assert.equal(response.data?.userSearch?.length, 2);
+    assert.isArray(response.data?.userSearch.data);
+    assert.equal(response.data?.userSearch?.data.length, 2);
   });
   it("Should return correct of users when passed multiple tags", async () => {
     const user = await insertUser();
@@ -106,31 +110,16 @@ describe("Search users by tag", () => {
       document: UserSearch,
       variables: {
         input: {
-          tags: [SearchableUserTags.CoreTeam, SearchableUserTags.DevTeam],
+          search: {
+            tags: [SearchableUserTags.CoreTeam, SearchableUserTags.DevTeam],
+          },
         },
       },
     });
 
     assert.equal(response.errors, undefined);
-    assert.isArray(response.data?.userSearch);
-    assert.equal(response.data?.userSearch?.length, 2);
-  });
-  it("Should return an empty list for no tags", async () => {
-    const user = await insertUser();
-    const user2 = await insertUser();
-    const response = await executeGraphqlOperationAsSuperAdmin<
-      UserSearchQuery,
-      UserSearchQueryVariables
-    >({
-      document: UserSearch,
-      variables: {
-        input: {},
-      },
-    });
-
-    assert.equal(response.errors, undefined);
-    assert.isArray(response.data?.userSearch);
-    assert.equal(response.data?.userSearch?.length, 0);
+    assert.isArray(response.data?.userSearch.data);
+    assert.equal(response.data?.userSearch?.data.length, 2);
   });
   it("Should fail if query is anonymous", async () => {
     const response = await executeGraphqlOperation<

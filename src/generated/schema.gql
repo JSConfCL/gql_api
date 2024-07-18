@@ -369,6 +369,19 @@ input PaginatedInputMyTicketsSearchValues {
   search: MyTicketsSearchValues
 }
 
+input PaginatedInputUserSearchValues {
+  pagination: PaginationSearchInputParams! = { page: 0, pageSize: 20 }
+  search: UserSearchValues
+}
+
+"""
+Type used for querying the paginated leaves and it's paginated meta data
+"""
+type PaginatedUser {
+  data: [User!]!
+  pagination: Pagination!
+}
+
 """
 Type used for querying the paginated leaves and it's paginated meta data
 """
@@ -525,7 +538,7 @@ type Query {
   """
   Get a list of users
   """
-  userSearch(input: userSearchInput!): [User!]!
+  userSearch(input: PaginatedInputUserSearchValues!): PaginatedUser!
 
   """
   Get a list of users
@@ -783,11 +796,20 @@ Representation of a user
 type User {
   bio: String
   communities: [Community!]!
+  email: String
   id: String!
+  imageUrl: String
+  impersonatedUser: User
   isSuperAdmin: Boolean
   lastName: String
   name: String
   username: String!
+}
+
+input UserSearchValues {
+  name: String
+  tags: [SearchableUserTags!]
+  userName: String
 }
 
 """
@@ -868,8 +890,4 @@ input userEditInput {
   lastName: String
   name: String
   username: String
-}
-
-input userSearchInput {
-  tags: [SearchableUserTags!]
 }

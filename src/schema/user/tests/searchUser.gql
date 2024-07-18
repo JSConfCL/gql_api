@@ -1,9 +1,11 @@
-query UserSearch($input: userSearchInput!) {
+query UserSearch($input: PaginatedInputUserSearchValues!) {
   userSearch(input: $input) {
-    id
-    name
-    lastName
-    bio
-    username
+    data {
+      id
+      name
+      lastName
+      bio
+      username
+    }
   }
 }

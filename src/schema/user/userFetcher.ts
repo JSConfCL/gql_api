@@ -1,7 +1,12 @@
-import { SQL, and, asc, ilike, inArray, or } from "drizzle-orm";
+import { SQL, and, asc, eq, ilike, inArray, or } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
-import { usersSchema } from "~/datasources/db/schema";
+import {
+  AllowedUserTags,
+  tagsSchema,
+  usersSchema,
+  usersTagsSchema,
+} from "~/datasources/db/schema";
 import {
   PaginationOptionsType,
   paginationDBHelper,
@@ -12,11 +17,13 @@ export type UserTicketSearch = {
   userIds?: string[];
   eventIds?: string[];
   userName?: string;
+  email?: string;
   name?: string;
+  tags?: AllowedUserTags[];
 };
 
 const getSearchUsersQuery = (DB: ORM_TYPE, search: UserTicketSearch = {}) => {
-  const { userIds, userName, name } = search;
+  const { userIds, userName, name, email, tags } = search;
 
   const wheres: SQL[] = [];
   const query = DB.select().from(usersSchema);
@@ -38,6 +45,25 @@ const getSearchUsersQuery = (DB: ORM_TYPE, search: UserTicketSearch = {}) => {
       );
 
     wheres.push(inArray(usersSchema.id, userNameSelect));
+  }
+
+  if (tags && tags.length > 0) {
+    const selectTagsIds = DB.select({
+      id: tagsSchema.id,
+    })
+      .from(tagsSchema)
+      .where(inArray(tagsSchema.name, tags));
+    const tagsSelect = DB.select({
+      userId: usersTagsSchema.userId,
+    })
+      .from(usersTagsSchema)
+      .where(inArray(usersTagsSchema.tagId, selectTagsIds));
+
+    wheres.push(inArray(usersSchema.id, tagsSelect));
+  }
+
+  if (email) {
+    wheres.push(ilike(usersSchema.email, sanitizeForLikeSearch(email)));
   }
 
   if (userName) {
