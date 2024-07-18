@@ -19,6 +19,8 @@ export const communitySchema = pgTable("communities", {
   description: text("description"),
   logoImageSanityRef: text("logo_image_sanity_ref"), // these are sanity image IDs
   bannerImageSanityRef: text("banner_image_sanity_ref"), // these are sanity image IDs
+  paymentSuccessRedirectURL: text("payment_success_redirect_url"),
+  paymentCancelRedirectURL: text("payment_cancel_redirect_url"),
   status: text("status", { enum: communityStatusEnum })
     .default("inactive")
     .notNull(),

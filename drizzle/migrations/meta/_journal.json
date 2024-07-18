@@ -57,6 +57,13 @@
       "when": 1719451372626,
       "tag": "0007_mighty_guardsmen",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1721283177704,
+      "tag": "0008_happy_hiroim",
+      "breakpoints": true
     }
   ]
 }
