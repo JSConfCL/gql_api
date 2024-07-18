@@ -1,7 +1,7 @@
 import { getDb } from "~/datasources/db";
 import { getMercadoPagoFetch } from "~/datasources/mercadopago";
 import { getStripeClient } from "~/datasources/stripe/client";
-import { logger } from "~/logging";
+import { createLogger } from "~/logging";
 import {
   clearExpiredPurchaseOrders,
   syncPurchaseOrderPaymentStatus,
@@ -24,11 +24,16 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   env,
 ) => {
   ensureKeys(env, ["DB_URL", "STRIPE_KEY", "MERCADOPAGO_KEY"]);
+  const logger = createLogger("purchase_order_payment_sync_cron");
   const DB = await getDb({
     neonUrl: env.DB_URL,
+    logger,
   });
   const GET_STRIPE_CLIENT = () => getStripeClient(env.STRIPE_KEY);
-  const GET_MERCADOPAGO_CLIENT = getMercadoPagoFetch(env.MERCADOPAGO_KEY);
+  const GET_MERCADOPAGO_CLIENT = getMercadoPagoFetch(
+    env.MERCADOPAGO_KEY,
+    logger,
+  );
 
   // Busca todas las OCs que no estén pagadas.
   logger.info(`Getting upaid purchase orders...`);
@@ -54,6 +59,7 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
       DB,
       GET_STRIPE_CLIENT,
       GET_MERCADOPAGO_CLIENT,
+      logger,
     });
     logger.info(`Synced purchase order payment status for ${purchaseOrder.id}`);
   }

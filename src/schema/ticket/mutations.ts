@@ -13,7 +13,6 @@ import {
   ticketsSchema,
   updateTicketSchema,
 } from "~/datasources/db/schema";
-import { logger } from "~/logging";
 import { addToObjectIfPropertyExists } from "~/schema/shared/helpers";
 import { TicketRef } from "~/schema/shared/refs";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
@@ -100,6 +99,8 @@ builder.mutationField("createTicket", (t) =>
       rules: ["IsAuthenticated"],
     },
     resolve: async (root, { input }, ctx) => {
+      const logger = ctx.logger
+
       if (!ctx.USER) {
         throw new GraphQLError("User not found");
       }

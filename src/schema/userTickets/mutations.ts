@@ -9,7 +9,6 @@ import {
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
-import { logger } from "~/logging";
 import { PurchaseOrderRef } from "~/schema/purchaseOrder/types";
 import { isValidUUID } from "~/schema/shared/helpers";
 import { UserTicketRef } from "~/schema/shared/refs";
@@ -263,6 +262,7 @@ builder.mutationFields((t) => ({
         GET_STRIPE_CLIENT,
         PURCHASE_CALLBACK_URL,
         GET_MERCADOPAGO_CLIENT,
+        logger,
       },
     ) => {
       if (!USER) {

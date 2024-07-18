@@ -22,6 +22,7 @@ builder.queryFields((t) => ({
       input: t.arg({ type: TagSearchInput, required: false }),
     },
     resolve: async (root, args, ctx) => {
+      const { logger } = ctx;
       const { id, name, description } = args.input || {};
       const wheres: SQL[] = [];
 

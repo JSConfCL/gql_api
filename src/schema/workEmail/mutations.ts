@@ -11,7 +11,6 @@ import {
   workEmailSchema,
 } from "~/datasources/db/schema";
 import { enqueueEmail } from "~/datasources/queues/mail";
-import { logger } from "~/logging";
 import { WorkEmailRef } from "~/schema/shared/refs";
 builder.mutationFields((t) => ({
   startWorkEmailValidation: t.field({
@@ -24,7 +23,7 @@ builder.mutationFields((t) => ({
     args: {
       email: t.arg.string({ required: true }),
     },
-    resolve: async (root, { email }, { DB, USER, MAIL_QUEUE }) => {
+    resolve: async (root, { email }, { DB, USER, MAIL_QUEUE, logger }) => {
       if (!USER) {
         throw new Error("User is required");
       }
@@ -134,7 +133,7 @@ builder.mutationFields((t) => ({
             .returning()
         )?.[0];
 
-        await enqueueEmail(MAIL_QUEUE, {
+        await enqueueEmail(MAIL_QUEUE, logger, {
           code: insertedToken.token,
           userId: USER.id,
           to: email.toLowerCase(),
@@ -179,7 +178,7 @@ builder.mutationFields((t) => ({
           .where(eq(workEmailSchema.id, insertedWorkEmail.id));
 
         logger.info("Enqueuing the email");
-        await enqueueEmail(MAIL_QUEUE, {
+        await enqueueEmail(MAIL_QUEUE, logger, {
           userId: USER.id,
           code: insertedToken.token,
           to: email.toLowerCase(),

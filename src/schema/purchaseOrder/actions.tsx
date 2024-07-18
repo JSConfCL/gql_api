@@ -1,6 +1,7 @@
 import { render } from "@react-email/components";
 import { and, eq, lt } from "drizzle-orm";
 import { GraphQLError } from "graphql";
+import { Logger } from "pino";
 import React from "react";
 import { AsyncReturnType } from "type-fest";
 
@@ -25,7 +26,6 @@ import {
   createStripePayment,
   getStripePaymentStatus,
 } from "~/datasources/stripe";
-import { logger } from "~/logging";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
 import { Context } from "~/types";
 
@@ -60,6 +60,7 @@ const createMercadoPagoPaymentIntent = async ({
   USER,
   PURCHASE_CALLBACK_URL,
   GET_MERCADOPAGO_CLIENT,
+  logger,
 }: {
   query: AsyncReturnType<typeof fetchPurchaseOrderInformation>;
   userTickets: Array<
@@ -74,6 +75,7 @@ const createMercadoPagoPaymentIntent = async ({
     email: string;
     id: string;
   };
+  logger: Logger<never>;
 }) => {
   const pricesInCLP: Record<string, number | undefined> = {};
 
@@ -139,6 +141,7 @@ const createStripePaymentIntent = async ({
   GET_STRIPE_CLIENT,
   userTickets,
   PURCHASE_CALLBACK_URL,
+  logger,
 }: {
   userTickets: Array<
     typeof selectUserTicketsSchema._type & {
@@ -148,6 +151,7 @@ const createStripePaymentIntent = async ({
   purchaseOrderId: string;
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
   PURCHASE_CALLBACK_URL: string;
+  logger: Logger<never>;
 }) => {
   const ticketsGroupedByTemplateId: Record<
     string,
@@ -208,6 +212,7 @@ export const createPaymentIntent = async ({
   RESEND,
   GET_STRIPE_CLIENT,
   PURCHASE_CALLBACK_URL,
+  logger,
 }: {
   DB: Context["DB"];
   purchaseOrderId: string;
@@ -217,6 +222,7 @@ export const createPaymentIntent = async ({
   RESEND: Context["RESEND"];
   PURCHASE_CALLBACK_URL: string;
   currencyId: string;
+  logger: Logger<never>;
 }) => {
   if (!USER) {
     throw new GraphQLError("No autorizado");
@@ -343,7 +349,7 @@ export const createPaymentIntent = async ({
     }
 
     if (communityInfo && eventInfo) {
-      await sendTransactionalHTMLEmail(RESEND, {
+      await sendTransactionalHTMLEmail(RESEND, logger, {
         htmlContent: render(
           <PurchaseOrderSuccessful
             purchaseOrderId={purchaseOrderId}
@@ -407,6 +413,7 @@ export const createPaymentIntent = async ({
               ticket: ticket.ticketTemplate,
               getStripeClient: GET_STRIPE_CLIENT,
               transactionHander: trx,
+              logger,
             });
           } catch (error) {
             logger.error("Could not create product", error);
@@ -436,6 +443,7 @@ export const createPaymentIntent = async ({
       purchaseOrderId,
       GET_STRIPE_CLIENT,
       PURCHASE_CALLBACK_URL,
+      logger,
     });
 
     // 3. We update the purchase order with the payment link, and the total
@@ -459,6 +467,7 @@ export const createPaymentIntent = async ({
         USER,
         PURCHASE_CALLBACK_URL,
         GET_MERCADOPAGO_CLIENT,
+        logger,
       },
     );
 
@@ -498,11 +507,13 @@ export const syncPurchaseOrderPaymentStatus = async ({
   purchaseOrderId,
   GET_STRIPE_CLIENT,
   GET_MERCADOPAGO_CLIENT,
+  logger,
 }: {
   DB: Context["DB"];
   purchaseOrderId: string;
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
   GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
+  logger: Logger<never>;
 }) => {
   logger.info("Finding purchase order:", purchaseOrderId);
   const purchaseOrder = await DB.query.purchaseOrdersSchema.findFirst({

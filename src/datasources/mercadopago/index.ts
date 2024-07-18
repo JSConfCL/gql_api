@@ -2,6 +2,7 @@ import { Items } from "mercadopago/dist/clients/commonTypes";
 import { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
 import { PreferenceResponse } from "mercadopago/dist/clients/preference/commonTypes";
 import { PreferenceCreateData } from "mercadopago/dist/clients/preference/create/types";
+import { Logger } from "pino";
 
 import {
   puchaseOrderPaymentStatusEnum,
@@ -11,7 +12,6 @@ import {
   someMinutesIntoTheFuture,
   toISOStringWithTimezone,
 } from "~/datasources/helpers";
-import { logger } from "~/logging";
 
 const getPaymentStatusFromMercadoPago = (
   mercadoPagoStatus: PaymentResponse["status"],
@@ -70,7 +70,7 @@ const getPurchasOrderStatusFromMercadoPago = (
 };
 
 export const getMercadoPagoFetch =
-  (token: string) =>
+  (token: string, logger: Logger<never>) =>
   async <T>({
     url,
     method = "GET",
@@ -157,9 +157,11 @@ export const createMercadoPagoPayment = async ({
 export const getMercadoPagoPreference = async ({
   preferenceId,
   getMercadoPagoClient,
+  logger,
 }: {
   preferenceId: string;
   getMercadoPagoClient: MercadoPagoFetch;
+  logger: Logger<never>;
 }) => {
   const preference = await getMercadoPagoClient<PreferenceResponse>({
     url: `/checkout/preferences/${preferenceId}`,

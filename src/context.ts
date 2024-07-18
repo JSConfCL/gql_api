@@ -1,5 +1,6 @@
 import { initContextCache } from "@pothos/core";
 import { YogaInitialContext } from "graphql-yoga";
+import pino from "pino";
 import { Resend } from "resend";
 
 import { Env } from "worker-configuration";
@@ -26,7 +27,11 @@ export const creageGraphqlContext = async ({
   STRIPE_KEY,
   HYPERDRIVE,
   MERCADOPAGO_KEY,
-}: YogaInitialContext & Env): Promise<Context> => {
+  logger,
+}: YogaInitialContext &
+  Env & {
+    logger: pino.Logger<never>;
+  }): Promise<Context> => {
   if (!MAIL_QUEUE) {
     throw new Error("Missing MAIL_QUEUE");
   }
@@ -84,15 +89,17 @@ export const creageGraphqlContext = async ({
     });
 
   const GET_STRIPE_CLIENT = () => getStripeClient(STRIPE_KEY);
-  const GET_MERCADOPAGO_CLIENT = getMercadoPagoFetch(MERCADOPAGO_KEY);
+  const GET_MERCADOPAGO_CLIENT = getMercadoPagoFetch(MERCADOPAGO_KEY, logger);
   const DB = await getDb({
     neonUrl: DB_URL,
+    logger,
   });
   const RESEND = new Resend(RESEND_API_KEY);
   const ORIGINAL_USER = await upsertUserFromRequest({
     request,
     SUPABASE_JWT_DECODER,
     DB,
+    logger,
   });
   // This is the user that will be used for mostly all queries across the
   // application. However, in some cases, we might want to use the original
@@ -103,6 +110,7 @@ export const creageGraphqlContext = async ({
     ORIGINAL_USER,
     request,
     DB,
+    logger,
   });
 
   return {
@@ -117,5 +125,6 @@ export const creageGraphqlContext = async ({
     GET_SANITY_CLIENT,
     GET_STRIPE_CLIENT,
     GET_MERCADOPAGO_CLIENT,
+    logger,
   } satisfies Context;
 };

@@ -4,11 +4,11 @@ import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import { createYoga, maskError } from "graphql-yoga";
 
 import { Env } from "worker-configuration";
-import { logPossibleUserIdFromJWT } from "~/authn";
+import { logPossibleUserIdFromJWT, logTraceId } from "~/authn";
 import * as rules from "~/authz";
 import { creageGraphqlContext } from "~/context";
 import { APP_ENV } from "~/env";
-import { logger } from "~/logging";
+import { createLogger } from "~/logging";
 import { schema } from "~/schema";
 
 export const yoga = createYoga<Env>({
@@ -46,6 +46,7 @@ export const yoga = createYoga<Env>({
         "x-graphql-query-id",
         "x-graphql-operation-name",
         "x-impersonated-user-id",
+        "x-trace-id",
       ],
       methods: ["POST", "GET", "OPTIONS"],
     };
@@ -56,7 +57,8 @@ export const yoga = createYoga<Env>({
     useMaskedErrors({
       errorMessage: "Internal Server Error",
       maskError: (error, message) => {
-        logger.error("🚨 APPLICATION ERROR", error, message);
+        // eslint-disable-next-line no-console
+        console.error("🚨 APPLICATION ERROR", error, message);
 
         return maskError(error, message, APP_ENV !== "production");
       },
@@ -69,13 +71,18 @@ export const yoga = createYoga<Env>({
 
 export default {
   fetch: async (req: Request, env: Env, ctx: ExecutionContext) => {
-    logPossibleUserIdFromJWT(req);
-    logger.info("🏁 — Initialize Request");
+    const logger = createLogger("graphql", {
+      externalTraceId: req.headers.get("x-trace-id"),
+      traceId: crypto.randomUUID(),
+    });
+
+    logTraceId(req, logger);
+    logPossibleUserIdFromJWT(req, logger);
     const response = await yoga.fetch(
       // @ts-expect-error Los tipos de yoga están mal
       req,
       env,
-      ctx,
+      { ...ctx, logger },
     );
 
     logger.info("🏁 — End Request");

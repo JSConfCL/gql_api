@@ -1,5 +1,6 @@
 /* eslint-disable no-case-declarations */
 import { renderAsync } from "@react-email/render";
+import { Logger } from "pino";
 import React from "react";
 import type { Resend } from "resend";
 
@@ -24,10 +25,12 @@ export const mailRouter = async ({
   emailTemplate,
   body,
   resend,
+  logger,
 }: {
   emailTemplate: string;
   body: unknown;
   resend: Resend;
+  logger: Logger<never>;
 }) => {
   if (emailTemplate === "ia-camp-waitlist") {
     const {
@@ -44,7 +47,7 @@ export const mailRouter = async ({
 
     const htmlContent = await renderAsync(<IACampWaitlist nombre={nombre} />);
 
-    return sendTransactionalHTMLEmail(resend, {
+    return sendTransactionalHTMLEmail(resend, logger, {
       htmlContent,
       from: {
         name: "IACamp - by CommunityOS",
@@ -72,7 +75,7 @@ export const mailRouter = async ({
 
     const htmlContent = await renderAsync(<SponsorsConfirmation />);
 
-    return sendTransactionalHTMLEmail(resend, {
+    return sendTransactionalHTMLEmail(resend, logger, {
       htmlContent,
       from: {
         name: "IACamp - by CommunityOS",
@@ -102,7 +105,7 @@ export const mailRouter = async ({
       <AIHackathonPostulationWithTeamEmail name={name || ""} />,
     );
 
-    return sendTransactionalHTMLEmail(resend, {
+    return sendTransactionalHTMLEmail(resend, logger, {
       htmlContent,
       from: {
         name: "AI Hackathon - by CommunityOS",
@@ -132,7 +135,7 @@ export const mailRouter = async ({
       <AIHackathonPostulationWithoutTeamEmail name={name || ""} />,
     );
 
-    return sendTransactionalHTMLEmail(resend, {
+    return sendTransactionalHTMLEmail(resend, logger, {
       htmlContent,
       from: {
         name: "AI Hackathon - by CommunityOS",

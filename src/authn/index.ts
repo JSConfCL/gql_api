@@ -1,4 +1,5 @@
 import { decode, verify } from "@tsndr/cloudflare-worker-jwt";
+import { Logger } from "pino";
 
 import { TokenPayload } from "~/authn/types";
 import { ORM_TYPE } from "~/datasources/db";
@@ -8,7 +9,6 @@ import {
   updateUserProfileInfo,
 } from "~/datasources/queries/users";
 import { unauthorizedError } from "~/errors";
-import { logger } from "~/logging";
 
 // Obtener el token de autorización de la solicitud, ya sea del encabezado de
 // autorización o de la cookie "community-os-access-token"
@@ -29,6 +29,7 @@ const getAuthToken = (request: Request) => {
 const getImpersonatedUserFromRequest = async (
   request: Request,
   DB: ORM_TYPE,
+  logger: Logger<never>,
 ) => {
   const authHeader = request.headers.get("x-impersonated-user-id");
 
@@ -47,7 +48,7 @@ const getImpersonatedUserFromRequest = async (
   return null;
 };
 
-const decodeJWT = (JWT_TOKEN: string) => {
+const decodeJWT = (JWT_TOKEN: string, logger: Logger<never>) => {
   try {
     const { payload } = decode(JWT_TOKEN) as TokenPayload;
 
@@ -63,13 +64,15 @@ export const getUserFromRequest = async ({
   ORIGINAL_USER,
   request,
   DB,
+  logger,
 }: {
   ORIGINAL_USER: USER | null;
   request: Request;
   DB: ORM_TYPE;
+  logger: Logger<never>;
 }) => {
   if (ORIGINAL_USER?.isSuperAdmin) {
-    const user = await getImpersonatedUserFromRequest(request, DB);
+    const user = await getImpersonatedUserFromRequest(request, DB, logger);
 
     if (user) {
       logger.info(`User: ${ORIGINAL_USER.id} is impersonating user ${user.id}`);
@@ -85,10 +88,12 @@ export const upsertUserFromRequest = async ({
   request,
   SUPABASE_JWT_DECODER,
   DB,
+  logger,
 }: {
   request: Request;
   SUPABASE_JWT_DECODER: string;
   DB: ORM_TYPE;
+  logger: Logger<never>;
 }) => {
   const JWT_TOKEN = getAuthToken(request);
 
@@ -96,10 +101,10 @@ export const upsertUserFromRequest = async ({
     return null;
   }
 
-  const payload = decodeJWT(JWT_TOKEN);
+  const payload = decodeJWT(JWT_TOKEN, logger);
 
   if (!payload) {
-    throw unauthorizedError("Could not parse token");
+    throw unauthorizedError("Could not parse token", logger);
   }
 
   try {
@@ -107,13 +112,13 @@ export const upsertUserFromRequest = async ({
       throwError: true,
     });
   } catch (error) {
-    throw unauthorizedError("Could not verify token");
+    throw unauthorizedError("Could not verify token", logger);
   }
 
   const isExpired = payload.exp < Date.now() / 1000;
 
   if (isExpired) {
-    throw unauthorizedError("Token expired");
+    throw unauthorizedError("Token expired", logger);
   }
 
   const { avatar_url, name, user_name, email_verified, sub, picture } =
@@ -135,10 +140,13 @@ export const upsertUserFromRequest = async ({
 
   logger.info(`Updating profile Info for user ID: ${sub}`);
 
-  return updateUserProfileInfo(DB, profileInfo.data);
+  return updateUserProfileInfo(DB, profileInfo.data, logger);
 };
 
-export const logPossibleUserIdFromJWT = (request: Request) => {
+export const logPossibleUserIdFromJWT = (
+  request: Request,
+  logger: Logger<never>,
+) => {
   const isOptions = request.method === "OPTIONS";
 
   if (isOptions) {
@@ -164,5 +172,13 @@ export const logPossibleUserIdFromJWT = (request: Request) => {
     logger.error("Could not parse token", error);
 
     return null;
+  }
+};
+
+export const logTraceId = (request: Request, logger: Logger<never>) => {
+  const traceId = request.headers.get("x-trace-id");
+
+  if (traceId) {
+    logger.info(`TraceID ${traceId}`);
   }
 };
