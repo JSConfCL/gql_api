@@ -45,6 +45,7 @@ export const yoga = createYoga<Env>({
         "x-graphql-csrf-token",
         "x-graphql-query-id",
         "x-graphql-operation-name",
+        "x-impersonated-user-id",
       ],
       methods: ["POST", "GET", "OPTIONS"],
     };

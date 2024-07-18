@@ -32,8 +32,16 @@ const getImpersonatedUserFromRequest = async (
 ) => {
   const authHeader = request.headers.get("x-impersonated-user-id");
 
+  console.log(`Impersonated user ID: ${authHeader ?? "null"}`, request.headers);
+
   if (authHeader) {
     const user = await findUserByID(DB, authHeader);
+
+    if (!user) {
+      console.log(`Could not find user with ID: ${authHeader}`);
+    } else {
+      console.log(`Found user with ID: ${authHeader}`);
+    }
 
     return user;
   }
