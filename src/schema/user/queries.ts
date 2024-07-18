@@ -5,12 +5,17 @@ import {
   createPaginationObjectType,
 } from "~/schema/pagination/types";
 import { UserRef } from "~/schema/shared/refs";
+import { SearchableUserTags } from "~/schema/user/types";
 import { usersFetcher } from "~/schema/user/userFetcher";
 
 const UserSearchValues = builder.inputType("UserSearchValues", {
   fields: (t) => ({
     name: t.field({
       type: "String",
+      required: false,
+    }),
+    tags: t.field({
+      type: [SearchableUserTags],
       required: false,
     }),
     userName: t.field({
@@ -73,12 +78,13 @@ builder.queryFields((t) => ({
     },
     args: createPaginationInputType(t, UserSearchValues),
     resolve: async (root, { input }, { DB }) => {
-      const { name } = input.search ?? {};
+      const { name, tags } = input.search ?? {};
 
       const { data, pagination } = await usersFetcher.searchPaginatedUsers({
         DB,
         search: {
           name: name ?? undefined,
+          tags: tags ?? undefined,
         },
         pagination: input.pagination,
       });

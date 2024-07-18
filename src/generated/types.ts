@@ -405,6 +405,18 @@ export type PaginatedInputMyTicketsSearchValues = {
   search?: InputMaybe<MyTicketsSearchValues>;
 };
 
+export type PaginatedInputUserSearchValues = {
+  pagination?: PaginationSearchInputParams;
+  search?: InputMaybe<UserSearchValues>;
+};
+
+/** Type used for querying the paginated leaves and it's paginated meta data */
+export type PaginatedUser = {
+  __typename?: "PaginatedUser";
+  data: Array<User>;
+  pagination: Pagination;
+};
+
 /** Type used for querying the paginated leaves and it's paginated meta data */
 export type PaginatedUserTicket = {
   __typename?: "PaginatedUserTicket";
@@ -509,7 +521,7 @@ export type Query = {
   /** Get a list of tags */
   tags: Array<Tag>;
   /** Get a list of users */
-  userSearch: Array<User>;
+  userSearch: PaginatedUser;
   /** Get a list of users */
   users: Array<User>;
   /** Get a workEmail and check if its validated for this user */
@@ -573,7 +585,7 @@ export type QueryTagsArgs = {
 };
 
 export type QueryUserSearchArgs = {
-  input: UserSearchInput;
+  input: PaginatedInputUserSearchValues;
 };
 
 export type QueryWorkEmailArgs = {
@@ -787,11 +799,20 @@ export type User = {
   __typename?: "User";
   bio?: Maybe<Scalars["String"]["output"]>;
   communities: Array<Community>;
+  email?: Maybe<Scalars["String"]["output"]>;
   id: Scalars["String"]["output"];
+  imageUrl?: Maybe<Scalars["String"]["output"]>;
+  impersonatedUser?: Maybe<User>;
   isSuperAdmin?: Maybe<Scalars["Boolean"]["output"]>;
   lastName?: Maybe<Scalars["String"]["output"]>;
   name?: Maybe<Scalars["String"]["output"]>;
   username: Scalars["String"]["output"];
+};
+
+export type UserSearchValues = {
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  tags?: InputMaybe<Array<SearchableUserTags>>;
+  userName?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 /** Representation of a User ticket */
@@ -867,8 +888,4 @@ export type UserEditInput = {
   lastName?: InputMaybe<Scalars["String"]["input"]>;
   name?: InputMaybe<Scalars["String"]["input"]>;
   username?: InputMaybe<Scalars["String"]["input"]>;
-};
-
-export type UserSearchInput = {
-  tags?: InputMaybe<Array<SearchableUserTags>>;
 };
