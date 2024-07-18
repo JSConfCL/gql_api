@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { primaryKey, pgTable, uuid } from "drizzle-orm/pg-core";
+import { primaryKey, pgTable, uuid, text } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { communitySchema, eventsSchema } from "./schema";
@@ -16,6 +16,8 @@ export const eventsToCommunitiesSchema = pgTable(
     communityId: uuid("community_id")
       .references(() => communitySchema.id)
       .notNull(),
+    paymentSuccessRedirectURL: text("payment_success_redirect_url"),
+    paymentCancelRedirectURL: text("payment_cancel_redirect_url"),
     ...createdAndUpdatedAtFields,
   },
   (t) => ({
