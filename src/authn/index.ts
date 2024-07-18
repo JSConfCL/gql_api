@@ -35,6 +35,12 @@ const getImpersonatedUserFromRequest = async (
   if (authHeader) {
     const user = await findUserByID(DB, authHeader);
 
+    if (!user) {
+      logger.error(`Could not find user with ID: ${authHeader}`);
+    } else {
+      logger.info(`Found user with ID: ${authHeader}`);
+    }
+
     return user;
   }
 
