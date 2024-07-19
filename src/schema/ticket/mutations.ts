@@ -357,15 +357,15 @@ builder.mutationField("editTicket", (t) =>
     authz: {
       rules: ["IsAuthenticated"],
     },
-    resolve: async (root, { input }, ctx) => {
+    resolve: async (root, { input }, { logger, USER, DB }) => {
       try {
         const { ticketId } = input;
 
-        if (!ctx.USER) {
+        if (!USER) {
           throw new GraphQLError("User not found");
         }
 
-        if (!(await canEditTicket(ctx.USER.id, ticketId, ctx.DB))) {
+        if (!(await canEditTicket(USER.id, ticketId, DB))) {
           throw new GraphQLError("Not authorized");
         }
 
@@ -410,7 +410,7 @@ builder.mutationField("editTicket", (t) =>
 
         if (response.success) {
           const ticket = (
-            await ctx.DB.update(ticketsSchema)
+            await DB.update(ticketsSchema)
               .set(response.data)
               .where(eq(ticketsSchema.id, ticketId))
               .returning()
