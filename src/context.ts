@@ -12,7 +12,7 @@ import { getStripeClient } from "~/datasources/stripe/client";
 import { APP_ENV } from "~/env";
 import { Context } from "~/types";
 
-export const creageGraphqlContext = async ({
+export const createGraphqlContext = async ({
   request,
   NEON_URL,
   PURCHASE_CALLBACK_URL,
@@ -114,7 +114,7 @@ export const creageGraphqlContext = async ({
   });
 
   return {
-    // ...initContextCache(),
+    ...initContextCache(),
     DB,
     USER,
     ORIGINAL_USER,

@@ -18,7 +18,7 @@
     "prettier:ci": "prettier ./src --cache --check",
     "prettier:fix": "prettier ./src --cache --write",
     "typecheck": "tsc",
-    "dev": "wrangler dev --compatibility-date 2022-11-30 --log-level info --port 50123",
+    "dev": "wrangler dev --log-level info --port 50123",
     "dev:wall-of-fame": "wrangler dev --test-scheduled --config ./workers/wall_of_fame_cron/wrangler.toml",
     "dev:sanity": "wrangler dev --test-scheduled --config ./workers/sanity_asset_importer/wrangler.toml",
     "dev:auth": "wrangler dev --test-scheduled --config ./workers/auth_tokens/wrangler.toml",

@@ -6,7 +6,7 @@ import { createYoga, maskError } from "graphql-yoga";
 import { Env } from "worker-configuration";
 import { logPossibleUserIdFromJWT, logTraceId } from "~/authn";
 import * as rules from "~/authz";
-import { creageGraphqlContext } from "~/context";
+import { createGraphqlContext } from "~/context";
 import { APP_ENV } from "~/env";
 import { createLogger } from "~/logging";
 import { schema } from "~/schema";
@@ -66,7 +66,7 @@ export const yoga = createYoga<Env>({
     useImmediateIntrospection(),
     authZEnvelopPlugin({ rules }),
   ].filter(Boolean),
-  context: creageGraphqlContext,
+  context: createGraphqlContext,
 });
 
 export default {
