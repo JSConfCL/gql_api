@@ -1,5 +1,4 @@
-import { APP_ENV } from "~/env";
-import { logger } from "~/logging";
+import { createLogger } from "~/logging";
 import { ensureKeys } from "~workers/utils";
 
 import { importFromSanity } from "./importSanity";
@@ -10,6 +9,8 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   env,
   ctx,
 ) => {
+  const logger = createLogger("sanity_asset_importer");
+
   ensureKeys(env, [
     "SANITY_PROJECT_ID",
     "NEON_URL",
@@ -20,7 +21,7 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   ]);
 
   try {
-    await Promise.all([importFromSanity(env)]);
+    await Promise.all([importFromSanity(env, logger)]);
   } catch (e) {
     logger.error(e);
   }

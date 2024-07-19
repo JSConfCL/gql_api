@@ -5,7 +5,7 @@ import { WorkEmailValidationEmail } from "emails/templates/salaries/invite-email
 import { sendTransactionalHTMLEmail } from "~/datasources/email/sendEmailToWorkers";
 import { EmailMessageType } from "~/datasources/queues/mail";
 import { APP_ENV } from "~/env";
-import { logger } from "~/logging";
+import { defaultLogger } from "~/logging";
 
 type ENV = {
   RESEND_API_KEY?: string;
@@ -17,7 +17,7 @@ export const queueConsumer: ExportedHandlerQueueHandler<
   EmailMessageType
 > = async (batch, env, ctx) => {
   for await (const msg of batch.messages) {
-    logger.info("Processing email for userId:", msg.body.userId);
+    defaultLogger.info("Processing email for userId:", msg.body.userId);
 
     try {
       switch (batch.queue) {
@@ -29,7 +29,7 @@ export const queueConsumer: ExportedHandlerQueueHandler<
           throw new Error(`Unknown queue ${batch.queue}`);
       }
     } catch (e) {
-      logger.error("Error processing message", e);
+      defaultLogger.error("Error processing message", e);
       msg.retry();
     }
   }

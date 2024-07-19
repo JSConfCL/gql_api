@@ -2,7 +2,6 @@ import { SQL, eq, ilike } from "drizzle-orm";
 
 import { builder } from "~/builder";
 import { selectTagsSchema, tagsSchema } from "~/datasources/db/schema";
-import { logger } from "~/logging";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 import { TagRef } from "~/schema/shared/refs";
 

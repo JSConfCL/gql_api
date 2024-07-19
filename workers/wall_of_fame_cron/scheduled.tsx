@@ -1,5 +1,5 @@
 import { APP_ENV } from "~/env";
-import { logger } from "~/logging";
+import { createLogger } from "~/logging";
 import { ensureKeys } from "~workers/utils";
 
 import { syncMercadopagoPaymentsAndSubscriptions } from "./api.mercadopago";
@@ -11,6 +11,8 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   env,
   ctx,
 ) => {
+  const logger = createLogger("wall_of_fame_cron");
+
   ensureKeys(env, [
     "NEON_URL",
     "MP_ACCESS_TOKEN",
@@ -20,7 +22,7 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
 
   try {
     await Promise.all([
-      syncMercadopagoPaymentsAndSubscriptions(env),
+      syncMercadopagoPaymentsAndSubscriptions(env, logger),
       syncStripePayments(env),
     ]);
   } catch (e) {

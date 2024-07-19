@@ -99,7 +99,7 @@ builder.mutationField("createTicket", (t) =>
       rules: ["IsAuthenticated"],
     },
     resolve: async (root, { input }, ctx) => {
-      const logger = ctx.logger
+      const logger = ctx.logger;
 
       if (!ctx.USER) {
         throw new GraphQLError("User not found");
@@ -277,6 +277,7 @@ builder.mutationField("createTicket", (t) =>
                 ticket: insertedTicket,
                 getStripeClient: ctx.GET_STRIPE_CLIENT,
                 transactionHander: trx,
+                logger,
               });
             }
           }

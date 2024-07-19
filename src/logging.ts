@@ -1,6 +1,6 @@
 import { pino } from "pino";
 
-const defaultLogger = pino({
+export const defaultLogger = pino({
   browser: {
     asObject: true,
   },
