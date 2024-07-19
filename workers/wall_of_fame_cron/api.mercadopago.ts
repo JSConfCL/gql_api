@@ -1,3 +1,5 @@
+import { Logger } from "pino";
+
 import { ORM_TYPE, getDb } from "~/datasources/db";
 import {
   insertUsersToTagsSchema,
@@ -8,7 +10,6 @@ import {
   insertPaymentLogsSchema,
   paymentLogsSchema,
 } from "~/datasources/db/schema";
-import { logger } from "~/logging";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 
 import { ENV } from "./types";
@@ -27,9 +28,13 @@ const getFetch = (env: ENV) => async (url: string) => {
   return json;
 };
 
-export const syncMercadopagoPaymentsAndSubscriptions = async (env: ENV) => {
+export const syncMercadopagoPaymentsAndSubscriptions = async (
+  env: ENV,
+  logger: Logger<never>,
+) => {
   const DB = await getDb({
     neonUrl: env.NEON_URL,
+    logger,
   });
   const meliFetch = getFetch(env);
   let results: ResultItem[] = [];
@@ -37,11 +42,15 @@ export const syncMercadopagoPaymentsAndSubscriptions = async (env: ENV) => {
   const subscriptions = (await meliFetch(url)) as SearchResponse;
 
   results = [...results, ...(subscriptions?.results ?? [])];
-  await savePaymentEntry(DB, results);
-  await addTagsToDonorUsers(DB, results);
+  await savePaymentEntry(DB, results, logger);
+  await addTagsToDonorUsers(DB, results, logger);
 };
 
-const addTagsToDonorUsers = async (DB: ORM_TYPE, results: ResultItem[]) => {
+const addTagsToDonorUsers = async (
+  DB: ORM_TYPE,
+  results: ResultItem[],
+  logger: Logger<never>,
+) => {
   const tagToInsert = insertTagsSchema.parse({
     name: AllowedUserTags.DONOR,
     description: "Usuario Donador",
@@ -88,7 +97,11 @@ const addTagsToDonorUsers = async (DB: ORM_TYPE, results: ResultItem[]) => {
   }
 };
 
-const savePaymentEntry = async (DB: ORM_TYPE, results: ResultItem[]) => {
+const savePaymentEntry = async (
+  DB: ORM_TYPE,
+  results: ResultItem[],
+  logger: Logger<never>,
+) => {
   try {
     const mappedResults = results.map((result) => {
       return insertPaymentLogsSchema.parse({

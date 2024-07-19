@@ -1,4 +1,5 @@
 import { eq, sql } from "drizzle-orm";
+import { Logger } from "pino";
 import { z } from "zod";
 
 import { ORM_TYPE } from "~/datasources/db";
@@ -8,7 +9,6 @@ import {
   usersSchema,
 } from "~/datasources/db/schema";
 import { getUsername } from "~/datasources/queries/utils/createUsername";
-import { logger } from "~/logging";
 
 export const findUserByID = async (db: ORM_TYPE, id: string) => {
   const result = await db.query.usersSchema.findFirst({
@@ -21,6 +21,7 @@ export const findUserByID = async (db: ORM_TYPE, id: string) => {
 export const updateUserProfileInfo = async (
   db: ORM_TYPE,
   parsedProfileInfo: z.infer<typeof insertUsersSchema>,
+  logger: Logger<never>,
 ) => {
   const result = await db.query.usersSchema.findFirst({
     where: (u, { eq }) => eq(u.email, parsedProfileInfo.email),

@@ -1,4 +1,4 @@
-import { SQL, and, asc, eq, ilike, inArray, or } from "drizzle-orm";
+import { SQL, and, asc, ilike, inArray, or } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
 import {

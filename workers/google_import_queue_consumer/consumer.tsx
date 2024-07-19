@@ -2,7 +2,7 @@ import { v5 } from "uuid";
 
 import { GoogleImportQueueElement } from "~/datasources/queues/google_import";
 import { getSanityClient } from "~/datasources/sanity/client";
-import { logger } from "~/logging";
+import { defaultLogger } from "~/logging";
 import { ensureKeys } from "~workers/utils";
 
 type ENV = {
@@ -33,11 +33,11 @@ export const queueConsumer: ExportedHandlerQueueHandler<
       useCdn: true,
     });
 
-    logger.info("Processing queue", batch.queue);
+    defaultLogger.info("Processing queue", batch.queue);
 
     for await (const msg of batch.messages) {
       try {
-        logger.info("Processing message", msg);
+        defaultLogger.info("Processing message", msg);
         const { googleMedia, sanityEventId } = msg.body;
         const event = await sanityClient.getDocument(sanityEventId);
 
@@ -56,7 +56,11 @@ export const queueConsumer: ExportedHandlerQueueHandler<
           extract: ["blurhash", "exif", "image", "location", "lqip", "palette"],
         });
 
-        logger.info("Created asset", createdAsset, createdAsset.metadata);
+        defaultLogger.info(
+          "Created asset",
+          createdAsset,
+          createdAsset.metadata,
+        );
 
         const createdImage = await sanityClient.createOrReplace({
           _id: v5(googleMedia.id, v5.URL),
@@ -77,16 +81,16 @@ export const queueConsumer: ExportedHandlerQueueHandler<
           },
         });
 
-        logger.info("Created image", createdImage);
+        defaultLogger.info("Created image", createdImage);
 
         msg.ack();
       } catch (e) {
-        logger.error(e);
+        defaultLogger.error(e);
         throw e;
       }
     }
   } catch (e) {
-    logger.error(e);
+    defaultLogger.error(e);
     throw e;
   }
 };

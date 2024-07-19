@@ -38,7 +38,7 @@ export const eventVisibility = ["public", "private", "unlisted"] as const;
 export const EventVisibility = builder.enumType("EventVisibility", {
   values: eventVisibility,
 });
-const AdminRoles = new Set(["admin", "collaborator"]);
+// const AdminRoles = new Set(["admin", "collaborator"]);
 
 const EventsTicketsSearchInput = builder.inputType("EventsTicketsSearchInput", {
   fields: (t) => ({

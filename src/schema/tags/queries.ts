@@ -2,7 +2,6 @@ import { SQL, eq, ilike } from "drizzle-orm";
 
 import { builder } from "~/builder";
 import { selectTagsSchema, tagsSchema } from "~/datasources/db/schema";
-import { logger } from "~/logging";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 import { TagRef } from "~/schema/shared/refs";
 
@@ -21,7 +20,7 @@ builder.queryFields((t) => ({
     args: {
       input: t.arg({ type: TagSearchInput, required: false }),
     },
-    resolve: async (root, args, ctx) => {
+    resolve: async (root, args, { logger, DB }) => {
       const { id, name, description } = args.input || {};
       const wheres: SQL[] = [];
 
@@ -39,7 +38,7 @@ builder.queryFields((t) => ({
         );
       }
 
-      const query = ctx.DB.query.tagsSchema.findMany({
+      const query = DB.query.tagsSchema.findMany({
         where: (c, { and }) => and(...wheres),
         orderBy(fields, operators) {
           return operators.asc(fields.createdAt);

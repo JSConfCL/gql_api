@@ -5,7 +5,7 @@ import {
   printSchema,
 } from "graphql/utilities";
 
-import { logger } from "~/logging";
+import { defaultLogger } from "~/logging";
 import { schema } from "~/schema";
 
 const start = async () => {
@@ -14,4 +14,4 @@ const start = async () => {
   await writeFile("./src/generated/schema.gql", schemaString, "utf-8");
 };
 
-start().catch(logger.error);
+start().catch(defaultLogger.error);

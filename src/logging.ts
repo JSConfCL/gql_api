@@ -1,6 +1,6 @@
 import { pino } from "pino";
 
-const defaultLogger = pino({
+export const defaultLogger = pino({
   browser: {
     asObject: true,
   },
@@ -9,8 +9,12 @@ const defaultLogger = pino({
   },
 });
 
-export const logger = defaultLogger;
-
-export const createLogger = (name: string) => {
-  return defaultLogger.child({ loggerName: name });
+export const createLogger = (
+  name: string,
+  params: { [key in string]: string | number | undefined | null } = {},
+) => {
+  return defaultLogger.child({
+    loggerName: name,
+    ...params,
+  });
 };

@@ -11,10 +11,19 @@ describe("Test email library", () => {
       const mockedQueue = {
         send: spy,
       };
+      const mockedLogger = {
+        info: vi.fn().mockImplementation(() => {
+          // do nothing
+        }),
+        debug: vi.fn().mockImplementation(() => {
+          // do nothing
+        }),
+      };
 
       await enqueueEmail(
         // @ts-expect-error Estamos mockeando la cola de cloudflare
         mockedQueue,
+        mockedLogger,
         {
           code: "123",
           userId: "123",

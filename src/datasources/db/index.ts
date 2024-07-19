@@ -6,8 +6,7 @@ import {
 } from "drizzle-orm/node-postgres";
 import { PgTransaction } from "drizzle-orm/pg-core";
 import { Client } from "pg";
-
-import { logger } from "~/logging";
+import { Logger } from "pino";
 
 import * as schema from "./schema";
 
@@ -18,7 +17,13 @@ export type TRANSACTION_HANDLER = PgTransaction<
   ExtractTablesWithRelations<typeof schema>
 >;
 
-export const getDb = async ({ neonUrl }: { neonUrl: string }) => {
+export const getDb = async ({
+  neonUrl,
+  logger,
+}: {
+  neonUrl: string;
+  logger: Logger<never>;
+}) => {
   const client = new Client({
     connectionString: neonUrl,
   });
@@ -27,11 +32,11 @@ export const getDb = async ({ neonUrl }: { neonUrl: string }) => {
     await client.connect();
     const db = drizzle(client, {
       schema,
-      logger: {
-        logQuery(query, params) {
-          logger.info(query, params);
-        },
-      },
+      // logger: {
+      //   logQuery(query, params) {
+      //     logger.info(query, params);
+      //   },
+      // },
     });
 
     return db;
