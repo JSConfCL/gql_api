@@ -90,6 +90,7 @@ import {
   TicketPaymentStatus,
   TicketRedemptionStatus,
 } from "~/generated/types";
+import { defaultLogger } from "~/logging";
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 
@@ -123,6 +124,7 @@ const createExecutor = (user?: Awaited<ReturnType<typeof insertUser>>) =>
         return {
           ...initContextCache(),
           DB,
+          logger: defaultLogger,
           USER: user ? user : undefined,
           GET_STRIPE_CLIENT: () => null,
         };

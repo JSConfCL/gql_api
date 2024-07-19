@@ -471,6 +471,7 @@ builder.mutationFields((t) => ({
                 PURCHASE_CALLBACK_URL,
                 GET_MERCADOPAGO_CLIENT,
                 currencyId: generatePaymentLink.currencyId,
+                logger,
               });
               const tickets = await trx.query.userTicketsSchema.findMany({
                 where: (uts, { inArray }) => inArray(uts.id, ticketsIds),

@@ -20,8 +20,7 @@ builder.queryFields((t) => ({
     args: {
       input: t.arg({ type: TagSearchInput, required: false }),
     },
-    resolve: async (root, args, ctx) => {
-      const { logger } = ctx;
+    resolve: async (root, args, { logger, DB }) => {
       const { id, name, description } = args.input || {};
       const wheres: SQL[] = [];
 
@@ -39,7 +38,7 @@ builder.queryFields((t) => ({
         );
       }
 
-      const query = ctx.DB.query.tagsSchema.findMany({
+      const query = DB.query.tagsSchema.findMany({
         where: (c, { and }) => and(...wheres),
         orderBy(fields, operators) {
           return operators.asc(fields.createdAt);

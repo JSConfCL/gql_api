@@ -114,7 +114,7 @@ export const creageGraphqlContext = async ({
   });
 
   return {
-    ...initContextCache(),
+    // ...initContextCache(),
     DB,
     USER,
     ORIGINAL_USER,
