@@ -3,7 +3,11 @@ import { jsonb, boolean, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { userTicketsSchema, usersToCommunitiesSchema } from "./schema";
+import {
+  userTeamsSchema,
+  userTicketsSchema,
+  usersToCommunitiesSchema,
+} from "./schema";
 import { createdAndUpdatedAtFields, genderOptions } from "./shared";
 
 // USERS
@@ -29,6 +33,7 @@ export const usersSchema = pgTable("users", {
 export const userRelations = relations(usersSchema, ({ many }) => ({
   usersToCommunities: many(usersToCommunitiesSchema),
   usersToTickets: many(userTicketsSchema),
+  userTeams: many(userTeamsSchema),
 }));
 
 export type USER = z.infer<typeof selectUsersSchema>;

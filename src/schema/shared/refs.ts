@@ -15,6 +15,7 @@ import {
   selectWorkRoleSchema,
   selectWorkSenioritySchema,
   selectPaymentLogsSchema,
+  selectTeamsSchema,
 } from "~/datasources/db/schema";
 import { SanityAsset, SanityEvent } from "~/datasources/sanity/types";
 
@@ -75,6 +76,9 @@ type PaymentLogGraphqlSchema = z.infer<typeof selectPaymentLogsSchema>;
 export const PaymentLogRef = builder.objectRef<PaymentLogGraphqlSchema>(
   "PublicFinanceEntryRef",
 );
+
+type TeamGraphqlSchema = z.infer<typeof selectTeamsSchema>;
+export const TeamRef = builder.objectRef<TeamGraphqlSchema>("TeamRef");
 
 export const ConsolidatedPaymentLogEntryRef = builder.objectRef<{
   id: string;

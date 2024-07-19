@@ -2,8 +2,9 @@ import { builder } from "~/builder";
 import {
   AllowedUserTags,
   selectCommunitySchema,
+  selectTeamsSchema,
 } from "~/datasources/db/schema";
-import { CommunityRef, UserRef } from "~/schema/shared/refs";
+import { CommunityRef, TeamRef, UserRef } from "~/schema/shared/refs";
 
 builder.objectType(UserRef, {
   description: "Representation of a user",
@@ -22,6 +23,23 @@ builder.objectType(UserRef, {
         if (ctx.USER?.id === root.id || ctx.USER?.isSuperAdmin) {
           return root.email;
         }
+      },
+    }),
+    teams: t.field({
+      type: [TeamRef],
+      resolve: async (root, args, ctx) => {
+        const teams = await ctx.DB.query.userTeamsSchema.findMany({
+          where: (uts, { eq }) => eq(uts.userId, root.id),
+          with: {
+            team: true,
+          },
+        });
+
+        if (!teams) {
+          return [];
+        }
+
+        return teams.map((tu) => selectTeamsSchema.parse(tu.team));
       },
     }),
     impersonatedUser: t.field({
