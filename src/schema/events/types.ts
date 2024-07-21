@@ -104,6 +104,10 @@ export const EventLoadable = builder.loadableObject(EventRef, {
     teams: t.field({
       type: [TeamRef],
       resolve: async (root, args, ctx) => {
+        if (!ctx.USER?.isSuperAdmin) {
+          return [];
+        }
+
         const teams = await teamsFetcher.getTeams({
           DB: ctx.DB,
           search: {

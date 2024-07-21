@@ -2,11 +2,17 @@ import { v4 } from "uuid";
 import { it, describe, assert } from "vitest";
 
 import {
+  UserParticipationStatusEnum,
+  UserTeamRoleEnum,
+} from "~/datasources/db/userTeams";
+import {
   EventStatus,
   EventVisibility,
+  ParticipationStatus,
   TicketApprovalStatus,
   TicketPaymentStatus,
   TicketRedemptionStatus,
+  UserTeamRole,
 } from "~/generated/types";
 import {
   executeGraphqlOperation,
@@ -24,6 +30,8 @@ import {
   executeGraphqlOperationAsUser,
   toISODateWithoutMilliseconds,
   insertPurchaseOrder,
+  insertTeam,
+  insertUserTeams,
 } from "~/tests/fixtures";
 
 import { Event, EventQuery, EventQueryVariables } from "./event.generated";
@@ -54,6 +62,7 @@ describe("Event", () => {
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
       community: null,
       tags: [],
+      teams: [],
       users: [],
       usersTickets: [],
     } as EventQuery["event"]);
@@ -98,6 +107,7 @@ describe("Event", () => {
       endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
       community: null,
       users: [],
+      teams: [],
       tags: [
         {
           id: tag2.id,
@@ -199,6 +209,7 @@ describe("Event", () => {
         },
       ],
       tags: [],
+      teams: [],
       usersTickets: [
         {
           id: ticket1.id,
@@ -249,6 +260,7 @@ describe("Event", () => {
         id: community1.id,
       },
       tags: [],
+      teams: [],
       usersTickets: [],
     } as EventQuery["event"]);
   });
@@ -277,6 +289,7 @@ describe("Event", () => {
       users: [],
       community: null,
       tags: [],
+      teams: [],
       usersTickets: [],
     } as EventQuery["event"]);
   });
@@ -294,6 +307,87 @@ describe("Event", () => {
 
     assert.equal(response.errors, undefined);
     assert.equal(response.data?.event, null);
+  });
+});
+
+describe("Event Teams", () => {
+  it("Should get an event teams", async () => {
+    const event1 = await insertEvent();
+    const user = await insertUser();
+    const team = await insertTeam({
+      eventId: event1.id,
+    });
+
+    await insertUserTeams({
+      teamId: team.id,
+      userId: user.id,
+      userParticipationStatus: UserParticipationStatusEnum.accepted,
+      role: UserTeamRoleEnum.leader,
+    });
+    const response = await executeGraphqlOperationAsSuperAdmin<
+      EventQuery,
+      EventQueryVariables
+    >({
+      document: Event,
+      variables: {
+        eventId: event1.id,
+        eventTickets: {},
+      },
+    });
+
+    assert.equal(response.errors, undefined);
+
+    if (!response.data?.event?.teams) {
+      throw new Error("Event teams not found");
+    }
+
+    assert.deepEqual(response.data?.event?.teams?.length, 1);
+    assert.deepEqual(response.data?.event?.teams?.at(0), {
+      id: team.id,
+      users: [
+        {
+          user: {
+            id: user.id,
+          },
+          status: ParticipationStatus.Accepted,
+          role: UserTeamRole.Leader,
+        },
+      ],
+    });
+
+    const leaderResponse = await executeGraphqlOperationAsUser<
+      EventQuery,
+      EventQueryVariables
+    >(
+      {
+        document: Event,
+        variables: {
+          eventId: event1.id,
+          eventTickets: {},
+        },
+      },
+      user,
+    );
+
+    assert.equal(leaderResponse.errors, undefined);
+    assert.deepEqual(leaderResponse.data?.event?.teams, []);
+
+    const anyOtherUserResponse = await executeGraphqlOperationAsUser<
+      EventQuery,
+      EventQueryVariables
+    >(
+      {
+        document: Event,
+        variables: {
+          eventId: event1.id,
+          eventTickets: {},
+        },
+      },
+      user,
+    );
+
+    assert.equal(anyOtherUserResponse.errors, undefined);
+    assert.deepEqual(leaderResponse.data?.event?.teams, []);
   });
 });
 
@@ -673,6 +767,7 @@ describe("Event tickets filter", () => {
         id: community1.id,
       },
       tags: [],
+      teams: [],
       users: [
         {
           id: user1.id,
@@ -756,6 +851,7 @@ describe("Event tickets filter", () => {
         id: community1.id,
       },
       tags: [],
+      teams: [],
       users: [
         {
           id: user1.id,
@@ -841,6 +937,7 @@ describe("Event tickets filter", () => {
         id: community1.id,
       },
       tags: [],
+      teams: [],
       users: [
         {
           id: user1.id,
@@ -926,6 +1023,7 @@ describe("Event tickets filter", () => {
         id: community1.id,
       },
       tags: [],
+      teams: [],
       users: [
         {
           id: user1.id,

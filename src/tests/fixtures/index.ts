@@ -9,6 +9,7 @@ import { PgTable } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { type ExecutionResult } from "graphql";
 import { createYoga } from "graphql-yoga";
+import { SetRequired } from "type-fest";
 import { ZodType, z } from "zod";
 
 import { Env } from "worker-configuration";
@@ -78,6 +79,12 @@ import {
   selectPurchaseOrdersSchema,
   purchaseOrdersSchema,
   insertPurchaseOrdersSchema,
+  insertTeamsSchema,
+  selectTeamsSchema,
+  teamsSchema,
+  insertUserTeamsSchema,
+  selectUserTeamsSchema,
+  userTeamsSchema,
 } from "~/datasources/db/schema";
 import { genderOptions } from "~/datasources/db/shared";
 import {
@@ -493,6 +500,47 @@ export const insertEvent = async (
   );
 };
 export const findEventById = async (id?: string) => findById(eventsSchema, id);
+
+export const insertTeam = async (
+  partialInput: SetRequired<z.infer<typeof insertTeamsSchema>, "eventId">,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    name: partialInput?.name ?? faker.company.name(),
+    description: partialInput?.description,
+    limit: partialInput?.limit,
+    teamStatus: partialInput?.teamStatus,
+    eventId: partialInput?.eventId,
+    ...CRUDDates(partialInput),
+  } satisfies z.infer<typeof insertTeamsSchema>;
+
+  return insertOne(
+    insertTeamsSchema,
+    selectTeamsSchema,
+    teamsSchema,
+    possibleInput,
+  );
+};
+
+export const insertUserTeams = async (
+  partialInput: z.infer<typeof insertUserTeamsSchema>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    userId: partialInput?.userId,
+    teamId: partialInput?.teamId,
+    role: partialInput?.role,
+    userParticipationStatus: partialInput?.userParticipationStatus,
+    ...CRUDDates(partialInput),
+  } satisfies z.infer<typeof insertUserTeamsSchema>;
+
+  return insertOne(
+    insertUserTeamsSchema,
+    selectUserTeamsSchema,
+    userTeamsSchema,
+    possibleInput,
+  );
+};
 
 export const insertEventTag = async (
   partialInput: z.infer<typeof insertEventsToTagsSchema>,
