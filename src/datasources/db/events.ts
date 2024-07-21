@@ -5,7 +5,6 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import {
   eventsToCommunitiesSchema,
   eventsToTagsSchema,
-  teamsSchema,
   ticketsSchema,
 } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";

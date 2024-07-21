@@ -4,6 +4,7 @@ import { ORM_TYPE } from "~/datasources/db";
 import {
   teamsSchema,
   UserParticipationStatusEnum,
+  UserTeamRoleEnum,
   userTeamsSchema,
 } from "~/datasources/db/schema";
 import {
@@ -50,7 +51,7 @@ const getSearchTeamQuery = (DB: ORM_TYPE, search: TeamSearch = {}) => {
       teamId: userTeamsSchema.teamId,
     })
       .from(userTeamsSchema)
-      .where(and(inArray(userTeamsSchema.status, status)));
+      .where(and(inArray(userTeamsSchema.userParticipationStatus, status)));
 
     wheres.push(inArray(teamsSchema.id, subquery));
   }
@@ -108,7 +109,11 @@ const getTeamForEdit = async ({
 }) => {
   const teamAndUsers = await DB.query.userTeamsSchema.findFirst({
     where: (t, { eq, and }) =>
-      and(eq(t.teamId, teamId), eq(t.userId, userId), eq(t.role, "leader")),
+      and(
+        eq(t.teamId, teamId),
+        eq(t.userId, userId),
+        eq(t.role, UserTeamRoleEnum.leader),
+      ),
     with: {
       team: true,
       user: true,

@@ -3,8 +3,15 @@ import {
   AllowedUserTags,
   selectCommunitySchema,
   selectTeamsSchema,
+  USER,
 } from "~/datasources/db/schema";
-import { CommunityRef, TeamRef, UserRef } from "~/schema/shared/refs";
+import { CommunityRef, UserRef } from "~/schema/shared/refs";
+import { TeamRef } from "~/schema/teams/types";
+import { Context } from "~/types";
+
+const isSuperAdminOrSelf = (root: USER, ctx: Context) => {
+  return ctx.USER?.isSuperAdmin || ctx.USER?.id === root.id;
+};
 
 builder.objectType(UserRef, {
   description: "Representation of a user",
@@ -20,7 +27,7 @@ builder.objectType(UserRef, {
       type: "String",
       nullable: true,
       resolve: (root, args, ctx) => {
-        if (ctx.USER?.id === root.id || ctx.USER?.isSuperAdmin) {
+        if (isSuperAdminOrSelf(root, ctx)) {
           return root.email;
         }
       },
@@ -28,6 +35,10 @@ builder.objectType(UserRef, {
     teams: t.field({
       type: [TeamRef],
       resolve: async (root, args, ctx) => {
+        if (!isSuperAdminOrSelf(root, ctx)) {
+          return [];
+        }
+
         const teams = await ctx.DB.query.userTeamsSchema.findMany({
           where: (uts, { eq }) => eq(uts.userId, root.id),
           with: {

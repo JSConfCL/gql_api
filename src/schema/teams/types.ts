@@ -7,7 +7,7 @@ import {
   UserParticipationStatusEnum,
 } from "~/datasources/db/schema";
 import { EventLoadable } from "~/schema/events/types";
-import { UserGraphqlSchema, UserRef } from "~/schema/shared/refs";
+import { UserGraphqlSchema } from "~/schema/shared/refs";
 
 type TeamGraphqlSchema = z.infer<typeof selectTeamsSchema>;
 
