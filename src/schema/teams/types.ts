@@ -5,9 +5,10 @@ import {
   selectTeamsSchema,
   selectUsersSchema,
   UserParticipationStatusEnum,
+  UserTeamRoleEnum,
 } from "~/datasources/db/schema";
 import { EventLoadable } from "~/schema/events/types";
-import { UserGraphqlSchema } from "~/schema/shared/refs";
+import { UserGraphqlSchema, UserRef } from "~/schema/shared/refs";
 
 type TeamGraphqlSchema = z.infer<typeof selectTeamsSchema>;
 
@@ -16,15 +17,41 @@ export const TeamRef = builder.objectRef<TeamGraphqlSchema>("TeamRef");
 export const AddUserToTeamResponseRef = builder.objectRef<{
   team: TeamGraphqlSchema;
   userIsInOtherTeams: boolean;
-}>("TeamRef");
+}>("AddUserToTeamResponseRef");
 
 export const UserWithStatusRef = builder.objectRef<{
   user: UserGraphqlSchema;
+  role: UserTeamRoleEnum;
   status: UserParticipationStatusEnum;
 }>("UserWithStatusRef");
 
-export const TeamStatus = builder.enumType(UserParticipationStatusEnum, {
-  name: "TeamStatus",
+export const ParticipationStatus = builder.enumType(
+  UserParticipationStatusEnum,
+  {
+    name: "ParticipationStatus",
+  },
+);
+
+export const UserTeamRole = builder.enumType(UserTeamRoleEnum, {
+  name: "UserTeamRole",
+});
+
+builder.objectType(UserWithStatusRef, {
+  description: "Representation of a user in a team",
+  fields: (t) => ({
+    user: t.field({
+      type: UserRef,
+      resolve: (root) => root.user,
+    }),
+    role: t.field({
+      type: UserTeamRole,
+      resolve: (root) => root.role,
+    }),
+    status: t.field({
+      type: ParticipationStatus,
+      resolve: (root) => root.status,
+    }),
+  }),
 });
 
 builder.objectType(TeamRef, {
@@ -57,6 +84,7 @@ builder.objectType(TeamRef, {
         return teamWithUsers.map((tu) => {
           return {
             user: selectUsersSchema.parse(tu.user),
+            role: tu.role,
             status: tu.userParticipationStatus,
           };
         });
