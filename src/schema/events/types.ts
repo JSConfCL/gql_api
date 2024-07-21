@@ -5,6 +5,7 @@ import { builder } from "~/builder";
 import {
   selectCommunitySchema,
   selectTagsSchema,
+  selectTeamsSchema,
   selectTicketSchema,
   selectUserTicketsSchema,
   selectUsersSchema,
@@ -22,6 +23,8 @@ import {
   UserRef,
   UserTicketRef,
 } from "~/schema/shared/refs";
+import { teamsFetcher } from "~/schema/teams/teamsFetcher";
+import { TeamRef } from "~/schema/teams/types";
 import {
   TicketApprovalStatus,
   TicketPaymentStatus,
@@ -96,6 +99,19 @@ export const EventLoadable = builder.loadableObject(EventRef, {
           client,
           sanityEventId,
         });
+      },
+    }),
+    teams: t.field({
+      type: [TeamRef],
+      resolve: async (root, args, ctx) => {
+        const teams = await teamsFetcher.getTeams({
+          DB: ctx.DB,
+          search: {
+            eventIds: [root.id],
+          },
+        });
+
+        return teams.map((t) => selectTeamsSchema.parse(t));
       },
     }),
     meetingURL: t.exposeString("meetingURL", { nullable: true }),

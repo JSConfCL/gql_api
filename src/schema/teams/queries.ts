@@ -4,9 +4,8 @@ import {
   createPaginationInputType,
   createPaginationObjectType,
 } from "~/schema/pagination/types";
-import { TeamRef } from "~/schema/shared/refs";
 import { teamsFetcher } from "~/schema/teams/teamsFetcher";
-import { TeamStatus } from "~/schema/teams/types";
+import { TeamRef, TeamStatus } from "~/schema/teams/types";
 
 const PaginatedTeamRef = createPaginationObjectType(TeamRef);
 

@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS "user_teams" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"team_id" uuid NOT NULL,
-	"role" text,
+	"role" text DEFAULT 'leader' NOT NULL,
 	"user_participation_status" text DEFAULT 'waiting_resolution' NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,

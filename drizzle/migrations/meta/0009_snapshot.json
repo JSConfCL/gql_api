@@ -1,5 +1,5 @@
 {
-  "id": "d9744afb-3b34-4797-a620-57b3b7e02727",
+  "id": "aa29c37f-fc1b-458e-a3e9-3ffa78e5782e",
   "prevId": "cef3898f-51b6-4c4c-afea-4334fce59743",
   "version": "5",
   "dialect": "pg",
@@ -1852,7 +1852,8 @@
           "name": "role",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "'leader'"
         },
         "user_participation_status": {
           "name": "user_participation_status",
