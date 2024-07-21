@@ -10,6 +10,16 @@ query Event($eventId: String!, $eventTickets: EventsTicketsSearchInput) {
     tags {
       id
     }
+    teams {
+      id
+      users {
+        status
+        role
+        user {
+          id
+        }
+      }
+    }
     community {
       id
     }

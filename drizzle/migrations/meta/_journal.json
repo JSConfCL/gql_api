@@ -64,6 +64,20 @@
       "when": 1721283177704,
       "tag": "0008_happy_hiroim",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1721594799637,
+      "tag": "0009_redundant_blue_shield",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1721596493748,
+      "tag": "0010_past_namorita",
+      "breakpoints": true
     }
   ]
 }

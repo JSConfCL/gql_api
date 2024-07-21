@@ -36,6 +36,18 @@ export type Scalars = {
   DateTime: { input: string; output: string };
 };
 
+export type AddPersonToTeamInput = {
+  teamId: Scalars["String"]["input"];
+  userEmail: Scalars["String"]["input"];
+};
+
+/** Response when adding a user to a team */
+export type AddUserToTeamResponseRef = {
+  __typename?: "AddUserToTeamResponseRef";
+  team: TeamRef;
+  userIsInOtherTeams: Scalars["Boolean"]["output"];
+};
+
 /** Representation of a workEmail */
 export type AllowedCurrency = {
   __typename?: "AllowedCurrency";
@@ -155,6 +167,7 @@ export type Event = {
   startDateTime: Scalars["DateTime"]["output"];
   status: EventStatus;
   tags: Array<Tag>;
+  teams: Array<TeamRef>;
   /** List of tickets for sale or redemption for this event. (If you are looking for a user's tickets, use the usersTickets field) */
   tickets: Array<Ticket>;
   users: Array<User>;
@@ -253,6 +266,8 @@ export type GeneratePaymentLinkInput = {
 
 export type Mutation = {
   __typename?: "Mutation";
+  /** Try to add a person to a team */
+  addPersonToTeam: AddUserToTeamResponseRef;
   /** Approve a ticket */
   approvalUserTicket: UserTicket;
   /** Cancel a ticket */
@@ -269,8 +284,12 @@ export type Mutation = {
   createEvent: Event;
   /** Create a salary */
   createSalary: Salary;
+  /** Create a team, associated to a specific event */
+  createTeam: TeamRef;
   /** Create a ticket */
   createTicket: Ticket;
+  /** Try to add a person to a team */
+  deletePersonFomTeam: TeamRef;
   /** Edit an community */
   editCommunity: Community;
   /** Edit an event */
@@ -289,12 +308,18 @@ export type Mutation = {
   updateCompany: Company;
   /** Create a salary */
   updateSalary: Salary;
+  /** Try to add a person to a team */
+  updateTeam: TeamRef;
   /** Update a user */
   updateUser: User;
   /** Update a user role */
   updateUserRoleInCommunity: User;
   /** Validates work email for a user */
   validateWorkEmail: WorkEmail;
+};
+
+export type MutationAddPersonToTeamArgs = {
+  input: AddPersonToTeamInput;
 };
 
 export type MutationApprovalUserTicketArgs = {
@@ -329,8 +354,16 @@ export type MutationCreateSalaryArgs = {
   input: CreateSalaryInput;
 };
 
+export type MutationCreateTeamArgs = {
+  input: TeamCreateInput;
+};
+
 export type MutationCreateTicketArgs = {
   input: TicketCreateInput;
+};
+
+export type MutationDeletePersonFomTeamArgs = {
+  input: RemovePersonFromTeamInput;
 };
 
 export type MutationEditCommunityArgs = {
@@ -369,6 +402,10 @@ export type MutationUpdateSalaryArgs = {
   input: UpdateSalaryInput;
 };
 
+export type MutationUpdateTeamArgs = {
+  input: UpdateTeam;
+};
+
 export type MutationUpdateUserArgs = {
   input: UserEditInput;
 };
@@ -405,9 +442,21 @@ export type PaginatedInputMyTicketsSearchValues = {
   search?: InputMaybe<MyTicketsSearchValues>;
 };
 
+export type PaginatedInputTeamSearchValues = {
+  pagination?: PaginationSearchInputParams;
+  search?: InputMaybe<TeamSearchValues>;
+};
+
 export type PaginatedInputUserSearchValues = {
   pagination?: PaginationSearchInputParams;
   search?: InputMaybe<UserSearchValues>;
+};
+
+/** Type used for querying the paginated leaves and it's paginated meta data */
+export type PaginatedTeamRef = {
+  __typename?: "PaginatedTeamRef";
+  data: Array<TeamRef>;
+  pagination: Pagination;
 };
 
 /** Type used for querying the paginated leaves and it's paginated meta data */
@@ -438,6 +487,12 @@ export type PaginationSearchInputParams = {
   page: Scalars["Int"]["input"];
   pageSize: Scalars["Int"]["input"];
 };
+
+export enum ParticipationStatus {
+  Accepted = "accepted",
+  NotAccepted = "not_accepted",
+  WaitingResolution = "waiting_resolution",
+}
 
 export type PayForPurchaseOrderInput = {
   currencyID: Scalars["String"]["input"];
@@ -517,6 +572,7 @@ export type Query = {
   searchEvents: PaginatedEvent;
   /** Search on the payment logs by date, and returns a list of payment logs */
   searchPaymentLogs: Array<PublicFinanceEntryRef>;
+  searchTeams: PaginatedTeamRef;
   status: Scalars["String"]["output"];
   /** Get a list of tags */
   tags: Array<Tag>;
@@ -576,6 +632,10 @@ export type QuerySearchPaymentLogsArgs = {
   input: SearchPaymentLogsInput;
 };
 
+export type QuerySearchTeamsArgs = {
+  input: PaginatedInputTeamSearchValues;
+};
+
 export type QueryStatusArgs = {
   name?: InputMaybe<Scalars["String"]["input"]>;
 };
@@ -603,6 +663,11 @@ export type RedeemUserTicketError = {
 };
 
 export type RedeemUserTicketResponse = PurchaseOrder | RedeemUserTicketError;
+
+export type RemovePersonFromTeamInput = {
+  teamId: Scalars["String"]["input"];
+  userId: Scalars["String"]["input"];
+};
 
 /** Representation of a workEmail */
 export type Salary = {
@@ -664,6 +729,37 @@ export type TagSearchInput = {
   id?: InputMaybe<Scalars["String"]["input"]>;
   name?: InputMaybe<Scalars["String"]["input"]>;
 };
+
+export type TeamCreateInput = {
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  eventId: Scalars["String"]["input"];
+  name: Scalars["String"]["input"];
+};
+
+/** Representation of a team. This is compsed of a group of users and is attached to a specific event */
+export type TeamRef = {
+  __typename?: "TeamRef";
+  description?: Maybe<Scalars["String"]["output"]>;
+  event: Event;
+  id: Scalars["ID"]["output"];
+  name: Scalars["String"]["output"];
+  status: TeamStatus;
+  users: Array<UserWithStatusRef>;
+};
+
+export type TeamSearchValues = {
+  eventIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  status?: InputMaybe<Array<TeamStatus>>;
+  teamIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  userIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
+};
+
+export enum TeamStatus {
+  Accepted = "accepted",
+  NotAccepted = "not_accepted",
+  WaitingResolution = "waiting_resolution",
+}
 
 /** Representation of a ticket */
 export type Ticket = {
@@ -806,6 +902,7 @@ export type User = {
   isSuperAdmin?: Maybe<Scalars["Boolean"]["output"]>;
   lastName?: Maybe<Scalars["String"]["output"]>;
   name?: Maybe<Scalars["String"]["output"]>;
+  teams: Array<TeamRef>;
   username: Scalars["String"]["output"];
 };
 
@@ -814,6 +911,11 @@ export type UserSearchValues = {
   tags?: InputMaybe<Array<SearchableUserTags>>;
   userName?: InputMaybe<Scalars["String"]["input"]>;
 };
+
+export enum UserTeamRole {
+  Leader = "leader",
+  Member = "member",
+}
 
 /** Representation of a User ticket */
 export type UserTicket = {
@@ -824,6 +926,14 @@ export type UserTicket = {
   purchaseOrder?: Maybe<PurchaseOrder>;
   redemptionStatus: TicketRedemptionStatus;
   ticketTemplate: Ticket;
+};
+
+/** Representation of a user in a team */
+export type UserWithStatusRef = {
+  __typename?: "UserWithStatusRef";
+  role: UserTeamRole;
+  status: ParticipationStatus;
+  user: User;
 };
 
 export enum ValidPaymentMethods {
@@ -874,6 +984,12 @@ export type WorkSeniority = {
   description?: Maybe<Scalars["String"]["output"]>;
   id: Scalars["String"]["output"];
   name: Scalars["String"]["output"];
+};
+
+export type UpdateTeam = {
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  teamId: Scalars["String"]["input"];
 };
 
 export type UpdateUserRoleInCommunityInput = {

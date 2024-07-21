@@ -1,4 +1,4 @@
-import { builder } from "~/builder";
+export const schema = builder.toSchema();
 import "./allowedCurrency/mutations";
 import "./allowedCurrency/queries";
 import "./allowedCurrency/types";
@@ -30,6 +30,9 @@ import "./status/types";
 import "./tags/mutations";
 import "./tags/queries";
 import "./tags/types";
+import "./teams/mutations";
+import "./teams/queries";
+import "./teams/types";
 import "./ticket/mutations";
 import "./ticket/queries";
 import "./ticket/types";
@@ -48,5 +51,4 @@ import "./workRole/types";
 import "./workSeniority/mutations";
 import "./workSeniority/queries";
 import "./workSeniority/types";
-
-export const schema = builder.toSchema();
+import { builder } from "~/builder";

@@ -15,6 +15,7 @@ const codeInjection = {
 };
 
 const config: CodegenConfig = {
+  hooks: { afterOneFileWrite: ["prettier --write"] },
   ignoreNoDocuments: true,
   schema: "./src/generated/schema.gql",
   documents: ["./src/**/*.gql"],

@@ -1,3 +1,16 @@
+input AddPersonToTeamInput {
+  teamId: String!
+  userEmail: String!
+}
+
+"""
+Response when adding a user to a team
+"""
+type AddUserToTeamResponseRef {
+  team: TeamRef!
+  userIsInOtherTeams: Boolean!
+}
+
 """
 Representation of a workEmail
 """
@@ -138,6 +151,7 @@ type Event {
   startDateTime: DateTime!
   status: EventStatus!
   tags: [Tag!]!
+  teams: [TeamRef!]!
 
   """
   List of tickets for sale or redemption for this event. (If you are looking for a user's tickets, use the usersTickets field)
@@ -239,6 +253,11 @@ input GeneratePaymentLinkInput {
 
 type Mutation {
   """
+  Try to add a person to a team
+  """
+  addPersonToTeam(input: AddPersonToTeamInput!): AddUserToTeamResponseRef!
+
+  """
   Approve a ticket
   """
   approvalUserTicket(userTicketId: String!): UserTicket!
@@ -279,9 +298,19 @@ type Mutation {
   createSalary(input: CreateSalaryInput!): Salary!
 
   """
+  Create a team, associated to a specific event
+  """
+  createTeam(input: TeamCreateInput!): TeamRef!
+
+  """
   Create a ticket
   """
   createTicket(input: TicketCreateInput!): Ticket!
+
+  """
+  Try to add a person to a team
+  """
+  deletePersonFomTeam(input: RemovePersonFromTeamInput!): TeamRef!
 
   """
   Edit an community
@@ -329,6 +358,11 @@ type Mutation {
   updateSalary(input: UpdateSalaryInput!): Salary!
 
   """
+  Try to add a person to a team
+  """
+  updateTeam(input: updateTeam!): TeamRef!
+
+  """
   Update a user
   """
   updateUser(input: userEditInput!): User!
@@ -369,9 +403,22 @@ input PaginatedInputMyTicketsSearchValues {
   search: MyTicketsSearchValues
 }
 
+input PaginatedInputTeamSearchValues {
+  pagination: PaginationSearchInputParams! = { page: 0, pageSize: 20 }
+  search: TeamSearchValues
+}
+
 input PaginatedInputUserSearchValues {
   pagination: PaginationSearchInputParams! = { page: 0, pageSize: 20 }
   search: UserSearchValues
+}
+
+"""
+Type used for querying the paginated leaves and it's paginated meta data
+"""
+type PaginatedTeamRef {
+  data: [TeamRef!]!
+  pagination: Pagination!
 }
 
 """
@@ -406,6 +453,12 @@ input PaginationSearchInputParams {
   """
   page: Int!
   pageSize: Int!
+}
+
+enum ParticipationStatus {
+  accepted
+  not_accepted
+  waiting_resolution
 }
 
 input PayForPurchaseOrderInput {
@@ -528,6 +581,7 @@ type Query {
   Search on the payment logs by date, and returns a list of payment logs
   """
   searchPaymentLogs(input: SearchPaymentLogsInput!): [PublicFinanceEntryRef!]!
+  searchTeams(input: PaginatedInputTeamSearchValues!): PaginatedTeamRef!
   status(name: String): String!
 
   """
@@ -572,6 +626,11 @@ type RedeemUserTicketError {
 }
 
 union RedeemUserTicketResponse = PurchaseOrder | RedeemUserTicketError
+
+input RemovePersonFromTeamInput {
+  teamId: String!
+  userId: String!
+}
 
 """
 Representation of a workEmail
@@ -635,6 +694,38 @@ input TagSearchInput {
   description: String
   id: String
   name: String
+}
+
+input TeamCreateInput {
+  description: String
+  eventId: String!
+  name: String!
+}
+
+"""
+Representation of a team. This is compsed of a group of users and is attached to a specific event
+"""
+type TeamRef {
+  description: String
+  event: Event!
+  id: ID!
+  name: String!
+  status: TeamStatus!
+  users: [UserWithStatusRef!]!
+}
+
+input TeamSearchValues {
+  eventIds: [String!]
+  name: String
+  status: [TeamStatus!]
+  teamIds: [String!]
+  userIds: [String!]
+}
+
+enum TeamStatus {
+  accepted
+  not_accepted
+  waiting_resolution
 }
 
 """
@@ -803,6 +894,7 @@ type User {
   isSuperAdmin: Boolean
   lastName: String
   name: String
+  teams: [TeamRef!]!
   username: String!
 }
 
@@ -810,6 +902,11 @@ input UserSearchValues {
   name: String
   tags: [SearchableUserTags!]
   userName: String
+}
+
+enum UserTeamRole {
+  leader
+  member
 }
 
 """
@@ -822,6 +919,15 @@ type UserTicket {
   purchaseOrder: PurchaseOrder
   redemptionStatus: TicketRedemptionStatus!
   ticketTemplate: Ticket!
+}
+
+"""
+Representation of a user in a team
+"""
+type UserWithStatusRef {
+  role: UserTeamRole!
+  status: ParticipationStatus!
+  user: User!
 }
 
 enum ValidPaymentMethods {
@@ -876,6 +982,12 @@ type WorkSeniority {
   description: String
   id: String!
   name: String!
+}
+
+input updateTeam {
+  description: String
+  name: String
+  teamId: String!
 }
 
 input updateUserRoleInCommunityInput {

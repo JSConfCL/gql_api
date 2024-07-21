@@ -18,7 +18,7 @@ import {
 } from "~/datasources/db/schema";
 import { SanityAsset, SanityEvent } from "~/datasources/sanity/types";
 
-type UserGraphqlSchema = z.infer<typeof selectUsersSchema>;
+export type UserGraphqlSchema = z.infer<typeof selectUsersSchema>;
 export const UserRef = builder.objectRef<UserGraphqlSchema>("User");
 
 type CommunityGraphqlSchema = z.infer<typeof selectCommunitySchema>;

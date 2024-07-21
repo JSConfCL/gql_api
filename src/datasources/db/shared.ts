@@ -28,3 +28,13 @@ export const genderOptions = [
 ] as const;
 
 export const statusEnumOptions = ["pending", "confirmed", "rejected"] as const;
+
+type EnumValuesAsTuple<E> = [E[keyof E]];
+
+export const TypescriptEnumAsDBEnumOptions = <
+  E extends Record<string, unknown>,
+>(
+  enumObject: E,
+) => {
+  return Object.values(enumObject) as EnumValuesAsTuple<E>;
+};

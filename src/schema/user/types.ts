@@ -1,9 +1,12 @@
+import { isSuperAdminOrSelf } from "~/authz/helpers";
 import { builder } from "~/builder";
 import {
   AllowedUserTags,
   selectCommunitySchema,
+  selectTeamsSchema,
 } from "~/datasources/db/schema";
 import { CommunityRef, UserRef } from "~/schema/shared/refs";
+import { TeamRef } from "~/schema/teams/types";
 
 builder.objectType(UserRef, {
   description: "Representation of a user",
@@ -19,9 +22,30 @@ builder.objectType(UserRef, {
       type: "String",
       nullable: true,
       resolve: (root, args, ctx) => {
-        if (ctx.USER?.id === root.id || ctx.USER?.isSuperAdmin) {
+        if (isSuperAdminOrSelf(root, ctx)) {
           return root.email;
         }
+      },
+    }),
+    teams: t.field({
+      type: [TeamRef],
+      resolve: async (root, args, ctx) => {
+        if (!isSuperAdminOrSelf(root, ctx)) {
+          return [];
+        }
+
+        const teams = await ctx.DB.query.userTeamsSchema.findMany({
+          where: (uts, { eq }) => eq(uts.userId, root.id),
+          with: {
+            team: true,
+          },
+        });
+
+        if (!teams) {
+          return [];
+        }
+
+        return teams.map((tu) => selectTeamsSchema.parse(tu.team));
       },
     }),
     impersonatedUser: t.field({

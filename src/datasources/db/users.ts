@@ -3,8 +3,22 @@ import { jsonb, boolean, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { userTicketsSchema, usersToCommunitiesSchema } from "./schema";
-import { createdAndUpdatedAtFields, genderOptions } from "./shared";
+import {
+  userTeamsSchema,
+  userTicketsSchema,
+  usersToCommunitiesSchema,
+} from "./schema";
+import {
+  createdAndUpdatedAtFields,
+  genderOptions,
+  TypescriptEnumAsDBEnumOptions,
+} from "./shared";
+
+export enum UserStatusEnum {
+  active = "active",
+  inactive = "inactive",
+  blocked = "blocked",
+}
 
 // USERS
 export const usersSchema = pgTable("users", {
@@ -17,9 +31,12 @@ export const usersSchema = pgTable("users", {
   gender: text("gender", {
     enum: genderOptions,
   }),
+  status: text("status", {
+    enum: TypescriptEnumAsDBEnumOptions(UserStatusEnum),
+  }).default(UserStatusEnum.inactive),
   genderOtherText: text("gender_other_text"),
-  isSuperAdmin: boolean("isSuperAdmin").default(false),
-  isEmailVerified: boolean("emailVerified"),
+  isSuperAdmin: boolean("isSuperAdmin").default(false).notNull(),
+  isEmailVerified: boolean("emailVerified").default(false).notNull(),
   imageUrl: text("imageUrl"),
   username: text("username").unique().notNull(),
   publicMetadata: jsonb("publicMetadata"),
@@ -29,6 +46,7 @@ export const usersSchema = pgTable("users", {
 export const userRelations = relations(usersSchema, ({ many }) => ({
   usersToCommunities: many(usersToCommunitiesSchema),
   usersToTickets: many(userTicketsSchema),
+  userTeams: many(userTeamsSchema),
 }));
 
 export type USER = z.infer<typeof selectUsersSchema>;

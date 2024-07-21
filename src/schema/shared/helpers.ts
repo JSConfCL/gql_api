@@ -9,7 +9,7 @@ export const addToObjectIfPropertyExists = (
   key: string,
   value: number | string | boolean | Date | undefined | null,
 ) => {
-  if (value) {
+  if (value !== undefined && value !== null) {
     object[key] = value;
   }
 };

@@ -7,6 +7,7 @@ import {
   insertUsersSchema,
   selectUsersSchema,
   usersSchema,
+  UserStatusEnum,
 } from "~/datasources/db/schema";
 import { getUsername } from "~/datasources/queries/utils/createUsername";
 
@@ -24,7 +25,7 @@ export const updateUserProfileInfo = async (
   logger: Logger<never>,
 ) => {
   const result = await db.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.email, parsedProfileInfo.email),
+    where: (u, { eq }) => eq(u.email, parsedProfileInfo.email.toLowerCase()),
   });
 
   if (!result) {
@@ -34,12 +35,13 @@ export const updateUserProfileInfo = async (
       .insert(usersSchema)
       .values({
         externalId: parsedProfileInfo.externalId,
-        email: parsedProfileInfo.email,
+        email: parsedProfileInfo.email.trim().toLowerCase(),
         username: parsedProfileInfo.username ?? getUsername(),
         name: parsedProfileInfo.name,
         imageUrl: parsedProfileInfo.imageUrl,
         isEmailVerified: parsedProfileInfo.isEmailVerified,
         publicMetadata: parsedProfileInfo.publicMetadata ?? {},
+        status: UserStatusEnum.active,
       })
       .returning();
     const createdUser = createdUsers?.[0];
@@ -62,6 +64,7 @@ export const updateUserProfileInfo = async (
         isEmailVerified: parsedProfileInfo.isEmailVerified,
         publicMetadata: parsedProfileInfo.publicMetadata ?? {},
         updatedAt: sql`current_timestamp`,
+        status: UserStatusEnum.active,
       })
       .where(eq(usersSchema.email, parsedProfileInfo.email))
       .returning();
