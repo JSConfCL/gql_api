@@ -2,11 +2,6 @@ import { faker } from "@faker-js/faker";
 import { it, describe, assert, expect } from "vitest";
 
 import {
-  TeamStatus,
-  UserTeamRole,
-  ParticipationStatus,
-} from "~/generated/types";
-import {
   executeGraphqlOperation,
   executeGraphqlOperationAsSuperAdmin,
   executeGraphqlOperationAsUser,
