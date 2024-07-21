@@ -155,6 +155,7 @@ export type Event = {
   startDateTime: Scalars["DateTime"]["output"];
   status: EventStatus;
   tags: Array<Tag>;
+  teams: Array<TeamRef>;
   /** List of tickets for sale or redemption for this event. (If you are looking for a user's tickets, use the usersTickets field) */
   tickets: Array<Ticket>;
   users: Array<User>;
@@ -439,6 +440,12 @@ export type PaginationSearchInputParams = {
   pageSize: Scalars["Int"]["input"];
 };
 
+export enum ParticipationStatus {
+  Accepted = "accepted",
+  NotAccepted = "not_accepted",
+  WaitingResolution = "waiting_resolution",
+}
+
 export type PayForPurchaseOrderInput = {
   currencyID: Scalars["String"]["input"];
   purchaseOrderId: Scalars["String"]["input"];
@@ -665,6 +672,23 @@ export type TagSearchInput = {
   name?: InputMaybe<Scalars["String"]["input"]>;
 };
 
+/** Representation of a team. This is compsed of a group of users and is attached to a specific event */
+export type TeamRef = {
+  __typename?: "TeamRef";
+  description?: Maybe<Scalars["String"]["output"]>;
+  event: Event;
+  id: Scalars["ID"]["output"];
+  name: Scalars["String"]["output"];
+  status: TeamStatus;
+  users: Array<UserWithStatusRef>;
+};
+
+export enum TeamStatus {
+  Accepted = "accepted",
+  NotAccepted = "not_accepted",
+  WaitingResolution = "waiting_resolution",
+}
+
 /** Representation of a ticket */
 export type Ticket = {
   __typename?: "Ticket";
@@ -806,6 +830,7 @@ export type User = {
   isSuperAdmin?: Maybe<Scalars["Boolean"]["output"]>;
   lastName?: Maybe<Scalars["String"]["output"]>;
   name?: Maybe<Scalars["String"]["output"]>;
+  teams: Array<TeamRef>;
   username: Scalars["String"]["output"];
 };
 
@@ -814,6 +839,11 @@ export type UserSearchValues = {
   tags?: InputMaybe<Array<SearchableUserTags>>;
   userName?: InputMaybe<Scalars["String"]["input"]>;
 };
+
+export enum UserTeamRole {
+  Leader = "leader",
+  Member = "member",
+}
 
 /** Representation of a User ticket */
 export type UserTicket = {
@@ -824,6 +854,14 @@ export type UserTicket = {
   purchaseOrder?: Maybe<PurchaseOrder>;
   redemptionStatus: TicketRedemptionStatus;
   ticketTemplate: Ticket;
+};
+
+/** Representation of a user in a team */
+export type UserWithStatusRef = {
+  __typename?: "UserWithStatusRef";
+  role: UserTeamRole;
+  status: ParticipationStatus;
+  user: User;
 };
 
 export enum ValidPaymentMethods {
