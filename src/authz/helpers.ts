@@ -1,5 +1,6 @@
 import { ORM_TYPE } from "~/datasources/db";
 import { USER } from "~/datasources/db/schema";
+import { Context } from "~/types";
 
 const isCommuntiyAdmin = async ({
   user,
@@ -39,7 +40,12 @@ const isOwnerOfPurchaseOrder = async ({
   return Boolean(isOwner);
 };
 
+export const isSuperAdminOrSelf = (root: USER, ctx: Context) => {
+  return ctx.USER?.isSuperAdmin || ctx.USER?.id === root.id;
+};
+
 export const authHelpers = {
   isCommuntiyAdmin,
   isOwnerOfPurchaseOrder,
+  isSuperAdminOrSelf,
 };

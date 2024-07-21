@@ -502,7 +502,10 @@ export const insertEvent = async (
 export const findEventById = async (id?: string) => findById(eventsSchema, id);
 
 export const insertTeam = async (
-  partialInput: SetRequired<z.infer<typeof insertTeamsSchema>, "eventId">,
+  partialInput: SetRequired<
+    Partial<z.infer<typeof insertTeamsSchema>>,
+    "eventId"
+  >,
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),

@@ -1,17 +1,12 @@
+import { isSuperAdminOrSelf } from "~/authz/helpers";
 import { builder } from "~/builder";
 import {
   AllowedUserTags,
   selectCommunitySchema,
   selectTeamsSchema,
-  USER,
 } from "~/datasources/db/schema";
 import { CommunityRef, UserRef } from "~/schema/shared/refs";
 import { TeamRef } from "~/schema/teams/types";
-import { Context } from "~/types";
-
-const isSuperAdminOrSelf = (root: USER, ctx: Context) => {
-  return ctx.USER?.isSuperAdmin || ctx.USER?.id === root.id;
-};
 
 builder.objectType(UserRef, {
   description: "Representation of a user",
