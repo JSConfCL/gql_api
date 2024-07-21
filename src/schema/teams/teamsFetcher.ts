@@ -3,7 +3,7 @@ import { SQL, and, asc, ilike, inArray } from "drizzle-orm";
 import { ORM_TYPE } from "~/datasources/db";
 import {
   teamsSchema,
-  UserParticipationStatusEnum,
+  TeamStatusEnum,
   UserTeamRoleEnum,
   userTeamsSchema,
 } from "~/datasources/db/schema";
@@ -18,7 +18,7 @@ export type TeamSearch = {
   eventIds?: string[];
   teamName?: string;
   description?: string;
-  status?: UserParticipationStatusEnum[];
+  status?: TeamStatusEnum[];
   userIds?: string[];
 };
 
@@ -47,16 +47,10 @@ const getSearchTeamQuery = (DB: ORM_TYPE, search: TeamSearch = {}) => {
   }
 
   if (status && status.length > 0) {
-    const subquery = DB.select({
-      teamId: userTeamsSchema.teamId,
-    })
-      .from(userTeamsSchema)
-      .where(and(inArray(userTeamsSchema.userParticipationStatus, status)));
-
-    wheres.push(inArray(teamsSchema.id, subquery));
+    wheres.push(inArray(teamsSchema.teamStatus, status));
   }
 
-  if (userIds) {
+  if (userIds && userIds.length > 0) {
     const subquery = DB.select({
       teamId: userTeamsSchema.teamId,
     })

@@ -4,6 +4,7 @@ import { builder } from "~/builder";
 import {
   selectTeamsSchema,
   selectUsersSchema,
+  TeamStatusEnum,
   UserParticipationStatusEnum,
   UserTeamRoleEnum,
 } from "~/datasources/db/schema";
@@ -54,6 +55,10 @@ builder.objectType(UserWithStatusRef, {
   }),
 });
 
+export const TeamStatus = builder.enumType(TeamStatusEnum, {
+  name: "TeamStatus",
+});
+
 builder.objectType(TeamRef, {
   description:
     "Representation of a team. This is compsed of a group of users and is attached to a specific event",
@@ -65,7 +70,10 @@ builder.objectType(TeamRef, {
       type: EventLoadable,
       resolve: (root) => root.eventId,
     }),
-    status: t.exposeString("teamStatus"),
+    status: t.field({
+      type: TeamStatus,
+      resolve: (root) => root.teamStatus,
+    }),
     users: t.field({
       type: [UserWithStatusRef],
       resolve: async (root, args, ctx) => {
