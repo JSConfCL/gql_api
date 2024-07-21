@@ -8,17 +8,9 @@ import { ENV } from "./types";
 
 type HONO_ENV = {
   Bindings: ENV;
-  Variables: {
-    logger: ReturnType<typeof createLogger>;
-  };
 };
 
 const app = new Hono<HONO_ENV>();
-
-app.use(async (c, next) => {
-  c.set("logger", createLogger("email_webhook"));
-  await next();
-});
 
 async function calculateSignature(secret: string, data: string) {
   const key = await crypto.subtle.importKey(
@@ -47,7 +39,9 @@ function bufferToBase64(buffer: ArrayBuffer) {
 }
 
 app.post("/send/:template", async (c) => {
-  const logger = c.get("logger");
+  const logger = createLogger("send_email");
+
+  logger.info("Received webhook");
 
   try {
     const webhookPayload = await c.req.json<unknown>();
@@ -57,17 +51,26 @@ app.post("/send/:template", async (c) => {
     const emailTemplate = c.req.param("template");
 
     if (!resendApiKey) {
+      logger.info("No resend API key found");
       throw new Error("Resend API Key is required");
     }
 
     const resend = new Resend(resendApiKey);
+
+    logger.info("Resend api key found");
     const base64Signature = await calculateSignature(
       yourSigningSecret,
       JSON.stringify(webhookPayload),
     );
 
+    logger.info("Checking signatures");
+
     if (base64Signature === tallySignature) {
+      logger.info("Signatures match");
+      logger.info("Sending email");
       await mailRouter({ emailTemplate, body: webhookPayload, resend, logger });
+
+      return c.json({ message: "Email sent" });
     }
 
     return c.json({ message: "Hello, World!" });
@@ -78,7 +81,7 @@ app.post("/send/:template", async (c) => {
 });
 
 app.get("/", (c) => {
-  const logger = c.get("logger");
+  const logger = createLogger("root");
 
   try {
     return c.json({ message: "Hello, World!" });

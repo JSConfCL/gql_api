@@ -7,20 +7,12 @@ import { ENV } from "./types";
 
 type HONO_ENV = {
   Bindings: ENV;
-  Variables: {
-    logger: ReturnType<typeof createLogger>;
-  };
 };
 
 const app = new Hono<HONO_ENV>();
 
-app.use(async (c, next) => {
-  c.set("logger", createLogger("email_webhook"));
-  await next();
-});
-
 app.get("/auth/google", async (c) => {
-  const logger = c.get("logger");
+  const logger = createLogger("auth_google");
 
   try {
     const { GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URL, GOOGLE_CLIENT_SECRET } =
