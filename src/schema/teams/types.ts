@@ -20,11 +20,16 @@ export const AddUserToTeamResponseRef = builder.objectRef<{
   userIsInOtherTeams: boolean;
 }>("AddUserToTeamResponseRef");
 
-export const UserWithStatusRef = builder.objectRef<{
-  user: UserGraphqlSchema;
-  role: UserTeamRoleEnum;
-  status: UserParticipationStatusEnum;
-}>("UserWithStatusRef");
+builder.objectType(AddUserToTeamResponseRef, {
+  description: "Response when adding a user to a team",
+  fields: (t) => ({
+    team: t.field({
+      type: TeamRef,
+      resolve: (root) => root.team,
+    }),
+    userIsInOtherTeams: t.exposeBoolean("userIsInOtherTeams"),
+  }),
+});
 
 export const ParticipationStatus = builder.enumType(
   UserParticipationStatusEnum,
@@ -36,6 +41,12 @@ export const ParticipationStatus = builder.enumType(
 export const UserTeamRole = builder.enumType(UserTeamRoleEnum, {
   name: "UserTeamRole",
 });
+
+export const UserWithStatusRef = builder.objectRef<{
+  user: UserGraphqlSchema;
+  role: UserTeamRoleEnum;
+  status: UserParticipationStatusEnum;
+}>("UserWithStatusRef");
 
 builder.objectType(UserWithStatusRef, {
   description: "Representation of a user in a team",

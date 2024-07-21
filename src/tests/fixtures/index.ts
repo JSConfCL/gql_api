@@ -524,6 +524,7 @@ export const insertTeam = async (
     possibleInput,
   );
 };
+export const findTeamById = async (id?: string) => findById(teamsSchema, id);
 
 export const insertUserTeams = async (
   partialInput: z.infer<typeof insertUserTeamsSchema>,
@@ -544,6 +545,8 @@ export const insertUserTeams = async (
     possibleInput,
   );
 };
+export const findUserTeamsById = async (id?: string) =>
+  findById(userTeamsSchema, id);
 
 export const insertEventTag = async (
   partialInput: z.infer<typeof insertEventsToTagsSchema>,
