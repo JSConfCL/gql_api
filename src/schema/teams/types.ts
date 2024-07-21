@@ -1,9 +1,29 @@
-import { builder } from "~/builder";
-import { selectUsersSchema, TeamStatusEnum } from "~/datasources/db/schema";
-import { EventLoadable } from "~/schema/events/types";
-import { TeamRef, UserRef } from "~/schema/shared/refs";
+import { z } from "zod";
 
-export const TeamStatus = builder.enumType(TeamStatusEnum, {
+import { builder } from "~/builder";
+import {
+  selectTeamsSchema,
+  selectUsersSchema,
+  UserParticipationStatusEnum,
+} from "~/datasources/db/schema";
+import { EventLoadable } from "~/schema/events/types";
+import { UserGraphqlSchema, UserRef } from "~/schema/shared/refs";
+
+type TeamGraphqlSchema = z.infer<typeof selectTeamsSchema>;
+
+export const TeamRef = builder.objectRef<TeamGraphqlSchema>("TeamRef");
+
+export const AddUserToTeamResponseRef = builder.objectRef<{
+  team: TeamGraphqlSchema;
+  userIsInOtherTeams: boolean;
+}>("TeamRef");
+
+export const UserWithStatusRef = builder.objectRef<{
+  user: UserGraphqlSchema;
+  status: UserParticipationStatusEnum;
+}>("UserWithStatusRef");
+
+export const TeamStatus = builder.enumType(UserParticipationStatusEnum, {
   name: "TeamStatus",
 });
 
@@ -18,22 +38,9 @@ builder.objectType(TeamRef, {
       type: EventLoadable,
       resolve: (root) => root.eventId,
     }),
-    status: t.field({
-      type: TeamStatus,
-      resolve: async (root, args, ctx) => {
-        const teamStatus = await ctx.DB.query.userTeamsSchema.findFirst({
-          where: (t, { eq }) => eq(t.teamId, root.id),
-        });
-
-        if (!teamStatus || !teamStatus.status) {
-          return TeamStatusEnum.waiting_resolution;
-        }
-
-        return teamStatus.status;
-      },
-    }),
+    status: t.exposeString("teamStatus"),
     users: t.field({
-      type: [UserRef],
+      type: [UserWithStatusRef],
       resolve: async (root, args, ctx) => {
         // TODO: Use a dataloader here
         const teamWithUsers = await ctx.DB.query.userTeamsSchema.findMany({
@@ -47,7 +54,12 @@ builder.objectType(TeamRef, {
           return [];
         }
 
-        return teamWithUsers.map((tu) => selectUsersSchema.parse(tu.user));
+        return teamWithUsers.map((tu) => {
+          return {
+            user: selectUsersSchema.parse(tu.user),
+            status: tu.userParticipationStatus,
+          };
+        });
       },
     }),
   }),

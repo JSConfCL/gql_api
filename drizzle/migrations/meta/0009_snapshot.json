@@ -1,5 +1,5 @@
 {
-  "id": "391fe750-5a8f-4594-bbad-04ad5cfd0df7",
+  "id": "d9744afb-3b34-4797-a620-57b3b7e02727",
   "prevId": "cef3898f-51b6-4c4c-afea-4334fce59743",
   "version": "5",
   "dialect": "pg",
@@ -1284,6 +1284,20 @@
           "primaryKey": false,
           "notNull": true
         },
+        "limit": {
+          "name": "limit",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 5
+        },
+        "team_status": {
+          "name": "team_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'waiting_resolution'"
+        },
         "description": {
           "name": "description",
           "type": "text",
@@ -1574,6 +1588,13 @@
           "primaryKey": false,
           "notNull": false
         },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'inactive'"
+        },
         "gender_other_text": {
           "name": "gender_other_text",
           "type": "text",
@@ -1833,8 +1854,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "status": {
-          "name": "status",
+        "user_participation_status": {
+          "name": "user_participation_status",
           "type": "text",
           "primaryKey": false,
           "notNull": true,

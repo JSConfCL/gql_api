@@ -5,16 +5,21 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { teamsSchema, usersSchema } from "~/datasources/db/schema";
 
-import { createdAndUpdatedAtFields } from "./shared";
+import {
+  createdAndUpdatedAtFields,
+  TypescriptEnumAsDBEnumOptions,
+} from "./shared";
 
-export enum TeamStatusEnum {
+export enum UserParticipationStatusEnum {
   accepted = "accepted",
   not_accepted = "not_accepted",
   waiting_resolution = "waiting_resolution",
 }
 
-// TODO: Make this a generic type
-type TeamStatusAsTuple = [(typeof TeamStatusEnum)[keyof typeof TeamStatusEnum]];
+export enum UserTeamRoleEnum {
+  leader = "leader",
+  member = "member",
+}
 
 export const userTeamsSchema = pgTable("user_teams", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -24,11 +29,15 @@ export const userTeamsSchema = pgTable("user_teams", {
   teamId: uuid("team_id")
     .references(() => teamsSchema.id)
     .notNull(),
-  role: text("role"),
-  status: text("status", {
-    enum: Object.values(TeamStatusEnum) as TeamStatusAsTuple,
+  role: text("role", {
+    enum: TypescriptEnumAsDBEnumOptions(UserTeamRoleEnum),
   })
-    .default(TeamStatusEnum.waiting_resolution)
+    .default(UserTeamRoleEnum.leader)
+    .notNull(),
+  userParticipationStatus: text("user_participation_status", {
+    enum: TypescriptEnumAsDBEnumOptions(UserParticipationStatusEnum),
+  })
+    .default(UserParticipationStatusEnum.waiting_resolution)
     .notNull(),
   ...createdAndUpdatedAtFields,
 });

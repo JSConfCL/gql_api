@@ -124,7 +124,7 @@ export const upsertUserFromRequest = async ({
   const { avatar_url, name, user_name, email_verified, sub, picture } =
     payload.user_metadata;
   const profileInfo = insertUsersSchema.safeParse({
-    email: payload.email,
+    email: payload.email.toLowerCase(),
     isEmailVerified: email_verified,
     imageUrl: avatar_url ? avatar_url : picture ? picture : "",
     externalId: sub,

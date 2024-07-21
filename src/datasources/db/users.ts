@@ -8,7 +8,17 @@ import {
   userTicketsSchema,
   usersToCommunitiesSchema,
 } from "./schema";
-import { createdAndUpdatedAtFields, genderOptions } from "./shared";
+import {
+  createdAndUpdatedAtFields,
+  genderOptions,
+  TypescriptEnumAsDBEnumOptions,
+} from "./shared";
+
+export enum UserStatusEnum {
+  active = "active",
+  inactive = "inactive",
+  blocked = "blocked",
+}
 
 // USERS
 export const usersSchema = pgTable("users", {
@@ -21,6 +31,9 @@ export const usersSchema = pgTable("users", {
   gender: text("gender", {
     enum: genderOptions,
   }),
+  status: text("status", {
+    enum: TypescriptEnumAsDBEnumOptions(UserStatusEnum),
+  }).default(UserStatusEnum.inactive),
   genderOtherText: text("gender_other_text"),
   isSuperAdmin: boolean("isSuperAdmin").default(false),
   isEmailVerified: boolean("emailVerified"),

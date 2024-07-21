@@ -3,7 +3,7 @@ import { SQL, and, asc, ilike, inArray } from "drizzle-orm";
 import { ORM_TYPE } from "~/datasources/db";
 import {
   teamsSchema,
-  TeamStatusEnum,
+  UserParticipationStatusEnum,
   userTeamsSchema,
 } from "~/datasources/db/schema";
 import {
@@ -17,7 +17,7 @@ export type TeamSearch = {
   eventIds?: string[];
   teamName?: string;
   description?: string;
-  status?: TeamStatusEnum[];
+  status?: UserParticipationStatusEnum[];
   userIds?: string[];
 };
 
@@ -69,13 +69,19 @@ const getSearchTeamQuery = (DB: ORM_TYPE, search: TeamSearch = {}) => {
   return query.where(and(...wheres)).orderBy(asc(teamsSchema.name));
 };
 
-export const getTeams = async (DB: ORM_TYPE, search: TeamSearch = {}) => {
+const getTeams = async ({
+  DB,
+  search,
+}: {
+  DB: ORM_TYPE;
+  search: TeamSearch;
+}) => {
   const results = await getSearchTeamQuery(DB, search).execute();
 
   return results;
 };
 
-export const getPaginatedTeams = async ({
+const getPaginatedTeams = async ({
   DB,
   search,
   pagination,
@@ -91,7 +97,29 @@ export const getPaginatedTeams = async ({
   return results;
 };
 
+const getTeamForEdit = async ({
+  DB,
+  teamId,
+  userId,
+}: {
+  DB: ORM_TYPE;
+  teamId: string;
+  userId: string;
+}) => {
+  const teamAndUsers = await DB.query.userTeamsSchema.findFirst({
+    where: (t, { eq, and }) =>
+      and(eq(t.teamId, teamId), eq(t.userId, userId), eq(t.role, "leader")),
+    with: {
+      team: true,
+      user: true,
+    },
+  });
+
+  return teamAndUsers?.team;
+};
+
 export const teamsFetcher = {
   getTeams,
+  getTeamForEdit,
   getPaginatedTeams,
 };

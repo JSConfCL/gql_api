@@ -3,110 +3,54 @@ import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
 import {
-  insertPriceSchema,
-  insertTicketPriceSchema,
-  insertTicketSchema,
-  pricesSchema,
-  selectPriceSchema,
-  selectTicketSchema,
-  ticketsPricesSchema,
-  ticketsSchema,
-  updateTicketSchema,
+  insertTeamsSchema,
+  insertUserTeamsSchema,
+  selectTeamsSchema,
+  teamsSchema,
+  UserParticipationStatusEnum,
+  UserTeamRoleEnum,
+  userTeamsSchema,
 } from "~/datasources/db/schema";
 import { addToObjectIfPropertyExists } from "~/schema/shared/helpers";
-import { TicketRef } from "~/schema/shared/refs";
-import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
-import {
-  TicketTemplateStatus,
-  TicketTemplateVisibility,
-} from "~/schema/ticket/types";
-import { canCreateTicket, canEditTicket } from "~/validations";
+import { teamsFetcher } from "~/schema/teams/teamsFetcher";
+import { AddUserToTeamResponseRef, TeamRef } from "~/schema/teams/types";
+import { usersFetcher } from "~/schema/user/userFetcher";
+import { createInactiveUser } from "~/schema/user/userHelpers";
 
-const PricingInputField = builder.inputType("PricingInputField", {
+const TeamCreateInput = builder.inputType("TeamCreateInput", {
   fields: (t) => ({
-    value_in_cents: t.int({
-      description:
-        "The price. But in cents, so for a $10 ticket, you'd pass 1000 (or 10_00), or for 1000 chilean pesos, you'd pass 1000_00",
+    eventId: t.string({
       required: true,
     }),
-    currencyId: t.string({
-      required: true,
-    }),
-  }),
-});
-
-const TicketCreateInput = builder.inputType("TicketCreateInput", {
-  fields: (t) => ({
     name: t.string({
       required: true,
     }),
     description: t.string({
       required: false,
     }),
-    status: t.field({
-      type: TicketTemplateStatus,
-      required: false,
-    }),
-    visibility: t.field({
-      type: TicketTemplateVisibility,
-      required: false,
-    }),
-    startDateTime: t.field({
-      type: "DateTime",
-      required: true,
-    }),
-    endDateTime: t.field({
-      type: "DateTime",
-      required: false,
-    }),
-    requiresApproval: t.boolean({
-      required: false,
-    }),
-    quantity: t.int({
-      required: false,
-    }),
-    eventId: t.string({
-      required: true,
-    }),
-    unlimitedTickets: t.boolean({
-      required: true,
-      description:
-        "If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold.",
-    }),
-    isFree: t.boolean({
-      required: true,
-      description:
-        "If the ticket is free, the price submitted will be ignored.",
-    }),
-    prices: t.field({
-      type: [PricingInputField],
-      required: false,
-    }),
   }),
 });
 
-builder.mutationField("createTicket", (t) =>
+builder.mutationField("createTeam", (t) =>
   t.field({
-    description: "Create a ticket",
-    type: TicketRef,
+    description: "Create a team, associated to a specific event",
+    type: TeamRef,
     args: {
       input: t.arg({
-        type: TicketCreateInput,
+        type: TeamCreateInput,
         required: true,
       }),
     },
     authz: {
       rules: ["IsAuthenticated"],
     },
-    resolve: async (root, { input }, ctx) => {
-      const logger = ctx.logger;
-
-      if (!ctx.USER) {
+    resolve: async (root, { input }, { DB, USER }) => {
+      if (!USER) {
         throw new GraphQLError("User not found");
       }
 
       const { eventId } = input;
-      const event = await ctx.DB.query.eventsSchema.findFirst({
+      const event = await DB.query.eventsSchema.findFirst({
         where: (e, { eq }) => eq(e.id, eventId),
       });
 
@@ -114,191 +58,208 @@ builder.mutationField("createTicket", (t) =>
         throw new GraphQLError("Event not found");
       }
 
-      // Check if the user has permissions to create a ticket
-      const hasPermissions = await canCreateTicket({
-        user: ctx.USER,
-        eventId: eventId,
-        DB: ctx.DB,
+      const hasCreatedATeam = await DB.query.userTeamsSchema.findFirst({
+        where: (t, { eq, and }) =>
+          and(eq(t.userId, USER.id), eq(t.role, UserTeamRoleEnum.leader)),
+        with: {
+          team: true,
+        },
       });
 
-      if (!hasPermissions) {
-        throw new GraphQLError("Not authorized");
-      }
-
-      const hasQuantity = input.quantity ? input.quantity !== 0 : false;
-
-      if (input.endDateTime && input.startDateTime > input.endDateTime) {
-        throw new GraphQLError("End date must be after start date");
-      }
-
-      if (input.startDateTime < new Date()) {
-        throw new GraphQLError("Start date must be in the future");
-      }
-
-      if (input.unlimitedTickets) {
-        if (hasQuantity) {
-          throw new GraphQLError(
-            "Quantity must not be provided if tickets are unlimited",
-          );
-        }
-      } else {
-        if (!hasQuantity) {
-          throw new GraphQLError(
-            "Quantity must be provided if tickets are not unlimited",
-          );
-        }
-      }
-
-      if (input.isFree && input.prices) {
+      if (hasCreatedATeam && hasCreatedATeam.team?.eventId === eventId) {
         throw new GraphQLError(
-          "Prices array must not be provided if ticket is free",
+          "You have already created a team for this event",
         );
       }
 
-      if (
-        input.quantity !== undefined &&
-        input.quantity !== null &&
-        input.quantity <= 0
-      ) {
-        throw new GraphQLError("Cannot have negative quantity of tickets");
-      }
-
-      const transactionResults = await ctx.DB.transaction(async (trx) => {
-        try {
-          // First, we check if the user is trying to create a ticket with
-          // price. If so, we create all the prices.
-          const insertedPrices: Array<typeof selectPriceSchema._type> = [];
-
-          if (Array.isArray(input.prices)) {
-            if (input.prices.length === 0) {
-              throw new GraphQLError("Prices array must not be empty");
-            }
-
-            for (const price of input.prices) {
-              if (!price.value_in_cents) {
-                throw new GraphQLError("Price is required");
-              }
-
-              if (price.value_in_cents <= 0) {
-                throw new GraphQLError(
-                  "Price must be greater than 0. If this is a free ticket, set isFree to true.",
-                );
-              }
-
-              if (!price.currencyId) {
-                throw new GraphQLError(
-                  "CurrencyId is required when price is provided",
-                );
-              }
-
-              try {
-                const insertPriceValues = insertPriceSchema.parse({
-                  price_in_cents: price.value_in_cents,
-                  currencyId: price.currencyId,
-                });
-                const insertedPrice = await trx
-                  .insert(pricesSchema)
-                  .values(insertPriceValues)
-                  .returning();
-                const newPrice = insertedPrice?.[0];
-
-                if (!newPrice) {
-                  throw new GraphQLError("Price not created");
-                }
-
-                insertedPrices.push(newPrice);
-              } catch (e) {
-                logger.error("Error creating price:", e);
-                throw new GraphQLError("Error creating price");
-              }
-            }
-          }
-
-          // Second, we create the ticket
-          const insertTicketValues = insertTicketSchema.parse({
-            name: input.name,
-            description: input.description,
-            status: input.status,
-            visibility: input.visibility,
-            startDateTime: input.startDateTime,
-            endDateTime: input.endDateTime,
-            requiresApproval: input.requiresApproval,
-            quantity: input.quantity,
-            eventId: input.eventId,
-            isUnlimited: input.unlimitedTickets,
-            isFree: input.isFree,
-          });
-          const insertedTickets = await trx
-            .insert(ticketsSchema)
-            .values(insertTicketValues)
-            .returning();
-          const insertedTicket = insertedTickets?.[0];
-
-          if (!insertedTicket) {
-            throw new GraphQLError("Could not create ticket");
-          }
-
-          // Third, we attach the prices to the ticket.
-          for (const price of insertedPrices) {
-            logger.info(`Attaching price to ticket`, {
-              price,
-              ticket: insertedTicket,
-            });
-            const ticketPriceToInsert = insertTicketPriceSchema.parse({
-              ticketId: insertedTicket.id,
-              priceId: price.id,
-            });
-            const insertedTicketPrice = await trx
-              .insert(ticketsPricesSchema)
-              .values(ticketPriceToInsert)
-              .returning();
-            const ticketPrice = insertedTicketPrice?.[0];
-
-            if (!ticketPrice) {
-              throw new GraphQLError("Could not attach price to ticket");
-            }
-
-            // We pull the priceId w/ the currencyId. If the currencyId is USD,
-            // we create the product in Stripe. If the currencyId is CLP, we
-            // create the product in MercadoPago.
-            const foundPrice = await trx.query.pricesSchema.findFirst({
-              where: (ps, { eq }) => eq(ps.id, ticketPrice.priceId),
-              with: {
-                currency: true,
-              },
-            });
-
-            logger.info("Found price", foundPrice);
-
-            if (foundPrice?.currency) {
-              await ensureProductsAreCreated({
-                price: foundPrice.price_in_cents,
-                currencyCode: foundPrice.currency.currency,
-                ticket: insertedTicket,
-                getStripeClient: ctx.GET_STRIPE_CLIENT,
-                transactionHander: trx,
-                logger,
-              });
-            }
-          }
-
-          return selectTicketSchema.parse(insertedTicket);
-        } catch (e) {
-          logger.error("Error creating tickets:", e);
-          throw new GraphQLError(
-            e instanceof Error ? e.message : "Unknown error",
-          );
-        }
+      const teamToInsert = insertTeamsSchema.parse({
+        name: input.name,
+        description: input.description,
+        eventId: eventId,
       });
 
-      return transactionResults;
+      const result = await DB.transaction(async (trx) => {
+        const teams = await trx
+          .insert(teamsSchema)
+          .values(teamToInsert)
+          .returning();
+        const team = teams[0];
+
+        if (!team) {
+          throw new GraphQLError("Error creating team");
+        }
+
+        const userTeamToInsert = insertUserTeamsSchema.parse({
+          userId: USER?.id,
+          teamId: team.id,
+          role: "leader",
+          userParticipationStatus: UserParticipationStatusEnum.accepted,
+        });
+
+        await trx.insert(userTeamsSchema).values(userTeamToInsert).returning();
+
+        return team;
+      });
+      const team = selectTeamsSchema.parse(result);
+
+      return team;
     },
   }),
 );
 
-const TicketEditInput = builder.inputType("TicketEditInput", {
+const AddPersonToTeamInput = builder.inputType("AddPersonToTeamInput", {
   fields: (t) => ({
-    ticketId: t.string({
+    teamId: t.string({
+      required: true,
+    }),
+    userEmail: t.field({
+      type: "String",
+      required: true,
+    }),
+  }),
+});
+
+builder.mutationField("addPersonToTeam", (t) =>
+  t.field({
+    description: "Try to add a person to a team",
+    type: AddUserToTeamResponseRef,
+    args: {
+      input: t.arg({
+        type: AddPersonToTeamInput,
+        required: true,
+      }),
+    },
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, { input }, { USER, DB, logger }) => {
+      const { teamId, userEmail } = input;
+
+      if (!USER) {
+        throw new GraphQLError("User not found");
+      }
+
+      const team = await teamsFetcher.getTeamForEdit({
+        DB,
+        teamId,
+        userId: USER.id,
+      });
+
+      if (!team) {
+        throw new GraphQLError(
+          "You do not have permission to add someone to this team",
+        );
+      }
+
+      if ((userEmail && userEmail.length === 0) || !userEmail) {
+        throw new GraphQLError(
+          "You need to pass an email to be able to add someone to a team",
+        );
+      }
+
+      const users = await usersFetcher.searchUsers({
+        DB,
+        search: {
+          email: userEmail,
+        },
+      });
+      let user = users[0];
+
+      if (!user) {
+        user = await createInactiveUser({
+          DB,
+          email: userEmail,
+          logger,
+        });
+      }
+
+      const teamsAndUsers = await DB.query.userTeamsSchema.findFirst({
+        where: (t, { eq }) => eq(t.userId, user.id),
+        with: {
+          team: true,
+          user: true,
+        },
+      });
+
+      if (teamsAndUsers?.teamId === teamId) {
+        throw new GraphQLError("User is already in this team");
+      }
+
+      const userTeamToInsert = insertUserTeamsSchema.parse({
+        userId: user.id,
+        teamId: team.id,
+        role: "member",
+      });
+
+      await DB.insert(userTeamsSchema).values(userTeamToInsert).returning();
+
+      return {
+        team: selectTeamsSchema.parse(team),
+        userIsInOtherTeams: Boolean(teamsAndUsers),
+      };
+    },
+  }),
+);
+
+const RemovePersonFromTeamInput = builder.inputType(
+  "RemovePersonFromTeamInput",
+  {
+    fields: (t) => ({
+      teamId: t.string({
+        required: true,
+      }),
+      userId: t.field({
+        type: "String",
+        required: true,
+      }),
+    }),
+  },
+);
+
+builder.mutationField("deletePersonFomTeam", (t) =>
+  t.field({
+    description: "Try to add a person to a team",
+    type: TeamRef,
+    args: {
+      input: t.arg({
+        type: RemovePersonFromTeamInput,
+        required: true,
+      }),
+    },
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, { input }, { USER, DB }) => {
+      const { teamId, userId } = input;
+
+      if (!USER) {
+        throw new GraphQLError("User not found");
+      }
+
+      const team = await teamsFetcher.getTeamForEdit({
+        DB,
+        teamId,
+        userId: USER.id,
+      });
+
+      if (!team) {
+        throw new GraphQLError(
+          "You do not have permission to add someone to this team",
+        );
+      }
+
+      await DB.delete(userTeamsSchema)
+        .where(eq(userTeamsSchema.id, userId))
+        .returning();
+
+      return selectTeamsSchema.parse(team);
+    },
+  }),
+);
+
+const updateTeam = builder.inputType("updateTeam", {
+  fields: (t) => ({
+    teamId: t.string({
       required: true,
     }),
     name: t.string({
@@ -307,125 +268,51 @@ const TicketEditInput = builder.inputType("TicketEditInput", {
     description: t.string({
       required: false,
     }),
-    status: t.field({
-      type: TicketTemplateStatus,
-      required: false,
-    }),
-    visibility: t.field({
-      type: TicketTemplateVisibility,
-      required: false,
-    }),
-    startDateTime: t.field({
-      type: "DateTime",
-      required: false,
-    }),
-    endDateTime: t.field({
-      type: "DateTime",
-      required: false,
-    }),
-    requiresApproval: t.boolean({
-      required: false,
-    }),
-    quantity: t.int({
-      required: false,
-    }),
-    eventId: t.string({
-      required: false,
-    }),
-    unlimitedTickets: t.boolean({
-      required: false,
-      description:
-        "If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold.",
-    }),
-    prices: t.field({
-      type: PricingInputField,
-      required: false,
-    }),
   }),
 });
 
-builder.mutationField("editTicket", (t) =>
+builder.mutationField("updateTeam", (t) =>
   t.field({
-    description: "Edit a ticket",
-    type: TicketRef,
+    description: "Try to add a person to a team",
+    type: TeamRef,
     args: {
       input: t.arg({
-        type: TicketEditInput,
+        type: updateTeam,
         required: true,
       }),
     },
     authz: {
       rules: ["IsAuthenticated"],
     },
-    resolve: async (root, { input }, { logger, USER, DB }) => {
-      try {
-        const { ticketId } = input;
+    resolve: async (root, { input }, { USER, DB }) => {
+      const { teamId, name, description } = input;
 
-        if (!USER) {
-          throw new GraphQLError("User not found");
-        }
-
-        if (!(await canEditTicket(USER.id, ticketId, DB))) {
-          throw new GraphQLError("Not authorized");
-        }
-
-        const updateFields = {};
-
-        addToObjectIfPropertyExists(updateFields, "name", input.name);
-        addToObjectIfPropertyExists(
-          updateFields,
-          "description",
-          input.description,
-        );
-        addToObjectIfPropertyExists(updateFields, "status", input.status);
-        addToObjectIfPropertyExists(
-          updateFields,
-          "visibility",
-          input.visibility,
-        );
-        addToObjectIfPropertyExists(
-          updateFields,
-          "startDateTime",
-          input.startDateTime,
-        );
-        addToObjectIfPropertyExists(
-          updateFields,
-          "endDateTime",
-          input.endDateTime,
-        );
-        addToObjectIfPropertyExists(
-          updateFields,
-          "requiresApproval",
-          input.requiresApproval,
-        );
-        addToObjectIfPropertyExists(updateFields, "quantity", input.quantity);
-        // addToObjectIfPropertyExists(updateFields, "price", input.price);
-        // addToObjectIfPropertyExists(
-        //   updateFields,
-        //   "currencyId",
-        //   input.currencyId,
-        // );
-
-        const response = updateTicketSchema.safeParse(updateFields);
-
-        if (response.success) {
-          const ticket = (
-            await DB.update(ticketsSchema)
-              .set(response.data)
-              .where(eq(ticketsSchema.id, ticketId))
-              .returning()
-          )?.[0];
-
-          return selectTicketSchema.parse(ticket);
-        } else {
-          logger.error("ERROR:", response.error);
-          throw new Error("Invalid input", response.error);
-        }
-      } catch (e) {
-        throw new GraphQLError(
-          e instanceof Error ? e.message : "Unknown error",
-        );
+      if (!USER) {
+        throw new GraphQLError("User not found");
       }
+
+      const team = await teamsFetcher.getTeamForEdit({
+        DB,
+        teamId,
+        userId: USER.id,
+      });
+
+      if (!team) {
+        throw new GraphQLError("You do not have permission to edit this team");
+      }
+
+      const properties = {};
+
+      addToObjectIfPropertyExists(properties, "name", name);
+      addToObjectIfPropertyExists(properties, "description", description);
+
+      const teamToUpdate = insertTeamsSchema.parse(properties);
+
+      await DB.update(teamsSchema)
+        .set(teamToUpdate)
+        .where(eq(teamsSchema.id, teamId));
+
+      return team;
     },
   }),
 );
