@@ -1,8 +1,15 @@
 # 🚨 DEFAULT CONFIG 🚨
 name = "graphql-api"
-compatibility_date = "2023-06-06"
+compatibility_date = "2024-07-12"
 main = "src/index.ts"
 node_compat = true
+
+[dev]
+port = 50123
+
+[[services]]
+binding = "TRANSACTIONAL_EMAIL_SERVICE"
+service = "transactional-email-service"
 
 [vars]
 GRAPHQL_BASE_ENDPOINT = "/"
@@ -10,8 +17,8 @@ GRAPHQL_BASE_ENDPOINT = "/"
 [define]
 _APP_ENV = "'development'"
 
-[placement]
-mode = "smart"
+# [placement]
+# mode = "smart"
 
 [[queues.producers]]
 queue = "mail-queue-dev"
@@ -35,14 +42,18 @@ localConnectionString="postgresql://fake-user:fake-pasword@fake:5432/fake-db"
 route = "api.jschile.org/*"
 logpush = true
 
+[[env.production.services]]
+binding = "TRANSACTIONAL_EMAIL_SERVICE"
+service = "transactional-email-service"
+
 [env.production.vars]
 GRAPHQL_BASE_ENDPOINT = "/"
 
 [env.production.define]
 _APP_ENV = "'production'"
 
-[env.production.placement]
-mode = "smart"
+# [env.production.placement]
+# mode = "smart"
 
 [[env.production.queues.producers]]
 queue = "mail-queue-production"
@@ -66,14 +77,18 @@ id = "faa163999e9f40c6a26b3612940bc5ba"
 route = "api.jsconf.dev/*"
 logpush = true
 
+[[env.staging.services]]
+binding = "TRANSACTIONAL_EMAIL_SERVICE"
+service = "transactional-email-service"
+
 [env.staging.vars]
 GRAPHQL_BASE_ENDPOINT = "/"
 
 [env.staging.define]
 _APP_ENV = "'staging'"
 
-[env.staging.placement]
-mode = "smart"
+# [env.staging.placement]
+# mode = "smart"
 
 [[env.staging.queues.producers]]
 queue = "mail-queue-staging"

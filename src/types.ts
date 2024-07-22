@@ -20,6 +20,7 @@ export type Context = {
   MAIL_QUEUE: Queue;
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
   PURCHASE_CALLBACK_URL: string;
+  TRANSACTIONAL_EMAIL_SERVICE: Env["TRANSACTIONAL_EMAIL_SERVICE"];
 };
 
 export type GraphqlContext = Context &

@@ -28,6 +28,7 @@ export const createGraphqlContext = async ({
   STRIPE_KEY,
   HYPERDRIVE,
   MERCADOPAGO_KEY,
+  TRANSACTIONAL_EMAIL_SERVICE,
   logger,
 }: YogaInitialContext &
   Env & {
@@ -114,6 +115,13 @@ export const createGraphqlContext = async ({
     logger,
   });
 
+  if (TRANSACTIONAL_EMAIL_SERVICE) {
+    console.log("TRANSACTIONAL_EMAIL_SERVICE", TRANSACTIONAL_EMAIL_SERVICE);
+    const result = await TRANSACTIONAL_EMAIL_SERVICE.sendTestEmail({
+      test: "TEST",
+    });
+  }
+
   return {
     ...initContextCache(),
     DB,
@@ -127,5 +135,6 @@ export const createGraphqlContext = async ({
     GET_STRIPE_CLIENT,
     GET_MERCADOPAGO_CLIENT,
     logger,
+    TRANSACTIONAL_EMAIL_SERVICE: undefined,
   } satisfies Context;
 };

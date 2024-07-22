@@ -17,7 +17,7 @@ import {
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
-import { sendTransactionalHTMLEmail } from "~/datasources/email/sendEmailToWorkers";
+import { sendTransactionalHTMLEmail } from "~/datasources/email/sendTransactionalHTMLEmail";
 import {
   createMercadoPagoPayment,
   getMercadoPagoPayment,
