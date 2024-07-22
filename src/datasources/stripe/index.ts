@@ -96,7 +96,8 @@ export const createStripePayment = async ({
   items,
   purchaseOrderId,
   getStripeClient,
-  PURCHASE_CALLBACK_URL,
+  paymentSuccessRedirectURL,
+  paymentCancelRedirectURL,
 }: {
   items: Array<{
     price: string;
@@ -104,7 +105,8 @@ export const createStripePayment = async ({
   }>;
   purchaseOrderId: string;
   getStripeClient: () => Stripe;
-  PURCHASE_CALLBACK_URL: string;
+  paymentSuccessRedirectURL: string;
+  paymentCancelRedirectURL: string;
 }) => {
   const stripeClient = getStripeClient();
   const exirationDate = someMinutesIntoTheFuture(31);
@@ -114,7 +116,9 @@ export const createStripePayment = async ({
     // complete. If you’d like to use information from the successful Checkout
     // Session on your page, read the guide on customizing your success page.
     // https://stripe.com/docs/payments/checkout/custom-success-page
-    success_url: `${PURCHASE_CALLBACK_URL}?session_id={CHECKOUT_SESSION_ID}&purchaseOrderId=${purchaseOrderId}`,
+    success_url: `${paymentSuccessRedirectURL}?session_id={CHECKOUT_SESSION_ID}&purchaseOrderId=${purchaseOrderId}&status=approved`,
+    cancel_url: `${paymentCancelRedirectURL}?session_id={CHECKOUT_SESSION_ID}&purchaseOrderId=${purchaseOrderId}&status=rejected`,
+    return_url: `${paymentSuccessRedirectURL}?session_id={CHECKOUT_SESSION_ID}&purchaseOrderId=${purchaseOrderId}&status=return`,
     // The URL the customer will be directed to if they decide to cancel
     // payment and return to your website.
     // cancel_url: `https://jsconf.cl/tickets`,

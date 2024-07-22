@@ -9,6 +9,7 @@ import {
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
+import { getPurchaseRedirectURLsFromPurchaseOrder } from "~/schema/purchaseOrder/helpers";
 import { PurchaseOrderRef } from "~/schema/purchaseOrder/types";
 import { isValidUUID } from "~/schema/shared/helpers";
 import { UserTicketRef } from "~/schema/shared/refs";
@@ -462,13 +463,23 @@ builder.mutationFields((t) => ({
               selectPurchaseOrdersSchema.parse(foundPurchaseOrder);
 
             if (generatePaymentLink) {
+              logger.info("Extracting redirect URLs for purchase order");
+              const { paymentSuccessRedirectURL, paymentCancelRedirectURL } =
+                await getPurchaseRedirectURLsFromPurchaseOrder({
+                  DB: trx,
+                  purchaseOrderId: createdPurchaseOrder.id,
+                  default_redirect_url: PURCHASE_CALLBACK_URL,
+                });
+
+              logger.info("Generating payment link for purchase order");
               const { purchaseOrder, ticketsIds } = await createPaymentIntent({
                 DB,
                 USER,
                 RESEND,
                 purchaseOrderId: createdPurchaseOrder.id,
                 GET_STRIPE_CLIENT,
-                PURCHASE_CALLBACK_URL,
+                paymentCancelRedirectURL,
+                paymentSuccessRedirectURL,
                 GET_MERCADOPAGO_CLIENT,
                 currencyId: generatePaymentLink.currencyId,
                 logger,
@@ -485,7 +496,7 @@ builder.mutationFields((t) => ({
 
             return { selectedPurchaseOrder, claimedTickets };
           } catch (e) {
-            logger.error("🚨Error", e);
+            logger.error((e as Error).message);
             transactionError =
               e instanceof Error
                 ? new GraphQLError(e.message, {

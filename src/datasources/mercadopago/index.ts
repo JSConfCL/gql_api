@@ -108,7 +108,8 @@ export const createMercadoPagoPayment = async ({
   user,
   purchaseOrderId,
   getMercadoPagoClient,
-  PURCHASE_CALLBACK_URL,
+  paymentSuccessRedirectURL,
+  paymentCancelRedirectURL,
   eventId,
 }: {
   items: Array<Items>;
@@ -118,7 +119,8 @@ export const createMercadoPagoPayment = async ({
   };
   purchaseOrderId: string;
   getMercadoPagoClient: MercadoPagoFetch;
-  PURCHASE_CALLBACK_URL: string;
+  paymentSuccessRedirectURL: string;
+  paymentCancelRedirectURL: string;
   eventId: string;
 }) => {
   const expirationDate = someMinutesIntoTheFuture(31);
@@ -130,9 +132,9 @@ export const createMercadoPagoPayment = async ({
     },
     items: items,
     back_urls: {
-      success: `${PURCHASE_CALLBACK_URL}?purchaseOrderId=${purchaseOrderId}&status=approved`,
-      failure: `${PURCHASE_CALLBACK_URL}?purchaseOrderId=${purchaseOrderId}&status=rejected`,
-      pending: `${PURCHASE_CALLBACK_URL}?purchaseOrderId=${purchaseOrderId}&status=pending`,
+      success: `${paymentSuccessRedirectURL}?purchaseOrderId=${purchaseOrderId}&status=approved`,
+      failure: `${paymentCancelRedirectURL}?purchaseOrderId=${purchaseOrderId}&status=rejected`,
+      pending: `${paymentCancelRedirectURL}?purchaseOrderId=${purchaseOrderId}&status=pending`,
     },
     binary_mode: true,
     auto_return: "all",
