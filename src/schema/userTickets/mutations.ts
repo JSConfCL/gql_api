@@ -9,6 +9,7 @@ import {
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
+import { getPurchaseRedirectURLsFromPurchaseOrder } from "~/schema/purchaseOrder/helpers";
 import { PurchaseOrderRef } from "~/schema/purchaseOrder/types";
 import { isValidUUID } from "~/schema/shared/helpers";
 import { UserTicketRef } from "~/schema/shared/refs";
@@ -462,13 +463,21 @@ builder.mutationFields((t) => ({
               selectPurchaseOrdersSchema.parse(foundPurchaseOrder);
 
             if (generatePaymentLink) {
+              const { paymentSuccessRedirectURL, paymentCancelRedirectURL } =
+                await getPurchaseRedirectURLsFromPurchaseOrder({
+                  DB: trx,
+                  purchaseOrderId: createdPurchaseOrder.id,
+                  default_redirect_url: PURCHASE_CALLBACK_URL,
+                });
+
               const { purchaseOrder, ticketsIds } = await createPaymentIntent({
                 DB,
                 USER,
                 RESEND,
                 purchaseOrderId: createdPurchaseOrder.id,
                 GET_STRIPE_CLIENT,
-                PURCHASE_CALLBACK_URL,
+                paymentCancelRedirectURL,
+                paymentSuccessRedirectURL,
                 GET_MERCADOPAGO_CLIENT,
                 currencyId: generatePaymentLink.currencyId,
                 logger,

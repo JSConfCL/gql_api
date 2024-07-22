@@ -58,7 +58,8 @@ const createMercadoPagoPaymentIntent = async ({
   userTickets,
   purchaseOrderId,
   USER,
-  PURCHASE_CALLBACK_URL,
+  paymentSuccessRedirectURL,
+  paymentCancelRedirectURL,
   GET_MERCADOPAGO_CLIENT,
   logger,
 }: {
@@ -70,7 +71,8 @@ const createMercadoPagoPaymentIntent = async ({
   >;
   purchaseOrderId: string;
   GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
-  PURCHASE_CALLBACK_URL: string;
+  paymentSuccessRedirectURL: string;
+  paymentCancelRedirectURL: string;
   USER: {
     email: string;
     id: string;
@@ -132,7 +134,8 @@ const createMercadoPagoPaymentIntent = async ({
       email: USER.email,
       id: USER.id,
     },
-    PURCHASE_CALLBACK_URL,
+    paymentSuccessRedirectURL,
+    paymentCancelRedirectURL,
   });
 };
 
@@ -140,7 +143,8 @@ const createStripePaymentIntent = async ({
   purchaseOrderId,
   GET_STRIPE_CLIENT,
   userTickets,
-  PURCHASE_CALLBACK_URL,
+  paymentSuccessRedirectURL,
+  paymentCancelRedirectURL,
   logger,
 }: {
   userTickets: Array<
@@ -150,7 +154,8 @@ const createStripePaymentIntent = async ({
   >;
   purchaseOrderId: string;
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
-  PURCHASE_CALLBACK_URL: string;
+  paymentSuccessRedirectURL: string;
+  paymentCancelRedirectURL: string;
   logger: Logger<never>;
 }) => {
   const ticketsGroupedByTemplateId: Record<
@@ -198,7 +203,8 @@ const createStripePaymentIntent = async ({
     items,
     purchaseOrderId,
     getStripeClient: GET_STRIPE_CLIENT,
-    PURCHASE_CALLBACK_URL,
+    paymentSuccessRedirectURL,
+    paymentCancelRedirectURL,
   });
 
   return paymentLink;
@@ -211,7 +217,8 @@ export const createPaymentIntent = async ({
   GET_MERCADOPAGO_CLIENT,
   RESEND,
   GET_STRIPE_CLIENT,
-  PURCHASE_CALLBACK_URL,
+  paymentSuccessRedirectURL,
+  paymentCancelRedirectURL,
   logger,
 }: {
   DB: Context["DB"];
@@ -220,7 +227,8 @@ export const createPaymentIntent = async ({
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
   GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
   RESEND: Context["RESEND"];
-  PURCHASE_CALLBACK_URL: string;
+  paymentSuccessRedirectURL: string;
+  paymentCancelRedirectURL: string;
   currencyId: string;
   logger: Logger<never>;
 }) => {
@@ -442,7 +450,8 @@ export const createPaymentIntent = async ({
       userTickets,
       purchaseOrderId,
       GET_STRIPE_CLIENT,
-      PURCHASE_CALLBACK_URL,
+      paymentSuccessRedirectURL,
+      paymentCancelRedirectURL,
       logger,
     });
 
@@ -465,7 +474,8 @@ export const createPaymentIntent = async ({
         userTickets,
         purchaseOrderId,
         USER,
-        PURCHASE_CALLBACK_URL,
+        paymentSuccessRedirectURL,
+        paymentCancelRedirectURL,
         GET_MERCADOPAGO_CLIENT,
         logger,
       },

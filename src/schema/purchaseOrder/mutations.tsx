@@ -1,6 +1,7 @@
 import { authHelpers } from "~/authz/helpers";
 import { builder } from "~/builder";
 import { selectPurchaseOrdersSchema } from "~/datasources/db/purchaseOrders";
+import { getPurchaseRedirectURLsFromPurchaseOrder } from "~/schema/purchaseOrder/helpers";
 
 import { createPaymentIntent, syncPurchaseOrderPaymentStatus } from "./actions";
 import { PurchaseOrderRef } from "./types";
@@ -50,13 +51,20 @@ builder.mutationField("payForPurchaseOrder", (t) =>
 
       const { purchaseOrderId, currencyID } = input;
 
+      const { paymentCancelRedirectURL, paymentSuccessRedirectURL } =
+        await getPurchaseRedirectURLsFromPurchaseOrder({
+          DB,
+          default_redirect_url: PURCHASE_CALLBACK_URL,
+          purchaseOrderId,
+        });
       const { purchaseOrder, ticketsIds } = await createPaymentIntent({
         DB,
         USER,
         RESEND,
         purchaseOrderId,
         GET_STRIPE_CLIENT,
-        PURCHASE_CALLBACK_URL,
+        paymentCancelRedirectURL,
+        paymentSuccessRedirectURL,
         GET_MERCADOPAGO_CLIENT,
         currencyId: currencyID,
         logger,
