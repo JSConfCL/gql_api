@@ -134,7 +134,7 @@ export const createMercadoPagoPayment = async ({
     back_urls: {
       success: `${paymentSuccessRedirectURL}?purchaseOrderId=${purchaseOrderId}&status=approved`,
       failure: `${paymentCancelRedirectURL}?purchaseOrderId=${purchaseOrderId}&status=rejected`,
-      pending: `${paymentSuccessRedirectURL}?purchaseOrderId=${purchaseOrderId}&status=pending`,
+      pending: `${paymentCancelRedirectURL}?purchaseOrderId=${purchaseOrderId}&status=pending`,
     },
     binary_mode: true,
     auto_return: "all",

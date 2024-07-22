@@ -463,6 +463,7 @@ builder.mutationFields((t) => ({
               selectPurchaseOrdersSchema.parse(foundPurchaseOrder);
 
             if (generatePaymentLink) {
+              logger.info("Extracting redirect URLs for purchase order");
               const { paymentSuccessRedirectURL, paymentCancelRedirectURL } =
                 await getPurchaseRedirectURLsFromPurchaseOrder({
                   DB: trx,
@@ -470,6 +471,7 @@ builder.mutationFields((t) => ({
                   default_redirect_url: PURCHASE_CALLBACK_URL,
                 });
 
+              logger.info("Generating payment link for purchase order");
               const { purchaseOrder, ticketsIds } = await createPaymentIntent({
                 DB,
                 USER,
@@ -494,7 +496,7 @@ builder.mutationFields((t) => ({
 
             return { selectedPurchaseOrder, claimedTickets };
           } catch (e) {
-            logger.error("🚨Error", e);
+            logger.error((e as Error).message);
             transactionError =
               e instanceof Error
                 ? new GraphQLError(e.message, {

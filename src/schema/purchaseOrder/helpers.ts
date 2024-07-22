@@ -1,4 +1,5 @@
 import { ORM_TYPE } from "~/datasources/db";
+import { purchaseOrdersSchema } from "~/datasources/db/purchaseOrders";
 
 export const getPurchaseRedirectURLsFromPurchaseOrder = async ({
   DB,
@@ -12,13 +13,13 @@ export const getPurchaseRedirectURLsFromPurchaseOrder = async ({
   const po = await DB.query.purchaseOrdersSchema.findFirst({
     where: (pos, { eq }) => eq(pos.id, purchaseOrderId),
     with: {
-      tickets: {
+      userTickets: {
         with: {
-          event: {
+          ticketTemplate: {
             with: {
-              eventsToCommunities: {
+              event: {
                 with: {
-                  community: true,
+                  eventsToCommunities: true,
                 },
               },
             },
@@ -32,13 +33,19 @@ export const getPurchaseRedirectURLsFromPurchaseOrder = async ({
     throw new Error("Purchase order not found");
   }
 
-  const { tickets } = po;
+  const { userTickets } = po;
 
-  if (!tickets.length) {
+  if (!userTickets.length) {
     throw new Error("No tickets found for purchase order");
   }
 
-  const { event } = tickets[0];
+  const { ticketTemplate } = userTickets[0];
+
+  if (!ticketTemplate) {
+    throw new Error("No tickets found for purchase order");
+  }
+
+  const { event } = ticketTemplate;
 
   if (!event) {
     throw new Error("Event not found for ticket");
@@ -50,21 +57,28 @@ export const getPurchaseRedirectURLsFromPurchaseOrder = async ({
     throw new Error("Event to community not found");
   }
 
-  const { community } = eventsToCommunities[0];
+  const communityId = eventsToCommunities[0]?.communityId;
 
-  if (!community) {
-    throw new Error("Community not found");
+  const community = await DB.query.communitySchema.findFirst({
+    where: (c, { eq }) => eq(c.id, communityId),
+  });
+
+  let paymentSuccessRedirectURL = default_redirect_url;
+  let paymentCancelRedirectURL = default_redirect_url;
+
+  if (community) {
+    paymentSuccessRedirectURL =
+      community.paymentSuccessRedirectURL ?? paymentSuccessRedirectURL;
+    paymentCancelRedirectURL =
+      community.paymentCancelRedirectURL ?? paymentCancelRedirectURL;
   }
 
-  const paymentSuccessRedirectURL =
-    eventsToCommunities[0]?.paymentSuccessRedirectURL ??
-    community.paymentSuccessRedirectURL ??
-    default_redirect_url;
-
-  const paymentCancelRedirectURL =
+  paymentSuccessRedirectURL =
     eventsToCommunities[0]?.paymentCancelRedirectURL ??
-    community.paymentCancelRedirectURL ??
-    default_redirect_url;
+    paymentSuccessRedirectURL;
+  paymentSuccessRedirectURL =
+    eventsToCommunities[0]?.paymentCancelRedirectURL ??
+    paymentSuccessRedirectURL;
 
   return {
     paymentSuccessRedirectURL,
