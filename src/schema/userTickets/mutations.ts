@@ -259,12 +259,12 @@ builder.mutationFields((t) => ({
       { input: { purchaseOrder, idempotencyUUIDKey, generatePaymentLink } },
       {
         USER,
-        RESEND,
         DB,
         GET_STRIPE_CLIENT,
         PURCHASE_CALLBACK_URL,
         GET_MERCADOPAGO_CLIENT,
         logger,
+        RPC_SERVICE_EMAIL,
       },
     ) => {
       if (!USER) {
@@ -468,7 +468,6 @@ builder.mutationFields((t) => ({
               const { purchaseOrder, ticketsIds } = await createPaymentIntent({
                 DB,
                 USER,
-                RESEND,
                 purchaseOrderId: createdPurchaseOrder.id,
                 GET_STRIPE_CLIENT,
                 paymentCancelRedirectURL,
@@ -476,6 +475,7 @@ builder.mutationFields((t) => ({
                 GET_MERCADOPAGO_CLIENT,
                 currencyId: generatePaymentLink.currencyId,
                 logger,
+                transactionalEmailService: RPC_SERVICE_EMAIL,
               });
               const tickets = await trx.query.userTicketsSchema.findMany({
                 where: (uts, { inArray }) => inArray(uts.id, ticketsIds),

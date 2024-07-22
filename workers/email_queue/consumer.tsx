@@ -2,9 +2,7 @@ import { renderAsync } from "@react-email/render";
 import * as React from "react";
 
 import { WorkEmailValidationEmail } from "emails/templates/salaries/invite-email";
-import { sendTransactionalHTMLEmail } from "~/datasources/email/sendEmailToWorkers";
 import { EmailMessageType } from "~/datasources/queues/mail";
-import { APP_ENV } from "~/env";
 import { defaultLogger } from "~/logging";
 
 type ENV = {

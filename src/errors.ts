@@ -3,8 +3,10 @@ import { Logger } from "pino";
 
 import { builder } from "~/builder";
 
-enum ServiceErrors {
+export enum ServiceErrors {
   UNAUTHENTICATED = "UNAUTHENTICATED",
+  FAILED_PRECONDITION = "FAILED_PRECONDITION",
+  FORBIDDEN = "FORBIDDEN",
 }
 
 builder.enumType(ServiceErrors, {
@@ -13,6 +15,8 @@ builder.enumType(ServiceErrors, {
 
 const error_codes = {
   [ServiceErrors.UNAUTHENTICATED]: 401,
+  [ServiceErrors.FORBIDDEN]: 403,
+  [ServiceErrors.FAILED_PRECONDITION]: 412,
 } as const;
 
 export const applicationError = (
