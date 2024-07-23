@@ -521,6 +521,7 @@ type PurchaseOrder {
   finalPrice: Float
   id: ID!
   paymentLink: String
+  purchasePaymentStatus: PurchaseOrderPaymentStatusEnum
   status: PurchaseOrderStatusEnum
   tickets: [UserTicket!]!
 }
@@ -530,10 +531,16 @@ input PurchaseOrderInput {
   ticketId: String!
 }
 
-enum PurchaseOrderStatusEnum {
+enum PurchaseOrderPaymentStatusEnum {
   not_required
   paid
   unpaid
+}
+
+enum PurchaseOrderStatusEnum {
+  complete
+  expired
+  open
 }
 
 type Query {

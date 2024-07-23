@@ -547,6 +547,7 @@ export type PurchaseOrder = {
   finalPrice?: Maybe<Scalars["Float"]["output"]>;
   id: Scalars["ID"]["output"];
   paymentLink?: Maybe<Scalars["String"]["output"]>;
+  purchasePaymentStatus?: Maybe<PurchaseOrderPaymentStatusEnum>;
   status?: Maybe<PurchaseOrderStatusEnum>;
   tickets: Array<UserTicket>;
 };
@@ -556,10 +557,16 @@ export type PurchaseOrderInput = {
   ticketId: Scalars["String"]["input"];
 };
 
-export enum PurchaseOrderStatusEnum {
+export enum PurchaseOrderPaymentStatusEnum {
   NotRequired = "not_required",
   Paid = "paid",
   Unpaid = "unpaid",
+}
+
+export enum PurchaseOrderStatusEnum {
+  Complete = "complete",
+  Expired = "expired",
+  Open = "open",
 }
 
 export type Query = {
