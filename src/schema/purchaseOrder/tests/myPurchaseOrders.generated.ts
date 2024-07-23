@@ -15,7 +15,7 @@ export type MyPurchaseOrdersQuery = { __typename?: 'Query', myPurchaseOrders: { 
 
 
 export const MyPurchaseOrders = gql`
-    query myPurchaseOrders($input: PaginatedInputMyPurchaseOrdersInput!) {
+    query MyPurchaseOrders($input: PaginatedInputMyPurchaseOrdersInput!) {
   myPurchaseOrders(input: $input) {
     data {
       id

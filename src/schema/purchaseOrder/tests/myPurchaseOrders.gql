@@ -1,4 +1,4 @@
-query myPurchaseOrders($input: PaginatedInputMyPurchaseOrdersInput!) {
+query MyPurchaseOrders($input: PaginatedInputMyPurchaseOrdersInput!) {
   myPurchaseOrders(input: $input) {
     data {
       id

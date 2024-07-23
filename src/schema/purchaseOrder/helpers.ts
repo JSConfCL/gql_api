@@ -1,5 +1,4 @@
 import { ORM_TYPE } from "~/datasources/db";
-import { purchaseOrdersSchema } from "~/datasources/db/purchaseOrders";
 
 export const getPurchaseRedirectURLsFromPurchaseOrder = async ({
   DB,
