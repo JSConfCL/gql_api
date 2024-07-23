@@ -1,0 +1,8 @@
+query myPurchaseOrders($input: PaginatedInputMyPurchaseOrdersInput!) {
+  myPurchaseOrders(input: $input) {
+    data {
+      id
+      status
+    }
+  }
+}

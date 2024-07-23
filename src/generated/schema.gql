@@ -378,6 +378,10 @@ type Mutation {
   validateWorkEmail(confirmationToken: String!): WorkEmail!
 }
 
+input MyPurchaseOrdersInput {
+  paymentPlatform: String
+}
+
 input MyTicketsSearchValues {
   approvalStatus: TicketApprovalStatus
   eventId: String
@@ -398,6 +402,11 @@ input PaginatedInputEventsSearchInput {
   search: EventsSearchInput
 }
 
+input PaginatedInputMyPurchaseOrdersInput {
+  pagination: PaginationSearchInputParams! = { page: 0, pageSize: 20 }
+  search: MyPurchaseOrdersInput
+}
+
 input PaginatedInputMyTicketsSearchValues {
   pagination: PaginationSearchInputParams! = { page: 0, pageSize: 20 }
   search: MyTicketsSearchValues
@@ -411,6 +420,14 @@ input PaginatedInputTeamSearchValues {
 input PaginatedInputUserSearchValues {
   pagination: PaginationSearchInputParams! = { page: 0, pageSize: 20 }
   search: UserSearchValues
+}
+
+"""
+Type used for querying the paginated leaves and it's paginated meta data
+"""
+type PaginatedPurchaseOrder {
+  data: [PurchaseOrder!]!
+  pagination: Pagination!
 }
 
 """
@@ -554,6 +571,13 @@ type Query {
   Get the current user
   """
   me: User!
+
+  """
+  Get a list of purchase orders for the authenticated user
+  """
+  myPurchaseOrders(
+    input: PaginatedInputMyPurchaseOrdersInput!
+  ): PaginatedPurchaseOrder!
 
   """
   Get a list of tickets for the current user

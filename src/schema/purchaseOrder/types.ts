@@ -4,11 +4,19 @@ import {
   selectPurchaseOrdersSchema,
   selectAllowedCurrencySchema,
   puchaseOrderPaymentStatusEnum,
+  purchaseOrderStatusEnum,
 } from "~/datasources/db/schema";
 import { AllowedCurrencyRef, UserTicketRef } from "~/schema/shared/refs";
 
+const PurchaseOrderPaymentStatusEnum = builder.enumType(
+  "PurchaseOrderPaymentStatusEnum",
+  {
+    values: puchaseOrderPaymentStatusEnum,
+  },
+);
+
 const PurchaseOrderStatusEnum = builder.enumType("PurchaseOrderStatusEnum", {
-  values: puchaseOrderPaymentStatusEnum,
+  values: purchaseOrderStatusEnum,
 });
 
 export const PurchaseOrderRef = builder.objectRef<{
@@ -77,11 +85,18 @@ export const PurchaseOrderLoadable = builder.loadableObject(PurchaseOrderRef, {
         }
       },
     }),
+    purchasePaymentStatus: t.field({
+      type: PurchaseOrderPaymentStatusEnum,
+      nullable: true,
+      resolve: (root) => {
+        return root.purchaseOrder.purchaseOrderPaymentStatus;
+      },
+    }),
     status: t.field({
       type: PurchaseOrderStatusEnum,
       nullable: true,
       resolve: (root) => {
-        return root.purchaseOrder.purchaseOrderPaymentStatus;
+        return root.purchaseOrder.status;
       },
     }),
     tickets: t.field({

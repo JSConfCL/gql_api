@@ -418,6 +418,10 @@ export type MutationValidateWorkEmailArgs = {
   confirmationToken: Scalars["String"]["input"];
 };
 
+export type MyPurchaseOrdersInput = {
+  paymentPlatform?: InputMaybe<Scalars["String"]["input"]>;
+};
+
 export type MyTicketsSearchValues = {
   approvalStatus?: InputMaybe<TicketApprovalStatus>;
   eventId?: InputMaybe<Scalars["String"]["input"]>;
@@ -437,6 +441,11 @@ export type PaginatedInputEventsSearchInput = {
   search?: InputMaybe<EventsSearchInput>;
 };
 
+export type PaginatedInputMyPurchaseOrdersInput = {
+  pagination?: PaginationSearchInputParams;
+  search?: InputMaybe<MyPurchaseOrdersInput>;
+};
+
 export type PaginatedInputMyTicketsSearchValues = {
   pagination?: PaginationSearchInputParams;
   search?: InputMaybe<MyTicketsSearchValues>;
@@ -450,6 +459,13 @@ export type PaginatedInputTeamSearchValues = {
 export type PaginatedInputUserSearchValues = {
   pagination?: PaginationSearchInputParams;
   search?: InputMaybe<UserSearchValues>;
+};
+
+/** Type used for querying the paginated leaves and it's paginated meta data */
+export type PaginatedPurchaseOrder = {
+  __typename?: "PaginatedPurchaseOrder";
+  data: Array<PurchaseOrder>;
+  pagination: Pagination;
 };
 
 /** Type used for querying the paginated leaves and it's paginated meta data */
@@ -562,6 +578,8 @@ export type Query = {
   eventImages: Array<SanityAssetRef>;
   /** Get the current user */
   me: User;
+  /** Get a list of purchase orders for the authenticated user */
+  myPurchaseOrders: PaginatedPurchaseOrder;
   /** Get a list of tickets for the current user */
   myTickets: PaginatedUserTicket;
   /** Get a list of salaries associated to the user */
@@ -614,6 +632,10 @@ export type QueryEventArgs = {
 
 export type QueryEventImagesArgs = {
   input: EventImageSearch;
+};
+
+export type QueryMyPurchaseOrdersArgs = {
+  input: PaginatedInputMyPurchaseOrdersInput;
 };
 
 export type QueryMyTicketsArgs = {
