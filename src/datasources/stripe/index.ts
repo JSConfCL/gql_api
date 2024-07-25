@@ -118,7 +118,6 @@ export const createStripePayment = async ({
     // https://stripe.com/docs/payments/checkout/custom-success-page
     success_url: `${paymentSuccessRedirectURL}?session_id={CHECKOUT_SESSION_ID}&purchaseOrderId=${purchaseOrderId}&status=approved`,
     cancel_url: `${paymentCancelRedirectURL}?session_id={CHECKOUT_SESSION_ID}&purchaseOrderId=${purchaseOrderId}&status=rejected`,
-    return_url: `${paymentSuccessRedirectURL}?session_id={CHECKOUT_SESSION_ID}&purchaseOrderId=${purchaseOrderId}&status=return`,
     // The URL the customer will be directed to if they decide to cancel
     // payment and return to your website.
     // cancel_url: `https://jsconf.cl/tickets`,
