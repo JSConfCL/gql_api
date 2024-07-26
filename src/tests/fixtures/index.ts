@@ -487,7 +487,6 @@ export const insertEvent = async (
     geoLatitude: partialInput?.geoLatitude,
     geoLongitude: partialInput?.geoLongitude,
     meetingURL: partialInput?.meetingURL,
-    maxAttendees: partialInput?.maxAttendees,
     timeZone: partialInput?.timeZone,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertEventsSchema>;

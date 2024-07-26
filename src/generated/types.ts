@@ -154,6 +154,7 @@ export type EnqueueGoogleAlbumImportInput = {
 export type Event = {
   __typename?: "Event";
   address?: Maybe<Scalars["String"]["output"]>;
+  bannerImageSanityRef?: Maybe<Scalars["String"]["output"]>;
   community?: Maybe<Community>;
   description?: Maybe<Scalars["String"]["output"]>;
   endDateTime?: Maybe<Scalars["DateTime"]["output"]>;
@@ -161,7 +162,6 @@ export type Event = {
   images: Array<SanityAssetRef>;
   latitude?: Maybe<Scalars["String"]["output"]>;
   longitude?: Maybe<Scalars["String"]["output"]>;
-  maxAttendees?: Maybe<Scalars["Int"]["output"]>;
   meetingURL?: Maybe<Scalars["String"]["output"]>;
   name: Scalars["String"]["output"];
   startDateTime: Scalars["DateTime"]["output"];
@@ -188,7 +188,6 @@ export type EventCreateInput = {
   endDateTime?: InputMaybe<Scalars["DateTime"]["input"]>;
   latitude?: InputMaybe<Scalars["String"]["input"]>;
   longitude?: InputMaybe<Scalars["String"]["input"]>;
-  maxAttendees: Scalars["Int"]["input"];
   meetingURL?: InputMaybe<Scalars["String"]["input"]>;
   name: Scalars["String"]["input"];
   startDateTime: Scalars["DateTime"]["input"];
@@ -204,7 +203,6 @@ export type EventEditInput = {
   eventId: Scalars["String"]["input"];
   latitude?: InputMaybe<Scalars["String"]["input"]>;
   longitude?: InputMaybe<Scalars["String"]["input"]>;
-  maxAttendees?: InputMaybe<Scalars["Int"]["input"]>;
   meetingURL?: InputMaybe<Scalars["String"]["input"]>;
   name?: InputMaybe<Scalars["String"]["input"]>;
   startDateTime?: InputMaybe<Scalars["DateTime"]["input"]>;
@@ -266,6 +264,7 @@ export type GeneratePaymentLinkInput = {
 
 export type Mutation = {
   __typename?: "Mutation";
+  acceptGiftedTicket: UserTicket;
   /** Try to add a person to a team */
   addPersonToTeam: AddUserToTeamResponseRef;
   /** Approve a ticket */
@@ -316,6 +315,10 @@ export type Mutation = {
   updateUserRoleInCommunity: User;
   /** Validates work email for a user */
   validateWorkEmail: WorkEmail;
+};
+
+export type MutationAcceptGiftedTicketArgs = {
+  userTicketId: Scalars["String"]["input"];
 };
 
 export type MutationAddPersonToTeamArgs = {
@@ -543,10 +546,12 @@ export type PublicFinanceEntryRef = {
 /** Representation of a Purchase Order */
 export type PurchaseOrder = {
   __typename?: "PurchaseOrder";
+  createdAt?: Maybe<Scalars["DateTime"]["output"]>;
   currency?: Maybe<AllowedCurrency>;
   finalPrice?: Maybe<Scalars["Float"]["output"]>;
   id: Scalars["ID"]["output"];
   paymentLink?: Maybe<Scalars["String"]["output"]>;
+  paymentPlatform?: Maybe<Scalars["String"]["output"]>;
   purchasePaymentStatus?: Maybe<PurchaseOrderPaymentStatusEnum>;
   status?: Maybe<PurchaseOrderStatusEnum>;
   tickets: Array<UserTicket>;
@@ -951,8 +956,9 @@ export enum UserTeamRole {
 export type UserTicket = {
   __typename?: "UserTicket";
   approvalStatus: TicketApprovalStatus;
+  createdAt: Scalars["DateTime"]["output"];
   id: Scalars["ID"]["output"];
-  paymentStatus: TicketPaymentStatus;
+  paymentStatus?: Maybe<PurchaseOrderPaymentStatusEnum>;
   purchaseOrder?: Maybe<PurchaseOrder>;
   redemptionStatus: TicketRedemptionStatus;
   ticketTemplate: Ticket;

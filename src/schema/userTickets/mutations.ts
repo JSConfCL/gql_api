@@ -350,7 +350,7 @@ builder.mutationFields((t) => ({
                     tp?.price?.price_in_cents !== null &&
                     tp?.price?.price_in_cents > 0,
                 );
-              const { maxAttendees, status } = ticketTemplate.event;
+              const { status } = ticketTemplate.event;
               const isEventActive = status === "active";
 
               // If the event is not active, we throw an error.
@@ -379,18 +379,6 @@ builder.mutationFields((t) => ({
                 if (tickets.length + item.quantity > ticketTemplate.quantity) {
                   throw new Error(
                     `Not enough tickets for ticket template with id ${item.ticketId}`,
-                  );
-                }
-              }
-
-              // If the event has a maxAttendees field, we check if we have
-              // enough room to fulfill the purchase order.
-              if (maxAttendees) {
-                // If we would be going over the limit of attendees, we throw an
-                // error.
-                if (tickets.length + item.quantity > maxAttendees) {
-                  throw new Error(
-                    `Not enough room on event ${ticketTemplate.event.id}`,
                   );
                 }
               }

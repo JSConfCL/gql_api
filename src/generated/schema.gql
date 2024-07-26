@@ -138,6 +138,7 @@ Representation of an Event (Events and Users, is what tickets are linked to)
 """
 type Event {
   address: String
+  bannerImageSanityRef: String
   community: Community
   description: String
   endDateTime: DateTime
@@ -145,7 +146,6 @@ type Event {
   images: [SanityAssetRef!]!
   latitude: String
   longitude: String
-  maxAttendees: Int
   meetingURL: String
   name: String!
   startDateTime: DateTime!
@@ -173,7 +173,6 @@ input EventCreateInput {
   endDateTime: DateTime
   latitude: String
   longitude: String
-  maxAttendees: Int!
   meetingURL: String
   name: String!
   startDateTime: DateTime!
@@ -189,7 +188,6 @@ input EventEditInput {
   eventId: String!
   latitude: String
   longitude: String
-  maxAttendees: Int
   meetingURL: String
   name: String
   startDateTime: DateTime
@@ -252,6 +250,8 @@ input GeneratePaymentLinkInput {
 }
 
 type Mutation {
+  acceptGiftedTicket(userTicketId: String!): UserTicket!
+
   """
   Try to add a person to a team
   """
@@ -517,10 +517,12 @@ type PublicFinanceEntryRef {
 Representation of a Purchase Order
 """
 type PurchaseOrder {
+  createdAt: DateTime
   currency: AllowedCurrency
   finalPrice: Float
   id: ID!
   paymentLink: String
+  paymentPlatform: String
   purchasePaymentStatus: PurchaseOrderPaymentStatusEnum
   status: PurchaseOrderStatusEnum
   tickets: [UserTicket!]!
@@ -946,8 +948,9 @@ Representation of a User ticket
 """
 type UserTicket {
   approvalStatus: TicketApprovalStatus!
+  createdAt: DateTime!
   id: ID!
-  paymentStatus: TicketPaymentStatus!
+  paymentStatus: PurchaseOrderPaymentStatusEnum
   purchaseOrder: PurchaseOrder
   redemptionStatus: TicketRedemptionStatus!
   ticketTemplate: Ticket!

@@ -38,7 +38,6 @@ const createCommunityEventUserAndTicketTemplate = async ({
   const createdEvent =
     event ??
     (await insertEvent({
-      maxAttendees: 40,
       status: "active",
     }));
 
@@ -247,7 +246,6 @@ describe("Claim a user ticket", () => {
   describe("Should NOT allow claiming", () => {
     it("If the event is Inactive", async () => {
       const createdEvent = await insertEvent({
-        maxAttendees: 40,
         status: "inactive",
       });
       const { community, user, ticketTemplate, event } =
@@ -301,7 +299,6 @@ describe("Claim a user ticket", () => {
     });
     it("If we would be going over ticket quantity", async () => {
       const createdEvent = await insertEvent({
-        maxAttendees: 40,
         status: "active",
       });
       const createdTicketTemplate = await insertTicketTemplate({
@@ -360,7 +357,6 @@ describe("Claim a user ticket", () => {
     });
     it("If we would be going over the event max user limit", async () => {
       const createdEvent = await insertEvent({
-        maxAttendees: 1,
         status: "active",
       });
       const { community, user, ticketTemplate, event } =
