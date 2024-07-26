@@ -123,6 +123,9 @@ export const EventLoadable = builder.loadableObject(EventRef, {
     latitude: t.exposeString("geoLatitude", { nullable: true }),
     longitude: t.exposeString("geoLongitude", { nullable: true }),
     address: t.exposeString("geoAddressJSON", { nullable: true }),
+    bannerImageSanityRef: t.exposeString("bannerImageSanityRef", {
+      nullable: true,
+    }),
     community: t.field({
       type: CommunityRef,
       nullable: true,
