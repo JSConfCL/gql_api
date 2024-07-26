@@ -777,7 +777,7 @@ describe("Event tickets filter", () => {
         {
           id: ticket1.id,
           approvalStatus: ticket1.approvalStatus,
-          paymentStatus: ticket1.paymentStatus,
+          paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
         },
       ],
@@ -861,7 +861,7 @@ describe("Event tickets filter", () => {
         {
           id: ticket1.id,
           approvalStatus: ticket1.approvalStatus,
-          paymentStatus: ticket1.paymentStatus,
+          paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
         },
       ],
@@ -895,7 +895,6 @@ describe("Event tickets filter", () => {
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      paymentStatus: TicketPaymentStatus.Paid,
       purchaseOrderId: purchaseOrder.id,
       approvalStatus: TicketApprovalStatus.Approved,
     });
@@ -903,7 +902,6 @@ describe("Event tickets filter", () => {
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      paymentStatus: TicketPaymentStatus.Unpaid,
       purchaseOrderId: purchaseOrder.id,
       approvalStatus: TicketApprovalStatus.Approved,
     });
@@ -947,7 +945,7 @@ describe("Event tickets filter", () => {
         {
           id: ticket1.id,
           approvalStatus: ticket1.approvalStatus,
-          paymentStatus: ticket1.paymentStatus,
+          paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
         },
       ],
@@ -1033,7 +1031,7 @@ describe("Event tickets filter", () => {
         {
           id: ticket1.id,
           approvalStatus: ticket1.approvalStatus,
-          paymentStatus: ticket1.paymentStatus,
+          paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
         },
       ],

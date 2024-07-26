@@ -458,7 +458,6 @@ export const insertTicket = async (
       partialInput?.ticketTemplateId ?? (await insertTicketTemplate()).id,
     approvalStatus:
       partialInput?.approvalStatus ?? TicketApprovalStatus.Pending,
-    paymentStatus: partialInput?.paymentStatus ?? TicketPaymentStatus.Unpaid,
     redemptionStatus:
       partialInput?.redemptionStatus ?? TicketRedemptionStatus.Pending,
     ...CRUDDates(partialInput),
