@@ -4,7 +4,10 @@ import {
   puchaseOrderPaymentStatusEnum,
   userTicketsRedemptionStatusEnum,
 } from "~/datasources/db/schema";
-import { PurchaseOrderLoadable } from "~/schema/purchaseOrder/types";
+import {
+  PurchaseOrderLoadable,
+  PurchaseOrderPaymentStatusEnum,
+} from "~/schema/purchaseOrder/types";
 import { UserTicketRef } from "~/schema/shared/refs";
 import { TicketLoadable } from "~/schema/ticket/types";
 
@@ -26,8 +29,18 @@ builder.objectType(UserTicketRef, {
   fields: (t) => ({
     id: t.exposeID("id"),
     paymentStatus: t.field({
-      type: TicketPaymentStatus,
-      resolve: (root) => root.paymentStatus,
+      type: PurchaseOrderPaymentStatusEnum,
+      nullable: true,
+      resolve: async (root, arg, context) => {
+        const lodaer = PurchaseOrderLoadable.getDataloader(context);
+        const purchaseOrder = await lodaer.load(root.purchaseOrderId);
+
+        if (!purchaseOrder) {
+          return null;
+        }
+
+        return purchaseOrder.purchaseOrder.purchaseOrderPaymentStatus;
+      },
     }),
     approvalStatus: t.field({
       type: TicketApprovalStatus,

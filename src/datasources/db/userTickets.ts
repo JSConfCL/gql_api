@@ -2,12 +2,7 @@ import { relations } from "drizzle-orm";
 import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-import {
-  puchaseOrderPaymentStatusEnum,
-  purchaseOrdersSchema,
-  ticketsSchema,
-  usersSchema,
-} from "./schema";
+import { purchaseOrdersSchema, ticketsSchema, usersSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
 export const userTicketsApprovalStatusEnum = [
@@ -28,9 +23,6 @@ export const userTicketsSchema = pgTable("user_tickets", {
     .notNull(),
   purchaseOrderId: uuid("purchase_order_id")
     .references(() => purchaseOrdersSchema.id)
-    .notNull(),
-  paymentStatus: text("payment_status", { enum: puchaseOrderPaymentStatusEnum })
-    .default("unpaid")
     .notNull(),
   approvalStatus: text("approval_status", {
     enum: userTicketsApprovalStatusEnum,

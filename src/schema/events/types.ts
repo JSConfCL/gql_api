@@ -65,7 +65,11 @@ export const EventLoadable = builder.loadableObject(EventRef, {
   description:
     "Representation of an Event (Events and Users, is what tickets are linked to)",
   load: (ids: string[], context) =>
-    eventsFetcher.searchEvents({ DB: context.DB, search: { eventIds: ids } }),
+    eventsFetcher.searchEvents({
+      DB: context.DB,
+      search: { eventIds: ids },
+      sort: null,
+    }),
   fields: (t) => ({
     id: t.exposeString("id", { nullable: false }),
     name: t.exposeString("name", { nullable: false }),
