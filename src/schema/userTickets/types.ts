@@ -46,6 +46,11 @@ builder.objectType(UserTicketRef, {
       nullable: true,
       resolve: (root) => root.purchaseOrderId,
     }),
+    createdAt: t.field({
+      type: "DateTime",
+      nullable: false,
+      resolve: (root) => new Date(root.createdAt),
+    }),
   }),
 });
 
