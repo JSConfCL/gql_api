@@ -532,3 +532,47 @@ builder.mutationFields((t) => ({
     },
   }),
 }));
+
+builder.mutationField("acceptGiftedTicket", (t) =>
+  t.field({
+    type: UserTicketRef,
+    args: {
+      userTicketId: t.arg.string({
+        required: true,
+      }),
+    },
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, { userTicketId }, { DB, USER }) => {
+      if (!USER) {
+        throw new GraphQLError("User not found");
+      }
+
+      // find the ticket for the user
+      const ticket = await DB.query.userTicketsSchema.findFirst({
+        where: (t, { eq, and }) =>
+          and(
+            eq(t.id, userTicketId),
+            eq(t.approvalStatus, "gifted"),
+            eq(t.userId, USER.id),
+          ),
+      });
+
+      if (!ticket) {
+        throw new GraphQLError("Could not find ticket to accept");
+      }
+
+      const updatedTicket = (
+        await DB.update(userTicketsSchema)
+          .set({
+            approvalStatus: "approved",
+          })
+          .where(eq(userTicketsSchema.id, userTicketId))
+          .returning()
+      )?.[0];
+
+      return selectUserTicketsSchema.parse(updatedTicket);
+    },
+  }),
+);
