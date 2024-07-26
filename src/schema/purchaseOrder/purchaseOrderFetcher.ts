@@ -1,4 +1,4 @@
-import { SQL, and, asc, ilike, inArray } from "drizzle-orm";
+import { SQL, and, ilike, inArray, desc } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
 import {
@@ -51,7 +51,7 @@ const getSearchPurchaseOrdersQuery = (
 
   return query
     .where(and(...wheres))
-    .orderBy(asc(purchaseOrdersSchema.createdAt));
+    .orderBy(desc(purchaseOrdersSchema.createdAt));
 };
 
 const searchPurchaseOrders = async ({
