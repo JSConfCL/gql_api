@@ -99,6 +99,20 @@ export const PurchaseOrderLoadable = builder.loadableObject(PurchaseOrderRef, {
         return root.purchaseOrder.status;
       },
     }),
+    paymentPlatform: t.field({
+      type: "String",
+      nullable: true,
+      resolve: (root) => {
+        return root.purchaseOrder.paymentPlatform;
+      },
+    }),
+    createdAt: t.field({
+      type: "DateTime",
+      nullable: true,
+      resolve: (root) => {
+        return root.purchaseOrder.createdAt;
+      },
+    }),
     tickets: t.field({
       type: [UserTicketRef],
       resolve: async (root, s, { DB }) => {
