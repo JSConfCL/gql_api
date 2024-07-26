@@ -1,4 +1,4 @@
-import { SQL, and, eq, inArray } from "drizzle-orm";
+import { SQL, and, desc, eq, inArray } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
 import { eventsSchema } from "~/datasources/db/events";
@@ -91,7 +91,7 @@ const getSearchUserTicketsQuery = (
     wheres.push(inArray(userTicketsSchema.id, userTicketIds));
   }
 
-  return query.where(and(...wheres));
+  return query.where(and(...wheres)).orderBy(desc(userTicketsSchema.createdAt));
 };
 
 const searchUserTickets = async ({
