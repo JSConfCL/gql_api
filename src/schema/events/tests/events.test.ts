@@ -212,16 +212,16 @@ describe("Event", () => {
       teams: [],
       usersTickets: [
         {
-          id: ticket1.id,
-          approvalStatus: ticket1.approvalStatus,
-          paymentStatus: ticket1.paymentStatus,
-          redemptionStatus: ticket1.redemptionStatus,
-        },
-        {
           id: ticket2.id,
           approvalStatus: ticket2.approvalStatus,
-          paymentStatus: ticket2.paymentStatus,
+          paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
           redemptionStatus: ticket2.redemptionStatus,
+        },
+        {
+          id: ticket1.id,
+          approvalStatus: ticket1.approvalStatus,
+          paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
+          redemptionStatus: ticket1.redemptionStatus,
         },
       ],
     } as EventQuery["event"]);
@@ -891,19 +891,23 @@ describe("Event tickets filter", () => {
     const ticketTemplate1 = await insertTicketTemplate({
       eventId: event1.id,
     });
-    const purchaseOrder = await insertPurchaseOrder();
+    const purchaseOrder = await insertPurchaseOrder({
+      purchaseOrderPaymentStatus: TicketPaymentStatus.Paid,
+    });
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
       approvalStatus: TicketApprovalStatus.Approved,
+      createdAt: new Date("2021-02-02"),
     });
 
-    await insertTicket({
+    const ticket2 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
       approvalStatus: TicketApprovalStatus.Approved,
+      createdAt: new Date("2022-02-02"),
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -922,7 +926,7 @@ describe("Event tickets filter", () => {
     );
 
     assert.equal(response.errors, undefined);
-    assert.deepEqual(response.data?.event?.usersTickets.length, 1);
+    assert.deepEqual(response.data?.event?.usersTickets.length, 2);
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -943,10 +947,16 @@ describe("Event tickets filter", () => {
       ],
       usersTickets: [
         {
-          id: ticket1.id,
+          id: ticket2.id,
           approvalStatus: ticket1.approvalStatus,
           paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
+        },
+        {
+          id: ticket1.id,
+          approvalStatus: ticket2.approvalStatus,
+          paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
+          redemptionStatus: ticket2.redemptionStatus,
         },
       ],
     } as EventQuery["event"]);

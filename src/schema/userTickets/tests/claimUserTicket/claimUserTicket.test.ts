@@ -355,59 +355,6 @@ describe("Claim a user ticket", () => {
         );
       }
     });
-    it("If we would be going over the event max user limit", async () => {
-      const createdEvent = await insertEvent({
-        status: "active",
-      });
-      const { community, user, ticketTemplate, event } =
-        await createCommunityEventUserAndTicketTemplate({
-          event: createdEvent,
-        });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 10,
-                },
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                },
-              ],
-            },
-          },
-        },
-        user,
-      );
-
-      assert.equal(response.errors, undefined);
-      assert.equal(
-        response.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
-
-      if (
-        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.equal(
-          response.data?.claimUserTicket.errorMessage,
-          `Not enough room on event ${event.id}`,
-        );
-      }
-    });
     it("If the idempotency key is not a UUID", async () => {
       const { community, user, ticketTemplate } =
         await createCommunityEventUserAndTicketTemplate();

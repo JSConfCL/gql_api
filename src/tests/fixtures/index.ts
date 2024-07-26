@@ -94,7 +94,6 @@ import {
 } from "~/datasources/db/ticketPrice";
 import {
   TicketApprovalStatus,
-  TicketPaymentStatus,
   TicketRedemptionStatus,
 } from "~/generated/types";
 import { defaultLogger } from "~/logging";
