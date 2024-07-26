@@ -793,6 +793,7 @@ type Ticket {
 enum TicketApprovalStatus {
   approved
   cancelled
+  gifted
   not_required
   pending
   rejected

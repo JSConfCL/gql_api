@@ -814,6 +814,7 @@ export type Ticket = {
 export enum TicketApprovalStatus {
   Approved = "approved",
   Cancelled = "cancelled",
+  Gifted = "gifted",
   NotRequired = "not_required",
   Pending = "pending",
   Rejected = "rejected",
