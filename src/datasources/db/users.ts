@@ -20,6 +20,13 @@ export enum UserStatusEnum {
   blocked = "blocked",
 }
 
+export enum PronounsEnum {
+  heHim = "él/ellos",
+  sheHer = "ella/ellas",
+  theyThem = "elle/elles",
+  other = "otro",
+}
+
 // USERS
 export const usersSchema = pgTable("users", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -30,6 +37,9 @@ export const usersSchema = pgTable("users", {
   email: text("email").unique().notNull(),
   gender: text("gender", {
     enum: genderOptions,
+  }),
+  pronouns: text("pronouns", {
+    enum: TypescriptEnumAsDBEnumOptions(PronounsEnum),
   }),
   status: text("status", {
     enum: TypescriptEnumAsDBEnumOptions(UserStatusEnum),
