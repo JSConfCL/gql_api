@@ -30,7 +30,7 @@ export enum PronounsEnum {
 // USERS
 export const usersSchema = pgTable("users", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
-  externalId: text("externalId").unique().notNull(),
+  externalId: text("externalId"),
   name: text("name"),
   lastName: text("lastName"),
   bio: text("bio").default(""),
