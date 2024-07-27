@@ -27,7 +27,6 @@ describe("Event", () => {
       const community = await insertCommunity();
       const event = await insertEvent({
         visibility: EventVisibility.Private,
-        maxAttendees: 5,
       });
 
       await insertUserToCommunity({
@@ -62,7 +61,6 @@ describe("Event", () => {
               name: newName,
               startDateTime: newStartDateTime.toISOString(),
               visibility: EventVisibility.Public,
-              maxAttendees: 10,
               endDateTime: newEndDateTime.toISOString(),
             },
           },
@@ -88,7 +86,6 @@ describe("Event", () => {
       const community = await insertCommunity();
       const event = await insertEvent({
         visibility: EventVisibility.Private,
-        maxAttendees: 5,
       });
 
       await insertUserToCommunity({
@@ -122,7 +119,6 @@ describe("Event", () => {
             name: newName,
             startDateTime: newStartDateTime.toISOString(),
             visibility: EventVisibility.Public,
-            maxAttendees: 10,
             endDateTime: newEndDateTime.toISOString(),
           },
         },
@@ -148,7 +144,6 @@ describe("Event", () => {
       const community = await insertCommunity();
       const event = await insertEvent({
         visibility: EventVisibility.Private,
-        maxAttendees: 5,
       });
 
       await insertUserToCommunity({
@@ -187,7 +182,6 @@ describe("Event", () => {
               name: newName,
               startDateTime: newStartDateTime,
               visibility: EventVisibility.Public,
-              maxAttendees: 10,
               endDateTime: newEndDateTime,
             },
           },
@@ -203,7 +197,6 @@ describe("Event", () => {
       const community = await insertCommunity();
       const event = await insertEvent({
         visibility: EventVisibility.Private,
-        maxAttendees: 5,
       });
 
       await insertUserToCommunity({
@@ -242,7 +235,6 @@ describe("Event", () => {
               name: newName,
               startDateTime: newStartDateTime,
               visibility: EventVisibility.Public,
-              maxAttendees: 10,
               endDateTime: newEndDateTime,
             },
           },
@@ -260,7 +252,6 @@ describe("Event", () => {
     const community = await insertCommunity();
     const event = await insertEvent({
       visibility: EventVisibility.Private,
-      maxAttendees: 5,
     });
 
     await insertUserToCommunity({
@@ -299,7 +290,6 @@ describe("Event", () => {
             name: newName,
             startDateTime: newStartDateTime,
             visibility: EventVisibility.Public,
-            maxAttendees: 10,
             endDateTime: newEndDateTime,
           },
         },

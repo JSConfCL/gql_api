@@ -18,10 +18,15 @@ export type PurchaseOrderSearch = {
   paymentPlatform?: (typeof purchaseOrderPaymentPlatforms)[number][];
   description?: string;
 };
+type SortableType =
+  // TODO: Implement sorting
+  // | [{ field: string; direction: "asc" | "desc" }]
+  null | undefined;
 
 const getSearchPurchaseOrdersQuery = (
   DB: ORM_TYPE,
   search: PurchaseOrderSearch = {},
+  sort: SortableType,
 ) => {
   const { userIds, status, paymentPlatform, description } = search;
 
@@ -49,21 +54,30 @@ const getSearchPurchaseOrdersQuery = (
     );
   }
 
-  return query
-    .where(and(...wheres))
-    .orderBy(desc(purchaseOrdersSchema.createdAt));
+  const orderBy: SQL<unknown>[] = [];
+
+  if (sort !== null) {
+    // This is to support data loaders. for data loaders we should not order by anything.
+    // TODO: Handle the case for doing actual column sorting
+    orderBy.push(desc(purchaseOrdersSchema.createdAt));
+  }
+
+  return query.where(and(...wheres)).orderBy(...orderBy);
 };
 
 const searchPurchaseOrders = async ({
   DB,
   search = {},
+  sort,
 }: {
   DB: ORM_TYPE;
   search: PurchaseOrderSearch;
+  sort?: SortableType;
 }) => {
   const purchaseOrders = await getSearchPurchaseOrdersQuery(
     DB,
     search,
+    sort,
   ).execute();
 
   return purchaseOrders;
@@ -73,12 +87,14 @@ const searchPaginatedPurchaseOrders = async ({
   DB,
   pagination,
   search = {},
+  sort,
 }: {
   DB: ORM_TYPE;
   search: PurchaseOrderSearch;
+  sort?: SortableType;
   pagination: PaginationOptionsType;
 }) => {
-  const query = getSearchPurchaseOrdersQuery(DB, search);
+  const query = getSearchPurchaseOrdersQuery(DB, search, sort);
 
   const results = await paginationDBHelper(DB, query, pagination);
 

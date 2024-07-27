@@ -1,8 +1,11 @@
-import { SQL, and, eq, inArray } from "drizzle-orm";
+import { SQL, and, desc, eq, inArray } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
 import { eventsSchema } from "~/datasources/db/events";
-import { puchaseOrderPaymentStatusEnum } from "~/datasources/db/purchaseOrders";
+import {
+  puchaseOrderPaymentStatusEnum,
+  purchaseOrdersSchema,
+} from "~/datasources/db/purchaseOrders";
 import { ticketsSchema } from "~/datasources/db/tickets";
 import {
   userTicketsApprovalStatusEnum,
@@ -71,8 +74,18 @@ const getSearchUserTicketsQuery = (
     wheres.push(inArray(userTicketsSchema.id, existsQuery));
   }
 
-  if (paymentStatus) {
-    wheres.push(inArray(userTicketsSchema.paymentStatus, paymentStatus));
+  if (paymentStatus && paymentStatus.length > 0) {
+    const selectPurchaseOrders = DB.select({
+      id: purchaseOrdersSchema.id,
+    })
+      .from(purchaseOrdersSchema)
+      .where(
+        inArray(purchaseOrdersSchema.purchaseOrderPaymentStatus, paymentStatus),
+      );
+
+    wheres.push(
+      inArray(userTicketsSchema.purchaseOrderId, selectPurchaseOrders),
+    );
   }
 
   if (approvalStatus) {
@@ -91,7 +104,7 @@ const getSearchUserTicketsQuery = (
     wheres.push(inArray(userTicketsSchema.id, userTicketIds));
   }
 
-  return query.where(and(...wheres));
+  return query.where(and(...wheres)).orderBy(desc(userTicketsSchema.createdAt));
 };
 
 const searchUserTickets = async ({

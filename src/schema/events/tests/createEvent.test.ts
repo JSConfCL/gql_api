@@ -50,7 +50,6 @@ describe("Event", () => {
               startDateTime: startDate,
               communityId: community.id,
               visibility: EventVisibility.Public,
-              maxAttendees: 10,
               endDateTime: faker.date
                 .future({
                   refDate: startDate,
@@ -87,7 +86,6 @@ describe("Event", () => {
             startDateTime: startDate,
             communityId: community.id,
             visibility: EventVisibility.Public,
-            maxAttendees: 10,
             endDateTime: faker.date
               .future({
                 refDate: startDate,
@@ -132,7 +130,6 @@ describe("Event", () => {
               startDateTime: startDate,
               communityId: community.id,
               visibility: EventVisibility.Public,
-              maxAttendees: 10,
               endDateTime: faker.date
                 .future({
                   refDate: startDate,
@@ -174,7 +171,6 @@ describe("Event", () => {
               startDateTime: startDate,
               communityId: community.id,
               visibility: EventVisibility.Public,
-              maxAttendees: 10,
               endDateTime: faker.date
                 .future({
                   refDate: startDate,
@@ -210,7 +206,6 @@ describe("Event", () => {
           startDateTime: startDate,
           communityId: community.id,
           visibility: EventVisibility.Public,
-          maxAttendees: 10,
           endDateTime: faker.date
             .future({
               refDate: startDate,
@@ -265,7 +260,6 @@ describe("Event", () => {
           startDateTime: startDate,
           communityId: "NON ID",
           visibility: EventVisibility.Public,
-          maxAttendees: 10,
           endDateTime: faker.date
             .future({
               refDate: startDate,

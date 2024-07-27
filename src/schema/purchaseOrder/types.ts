@@ -8,7 +8,7 @@ import {
 } from "~/datasources/db/schema";
 import { AllowedCurrencyRef, UserTicketRef } from "~/schema/shared/refs";
 
-const PurchaseOrderPaymentStatusEnum = builder.enumType(
+export const PurchaseOrderPaymentStatusEnum = builder.enumType(
   "PurchaseOrderPaymentStatusEnum",
   {
     values: puchaseOrderPaymentStatusEnum,

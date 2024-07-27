@@ -15,7 +15,6 @@ import {
   selectPurchaseOrdersSchema,
   selectTicketSchema,
   selectUserTicketsSchema,
-  userTicketsSchema,
 } from "~/datasources/db/schema";
 import { sendTransactionalHTMLEmail } from "~/datasources/email/sendEmailToWorkers";
 import {
@@ -313,10 +312,6 @@ export const createPaymentIntent = async ({
     if (!updatedPO) {
       throw new GraphQLError("Purchase order not found");
     }
-
-    await DB.update(userTicketsSchema).set({
-      paymentStatus: "not_required",
-    });
 
     const userTickets = await DB.query.userTicketsSchema.findMany({
       where: (t, { eq }) => eq(t.purchaseOrderId, purchaseOrderId),

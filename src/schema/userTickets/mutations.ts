@@ -3,6 +3,7 @@ import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
 import {
+  insertPurchaseOrdersSchema,
   insertUserTicketsSchema,
   purchaseOrdersSchema,
   selectPurchaseOrdersSchema,
@@ -302,10 +303,12 @@ builder.mutationFields((t) => ({
             // We create a purchase order to keep track of the tickets we create.
             const createdPurchaseOrders = await trx
               .insert(purchaseOrdersSchema)
-              .values({
-                userId: USER.id,
-                idempotencyUUIDKey: idempotencyUUIDKey ?? undefined,
-              })
+              .values(
+                insertPurchaseOrdersSchema.parse({
+                  userId: USER.id,
+                  idempotencyUUIDKey: idempotencyUUIDKey ?? undefined,
+                }),
+              )
               .returning()
               .execute();
             let claimedTickets: Array<typeof insertUserTicketsSchema._type> =
@@ -347,9 +350,8 @@ builder.mutationFields((t) => ({
                     tp?.price?.price_in_cents !== null &&
                     tp?.price?.price_in_cents > 0,
                 );
-              const { maxAttendees, status } = ticketTemplate.event;
+              const { status } = ticketTemplate.event;
               const isEventActive = status === "active";
-              const requiresApproval = ticketTemplate.requiresApproval;
 
               // If the event is not active, we throw an error.
               if (!isEventActive) {
@@ -361,10 +363,10 @@ builder.mutationFields((t) => ({
               // We pull the tickets that are already reserved or in-process to
               // see if we have enough to fulfill the purchase order
               const tickets = await trx.query.userTicketsSchema.findMany({
-                where: (uts, { eq, and, inArray }) =>
+                where: (uts, { eq, and, notInArray }) =>
                   and(
                     eq(uts.ticketTemplateId, item.ticketId),
-                    inArray(uts.approvalStatus, ["approved", "pending"]),
+                    notInArray(uts.approvalStatus, ["rejected", "cancelled"]),
                   ),
               });
 
@@ -381,17 +383,9 @@ builder.mutationFields((t) => ({
                 }
               }
 
-              // If the event has a maxAttendees field, we check if we have
-              // enough room to fulfill the purchase order.
-              if (maxAttendees) {
-                // If we would be going over the limit of attendees, we throw an
-                // error.
-                if (tickets.length + item.quantity > maxAttendees) {
-                  throw new Error(
-                    `Not enough room on event ${ticketTemplate.event.id}`,
-                  );
-                }
-              }
+              const isApproved = ticketTemplate.isFree
+                ? ticketTemplate.requiresApproval
+                : false;
 
               // If no errors were thrown, we can proceed to reserve the
               // tickets.
@@ -403,7 +397,7 @@ builder.mutationFields((t) => ({
                     purchaseOrderId: createdPurchaseOrder.id,
                     ticketTemplateId: ticketTemplate.id,
                     paymentStatus: requiresPayment ? "unpaid" : "not_required",
-                    approvalStatus: requiresApproval ? "pending" : "approved",
+                    approvalStatus: isApproved ? "approved" : "pending",
                   });
 
                   if (result.success) {

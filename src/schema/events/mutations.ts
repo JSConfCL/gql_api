@@ -40,10 +40,6 @@ const EventCreateInput = builder.inputType("EventCreateInput", {
     longitude: t.string({ required: false }),
     address: t.string({ required: false }),
     meetingURL: t.string({ required: false }),
-    maxAttendees: t.field({
-      type: "Int",
-      required: true,
-    }),
   }),
 });
 
@@ -73,10 +69,6 @@ const EventEditInput = builder.inputType("EventEditInput", {
     longitude: t.string({ required: false }),
     address: t.string({ required: false }),
     meetingURL: t.string({ required: false }),
-    maxAttendees: t.field({
-      type: "Int",
-      required: false,
-    }),
   }),
 });
 
@@ -99,7 +91,6 @@ builder.mutationFields((t) => ({
         startDateTime,
         endDateTime,
         communityId,
-        maxAttendees,
         address,
         latitude,
         longitude,
@@ -125,7 +116,6 @@ builder.mutationFields((t) => ({
               visibility,
               startDateTime,
               endDateTime,
-              maxAttendees,
               geoAddressJSON: address,
               geoLongitude: longitude,
               getLatitude: latitude,
@@ -179,7 +169,6 @@ builder.mutationFields((t) => ({
           visibility,
           startDateTime,
           endDateTime,
-          maxAttendees,
           address,
           latitude,
           longitude,
@@ -202,7 +191,6 @@ builder.mutationFields((t) => ({
           visibility,
           startDateTime,
           endDateTime,
-          maxAttendees,
           geoAddressJSON: address,
           geoLongitude: longitude,
           geoLatitude: latitude,

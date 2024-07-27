@@ -11,7 +11,7 @@ export type RedeemUserTicketMutationVariables = Types.Exact<{
 }>;
 
 
-export type RedeemUserTicketMutation = { __typename?: 'Mutation', redeemUserTicket: { __typename?: 'UserTicket', id: string, paymentStatus: Types.TicketPaymentStatus, approvalStatus: Types.TicketApprovalStatus, redemptionStatus: Types.TicketRedemptionStatus } };
+export type RedeemUserTicketMutation = { __typename?: 'Mutation', redeemUserTicket: { __typename?: 'UserTicket', id: string, paymentStatus: Types.PurchaseOrderPaymentStatusEnum | null, approvalStatus: Types.TicketApprovalStatus, redemptionStatus: Types.TicketRedemptionStatus } };
 
 
 export const RedeemUserTicket = gql`

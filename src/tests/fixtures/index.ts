@@ -94,7 +94,6 @@ import {
 } from "~/datasources/db/ticketPrice";
 import {
   TicketApprovalStatus,
-  TicketPaymentStatus,
   TicketRedemptionStatus,
 } from "~/generated/types";
 import { defaultLogger } from "~/logging";
@@ -458,7 +457,6 @@ export const insertTicket = async (
       partialInput?.ticketTemplateId ?? (await insertTicketTemplate()).id,
     approvalStatus:
       partialInput?.approvalStatus ?? TicketApprovalStatus.Pending,
-    paymentStatus: partialInput?.paymentStatus ?? TicketPaymentStatus.Unpaid,
     redemptionStatus:
       partialInput?.redemptionStatus ?? TicketRedemptionStatus.Pending,
     ...CRUDDates(partialInput),
@@ -487,7 +485,6 @@ export const insertEvent = async (
     geoLatitude: partialInput?.geoLatitude,
     geoLongitude: partialInput?.geoLongitude,
     meetingURL: partialInput?.meetingURL,
-    maxAttendees: partialInput?.maxAttendees,
     timeZone: partialInput?.timeZone,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertEventsSchema>;

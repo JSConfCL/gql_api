@@ -17,7 +17,9 @@ const setupTest = async () => {
   const ticketTemplate1 = await insertTicketTemplate({
     eventId: event1.id,
   });
-  const purchaseOrder = await insertPurchaseOrder();
+  const purchaseOrder = await insertPurchaseOrder({
+    purchaseOrderPaymentStatus: "paid",
+  });
 
   return {
     testDB,
@@ -38,8 +40,7 @@ describe("Search for user tickets", () => {
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
         approvalStatus: "approved",
-        paymentStatus: "paid",
-        createdAt: new Date(),
+        createdAt: new Date("2021-01-01"),
         redemptionStatus: "redeemed",
       });
       const response = await userTicketFetcher.searchUserTickets({
@@ -60,8 +61,7 @@ describe("Search for user tickets", () => {
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
         approvalStatus: "approved",
-        paymentStatus: "paid",
-        createdAt: new Date(),
+        createdAt: new Date("2022-01-01"),
         redemptionStatus: "redeemed",
       });
 
@@ -70,7 +70,6 @@ describe("Search for user tickets", () => {
         userId: user2.id,
         purchaseOrderId: purchaseOrder.id,
         approvalStatus: "approved",
-        paymentStatus: "paid",
         createdAt: new Date(),
         redemptionStatus: "redeemed",
       });
@@ -96,8 +95,7 @@ describe("Search for user tickets", () => {
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
         approvalStatus: "approved",
-        paymentStatus: "paid",
-        createdAt: new Date(),
+        createdAt: new Date("2021-01-01"),
         redemptionStatus: "redeemed",
       });
 
@@ -106,8 +104,7 @@ describe("Search for user tickets", () => {
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
         approvalStatus: "approved",
-        paymentStatus: "paid",
-        createdAt: new Date(),
+        createdAt: new Date("2022-01-01"),
         redemptionStatus: "redeemed",
       });
       const response = await userTicketFetcher.searchUserTickets({
@@ -128,18 +125,16 @@ describe("Search for user tickets", () => {
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
         approvalStatus: "approved",
-        paymentStatus: "paid",
-        createdAt: new Date(),
+        createdAt: new Date("2021-01-01"),
         redemptionStatus: "redeemed",
       });
 
-      await insertTicket({
+      const ticket2 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
         approvalStatus: "approved",
-        paymentStatus: "unpaid",
-        createdAt: new Date(),
+        createdAt: new Date("2022-01-01"),
         redemptionStatus: "redeemed",
       });
       const response = await userTicketFetcher.searchUserTickets({
@@ -149,8 +144,9 @@ describe("Search for user tickets", () => {
         },
       });
 
-      assert.equal(response.length, 1);
-      assert.equal(response[0].id, ticket1.id);
+      assert.equal(response.length, 2);
+      assert.equal(response[0].id, ticket2.id);
+      assert.equal(response[1].id, ticket1.id);
     });
     it("Should filter by approvalStatus", async () => {
       const { testDB, user1, ticketTemplate1, purchaseOrder } =
@@ -160,8 +156,7 @@ describe("Search for user tickets", () => {
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
         approvalStatus: "approved",
-        paymentStatus: "paid",
-        createdAt: new Date(),
+        createdAt: new Date("2021-01-01"),
         redemptionStatus: "redeemed",
       });
 
@@ -170,8 +165,7 @@ describe("Search for user tickets", () => {
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
         approvalStatus: "pending",
-        paymentStatus: "paid",
-        createdAt: new Date(),
+        createdAt: new Date("2022-01-01"),
         redemptionStatus: "redeemed",
       });
       const response = await userTicketFetcher.searchUserTickets({
@@ -192,8 +186,7 @@ describe("Search for user tickets", () => {
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
         approvalStatus: "approved",
-        paymentStatus: "paid",
-        createdAt: new Date(),
+        createdAt: new Date("2021-01-01"),
         redemptionStatus: "redeemed",
       });
 
@@ -202,8 +195,7 @@ describe("Search for user tickets", () => {
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
         approvalStatus: "approved",
-        paymentStatus: "paid",
-        createdAt: new Date(),
+        createdAt: new Date("2022-01-01"),
         redemptionStatus: "pending",
       });
       const response = await userTicketFetcher.searchUserTickets({
@@ -224,8 +216,7 @@ describe("Search for user tickets", () => {
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
         approvalStatus: "approved",
-        paymentStatus: "paid",
-        createdAt: new Date(),
+        createdAt: new Date("2021-01-01"),
         redemptionStatus: "redeemed",
       });
 
@@ -234,9 +225,8 @@ describe("Search for user tickets", () => {
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
         approvalStatus: "approved",
-        paymentStatus: "unpaid",
-        createdAt: new Date(),
-        redemptionStatus: "redeemed",
+        createdAt: new Date("2022-01-01"),
+        redemptionStatus: "pending",
       });
       const response = await userTicketFetcher.searchUserTickets({
         DB: testDB,

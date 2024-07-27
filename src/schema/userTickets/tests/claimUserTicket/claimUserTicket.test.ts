@@ -38,7 +38,6 @@ const createCommunityEventUserAndTicketTemplate = async ({
   const createdEvent =
     event ??
     (await insertEvent({
-      maxAttendees: 40,
       status: "active",
     }));
 
@@ -247,7 +246,6 @@ describe("Claim a user ticket", () => {
   describe("Should NOT allow claiming", () => {
     it("If the event is Inactive", async () => {
       const createdEvent = await insertEvent({
-        maxAttendees: 40,
         status: "inactive",
       });
       const { community, user, ticketTemplate, event } =
@@ -301,7 +299,6 @@ describe("Claim a user ticket", () => {
     });
     it("If we would be going over ticket quantity", async () => {
       const createdEvent = await insertEvent({
-        maxAttendees: 40,
         status: "active",
       });
       const createdTicketTemplate = await insertTicketTemplate({
@@ -355,60 +352,6 @@ describe("Claim a user ticket", () => {
         assert.equal(
           response.data?.claimUserTicket.errorMessage,
           `Not enough tickets for ticket template with id ${ticketTemplate.id}`,
-        );
-      }
-    });
-    it("If we would be going over the event max user limit", async () => {
-      const createdEvent = await insertEvent({
-        maxAttendees: 1,
-        status: "active",
-      });
-      const { community, user, ticketTemplate, event } =
-        await createCommunityEventUserAndTicketTemplate({
-          event: createdEvent,
-        });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 10,
-                },
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                },
-              ],
-            },
-          },
-        },
-        user,
-      );
-
-      assert.equal(response.errors, undefined);
-      assert.equal(
-        response.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
-
-      if (
-        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.equal(
-          response.data?.claimUserTicket.errorMessage,
-          `Not enough room on event ${event.id}`,
         );
       }
     });

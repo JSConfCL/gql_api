@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { timestamp, pgTable, text, integer, uuid } from "drizzle-orm/pg-core";
+import { timestamp, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import {
@@ -34,7 +34,6 @@ export const eventsSchema = pgTable("events", {
   addressDescriptiveName: text("address_descriptive_name"),
   address: text("address"),
   meetingURL: text("meeting_url"),
-  maxAttendees: integer("max_attendees"),
   sanityEventId: text("sanity_event_id"),
   bannerImageSanityRef: text("banner_image_sanity_ref"),
   ...createdAndUpdatedAtFields,
@@ -60,5 +59,4 @@ export const updateEventsSchema = insertEventsSchema.pick({
   geoLongitude: true,
   geoAddressJSON: true,
   meetingURL: true,
-  maxAttendees: true,
 });

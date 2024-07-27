@@ -35,7 +35,16 @@ export type UserTicketSearch = {
   communityIds?: string[];
   userHasTickets?: boolean;
 };
-const getSearchEventsQuery = (DB: ORM_TYPE, search: UserTicketSearch = {}) => {
+
+type SortableType =
+  // TODO: Implement sorting
+  // | [{ field: string; direction: "asc" | "desc" }]
+  null | undefined;
+const getSearchEventsQuery = (
+  DB: ORM_TYPE,
+  search: UserTicketSearch = {},
+  sort: SortableType,
+) => {
   const {
     userId,
     eventIds,
@@ -109,17 +118,27 @@ const getSearchEventsQuery = (DB: ORM_TYPE, search: UserTicketSearch = {}) => {
     wheres.push(lte(eventsSchema.startDateTime, startDateTimeTo));
   }
 
-  return query.where(and(...wheres)).orderBy(asc(eventsSchema.startDateTime));
+  const orderBy: SQL<unknown>[] = [];
+
+  if (sort !== null) {
+    // This is to support data loaders. for data loaders we should not order by anything.
+    // TODO: Handle the case for doing actual column sorting
+    orderBy.push(asc(eventsSchema.startDateTime));
+  }
+
+  return query.where(and(...wheres)).orderBy(...orderBy);
 };
 
 const searchEvents = async ({
   DB,
   search = {},
+  sort,
 }: {
   DB: ORM_TYPE;
   search: UserTicketSearch;
+  sort?: SortableType;
 }) => {
-  const events = await getSearchEventsQuery(DB, search).execute();
+  const events = await getSearchEventsQuery(DB, search, sort).execute();
 
   return events;
 };
@@ -128,12 +147,14 @@ const searchPaginatedEvents = async ({
   DB,
   pagination,
   search = {},
+  sort,
 }: {
   DB: ORM_TYPE;
   search: UserTicketSearch;
   pagination: PaginationOptionsType;
+  sort?: SortableType;
 }) => {
-  const query = getSearchEventsQuery(DB, search);
+  const query = getSearchEventsQuery(DB, search, sort);
 
   const results = await paginationDBHelper(DB, query, pagination);
 
