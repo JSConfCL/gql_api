@@ -1,5 +1,6 @@
 import { SQL, eq, inArray } from "drizzle-orm";
 
+import { isCommunityAdmin } from "~/authz";
 import { authHelpers } from "~/authz/helpers";
 import { builder } from "~/builder";
 import {
@@ -219,31 +220,40 @@ export const EventLoadable = builder.loadableObject(EventRef, {
         let visibilityCheck = eq(ticketsSchema.visibility, "public");
 
         if (USER) {
-          const eventCommunity =
-            await DB.query.eventsToCommunitiesSchema.findFirst({
-              where: (etc, { eq }) => eq(etc.eventId, root.id),
-              with: {
-                community: true,
-              },
-            });
+          if (USER.isSuperAdmin) {
+            statusCheck = inArray(ticketsSchema.status, ["active", "inactive"]);
+            visibilityCheck = inArray(ticketsSchema.visibility, [
+              "public",
+              "private",
+              "unlisted",
+            ]);
+          } else {
+            const eventCommunity =
+              await DB.query.eventsToCommunitiesSchema.findFirst({
+                where: (etc, { eq }) => eq(etc.eventId, root.id),
+                with: {
+                  community: true,
+                },
+              });
 
-          if (eventCommunity) {
-            const isAdmin = await authHelpers.isCommuntiyAdmin({
-              user: USER,
-              communityId: eventCommunity.communityId,
-              DB,
-            });
+            if (eventCommunity) {
+              const isAdmin = await authHelpers.isCommuntiyAdmin({
+                user: USER,
+                communityId: eventCommunity.communityId,
+                DB,
+              });
 
-            if (isAdmin) {
-              statusCheck = inArray(ticketsSchema.status, [
-                "active",
-                "inactive",
-              ]);
-              visibilityCheck = inArray(ticketsSchema.visibility, [
-                "public",
-                "private",
-                "unlisted",
-              ]);
+              if (isAdmin) {
+                statusCheck = inArray(ticketsSchema.status, [
+                  "active",
+                  "inactive",
+                ]);
+                visibilityCheck = inArray(ticketsSchema.visibility, [
+                  "public",
+                  "private",
+                  "unlisted",
+                ]);
+              }
             }
           }
         }
