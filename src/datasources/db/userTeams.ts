@@ -34,6 +34,7 @@ export const userTeamsSchema = pgTable("user_teams", {
   })
     .default(UserTeamRoleEnum.leader)
     .notNull(),
+  discipline: text("discipline"),
   userParticipationStatus: text("user_participation_status", {
     enum: TypescriptEnumAsDBEnumOptions(UserParticipationStatusEnum),
   })
