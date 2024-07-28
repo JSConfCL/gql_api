@@ -14,6 +14,7 @@ import {
 export enum TeamStatusEnum {
   accepted = "accepted",
   not_accepted = "not_accepted",
+  invited = "invited",
   waiting_resolution = "waiting_resolution",
 }
 

@@ -1,5 +1,5 @@
 import { builder } from "~/builder";
-import { selectTeamsSchema } from "~/datasources/db/teams";
+import { selectTeamsSchema, TeamStatusEnum } from "~/datasources/db/teams";
 import {
   createPaginationInputType,
   createPaginationObjectType,
@@ -48,6 +48,12 @@ builder.queryField("searchTeams", (t) =>
         throw new Error("User not found");
       }
 
+      const requestedUserIds = userIds ?? [USER.id];
+      const requestedStatus = status ?? [
+        TeamStatusEnum.invited,
+        TeamStatusEnum.accepted,
+      ];
+
       const { data, pagination } = await teamsFetcher.getPaginatedTeams({
         DB,
         pagination: input.pagination,
@@ -55,8 +61,10 @@ builder.queryField("searchTeams", (t) =>
           teamName: name ?? undefined,
           eventIds: eventIds ?? undefined,
           teamIds: teamIds ?? undefined,
-          status: status ?? undefined,
-          userIds: userIds ?? undefined,
+          status: USER.isSuperAdmin
+            ? requestedStatus
+            : [TeamStatusEnum.invited, TeamStatusEnum.accepted],
+          userIds: USER.isSuperAdmin ? requestedUserIds : [USER.id],
         },
       });
 

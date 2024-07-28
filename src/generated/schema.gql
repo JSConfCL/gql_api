@@ -383,10 +383,10 @@ input MyPurchaseOrdersInput {
 }
 
 input MyTicketsSearchValues {
-  approvalStatus: TicketApprovalStatus
+  approvalStatus: [TicketApprovalStatus!]
   eventId: String
-  paymentStatus: TicketPaymentStatus
-  redemptionStatus: TicketRedemptionStatus
+  paymentStatus: [TicketPaymentStatus!]
+  redemptionStatus: [TicketRedemptionStatus!]
 }
 
 """
