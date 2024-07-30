@@ -171,9 +171,14 @@ export const executeGraphqlOperationAsSuperAdmin = async <
   TVariables extends Record<string, any> = Record<string, any>,
 >(
   params: ExecutionRequest<TVariables, unknown, unknown, undefined, unknown>,
+  user?: Awaited<ReturnType<typeof insertUser>>,
 ): Promise<ExecutionResult<TResult>> => {
-  const user = await insertUser({ isSuperAdmin: true });
-  const executor = createExecutor(user);
+  if (user && user.isSuperAdmin) {
+    throw new Error("User passed is not a super admin");
+  }
+
+  const superAdmin = user ?? (await insertUser({ isSuperAdmin: true }));
+  const executor = createExecutor(superAdmin);
 
   // @ts-expect-error This error is ok. Executor returns a promise with they types passed
   return executor(params);

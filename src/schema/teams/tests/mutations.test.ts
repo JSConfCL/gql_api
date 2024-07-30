@@ -19,7 +19,7 @@ import {
 
 describe("Team", () => {
   describe("Should create a team", () => {
-    it("As an admin", async () => {
+    it("As an super admin", async () => {
       const user1 = await insertUser();
       const event = await insertEvent();
 
@@ -28,22 +28,19 @@ describe("Team", () => {
         userId: user1.id,
         role: "admin",
       });
-      const response = await executeGraphqlOperationAsUser<
+      const response = await executeGraphqlOperationAsSuperAdmin<
         CreateTeamMutation,
         CreateTeamMutationVariables
-      >(
-        {
-          document: CreateTeam,
-          variables: {
-            input: {
-              description: faker.lorem.paragraph(3),
-              name: faker.lorem.words(3),
-              eventId: event.id,
-            },
+      >({
+        document: CreateTeam,
+        variables: {
+          input: {
+            description: faker.lorem.paragraph(3),
+            name: faker.lorem.words(3),
+            eventId: event.id,
           },
         },
-        user1,
-      );
+      });
 
       assert.equal(response.errors, undefined);
       const team = await findTeamById(response?.data?.createTeam?.id);
@@ -76,10 +73,12 @@ describe("Team", () => {
   });
   it("Should error on creating a second team", async () => {
     const event = await insertEvent();
-    const user = await insertUser();
+    const user = await insertUser({
+      isSuperAdmin: true,
+    });
 
     // Create the first team
-    await executeGraphqlOperationAsUser<
+    await executeGraphqlOperationAsSuperAdmin<
       CreateTeamMutation,
       CreateTeamMutationVariables
     >(
@@ -97,7 +96,7 @@ describe("Team", () => {
     );
 
     // Attempt to create a second team for the same event
-    const response = await executeGraphqlOperationAsUser<
+    const response = await executeGraphqlOperationAsSuperAdmin<
       CreateTeamMutation,
       CreateTeamMutationVariables
     >(
