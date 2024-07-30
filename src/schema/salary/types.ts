@@ -23,7 +23,7 @@ export const WorkMetodology = builder.enumType("WorkMetodology", {
 builder.objectType(SalaryRef, {
   description: "Representation of a workEmail",
   fields: (t) => ({
-    id: t.exposeString("id", { nullable: false }),
+    id: t.exposeID("id", { nullable: false }),
     company: t.field({
       type: CompanyRef,
       nullable: false,

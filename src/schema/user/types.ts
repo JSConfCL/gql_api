@@ -16,7 +16,7 @@ export const pronounsEnum = builder.enumType(PronounsEnum, {
 builder.objectType(UserRef, {
   description: "Representation of a user",
   fields: (t) => ({
-    id: t.exposeString("id", { nullable: false }),
+    id: t.exposeID("id", { nullable: false }),
     name: t.exposeString("name", { nullable: true }),
     username: t.exposeString("username", { nullable: false }),
     lastName: t.exposeString("lastName", { nullable: true }),

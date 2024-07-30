@@ -7,7 +7,7 @@ import {
 builder.objectType(PaymentLogRef, {
   description: "Representation of a payment log entry",
   fields: (t) => ({
-    id: t.exposeString("id", { nullable: false }),
+    id: t.exposeID("id", { nullable: false }),
     transactionAmount: t.field({
       type: "Float",
       nullable: false,
@@ -32,7 +32,7 @@ builder.objectType(PaymentLogRef, {
 builder.objectType(ConsolidatedPaymentLogEntryRef, {
   description: "Representation of a consolidated payment entry log calculation",
   fields: (t) => ({
-    id: t.exposeString("id", { nullable: false }),
+    id: t.exposeID("id", { nullable: false }),
     totalTransactionAmount: t.exposeFloat("totalTransactionAmount"),
     platform: t.exposeString("platform", { nullable: false }),
     currencyId: t.exposeString("currencyId", { nullable: false }),

@@ -8,7 +8,7 @@ export const CompanyStatus = builder.enumType("CompanyStatus", {
 builder.objectType(CompanyRef, {
   description: "Representation of a workEmail",
   fields: (t) => ({
-    id: t.exposeString("id", { nullable: false }),
+    id: t.exposeID("id", { nullable: false }),
     name: t.exposeString("name", { nullable: true }),
     description: t.exposeString("description", { nullable: true }),
     domain: t.exposeString("domain", { nullable: false }),
