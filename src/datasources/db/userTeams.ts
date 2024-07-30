@@ -56,3 +56,9 @@ export const userTeamsRelations = relations(userTeamsSchema, ({ one }) => ({
 
 export const selectUserTeamsSchema = createSelectSchema(userTeamsSchema);
 export const insertUserTeamsSchema = createInsertSchema(userTeamsSchema);
+export const udpateUserTeamsSchema = insertUserTeamsSchema
+  .pick({
+    discipline: true,
+    userParticipationStatus: true,
+  })
+  .partial();

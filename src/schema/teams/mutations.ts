@@ -7,6 +7,7 @@ import {
   insertUserTeamsSchema,
   selectTeamsSchema,
   teamsSchema,
+  udpateUserTeamsSchema,
   UserParticipationStatusEnum,
   UserTeamRoleEnum,
   userTeamsSchema,
@@ -42,7 +43,7 @@ builder.mutationField("createTeam", (t) =>
       }),
     },
     authz: {
-      rules: ["IsAuthenticated"],
+      rules: ["IsSuperAdmin"],
     },
     resolve: async (root, { input }, { DB, USER }) => {
       if (!USER) {
@@ -130,7 +131,7 @@ builder.mutationField("addPersonToTeam", (t) =>
       }),
     },
     authz: {
-      rules: ["IsAuthenticated"],
+      rules: ["IsSuperAdmin"],
     },
     resolve: async (root, { input }, { USER, DB, logger }) => {
       const { teamId, userEmail } = input;
@@ -227,7 +228,7 @@ builder.mutationField("deletePersonFomTeam", (t) =>
       }),
     },
     authz: {
-      rules: ["IsAuthenticated"],
+      rules: ["IsSuperAdmin"],
     },
     resolve: async (root, { input }, { USER, DB }) => {
       const { teamId, userId } = input;
@@ -273,7 +274,7 @@ const updateTeam = builder.inputType("updateTeam", {
 
 builder.mutationField("updateTeam", (t) =>
   t.field({
-    description: "Try to add a person to a team",
+    description: "Updates a team information",
     type: TeamRef,
     args: {
       input: t.arg({
@@ -308,11 +309,12 @@ builder.mutationField("updateTeam", (t) =>
 
       const teamToUpdate = insertTeamsSchema.parse(properties);
 
-      await DB.update(teamsSchema)
+      const udpatedTeam = await DB.update(teamsSchema)
         .set(teamToUpdate)
-        .where(eq(teamsSchema.id, teamId));
+        .where(eq(teamsSchema.id, teamId))
+        .returning();
 
-      return team;
+      return selectTeamsSchema.parse(udpatedTeam[0]);
     },
   }),
 );
@@ -330,7 +332,7 @@ const acceptTeamInvitationInput = builder.inputType(
 
 builder.mutationField("acceptTeamInvitation", (t) =>
   t.field({
-    description: "Accept an invitation to a team",
+    description: "Accept the user's invitation to a team",
     type: TeamRef,
     args: {
       input: t.arg({
@@ -362,13 +364,71 @@ builder.mutationField("acceptTeamInvitation", (t) =>
         throw new GraphQLError("You do not have permission to edit this team");
       }
 
-      const teamToUpdate = insertTeamsSchema.parse({
+      const teamToUpdate = udpateUserTeamsSchema.parse({
         userParticipationStatus: UserParticipationStatusEnum.accepted,
       });
 
       await DB.update(userTeamsSchema)
         .set(teamToUpdate)
-        .where(eq(userTeamsSchema.teamId, teamId));
+        .where(eq(userTeamsSchema.id, teamAndUsers?.id));
+
+      return team;
+    },
+  }),
+);
+
+const rejectTeamInvitationInput = builder.inputType(
+  "RejectTeamInvitationInput",
+  {
+    fields: (t) => ({
+      teamId: t.string({
+        required: true,
+      }),
+    }),
+  },
+);
+
+builder.mutationField("rejectTeamInvitation", (t) =>
+  t.field({
+    description: "Reject the user's invitation to a team",
+    type: TeamRef,
+    args: {
+      input: t.arg({
+        type: rejectTeamInvitationInput,
+        required: true,
+      }),
+    },
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, { input }, { USER, DB }) => {
+      const { teamId } = input;
+
+      if (!USER) {
+        throw new GraphQLError("User not found");
+      }
+
+      const teamAndUsers = await DB.query.userTeamsSchema.findFirst({
+        where: (t, { eq, and }) =>
+          and(eq(t.teamId, teamId), eq(t.userId, USER.id)),
+        with: {
+          team: true,
+          user: true,
+        },
+      });
+      const team = teamAndUsers?.team;
+
+      if (!team) {
+        throw new GraphQLError("You do not have permission to edit this team");
+      }
+
+      const teamToUpdate = udpateUserTeamsSchema.parse({
+        userParticipationStatus: UserParticipationStatusEnum.not_accepted,
+      });
+
+      await DB.update(userTeamsSchema)
+        .set(teamToUpdate)
+        .where(eq(userTeamsSchema.id, teamAndUsers?.id));
 
       return team;
     },
