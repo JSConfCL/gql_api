@@ -71,5 +71,6 @@ export const updateUsersSchema = insertUsersSchema
     pronouns: true,
     gender: true,
     genderOtherText: true,
+    username: true,
   })
   .partial();
