@@ -23,6 +23,7 @@ const userEditInput = builder.inputType("userEditInput", {
     name: t.string({ required: false }),
     lastName: t.string({ required: false }),
     bio: t.string({ required: false }),
+    username: t.string({ required: false }),
     pronouns: t.field({ type: pronounsEnum, required: false }),
   }),
 });
@@ -40,7 +41,7 @@ builder.mutationField("updateUser", (t) =>
     },
     resolve: async (root, { input }, ctx) => {
       try {
-        const { id, name, lastName, bio, pronouns } = input;
+        const { id, name, lastName, bio, username, pronouns } = input;
 
         if (!ctx.USER) {
           throw new Error("User not found");
@@ -54,6 +55,7 @@ builder.mutationField("updateUser", (t) =>
           name?: string;
           lastName?: string;
           bio?: string;
+          username?: string;
           pronouns?: PronounsEnum;
         };
 
@@ -67,6 +69,10 @@ builder.mutationField("updateUser", (t) =>
 
         if (bio) {
           updateFields.bio = bio;
+        }
+
+        if (username) {
+          updateFields.username = username;
         }
 
         if (pronouns) {
