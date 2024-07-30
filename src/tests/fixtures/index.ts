@@ -173,7 +173,7 @@ export const executeGraphqlOperationAsSuperAdmin = async <
   params: ExecutionRequest<TVariables, unknown, unknown, undefined, unknown>,
   user?: Awaited<ReturnType<typeof insertUser>>,
 ): Promise<ExecutionResult<TResult>> => {
-  if (user && user.isSuperAdmin) {
+  if (user && !user.isSuperAdmin) {
     throw new Error("User passed is not a super admin");
   }
 
