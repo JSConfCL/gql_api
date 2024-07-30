@@ -61,9 +61,7 @@ builder.queryField("searchTeams", (t) =>
           teamName: name ?? undefined,
           eventIds: eventIds ?? undefined,
           teamIds: teamIds ?? undefined,
-          status: USER.isSuperAdmin
-            ? requestedStatus
-            : [TeamStatusEnum.invited, TeamStatusEnum.accepted],
+          status: requestedStatus,
           userIds: USER.isSuperAdmin ? requestedUserIds : [USER.id],
         },
       });
