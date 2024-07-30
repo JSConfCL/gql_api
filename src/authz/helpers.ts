@@ -44,6 +44,27 @@ export const isSuperAdminOrSelf = (root: USER, ctx: Context) => {
   return ctx.USER?.isSuperAdmin || ctx.USER?.id === root.id;
 };
 
+export const areUsersOnSameTeam = async (root: USER, ctx: Context) => {
+  const currentUserId = ctx.USER?.id;
+
+  if (!currentUserId) {
+    return false;
+  }
+
+  const teams = await ctx.DB.query.userTeamsSchema.findMany({
+    where: (uts, { eq, or }) =>
+      or(eq(uts.userId, root.id), eq(uts.userId, currentUserId)),
+  });
+
+  if (teams.length !== 2) {
+    return false;
+  }
+
+  const [user1, user2] = teams;
+
+  return user1.teamId === user2.teamId;
+};
+
 export const authHelpers = {
   isCommuntiyAdmin,
   isOwnerOfPurchaseOrder,

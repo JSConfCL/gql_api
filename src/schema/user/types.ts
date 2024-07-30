@@ -1,4 +1,4 @@
-import { isSuperAdminOrSelf } from "~/authz/helpers";
+import { areUsersOnSameTeam, isSuperAdminOrSelf } from "~/authz/helpers";
 import { builder } from "~/builder";
 import {
   AllowedUserTags,
@@ -33,8 +33,12 @@ builder.objectType(UserRef, {
     email: t.field({
       type: "String",
       nullable: true,
-      resolve: (root, args, ctx) => {
+      resolve: async (root, args, ctx) => {
         if (isSuperAdminOrSelf(root, ctx)) {
+          return root.email;
+        }
+
+        if (await areUsersOnSameTeam(root, ctx)) {
           return root.email;
         }
       },
