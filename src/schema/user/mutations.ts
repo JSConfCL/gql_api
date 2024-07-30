@@ -3,11 +3,14 @@ import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
 import {
+  PronounsEnum,
   selectUsersSchema,
+  updateUsersSchema,
   usersSchema,
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
 import { UserRef } from "~/schema/shared/refs";
+import { pronounsEnum } from "~/schema/user/types";
 import {
   UserRoleCommunity,
   canUpdateUserRoleInCommunity,
@@ -20,22 +23,12 @@ const userEditInput = builder.inputType("userEditInput", {
     name: t.string({ required: false }),
     lastName: t.string({ required: false }),
     bio: t.string({ required: false }),
-    username: t.string({ required: false }),
+    pronouns: t.field({ type: pronounsEnum, required: false }),
   }),
 });
-const updateUserRoleInCommunityInput = builder.inputType(
-  "updateUserRoleInCommunityInput",
-  {
-    fields: (t) => ({
-      userId: t.string({ required: true }),
-      communityId: t.string({ required: true }),
-      role: t.string({ required: true }),
-    }),
-  },
-);
 
-builder.mutationFields((t) => ({
-  updateUser: t.field({
+builder.mutationField("updateUser", (t) =>
+  t.field({
     description: "Update a user",
     type: UserRef,
     nullable: false,
@@ -47,7 +40,7 @@ builder.mutationFields((t) => ({
     },
     resolve: async (root, { input }, ctx) => {
       try {
-        const { id, name, lastName, bio, username } = input;
+        const { id, name, lastName, bio, pronouns } = input;
 
         if (!ctx.USER) {
           throw new Error("User not found");
@@ -61,7 +54,7 @@ builder.mutationFields((t) => ({
           name?: string;
           lastName?: string;
           bio?: string;
-          username?: string;
+          pronouns?: PronounsEnum;
         };
 
         if (name) {
@@ -76,13 +69,14 @@ builder.mutationFields((t) => ({
           updateFields.bio = bio;
         }
 
-        if (username) {
-          updateFields.username = username;
+        if (pronouns) {
+          updateFields.pronouns = pronouns;
         }
 
+        const userData = updateUsersSchema.parse(updateFields);
         const user = (
           await ctx.DB.update(usersSchema)
-            .set(updateFields)
+            .set(userData)
             .where(eq(usersSchema.id, id))
             .returning()
         )?.[0];
@@ -95,7 +89,21 @@ builder.mutationFields((t) => ({
       }
     },
   }),
-  updateUserRoleInCommunity: t.field({
+);
+
+const updateUserRoleInCommunityInput = builder.inputType(
+  "updateUserRoleInCommunityInput",
+  {
+    fields: (t) => ({
+      userId: t.string({ required: true }),
+      communityId: t.string({ required: true }),
+      role: t.string({ required: true }),
+    }),
+  },
+);
+
+builder.mutationField("updateUserRoleInCommunity", (t) =>
+  t.field({
     description: "Update a user role",
     type: UserRef,
     nullable: false,
@@ -141,4 +149,4 @@ builder.mutationFields((t) => ({
       }
     },
   }),
-}));
+);

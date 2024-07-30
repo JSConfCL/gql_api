@@ -63,3 +63,13 @@ export type USER = z.infer<typeof selectUsersSchema>;
 
 export const selectUsersSchema = createSelectSchema(usersSchema);
 export const insertUsersSchema = createInsertSchema(usersSchema);
+export const updateUsersSchema = insertUsersSchema
+  .pick({
+    name: true,
+    lastName: true,
+    bio: true,
+    pronouns: true,
+    gender: true,
+    genderOtherText: true,
+  })
+  .partial();
