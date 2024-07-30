@@ -3,7 +3,11 @@ import { integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { companiesSchema } from "./companies";
-import { createdAndUpdatedAtFields, genderOptions } from "./shared";
+import {
+  createdAndUpdatedAtFields,
+  GenderOptionsEnum,
+  TypescriptEnumAsDBEnumOptions,
+} from "./shared";
 import { usersSchema } from "./users";
 import { workEmailSchema } from "./workEmail";
 import { workSeniorityAndRoleSchema } from "./workSeniorityAndRole";
@@ -26,7 +30,7 @@ export const salariesSchema = pgTable("salaries", {
   workEmailId: uuid("work_email_id").references(() => workEmailSchema.id),
   yearsOfExperience: integer("years_of_experience").notNull(),
   gender: text("gender", {
-    enum: genderOptions,
+    enum: TypescriptEnumAsDBEnumOptions(GenderOptionsEnum),
   }),
   genderOtherText: text("gender_other_text"),
   countryCode: text("country_code").notNull(),

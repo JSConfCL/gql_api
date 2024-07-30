@@ -88,7 +88,6 @@ import {
   PronounsEnum,
   UserStatusEnum,
 } from "~/datasources/db/schema";
-import { genderOptions } from "~/datasources/db/shared";
 import {
   insertTicketPriceSchema,
   selectTicketPriceSchema,
@@ -100,6 +99,7 @@ import {
 } from "~/generated/types";
 import { defaultLogger } from "~/logging";
 import { schema } from "~/schema";
+import { GenderEnum } from "~/schema/shared/enums";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 
 const insertUserRequest = insertUsersSchema.deepPartial();
@@ -737,7 +737,9 @@ export const insertSalary = async (
       partialInput?.workMetodology ??
       faker.helpers.arrayElement(["remote", "office", "hybrid"] as const),
     yearsOfExperience: partialInput?.yearsOfExperience ?? faker.number.int(),
-    gender: partialInput?.gender ?? faker.helpers.arrayElement(genderOptions),
+    gender:
+      partialInput?.gender ??
+      faker.helpers.arrayElement(Object.values(GenderEnum)),
     genderOtherText: partialInput?.genderOtherText,
     companyId: partialInput?.companyId,
     workEmailId: partialInput?.workEmailId,

@@ -4,8 +4,10 @@ import { z } from "zod";
 
 import { ORM_TYPE } from "~/datasources/db";
 import {
+  allowedUserUpdateForAuth,
   insertUsersSchema,
   selectUsersSchema,
+  updateUsersSchema,
   usersSchema,
   UserStatusEnum,
 } from "~/datasources/db/schema";
@@ -55,17 +57,17 @@ export const updateUserProfileInfo = async (
   } else {
     logger.info("User found — updating user");
     // we update the user
+    const updateData = allowedUserUpdateForAuth.parse({
+      externalId: parsedProfileInfo.externalId,
+      name: parsedProfileInfo.name,
+      imageUrl: parsedProfileInfo.imageUrl,
+      isEmailVerified: parsedProfileInfo.isEmailVerified,
+      publicMetadata: parsedProfileInfo.publicMetadata ?? {},
+      status: UserStatusEnum.active,
+    });
     const updatedUsers = await db
       .update(usersSchema)
-      .set({
-        externalId: parsedProfileInfo.externalId,
-        name: parsedProfileInfo.name,
-        imageUrl: parsedProfileInfo.imageUrl,
-        isEmailVerified: parsedProfileInfo.isEmailVerified,
-        publicMetadata: parsedProfileInfo.publicMetadata ?? {},
-        updatedAt: sql`current_timestamp`,
-        status: UserStatusEnum.active,
-      })
+      .set(updateData)
       .where(eq(usersSchema.email, parsedProfileInfo.email))
       .returning();
     const updatedUser = updatedUsers?.[0];
@@ -74,6 +76,8 @@ export const updateUserProfileInfo = async (
       logger.error("Could not update user");
       throw new Error("Could not update user");
     }
+
+    logger.info("User updated");
 
     return selectUsersSchema.parse(updatedUser);
   }

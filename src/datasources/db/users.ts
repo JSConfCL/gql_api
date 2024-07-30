@@ -10,7 +10,7 @@ import {
 } from "./schema";
 import {
   createdAndUpdatedAtFields,
-  genderOptions,
+  GenderOptionsEnum,
   TypescriptEnumAsDBEnumOptions,
 } from "./shared";
 
@@ -18,6 +18,7 @@ export enum UserStatusEnum {
   active = "active",
   inactive = "inactive",
   blocked = "blocked",
+  empty = "",
 }
 
 export enum PronounsEnum {
@@ -25,6 +26,7 @@ export enum PronounsEnum {
   sheHer = "ella/ellas",
   theyThem = "elle/elles",
   other = "otro",
+  empty = "",
 }
 
 // USERS
@@ -36,7 +38,7 @@ export const usersSchema = pgTable("users", {
   bio: text("bio").default(""),
   email: text("email").unique().notNull(),
   gender: text("gender", {
-    enum: genderOptions,
+    enum: TypescriptEnumAsDBEnumOptions(GenderOptionsEnum),
   }),
   pronouns: text("pronouns", {
     enum: TypescriptEnumAsDBEnumOptions(PronounsEnum),
@@ -72,5 +74,23 @@ export const updateUsersSchema = insertUsersSchema
     gender: true,
     genderOtherText: true,
     username: true,
+  })
+  .partial();
+
+export const allowedUserUpdateForAuth = insertUsersSchema
+  .pick({
+    name: true,
+    lastName: true,
+    bio: true,
+    pronouns: true,
+    // gender: true,
+    // genderOtherText: true,
+    username: true,
+    externalId: true,
+    imageUrl: true,
+    isEmailVerified: true,
+    publicMetadata: true,
+    updatedAt: true,
+    status: true,
   })
   .partial();

@@ -1,6 +1,6 @@
 import { builder } from "~/builder";
-import { genderOptions } from "~/datasources/db/shared";
+import { GenderOptionsEnum } from "~/datasources/db/shared";
 
-export const GenderEnum = builder.enumType("Gender", {
-  values: genderOptions,
+export const GenderEnum = builder.enumType(GenderOptionsEnum, {
+  name: "Gender",
 });

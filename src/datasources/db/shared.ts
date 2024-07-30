@@ -13,19 +13,20 @@ export const createdAndUpdatedAtFieldsSelectZodSchema = {
   deletedAt: z.date().optional(),
 };
 
-export const genderOptions = [
-  "male",
-  "female",
-  "transgender_male",
-  "transgender_female",
-  "non_binary",
-  "genderqueer",
-  "genderfluid",
-  "agender",
-  "two_spirit",
-  "other",
-  "prefer_not_to_say",
-] as const;
+export enum GenderOptionsEnum {
+  Male = "male",
+  Female = "female",
+  TransgenderMale = "transgender_male",
+  TransgenderFemale = "transgender_female",
+  NonBinary = "non_binary",
+  Genderqueer = "genderqueer",
+  Genderfluid = "genderfluid",
+  Agender = "agender",
+  TwoSpirit = "two_spirit",
+  Other = "other",
+  PreferNotToSay = "prefer_not_to_say",
+  empty = "",
+}
 
 export const statusEnumOptions = ["pending", "confirmed", "rejected"] as const;
 
