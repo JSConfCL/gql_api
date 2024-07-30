@@ -11,7 +11,7 @@ export const CommnunityStatus = builder.enumType("CommnunityStatus", {
 builder.objectType(CommunityRef, {
   description: "Representation of a Community",
   fields: (t) => ({
-    id: t.exposeString("id", { nullable: false }),
+    id: t.exposeID("id", { nullable: false }),
     name: t.exposeString("name", { nullable: true }),
     description: t.exposeString("description", { nullable: true }),
     status: t.field({

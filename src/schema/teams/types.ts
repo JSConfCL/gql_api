@@ -43,6 +43,7 @@ export const UserTeamRole = builder.enumType(UserTeamRoleEnum, {
 });
 
 export const UserWithStatusRef = builder.objectRef<{
+  id: string;
   user: UserGraphqlSchema;
   role: UserTeamRoleEnum;
   status: UserParticipationStatusEnum;
@@ -51,6 +52,7 @@ export const UserWithStatusRef = builder.objectRef<{
 builder.objectType(UserWithStatusRef, {
   description: "Representation of a user in a team",
   fields: (t) => ({
+    id: t.exposeID("id"),
     user: t.field({
       type: UserRef,
       resolve: (root) => root.user,
@@ -89,6 +91,7 @@ builder.objectType(TeamRef, {
       type: [UserWithStatusRef],
       resolve: async (root, args, ctx) => {
         // TODO: Use a dataloader here
+
         const teamWithUsers = await ctx.DB.query.userTeamsSchema.findMany({
           where: (uts, { eq }) => eq(uts.teamId, root.id),
           with: {
@@ -102,6 +105,7 @@ builder.objectType(TeamRef, {
 
         return teamWithUsers.map((tu) => {
           return {
+            id: tu.userId,
             user: selectUsersSchema.parse(tu.user),
             role: tu.role,
             status: tu.userParticipationStatus,

@@ -9,7 +9,7 @@ const ValidPaymentMethodsEnumType = builder.enumType("ValidPaymentMethods", {
 builder.objectType(AllowedCurrencyRef, {
   description: "Representation of a workEmail",
   fields: (t) => ({
-    id: t.exposeString("id", { nullable: false }),
+    id: t.exposeID("id", { nullable: false }),
     validPaymentMethods: t.field({
       nullable: false,
       type: ValidPaymentMethodsEnumType,

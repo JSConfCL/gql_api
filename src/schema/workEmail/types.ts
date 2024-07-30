@@ -14,7 +14,7 @@ const EmailStatusEnum = builder.enumType("EmailStatus", {
 builder.objectType(WorkEmailRef, {
   description: "Representation of a (yet to validate) work email",
   fields: (t) => ({
-    id: t.exposeString("id", { nullable: false }),
+    id: t.exposeID("id", { nullable: false }),
     isValidated: t.field({
       type: "Boolean",
       nullable: false,
@@ -26,7 +26,7 @@ builder.objectType(ValidatedWorkEmailRef, {
   description: "Representation of a work email associated to the current user",
   fields: (t) => ({
     // ID and isValidated are the same from WorkEmailRef.
-    id: t.exposeString("id", { nullable: false }),
+    id: t.exposeID("id", { nullable: false }),
     isValidated: t.field({
       type: "Boolean",
       nullable: false,

@@ -72,7 +72,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
       sort: null,
     }),
   fields: (t) => ({
-    id: t.exposeString("id", { nullable: false }),
+    id: t.exposeID("id", { nullable: false }),
     name: t.exposeString("name", { nullable: false }),
     description: t.exposeString("description", { nullable: true }),
     status: t.field({

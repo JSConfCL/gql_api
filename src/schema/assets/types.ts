@@ -4,7 +4,7 @@ import { SanityAssetRef } from "~/schema/shared/refs";
 builder.objectType(SanityAssetRef, {
   description: "Representation of a Sanity Asset",
   fields: (t) => ({
-    id: t.exposeString("id", { nullable: false }),
+    id: t.exposeID("id", { nullable: false }),
     assetId: t.exposeString("assetId", { nullable: false }),
     path: t.exposeString("path", { nullable: false }),
     url: t.exposeString("url", { nullable: false }),
