@@ -52,7 +52,7 @@ const getSearchTeamQuery = (DB: ORM_TYPE, search: TeamSearch = {}) => {
 
   if (userIds && userIds.length > 0) {
     const subquery = DB.select({
-      teamId: userTeamsSchema.teamId,
+      id: userTeamsSchema.teamId,
     })
       .from(userTeamsSchema)
       .where(inArray(userTeamsSchema.userId, userIds));

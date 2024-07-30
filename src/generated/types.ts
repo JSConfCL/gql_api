@@ -426,10 +426,10 @@ export type MyPurchaseOrdersInput = {
 };
 
 export type MyTicketsSearchValues = {
-  approvalStatus?: InputMaybe<TicketApprovalStatus>;
+  approvalStatus?: InputMaybe<Array<TicketApprovalStatus>>;
   eventId?: InputMaybe<Scalars["String"]["input"]>;
-  paymentStatus?: InputMaybe<TicketPaymentStatus>;
-  redemptionStatus?: InputMaybe<TicketRedemptionStatus>;
+  paymentStatus?: InputMaybe<Array<TicketPaymentStatus>>;
+  redemptionStatus?: InputMaybe<Array<TicketRedemptionStatus>>;
 };
 
 /** Type used for querying the paginated leaves and it's paginated meta data */

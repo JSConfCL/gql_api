@@ -1,5 +1,9 @@
 import { builder } from "~/builder";
-import { selectUserTicketsSchema } from "~/datasources/db/schema";
+import {
+  selectUserTicketsSchema,
+  USER,
+  userTicketsApprovalStatusEnum,
+} from "~/datasources/db/schema";
 import {
   createPaginationInputType,
   createPaginationObjectType,
@@ -20,15 +24,15 @@ const MyTicketsSearchValues = builder.inputType("MyTicketsSearchValues", {
       required: false,
     }),
     paymentStatus: t.field({
-      type: TicketPaymentStatus,
+      type: [TicketPaymentStatus],
       required: false,
     }),
     approvalStatus: t.field({
-      type: TicketApprovalStatus,
+      type: [TicketApprovalStatus],
       required: false,
     }),
     redemptionStatus: t.field({
-      type: TicketRedemptionStatus,
+      type: [TicketRedemptionStatus],
       required: false,
     }),
   }),
@@ -36,10 +40,29 @@ const MyTicketsSearchValues = builder.inputType("MyTicketsSearchValues", {
 
 const PaginatedUserTicketsRef = createPaginationObjectType(UserTicketRef);
 
-const normalUserAllowedAppovalStatus = new Set([
-  "approved",
-  "not_required",
-] as const);
+const getQueryApprovalStatus = (
+  approvalStatus:
+    | (typeof userTicketsApprovalStatusEnum)[number][]
+    | null
+    | undefined,
+  user: USER,
+) => {
+  if (approvalStatus) {
+    if (user.isSuperAdmin) {
+      return approvalStatus;
+    } else {
+      return approvalStatus.filter((status) =>
+        normalUserAllowedAppovalStatus.has(status),
+      );
+    }
+  } else {
+    return undefined;
+  }
+};
+
+const normalUserAllowedAppovalStatus = new Set<
+  (typeof userTicketsApprovalStatusEnum)[number]
+>(["approved", "not_required", "gifted"]);
 
 builder.queryFields((t) => ({
   myTickets: t.field({
@@ -57,13 +80,7 @@ builder.queryFields((t) => ({
         throw new Error("User not found");
       }
 
-      const queryApprovalStatus = approvalStatus
-        ? USER.isSuperAdmin
-          ? approvalStatus
-          : normalUserAllowedAppovalStatus.has(approvalStatus)
-          ? approvalStatus
-          : undefined
-        : undefined;
+      const queryApprovalStatus = getQueryApprovalStatus(approvalStatus, USER);
 
       const { data, pagination } =
         await userTicketFetcher.searchPaginatedUserTickets({
@@ -71,11 +88,9 @@ builder.queryFields((t) => ({
           search: {
             eventIds: eventId ? [eventId] : undefined,
             userIds: [USER.id],
-            paymentStatus: paymentStatus ? [paymentStatus] : undefined,
-            approvalStatus: queryApprovalStatus
-              ? [queryApprovalStatus]
-              : undefined,
-            redemptionStatus: redemptionStatus ? [redemptionStatus] : undefined,
+            paymentStatus: paymentStatus ? paymentStatus : undefined,
+            approvalStatus: queryApprovalStatus,
+            redemptionStatus: redemptionStatus ? redemptionStatus : undefined,
           },
           pagination: input.pagination,
         });

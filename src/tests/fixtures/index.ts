@@ -85,6 +85,8 @@ import {
   insertUserTeamsSchema,
   selectUserTeamsSchema,
   userTeamsSchema,
+  PronounsEnum,
+  UserStatusEnum,
 } from "~/datasources/db/schema";
 import { genderOptions } from "~/datasources/db/shared";
 import {
@@ -227,11 +229,15 @@ export const insertUser = async (
     id: partialInput?.id ?? faker.string.uuid(),
     externalId: partialInput?.externalId ?? faker.string.uuid(),
     username: partialInput?.username ?? faker.internet.userName(),
-    bio: partialInput?.bio,
+    bio: partialInput?.bio ?? faker.lorem.paragraph(),
     email: partialInput?.email ?? faker.internet.email(),
     name: partialInput?.name,
     isSuperAdmin: partialInput?.isSuperAdmin,
     isEmailVerified: partialInput?.isEmailVerified,
+    pronouns:
+      partialInput?.pronouns ??
+      faker.helpers.arrayElement(Object.values(PronounsEnum)),
+    status: partialInput?.status,
     lastName: partialInput?.lastName,
     publicMetadata: partialInput?.publicMetadata,
     imageUrl: partialInput?.imageUrl,

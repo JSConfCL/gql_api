@@ -316,3 +316,61 @@ builder.mutationField("updateTeam", (t) =>
     },
   }),
 );
+
+const acceptTeamInvitationInput = builder.inputType(
+  "AcceptTeamInvitationInput",
+  {
+    fields: (t) => ({
+      teamId: t.string({
+        required: true,
+      }),
+    }),
+  },
+);
+
+builder.mutationField("acceptTeamInvitation", (t) =>
+  t.field({
+    description: "Accept an invitation to a team",
+    type: TeamRef,
+    args: {
+      input: t.arg({
+        type: acceptTeamInvitationInput,
+        required: true,
+      }),
+    },
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, { input }, { USER, DB }) => {
+      const { teamId } = input;
+
+      if (!USER) {
+        throw new GraphQLError("User not found");
+      }
+
+      const teamAndUsers = await DB.query.userTeamsSchema.findFirst({
+        where: (t, { eq, and }) =>
+          and(eq(t.teamId, teamId), eq(t.userId, USER.id)),
+        with: {
+          team: true,
+          user: true,
+        },
+      });
+      const team = teamAndUsers?.team;
+
+      if (!team) {
+        throw new GraphQLError("You do not have permission to edit this team");
+      }
+
+      const teamToUpdate = insertTeamsSchema.parse({
+        userParticipationStatus: UserParticipationStatusEnum.accepted,
+      });
+
+      await DB.update(userTeamsSchema)
+        .set(teamToUpdate)
+        .where(eq(userTeamsSchema.teamId, teamId));
+
+      return team;
+    },
+  }),
+);

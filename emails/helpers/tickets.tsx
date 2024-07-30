@@ -161,7 +161,7 @@ export const BigFooter = () => (
           <ul className="list-none font-medium space-y-4">
             <li>
               <a
-                href="https://github.com/CommunityOS/code_of_conduct/blob/main/terminos_de_servicio/README.md"
+                href="https://legal.communityos.io/terminos_de_servicio"
                 target="_blank"
                 className="no-underline text-white"
               >
@@ -170,7 +170,7 @@ export const BigFooter = () => (
             </li>
             <li>
               <a
-                href="https://github.com/CommunityOS/code_of_conduct/blob/main/politica_de_privacidad/README.md"
+                href="https://legal.communityos.io/politica_de_privacidad"
                 target="_blank"
                 className="no-underline text-white"
               >
