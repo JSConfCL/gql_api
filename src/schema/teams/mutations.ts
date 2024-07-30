@@ -8,6 +8,7 @@ import {
   selectTeamsSchema,
   teamsSchema,
   udpateUserTeamsSchema,
+  updateTeamsSchema,
   UserParticipationStatusEnum,
   UserTeamRoleEnum,
   userTeamsSchema,
@@ -258,7 +259,7 @@ builder.mutationField("deletePersonFomTeam", (t) =>
   }),
 );
 
-const updateTeam = builder.inputType("updateTeam", {
+const updateTeam = builder.inputType("UpdateTeamInput", {
   fields: (t) => ({
     teamId: t.string({
       required: true,
@@ -307,7 +308,7 @@ builder.mutationField("updateTeam", (t) =>
       addToObjectIfPropertyExists(properties, "name", name);
       addToObjectIfPropertyExists(properties, "description", description);
 
-      const teamToUpdate = insertTeamsSchema.parse(properties);
+      const teamToUpdate = updateTeamsSchema.parse(properties);
 
       const udpatedTeam = await DB.update(teamsSchema)
         .set(teamToUpdate)
