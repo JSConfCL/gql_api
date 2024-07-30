@@ -8,6 +8,7 @@ import {
   findUserByID,
   updateUserProfileInfo,
 } from "~/datasources/queries/users";
+import { getUsername } from "~/datasources/queries/utils/createUsername";
 import { unauthorizedError } from "~/errors";
 
 // Obtener el token de autorización de la solicitud, ya sea del encabezado de
@@ -129,7 +130,7 @@ export const upsertUserFromRequest = async ({
     imageUrl: avatar_url ? avatar_url : picture ? picture : "",
     externalId: sub,
     name,
-    username: user_name,
+    username: user_name ?? getUsername(),
     publicMetadata: payload,
   });
 
