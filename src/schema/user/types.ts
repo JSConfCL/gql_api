@@ -2,11 +2,16 @@ import { isSuperAdminOrSelf } from "~/authz/helpers";
 import { builder } from "~/builder";
 import {
   AllowedUserTags,
+  PronounsEnum,
   selectCommunitySchema,
   selectTeamsSchema,
 } from "~/datasources/db/schema";
 import { CommunityRef, UserRef } from "~/schema/shared/refs";
 import { TeamRef } from "~/schema/teams/types";
+
+export const pronounsEnum = builder.enumType(PronounsEnum, {
+  name: "PronounsEnum",
+});
 
 builder.objectType(UserRef, {
   description: "Representation of a user",
@@ -18,6 +23,13 @@ builder.objectType(UserRef, {
     bio: t.exposeString("bio", { nullable: true }),
     isSuperAdmin: t.exposeBoolean("isSuperAdmin", { nullable: true }),
     imageUrl: t.exposeString("imageUrl", { nullable: true }),
+    pronouns: t.field({
+      type: pronounsEnum,
+      nullable: true,
+      resolve: (root) => {
+        return root.pronouns;
+      },
+    }),
     email: t.field({
       type: "String",
       nullable: true,
