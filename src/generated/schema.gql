@@ -1,3 +1,7 @@
+input AcceptTeamInvitationInput {
+  teamId: String!
+}
+
 input AddPersonToTeamInput {
   teamId: String!
   userEmail: String!
@@ -16,7 +20,7 @@ Representation of a workEmail
 """
 type AllowedCurrency {
   currency: String!
-  id: String!
+  id: ID!
   validPaymentMethods: ValidPaymentMethods!
 }
 
@@ -36,7 +40,7 @@ type Community {
   banner: String
   description: String
   events: [Event!]!
-  id: String!
+  id: ID!
   logo: String
   name: String
   status: CommnunityStatus!
@@ -50,7 +54,7 @@ type Company {
   description: String
   domain: String!
   hasBeenUpdated: Boolean!
-  id: String!
+  id: ID!
   logo: String
   name: String
   salarySubmissions: Int!
@@ -73,7 +77,7 @@ Representation of a consolidated payment entry log calculation
 """
 type ConsolidatedPaymentLogEntry {
   currencyId: String!
-  id: String!
+  id: ID!
   platform: String!
   totalTransactionAmount: Float!
 }
@@ -142,7 +146,7 @@ type Event {
   community: Community
   description: String
   endDateTime: DateTime
-  id: String!
+  id: ID!
   images: [SanityAssetRef!]!
   latitude: String
   longitude: String
@@ -232,17 +236,18 @@ input EventsTicketsSearchInput {
 }
 
 enum Gender {
-  agender
-  female
-  genderfluid
-  genderqueer
-  male
-  non_binary
-  other
-  prefer_not_to_say
-  transgender_female
-  transgender_male
-  two_spirit
+  Agender
+  Female
+  Genderfluid
+  Genderqueer
+  Male
+  NonBinary
+  Other
+  PreferNotToSay
+  TransgenderFemale
+  TransgenderMale
+  TwoSpirit
+  empty
 }
 
 input GeneratePaymentLinkInput {
@@ -251,6 +256,11 @@ input GeneratePaymentLinkInput {
 
 type Mutation {
   acceptGiftedTicket(userTicketId: String!): UserTicket!
+
+  """
+  Accept the user's invitation to a team
+  """
+  acceptTeamInvitation(input: AcceptTeamInvitationInput!): TeamRef!
 
   """
   Try to add a person to a team
@@ -343,6 +353,11 @@ type Mutation {
   redeemUserTicket(userTicketId: String!): UserTicket!
 
   """
+  Reject the user's invitation to a team
+  """
+  rejectTeamInvitation(input: RejectTeamInvitationInput!): TeamRef!
+
+  """
   Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position
   """
   startWorkEmailValidation(email: String!): WorkEmail!
@@ -358,9 +373,9 @@ type Mutation {
   updateSalary(input: UpdateSalaryInput!): Salary!
 
   """
-  Try to add a person to a team
+  Updates a team information
   """
-  updateTeam(input: updateTeam!): TeamRef!
+  updateTeam(input: UpdateTeamInput!): TeamRef!
 
   """
   Update a user
@@ -501,13 +516,21 @@ input PricingInputField {
   value_in_cents: Int!
 }
 
+enum PronounsEnum {
+  empty
+  heHim
+  other
+  sheHer
+  theyThem
+}
+
 """
 Representation of a payment log entry
 """
 type PublicFinanceEntryRef {
   createdAt: DateTime!
   currencyId: String!
-  id: String!
+  id: ID!
   platform: String!
   transactionAmount: Float!
   transactionDate: DateTime
@@ -660,6 +683,10 @@ type RedeemUserTicketError {
 
 union RedeemUserTicketResponse = PurchaseOrder | RedeemUserTicketError
 
+input RejectTeamInvitationInput {
+  teamId: String!
+}
+
 input RemovePersonFromTeamInput {
   teamId: String!
   userId: String!
@@ -675,7 +702,7 @@ type Salary {
   currencyCode: String!
   gender: Gender
   genderOtherText: String
-  id: String!
+  id: ID!
   typeOfEmployment: TypeOfEmployment!
   workMetodology: WorkMetodology!
   workRole: WorkRole!
@@ -688,7 +715,7 @@ Representation of a Sanity Asset
 """
 type SanityAssetRef {
   assetId: String!
-  id: String!
+  id: ID!
   originalFilename: String!
   path: String!
   size: Int!
@@ -718,7 +745,7 @@ Representation of a tag. Tags can be associated to many things. An event, a comm
 """
 type Tag {
   description: String
-  id: String!
+  id: ID!
   name: String
   slug: String!
 }
@@ -757,6 +784,7 @@ input TeamSearchValues {
 
 enum TeamStatus {
   accepted
+  invited
   not_accepted
   waiting_resolution
 }
@@ -915,6 +943,12 @@ input UpdateSalaryInput {
   yearsOfExperience: Int
 }
 
+input UpdateTeamInput {
+  description: String
+  name: String
+  teamId: String!
+}
+
 """
 Representation of a user
 """
@@ -922,12 +956,13 @@ type User {
   bio: String
   communities: [Community!]!
   email: String
-  id: String!
+  id: ID!
   imageUrl: String
   impersonatedUser: User
   isSuperAdmin: Boolean
   lastName: String
   name: String
+  pronouns: PronounsEnum
   teams: [TeamRef!]!
   username: String!
 }
@@ -960,6 +995,7 @@ type UserTicket {
 Representation of a user in a team
 """
 type UserWithStatusRef {
+  id: ID!
   role: UserTeamRole!
   status: ParticipationStatus!
   user: User!
@@ -976,7 +1012,7 @@ Representation of a work email associated to the current user
 type ValidatedWorkEmail {
   company: Company
   confirmationDate: DateTime
-  id: String!
+  id: ID!
   isValidated: Boolean!
   status: EmailStatus!
   workEmail: String!
@@ -986,7 +1022,7 @@ type ValidatedWorkEmail {
 Representation of a (yet to validate) work email
 """
 type WorkEmail {
-  id: String!
+  id: ID!
   isValidated: Boolean!
 }
 
@@ -1001,7 +1037,7 @@ Representation of a work role
 """
 type WorkRole {
   description: String
-  id: String!
+  id: ID!
   name: String!
   seniorities: [WorkSeniority!]!
 }
@@ -1015,14 +1051,8 @@ Representation of a work seniority
 """
 type WorkSeniority {
   description: String
-  id: String!
+  id: ID!
   name: String!
-}
-
-input updateTeam {
-  description: String
-  name: String
-  teamId: String!
 }
 
 input updateUserRoleInCommunityInput {
@@ -1036,5 +1066,6 @@ input userEditInput {
   id: String!
   lastName: String
   name: String
+  pronouns: PronounsEnum
   username: String
 }

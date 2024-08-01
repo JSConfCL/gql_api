@@ -16,7 +16,7 @@ import {
   insertEventToCommunity,
   insertUser,
   insertUserToCommunity,
-  toISODateWithoutMilliseconds,
+  toISODate,
 } from "~/tests/fixtures";
 
 import {
@@ -153,11 +153,11 @@ describe("As a SUPER_ADMIN", () => {
       assert.equal(response.data?.createTicket?.name, input.name);
       assert.equal(
         response.data?.createTicket?.startDateTime,
-        toISODateWithoutMilliseconds(startDateTime),
+        toISODate(startDateTime),
       );
       assert.equal(
         response.data?.createTicket?.endDateTime,
-        toISODateWithoutMilliseconds(endDateTime),
+        toISODate(endDateTime),
       );
       assert.equal(
         response.data?.createTicket?.requiresApproval,
@@ -220,11 +220,11 @@ describe("As a SUPER_ADMIN", () => {
       assert.equal(response.data?.createTicket?.name, input.name);
       assert.equal(
         response.data?.createTicket?.startDateTime,
-        toISODateWithoutMilliseconds(startDateTime),
+        toISODate(startDateTime),
       );
       assert.equal(
         response.data?.createTicket?.endDateTime,
-        toISODateWithoutMilliseconds(endDateTime),
+        toISODate(endDateTime),
       );
       assert.equal(
         response.data?.createTicket?.requiresApproval,
@@ -288,11 +288,11 @@ describe("As a SUPER_ADMIN", () => {
       assert.equal(response.data?.createTicket?.name, input.name);
       assert.equal(
         response.data?.createTicket?.startDateTime,
-        toISODateWithoutMilliseconds(startDateTime),
+        toISODate(startDateTime),
       );
       assert.equal(
         response.data?.createTicket?.endDateTime,
-        toISODateWithoutMilliseconds(endDateTime),
+        toISODate(endDateTime),
       );
       assert.equal(
         response.data?.createTicket?.requiresApproval,
@@ -345,11 +345,11 @@ describe("As a SUPER_ADMIN", () => {
       assert.equal(response.data?.createTicket?.name, input.name);
       assert.equal(
         response.data?.createTicket?.startDateTime,
-        toISODateWithoutMilliseconds(startDateTime),
+        toISODate(startDateTime),
       );
       assert.equal(
         response.data?.createTicket?.endDateTime,
-        toISODateWithoutMilliseconds(endDateTime),
+        toISODate(endDateTime),
       );
       assert.equal(
         response.data?.createTicket?.requiresApproval,
@@ -876,11 +876,11 @@ describe("As an ADMIN-USER", () => {
       assert.equal(response.data?.createTicket?.name, input.name);
       assert.equal(
         response.data?.createTicket?.startDateTime,
-        toISODateWithoutMilliseconds(startDateTime),
+        toISODate(startDateTime),
       );
       assert.equal(
         response.data?.createTicket?.endDateTime,
-        toISODateWithoutMilliseconds(endDateTime),
+        toISODate(endDateTime),
       );
       assert.equal(
         response.data?.createTicket?.requiresApproval,
@@ -943,11 +943,11 @@ describe("As an ADMIN-USER", () => {
       assert.equal(response.data?.createTicket?.name, input.name);
       assert.equal(
         response.data?.createTicket?.startDateTime,
-        toISODateWithoutMilliseconds(startDateTime),
+        toISODate(startDateTime),
       );
       assert.equal(
         response.data?.createTicket?.endDateTime,
-        toISODateWithoutMilliseconds(endDateTime),
+        toISODate(endDateTime),
       );
       assert.equal(
         response.data?.createTicket?.requiresApproval,
@@ -1011,11 +1011,11 @@ describe("As an ADMIN-USER", () => {
       assert.equal(response.data?.createTicket?.name, input.name);
       assert.equal(
         response.data?.createTicket?.startDateTime,
-        toISODateWithoutMilliseconds(startDateTime),
+        toISODate(startDateTime),
       );
       assert.equal(
         response.data?.createTicket?.endDateTime,
-        toISODateWithoutMilliseconds(endDateTime),
+        toISODate(endDateTime),
       );
       assert.equal(
         response.data?.createTicket?.requiresApproval,
@@ -1068,11 +1068,11 @@ describe("As an ADMIN-USER", () => {
       assert.equal(response.data?.createTicket?.name, input.name);
       assert.equal(
         response.data?.createTicket?.startDateTime,
-        toISODateWithoutMilliseconds(startDateTime),
+        toISODate(startDateTime),
       );
       assert.equal(
         response.data?.createTicket?.endDateTime,
-        toISODateWithoutMilliseconds(endDateTime),
+        toISODate(endDateTime),
       );
       assert.equal(
         response.data?.createTicket?.requiresApproval,

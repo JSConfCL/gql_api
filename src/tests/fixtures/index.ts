@@ -86,8 +86,8 @@ import {
   selectUserTeamsSchema,
   userTeamsSchema,
   PronounsEnum,
-  UserStatusEnum,
 } from "~/datasources/db/schema";
+import { GenderOptionsEnum } from "~/datasources/db/shared";
 import {
   insertTicketPriceSchema,
   selectTicketPriceSchema,
@@ -99,7 +99,6 @@ import {
 } from "~/generated/types";
 import { defaultLogger } from "~/logging";
 import { schema } from "~/schema";
-import { GenderEnum } from "~/schema/shared/enums";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 
 const insertUserRequest = insertUsersSchema.deepPartial();
@@ -739,7 +738,7 @@ export const insertSalary = async (
     yearsOfExperience: partialInput?.yearsOfExperience ?? faker.number.int(),
     gender:
       partialInput?.gender ??
-      faker.helpers.arrayElement(Object.values(GenderEnum)),
+      faker.helpers.arrayElement(Object.values(GenderOptionsEnum)),
     genderOtherText: partialInput?.genderOtherText,
     companyId: partialInput?.companyId,
     workEmailId: partialInput?.workEmailId,
@@ -756,18 +755,10 @@ export const insertSalary = async (
   );
 };
 
-export const toISODateWithoutMilliseconds = <T extends Date | null>(
-  date: T,
-): T extends Date ? string : null => {
+export const toISODate = <T extends Date | null>(date: T): string | null => {
   if (!date) {
-    return null as T extends Date ? string : null;
+    return null;
   }
 
-  const dateWithoutMilliseconds = new Date(date);
-
-  dateWithoutMilliseconds.setMilliseconds(0);
-
-  return dateWithoutMilliseconds.toISOString() as T extends Date
-    ? string
-    : null;
+  return new Date(date).toISOString();
 };

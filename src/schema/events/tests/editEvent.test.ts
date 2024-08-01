@@ -11,7 +11,7 @@ import {
   insertEventToCommunity,
   insertUser,
   insertUserToCommunity,
-  toISODateWithoutMilliseconds,
+  toISODate,
 } from "~/tests/fixtures";
 
 import {
@@ -74,11 +74,11 @@ describe("Event", () => {
       assert.equal(response.data?.editEvent.name, newName);
       assert.equal(
         response.data?.editEvent.startDateTime,
-        toISODateWithoutMilliseconds(newStartDateTime),
+        toISODate(newStartDateTime),
       );
       assert.equal(
         response.data?.editEvent.endDateTime,
-        toISODateWithoutMilliseconds(newEndDateTime),
+        toISODate(newEndDateTime),
       );
     });
     it("As a super-admin", async () => {
@@ -130,11 +130,11 @@ describe("Event", () => {
       assert.equal(response.data?.editEvent.name, newName);
       assert.equal(
         response.data?.editEvent.startDateTime,
-        toISODateWithoutMilliseconds(newStartDateTime),
+        toISODate(newStartDateTime),
       );
       assert.equal(
         response.data?.editEvent.endDateTime,
-        toISODateWithoutMilliseconds(newEndDateTime),
+        toISODate(newEndDateTime),
       );
     });
   });
