@@ -755,10 +755,12 @@ export const insertSalary = async (
   );
 };
 
-export const toISODate = <T extends Date | null>(date: T): string | null => {
+export const toISODate = <T extends Date | null>(
+  date: T,
+): T extends Date ? string : null => {
   if (!date) {
-    return null;
+    return null as T extends Date ? string : null;
   }
 
-  return new Date(date).toISOString();
+  return new Date(date).toISOString() as T extends Date ? string : null;
 };
