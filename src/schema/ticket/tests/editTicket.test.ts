@@ -14,7 +14,7 @@ import {
   insertTicketTemplate,
   insertUser,
   insertUserToCommunity,
-  toISODateWithoutMilliseconds,
+  toISODate,
 } from "~/tests/fixtures";
 
 import {
@@ -81,8 +81,8 @@ describe("User", () => {
       id: ticket.id,
       name: fakeInput.name,
       description: fakeInput.description,
-      startDateTime: toISODateWithoutMilliseconds(startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(endDateTime),
+      startDateTime: toISODate(startDateTime),
+      endDateTime: toISODate(endDateTime),
       requiresApproval: fakeInput.requiresApproval,
       status: fakeInput.status,
       visibility: fakeInput.visibility,

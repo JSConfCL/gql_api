@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { GenderOptionsEnum } from "~/datasources/db/shared";
 import { Gender, TypeOfEmployment, WorkMetodology } from "~/generated/types";
 import {
   executeGraphqlOperation,
@@ -45,7 +46,7 @@ const createSalary = async () => {
     companyId: company.id,
     countryCode: "US",
     currencyCode: "US",
-    gender: Gender.Agender,
+    gender: GenderOptionsEnum.Agender,
     typeOfEmployment: TypeOfEmployment.FullTime,
     workMetodology: WorkMetodology.Hybrid,
     workSeniorityAndRoleId: workSeniorityAndRole.id,

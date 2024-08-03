@@ -8,6 +8,7 @@ mutation CreateTeam($input: TeamCreateInput!) {
       id
     }
     users {
+      id
       role
       status
       user {

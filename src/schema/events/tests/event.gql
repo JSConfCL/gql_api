@@ -13,6 +13,7 @@ query Event($eventId: String!, $eventTickets: EventsTicketsSearchInput) {
     teams {
       id
       users {
+        id
         status
         role
         user {
@@ -31,6 +32,7 @@ query Event($eventId: String!, $eventTickets: EventsTicketsSearchInput) {
       approvalStatus
       paymentStatus
       redemptionStatus
+      createdAt
     }
   }
 }

@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import { v4 } from "uuid";
 import { it, describe, assert } from "vitest";
 
@@ -28,7 +29,7 @@ import {
   insertUserToCommunity,
   insertUserToEvent,
   executeGraphqlOperationAsUser,
-  toISODateWithoutMilliseconds,
+  toISODate,
   insertPurchaseOrder,
   insertTeam,
   insertUserTeams,
@@ -58,8 +59,8 @@ describe("Event", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
       community: null,
       tags: [],
       teams: [],
@@ -103,8 +104,8 @@ describe("Event", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
       community: null,
       users: [],
       teams: [],
@@ -198,8 +199,8 @@ describe("Event", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
       community: {
         id: community1.id,
       },
@@ -216,12 +217,14 @@ describe("Event", () => {
           approvalStatus: ticket2.approvalStatus,
           paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
           redemptionStatus: ticket2.redemptionStatus,
+          createdAt: toISODate(ticket2.createdAt),
         },
         {
           id: ticket1.id,
           approvalStatus: ticket1.approvalStatus,
           paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
+          createdAt: toISODate(ticket1.createdAt),
         },
       ],
     } as EventQuery["event"]);
@@ -253,8 +256,8 @@ describe("Event", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
       users: [],
       community: {
         id: community1.id,
@@ -284,8 +287,8 @@ describe("Event", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
       users: [],
       community: null,
       tags: [],
@@ -423,8 +426,8 @@ describe("Events", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
     assert.deepEqual(response.data?.searchEvents.data?.at(1), {
       id: event2.id,
@@ -432,8 +435,8 @@ describe("Events", () => {
       description: event2.description,
       status: event2.status,
       visibility: event2.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event2.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event2.endDateTime),
+      startDateTime: toISODate(event2.startDateTime),
+      endDateTime: toISODate(event2.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
     assert.deepEqual(response.data?.searchEvents.data?.at(2), {
       id: event3.id,
@@ -441,8 +444,8 @@ describe("Events", () => {
       description: event3.description,
       status: event3.status,
       visibility: event3.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event3.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event3.endDateTime),
+      startDateTime: toISODate(event3.startDateTime),
+      endDateTime: toISODate(event3.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by ID", async () => {
@@ -478,8 +481,8 @@ describe("Events", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
   });
 
@@ -552,8 +555,8 @@ describe("Events", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by Visibility", async () => {
@@ -589,8 +592,8 @@ describe("Events", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by Status", async () => {
@@ -623,8 +626,8 @@ describe("Events", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by Date", async () => {
@@ -660,8 +663,8 @@ describe("Events", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
   });
   it("Should Filter by Name", async () => {
@@ -694,8 +697,8 @@ describe("Events", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
   });
 });
@@ -761,8 +764,8 @@ describe("Event tickets filter", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
       community: {
         id: community1.id,
       },
@@ -779,6 +782,7 @@ describe("Event tickets filter", () => {
           approvalStatus: ticket1.approvalStatus,
           paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
+          createdAt: toISODate(ticket1.createdAt),
         },
       ],
     } as EventQuery["event"]);
@@ -845,8 +849,8 @@ describe("Event tickets filter", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
       community: {
         id: community1.id,
       },
@@ -863,6 +867,7 @@ describe("Event tickets filter", () => {
           approvalStatus: ticket1.approvalStatus,
           paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
+          createdAt: toISODate(ticket1.createdAt),
         },
       ],
     } as EventQuery["event"]);
@@ -894,20 +899,22 @@ describe("Event tickets filter", () => {
     const purchaseOrder = await insertPurchaseOrder({
       purchaseOrderPaymentStatus: TicketPaymentStatus.Paid,
     });
+    const date1 = new Date("2021-02-02");
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
       approvalStatus: TicketApprovalStatus.Approved,
-      createdAt: new Date("2021-02-02"),
+      createdAt: date1,
     });
 
+    const date2 = new Date("2022-02-02");
     const ticket2 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
       approvalStatus: TicketApprovalStatus.Approved,
-      createdAt: new Date("2022-02-02"),
+      createdAt: date2,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -933,8 +940,8 @@ describe("Event tickets filter", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
       community: {
         id: community1.id,
       },
@@ -951,12 +958,14 @@ describe("Event tickets filter", () => {
           approvalStatus: ticket1.approvalStatus,
           paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
+          createdAt: toISODate(ticket2.createdAt),
         },
         {
           id: ticket1.id,
           approvalStatus: ticket2.approvalStatus,
           paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
           redemptionStatus: ticket2.redemptionStatus,
+          createdAt: toISODate(ticket1.createdAt),
         },
       ],
     } as EventQuery["event"]);
@@ -1025,8 +1034,8 @@ describe("Event tickets filter", () => {
       description: event1.description,
       status: event1.status,
       visibility: event1.visibility,
-      startDateTime: toISODateWithoutMilliseconds(event1.startDateTime),
-      endDateTime: toISODateWithoutMilliseconds(event1.endDateTime),
+      startDateTime: toISODate(event1.startDateTime),
+      endDateTime: toISODate(event1.endDateTime),
       community: {
         id: community1.id,
       },
@@ -1043,6 +1052,7 @@ describe("Event tickets filter", () => {
           approvalStatus: ticket1.approvalStatus,
           paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
           redemptionStatus: ticket1.redemptionStatus,
+          createdAt: toISODate(ticket1.createdAt),
         },
       ],
     } as EventQuery["event"]);
