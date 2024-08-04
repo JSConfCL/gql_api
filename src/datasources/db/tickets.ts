@@ -33,6 +33,7 @@ export const ticketsSchema = pgTable(
       .notNull()
       .default(sql`ARRAY[]::text[]`),
     externalLink: text("external_link"),
+    imageLink: text("image_link"),
     visibility: text("visibility", {
       enum: ticketVisibilityEnum,
     })

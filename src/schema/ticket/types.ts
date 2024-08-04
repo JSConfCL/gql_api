@@ -93,6 +93,8 @@ export const TicketLoadable = builder.loadableObject(TicketRef, {
         return root.quantity - userTickets.length;
       },
     }),
+    imageLink: t.exposeString("imageLink", { nullable: true }),
+    externalLink: t.exposeString("externalLink", { nullable: true }),
     isFree: t.exposeBoolean("isFree", {
       description: "Whether or not the ticket is free",
       nullable: false,
