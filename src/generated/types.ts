@@ -182,6 +182,11 @@ export type Event = {
 };
 
 /** Representation of an Event (Events and Users, is what tickets are linked to) */
+export type EventTicketsArgs = {
+  input?: InputMaybe<EventsTicketTemplateSearchInput>;
+};
+
+/** Representation of an Event (Events and Users, is what tickets are linked to) */
 export type EventUsersTicketsArgs = {
   input?: InputMaybe<EventsTicketsSearchInput>;
 };
@@ -241,6 +246,10 @@ export type EventsSearchInput = {
   ticketTags?: InputMaybe<Array<Scalars["String"]["input"]>>;
   userHasTickets?: InputMaybe<Scalars["Boolean"]["input"]>;
   visibility?: InputMaybe<EventVisibility>;
+};
+
+export type EventsTicketTemplateSearchInput = {
+  tags?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
 
 export type EventsTicketsSearchInput = {

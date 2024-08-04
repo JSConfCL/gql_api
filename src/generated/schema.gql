@@ -161,7 +161,7 @@ type Event {
   """
   List of tickets for sale or redemption for this event. (If you are looking for a user's tickets, use the usersTickets field)
   """
-  tickets: [Ticket!]!
+  tickets(input: EventsTicketTemplateSearchInput): [Ticket!]!
   users: [User!]!
 
   """
@@ -228,6 +228,10 @@ input EventsSearchInput {
   ticketTags: [String!]
   userHasTickets: Boolean
   visibility: EventVisibility
+}
+
+input EventsTicketTemplateSearchInput {
+  tags: [String!]
 }
 
 input EventsTicketsSearchInput {
