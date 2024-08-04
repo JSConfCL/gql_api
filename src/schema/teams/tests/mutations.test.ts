@@ -4,7 +4,6 @@ import { it, describe, assert, expect } from "vitest";
 import {
   executeGraphqlOperation,
   executeGraphqlOperationAsSuperAdmin,
-  executeGraphqlOperationAsUser,
   findTeamById,
   insertEvent,
   insertUser,

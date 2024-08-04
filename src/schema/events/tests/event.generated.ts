@@ -12,7 +12,7 @@ export type EventQueryVariables = Types.Exact<{
 }>;
 
 
-export type EventQuery = { __typename?: 'Query', event: { __typename?: 'Event', id: string, name: string, description: string | null, visibility: Types.EventVisibility, status: Types.EventStatus, startDateTime: string, endDateTime: string | null, tags: Array<{ __typename?: 'Tag', id: string }>, teams: Array<{ __typename?: 'TeamRef', id: string, users: Array<{ __typename?: 'UserWithStatusRef', status: Types.ParticipationStatus, role: Types.UserTeamRole, user: { __typename?: 'User', id: string } }> }>, community: { __typename?: 'Community', id: string } | null, users: Array<{ __typename?: 'User', id: string }>, usersTickets: Array<{ __typename?: 'UserTicket', id: string, approvalStatus: Types.TicketApprovalStatus, paymentStatus: Types.PurchaseOrderPaymentStatusEnum | null, redemptionStatus: Types.TicketRedemptionStatus, createdAt: string }> } | null };
+export type EventQuery = { __typename?: 'Query', event: { __typename?: 'Event', id: string, name: string, description: string | null, visibility: Types.EventVisibility, status: Types.EventStatus, startDateTime: string, endDateTime: string | null, tags: Array<{ __typename?: 'Tag', id: string }>, teams: Array<{ __typename?: 'TeamRef', id: string, users: Array<{ __typename?: 'UserWithStatusRef', id: string, status: Types.ParticipationStatus, role: Types.UserTeamRole, user: { __typename?: 'User', id: string } }> }>, community: { __typename?: 'Community', id: string } | null, users: Array<{ __typename?: 'User', id: string }>, usersTickets: Array<{ __typename?: 'UserTicket', id: string, approvalStatus: Types.TicketApprovalStatus, paymentStatus: Types.PurchaseOrderPaymentStatusEnum | null, redemptionStatus: Types.TicketRedemptionStatus, createdAt: string }> } | null };
 
 
 export const Event = gql`
@@ -31,6 +31,7 @@ export const Event = gql`
     teams {
       id
       users {
+        id
         status
         role
         user {
