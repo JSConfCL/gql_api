@@ -15,8 +15,6 @@ import {
   selectWorkRoleSchema,
   selectWorkSenioritySchema,
   selectPaymentLogsSchema,
-  selectSpeakerSchema,
-  selectSessionSchema,
 } from "~/datasources/db/schema";
 import { SanityAsset, SanityEvent } from "~/datasources/sanity/types";
 

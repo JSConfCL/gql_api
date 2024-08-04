@@ -152,6 +152,7 @@ type Event {
   longitude: String
   meetingURL: String
   name: String!
+  speakers: [Speaker!]!
   startDateTime: DateTime!
   status: EventStatus!
   tags: [Tag!]!
@@ -742,6 +743,40 @@ enum SearchableUserTags {
 }
 
 """
+Representation of a Session
+"""
+type SessionRef {
+  description: String
+  endTimestamp: Date!
+  id: ID!
+  speakers: [Speaker!]!
+  startTimestamp: Date!
+  title: String!
+}
+
+input SessionSearch {
+  description: String
+  endDate: String
+  eventIds: [String!]
+  sessionIds: [String!]
+  speakerIds: [String!]
+  startDate: String
+  title: String
+}
+
+"""
+Representation of a Speaker
+"""
+type Speaker {
+  avatar: String
+  bio: String
+  id: ID!
+  name: String!
+  sessions: [SessionRef!]!
+  socials: [String!]!
+}
+
+"""
 Representation of a tag. Tags can be associated to many things. An event, a community, etc.
 """
 type Tag {
@@ -797,7 +832,9 @@ type Ticket {
   description: String
   endDateTime: DateTime
   event: Event!
+  externalLink: String
   id: ID!
+  imageLink: String
 
   """
   Whether or not the ticket is free
@@ -825,6 +862,7 @@ type Ticket {
 enum TicketApprovalStatus {
   approved
   cancelled
+  gift_accepted
   gifted
   not_required
   pending
