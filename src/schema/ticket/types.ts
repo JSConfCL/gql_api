@@ -99,6 +99,7 @@ export const TicketLoadable = builder.loadableObject(TicketRef, {
       description: "Whether or not the ticket is free",
       nullable: false,
     }),
+    tags: t.exposeStringList("tags"),
     isUnlimited: t.exposeBoolean("isUnlimited", {
       description:
         "Whether or not the ticket has an unlimited quantity. This is reserved for things loike online events.",
