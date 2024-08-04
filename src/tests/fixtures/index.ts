@@ -86,6 +86,7 @@ import {
   selectUserTeamsSchema,
   userTeamsSchema,
   PronounsEnum,
+  UserTicketsApprovalStatusEnum,
 } from "~/datasources/db/schema";
 import { GenderOptionsEnum } from "~/datasources/db/shared";
 import {
@@ -466,7 +467,7 @@ export const insertTicket = async (
     ticketTemplateId:
       partialInput?.ticketTemplateId ?? (await insertTicketTemplate()).id,
     approvalStatus:
-      partialInput?.approvalStatus ?? TicketApprovalStatus.Pending,
+      partialInput?.approvalStatus ?? UserTicketsApprovalStatusEnum.Pending,
     redemptionStatus:
       partialInput?.redemptionStatus ?? TicketRedemptionStatus.Pending,
     ...CRUDDates(partialInput),

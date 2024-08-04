@@ -814,6 +814,7 @@ type Ticket {
   The number of tickets available for this ticket type
   """
   quantity: Int
+  quantityLeft: Int
   requiresApproval: Boolean!
   startDateTime: DateTime!
   status: TicketTemplateStatus!
@@ -821,12 +822,13 @@ type Ticket {
 }
 
 enum TicketApprovalStatus {
-  approved
-  cancelled
-  gifted
-  not_required
-  pending
-  rejected
+  Approved
+  Cancelled
+  GiftAccepted
+  Gifted
+  NotRequired
+  Pending
+  Rejected
 }
 
 input TicketClaimInput {

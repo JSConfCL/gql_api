@@ -64,6 +64,35 @@ export const TicketLoadable = builder.loadableObject(TicketRef, {
       description: "The number of tickets available for this ticket type",
       nullable: true,
     }),
+    quantityLeft: t.field({
+      type: "Int",
+      nullable: true,
+      resolve: async (root, args, ctx) => {
+        if (root.isUnlimited) {
+          return null;
+        }
+
+        if (root.quantity === null) {
+          return null;
+        }
+
+        const userTickets = await ctx.DB.query.userTicketsSchema.findMany({
+          where: (ut, { eq, and, inArray }) =>
+            and(
+              eq(ut.ticketTemplateId, root.id),
+              inArray(ut.approvalStatus, [
+                "approved",
+                "gift_accepted",
+                "not_required",
+                "pending",
+                "gifted",
+              ]),
+            ),
+        });
+
+        return root.quantity - userTickets.length;
+      },
+    }),
     isFree: t.exposeBoolean("isFree", {
       description: "Whether or not the ticket is free",
       nullable: false,

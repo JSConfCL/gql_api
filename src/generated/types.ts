@@ -840,6 +840,7 @@ export type Ticket = {
   prices?: Maybe<Array<Price>>;
   /** The number of tickets available for this ticket type */
   quantity?: Maybe<Scalars["Int"]["output"]>;
+  quantityLeft?: Maybe<Scalars["Int"]["output"]>;
   requiresApproval: Scalars["Boolean"]["output"];
   startDateTime: Scalars["DateTime"]["output"];
   status: TicketTemplateStatus;
@@ -847,12 +848,13 @@ export type Ticket = {
 };
 
 export enum TicketApprovalStatus {
-  Approved = "approved",
-  Cancelled = "cancelled",
-  Gifted = "gifted",
-  NotRequired = "not_required",
-  Pending = "pending",
-  Rejected = "rejected",
+  Approved = "Approved",
+  Cancelled = "Cancelled",
+  GiftAccepted = "GiftAccepted",
+  Gifted = "Gifted",
+  NotRequired = "NotRequired",
+  Pending = "Pending",
+  Rejected = "Rejected",
 }
 
 export type TicketClaimInput = {

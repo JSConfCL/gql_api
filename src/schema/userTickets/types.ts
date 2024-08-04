@@ -1,6 +1,6 @@
 import { builder } from "~/builder";
 import {
-  userTicketsApprovalStatusEnum,
+  UserTicketsApprovalStatusEnum,
   puchaseOrderPaymentStatusEnum,
   userTicketsRedemptionStatusEnum,
 } from "~/datasources/db/schema";
@@ -14,9 +14,12 @@ import { TicketLoadable } from "~/schema/ticket/types";
 export const TicketPaymentStatus = builder.enumType("TicketPaymentStatus", {
   values: puchaseOrderPaymentStatusEnum,
 });
-export const TicketApprovalStatus = builder.enumType("TicketApprovalStatus", {
-  values: userTicketsApprovalStatusEnum,
-});
+export const TicketApprovalStatus = builder.enumType(
+  UserTicketsApprovalStatusEnum,
+  {
+    name: "TicketApprovalStatus",
+  },
+);
 export const TicketRedemptionStatus = builder.enumType(
   "TicketRedemptionStatus",
   {

@@ -1,5 +1,6 @@
 import { it, describe, assert } from "vitest";
 
+import { UserTicketsApprovalStatusEnum } from "~/datasources/db/userTickets";
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -341,7 +342,7 @@ describe("Redeem user ticket", () => {
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "rejected",
+        approvalStatus: UserTicketsApprovalStatusEnum.Rejected,
       });
       const response = await executeGraphqlOperationAsUser<
         RedeemUserTicketMutation,
@@ -389,7 +390,7 @@ describe("Redeem user ticket", () => {
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "cancelled",
+        approvalStatus: UserTicketsApprovalStatusEnum.Cancelled,
       });
       const response = await executeGraphqlOperationAsUser<
         RedeemUserTicketMutation,

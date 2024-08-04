@@ -2,7 +2,7 @@ import { builder } from "~/builder";
 import {
   selectUserTicketsSchema,
   USER,
-  userTicketsApprovalStatusEnum,
+  UserTicketsApprovalStatusEnum,
 } from "~/datasources/db/schema";
 import {
   createPaginationInputType,
@@ -41,10 +41,7 @@ const MyTicketsSearchValues = builder.inputType("MyTicketsSearchValues", {
 const PaginatedUserTicketsRef = createPaginationObjectType(UserTicketRef);
 
 const getQueryApprovalStatus = (
-  approvalStatus:
-    | (typeof userTicketsApprovalStatusEnum)[number][]
-    | null
-    | undefined,
+  approvalStatus: UserTicketsApprovalStatusEnum[] | null | undefined,
   user: USER,
 ) => {
   if (approvalStatus) {
@@ -60,9 +57,11 @@ const getQueryApprovalStatus = (
   }
 };
 
-const normalUserAllowedAppovalStatus = new Set<
-  (typeof userTicketsApprovalStatusEnum)[number]
->(["approved", "not_required", "gifted"]);
+const normalUserAllowedAppovalStatus = new Set<UserTicketsApprovalStatusEnum>([
+  UserTicketsApprovalStatusEnum.Approved,
+  UserTicketsApprovalStatusEnum.NotRequired,
+  UserTicketsApprovalStatusEnum.Gifted,
+]);
 
 builder.queryFields((t) => ({
   myTickets: t.field({

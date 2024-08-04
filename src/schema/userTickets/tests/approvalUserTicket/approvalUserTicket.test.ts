@@ -1,6 +1,8 @@
 import { v4 } from "uuid";
 import { it, describe, assert } from "vitest";
 
+import { UserTicketsApprovalStatusEnum } from "~/datasources/db/userTickets";
+import { TicketApprovalStatus } from "~/generated/types";
 import {
   executeGraphqlOperationAsUser,
   insertEvent,
@@ -53,7 +55,10 @@ describe("Approval user ticket", () => {
     );
 
     assert.equal(response.errors, undefined);
-    assert.equal(response.data?.approvalUserTicket?.approvalStatus, "approved");
+    assert.equal(
+      response.data?.approvalUserTicket?.approvalStatus,
+      TicketApprovalStatus.Approved,
+    );
   });
   it("Should approve a user ticket if is event admin", async () => {
     const event1 = await insertEvent();
@@ -88,7 +93,10 @@ describe("Approval user ticket", () => {
     );
 
     assert.equal(response.errors, undefined);
-    assert.equal(response.data?.approvalUserTicket?.approvalStatus, "approved");
+    assert.equal(
+      response.data?.approvalUserTicket?.approvalStatus,
+      TicketApprovalStatus.Approved,
+    );
   });
   it("It should throw an error if the user is not an event admin or superadmin", async () => {
     const event1 = await insertEvent();
@@ -143,7 +151,7 @@ describe("Approval user ticket", () => {
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      approvalStatus: "approved",
+      approvalStatus: UserTicketsApprovalStatusEnum.Approved,
       purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
