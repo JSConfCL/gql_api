@@ -2,6 +2,7 @@ import { SQL, and, asc, ilike, inArray } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
 import { sessionSchema } from "~/datasources/db/sessions";
+import { sessionToSpeakersSchema } from "~/datasources/db/sessionsToSpeakers";
 import {
   PaginationOptionsType,
   paginationDBHelper,
@@ -48,13 +49,9 @@ const getSearchSessionsQuery = (
 
   if (speakerIds && speakerIds.length > 0) {
     const speakersQuery = DB.select({
-      sessionId: sessionSchema.id,
+      sessionId: sessionToSpeakersSchema.sessionId,
     })
-      .from(sessionSchema)
-      .innerJoin(
-        sessionToSpeakersSchema,
-        sessionSchema.id.equals(sessionToSpeakersSchema.sessionId),
-      )
+      .from(sessionToSpeakersSchema)
       .where(inArray(sessionToSpeakersSchema.speakerId, speakerIds));
 
     wheres.push(inArray(sessionSchema.id, speakersQuery));

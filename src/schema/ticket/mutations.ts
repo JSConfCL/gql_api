@@ -400,6 +400,8 @@ builder.mutationField("editTicket", (t) =>
         );
         addToObjectIfPropertyExists(updateFields, "quantity", input.quantity);
 
+        const response = updateTicketSchema.safeParse(updateFields);
+
         if (response.success) {
           const ticket = (
             await DB.update(ticketsSchema)

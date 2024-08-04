@@ -1,7 +1,6 @@
-import { SQL, and, arrayContains, asc, inArray } from "drizzle-orm";
+import { SQL, and, arrayContains, asc, desc, inArray } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
-import { eventsSchema } from "~/datasources/db/events";
 import {
   ticketsSchema,
   ticketStatusEnum,
@@ -11,25 +10,25 @@ import {
   paginationDBHelper,
   PaginationOptionsType,
 } from "~/datasources/helpers/paginationQuery";
+import { SortableSchemaFields } from "~/datasources/helpers/sorting";
 
 export type TicketsSearch = {
   ticketIds?: string[];
   ticketTags?: string[];
   status?: (typeof ticketStatusEnum)[number][];
+  tags?: string[];
   visibility?: (typeof ticketVisibilityEnum)[number][];
 };
 
-type SortableType =
-  // TODO: Implement sorting
-  // | [{ field: string; direction: "asc" | "desc" }]
-  null | undefined;
+type SortableFields = "startDateTime" | "createdAt";
+type TicketFetcherSort = SortableSchemaFields<SortableFields>;
 
 const getSearchTicketQuery = (
   DB: ORM_TYPE,
   search: TicketsSearch = {},
-  sort: SortableType,
+  sort: TicketFetcherSort,
 ) => {
-  const { ticketIds, ticketTags, status, visibility } = search;
+  const { ticketIds, ticketTags, status, visibility, tags } = search;
 
   const query = DB.select().from(ticketsSchema);
   const wheres: SQL[] = [];
@@ -50,12 +49,20 @@ const getSearchTicketQuery = (
     wheres.push(inArray(ticketsSchema.visibility, visibility));
   }
 
+  if (tags && tags.length > 0) {
+    wheres.push(arrayContains(ticketsSchema.tags, tags));
+  }
+
   const orderBy: SQL<unknown>[] = [];
 
-  if (sort !== null) {
-    // This is to support data loaders. for data loaders we should not order by anything.
-    // TODO: Handle the case for doing actual column sorting
-    orderBy.push(asc(eventsSchema.startDateTime));
+  if (sort) {
+    const sorts = sort.map(([field, direction]) => {
+      const sortDirection = direction === "asc" ? asc : desc;
+
+      return sortDirection(ticketsSchema[field]);
+    });
+
+    orderBy.push(...sorts);
   }
 
   return query.where(and(...wheres)).orderBy(...orderBy);
@@ -68,7 +75,7 @@ const searchTickets = async ({
 }: {
   DB: ORM_TYPE;
   search: TicketsSearch;
-  sort?: SortableType;
+  sort?: TicketFetcherSort;
 }) => {
   const tickets = await getSearchTicketQuery(DB, search, sort).execute();
 
@@ -84,7 +91,7 @@ const searchPaginatedTickets = async ({
   DB: ORM_TYPE;
   search: TicketsSearch;
   pagination: PaginationOptionsType;
-  sort?: SortableType;
+  sort?: TicketFetcherSort;
 }) => {
   const query = getSearchTicketQuery(DB, search, sort);
 

@@ -19,9 +19,7 @@ export const SpeakerLoadable = builder.loadableObject(SpeakerRef, {
       resolve: (root) => {
         const socials = root.socials;
 
-        console.log("socials", socials);
-
-        return [];
+        return socials;
       },
     }),
     sessions: t.field({

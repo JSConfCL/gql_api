@@ -2,6 +2,7 @@ import {
   SQL,
   and,
   asc,
+  desc,
   eq,
   exists,
   gte,
@@ -21,6 +22,7 @@ import {
   PaginationOptionsType,
   paginationDBHelper,
 } from "~/datasources/helpers/paginationQuery";
+import { SortableSchemaFields } from "~/datasources/helpers/sorting";
 import { eventStatus, eventVisibility } from "~/schema/events/types";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 
@@ -36,14 +38,12 @@ export type UserTicketSearch = {
   userHasTickets?: boolean;
 };
 
-type SortableType =
-  // TODO: Implement sorting
-  // | [{ field: string; direction: "asc" | "desc" }]
-  null | undefined;
+type SortableFields = "createdAt" | "name" | "startDateTime" | "endDateTime";
+type EventFetcherSort = SortableSchemaFields<SortableFields>;
 const getSearchEventsQuery = (
   DB: ORM_TYPE,
   search: UserTicketSearch = {},
-  sort: SortableType,
+  sort: EventFetcherSort,
 ) => {
   const {
     userId,
@@ -120,10 +120,14 @@ const getSearchEventsQuery = (
 
   const orderBy: SQL<unknown>[] = [];
 
-  if (sort !== null) {
-    // This is to support data loaders. for data loaders we should not order by anything.
-    // TODO: Handle the case for doing actual column sorting
-    orderBy.push(asc(eventsSchema.startDateTime));
+  if (sort) {
+    const sorts = sort.map(([field, direction]) => {
+      const sortDirection = direction === "asc" ? asc : desc;
+
+      return sortDirection(ticketsSchema[field]);
+    });
+
+    orderBy.push(...sorts);
   }
 
   return query.where(and(...wheres)).orderBy(...orderBy);
@@ -136,7 +140,7 @@ const searchEvents = async ({
 }: {
   DB: ORM_TYPE;
   search: UserTicketSearch;
-  sort?: SortableType;
+  sort?: EventFetcherSort;
 }) => {
   const events = await getSearchEventsQuery(DB, search, sort).execute();
 
@@ -152,7 +156,7 @@ const searchPaginatedEvents = async ({
   DB: ORM_TYPE;
   search: UserTicketSearch;
   pagination: PaginationOptionsType;
-  sort?: SortableType;
+  sort?: EventFetcherSort;
 }) => {
   const query = getSearchEventsQuery(DB, search, sort);
 

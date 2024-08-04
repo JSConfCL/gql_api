@@ -4,7 +4,6 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
 import { eventsSchema, userTeamsSchema } from "./schema";
-
 import {
   createdAndUpdatedAtFields,
   TypescriptEnumAsDBEnumOptions,

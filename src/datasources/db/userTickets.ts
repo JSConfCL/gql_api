@@ -8,6 +8,7 @@ import { createdAndUpdatedAtFields } from "./shared";
 export const userTicketsApprovalStatusEnum = [
   "approved",
   "pending",
+  "gift_accepted",
   "gifted",
   "not_required",
   "rejected",

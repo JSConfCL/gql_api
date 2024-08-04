@@ -257,6 +257,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
             status: statusCheck,
             visibility: visibilityCheck,
           },
+          sort: [["createdAt", "asc"]],
         });
 
         return tickets.map((t) => selectTicketSchema.parse(t));
