@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { Logger } from "pino";
 import { z } from "zod";
 
@@ -7,7 +7,6 @@ import {
   allowedUserUpdateForAuth,
   insertUsersSchema,
   selectUsersSchema,
-  updateUsersSchema,
   usersSchema,
   UserStatusEnum,
 } from "~/datasources/db/schema";

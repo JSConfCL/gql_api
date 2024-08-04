@@ -11,7 +11,7 @@ export type CreateTeamMutationVariables = Types.Exact<{
 }>;
 
 
-export type CreateTeamMutation = { __typename?: 'Mutation', createTeam: { __typename?: 'TeamRef', id: string, name: string, status: Types.TeamStatus, description: string | null, event: { __typename?: 'Event', id: string }, users: Array<{ __typename?: 'UserWithStatusRef', role: Types.UserTeamRole, status: Types.ParticipationStatus, user: { __typename?: 'User', id: string } }> } };
+export type CreateTeamMutation = { __typename?: 'Mutation', createTeam: { __typename?: 'TeamRef', id: string, name: string, status: Types.TeamStatus, description: string | null, event: { __typename?: 'Event', id: string }, users: Array<{ __typename?: 'UserWithStatusRef', id: string, role: Types.UserTeamRole, status: Types.ParticipationStatus, user: { __typename?: 'User', id: string } }> } };
 
 
 export const CreateTeam = gql`
@@ -25,6 +25,7 @@ export const CreateTeam = gql`
       id
     }
     users {
+      id
       role
       status
       user {

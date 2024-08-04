@@ -1,4 +1,3 @@
-import { faker } from "@faker-js/faker";
 import { v4 } from "uuid";
 import { it, describe, assert } from "vitest";
 
@@ -349,6 +348,7 @@ describe("Event Teams", () => {
       id: team.id,
       users: [
         {
+          id: user.id,
           user: {
             id: user.id,
           },

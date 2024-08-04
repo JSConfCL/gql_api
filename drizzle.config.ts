@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import type { Config } from "drizzle-kit";
+import { defineConfig } from "drizzle-kit";
 
 dotenv.config({
   path: process.cwd() + "/.dev.vars",
@@ -10,9 +10,9 @@ if (!process.env.NEON_URL) {
   throw new Error("NEON_URL is not defined");
 }
 
-export default {
+export default defineConfig({
+  dialect: "postgresql",
   schema: "./src/datasources/db/schema.ts",
-  driver: "pg",
   out: "./drizzle/migrations",
   breakpoints: true,
   strict: true,
@@ -21,6 +21,6 @@ export default {
   },
   verbose: true,
   dbCredentials: {
-    connectionString: process.env.NEON_URL,
+    url: process.env.NEON_URL,
   },
-} satisfies Config;
+});
