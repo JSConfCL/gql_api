@@ -18,6 +18,10 @@ const EventsSearchInput = builder.inputType("EventsSearchInput", {
       type: EventStatus,
       required: false,
     }),
+    ticketTags: t.field({
+      type: ["String"],
+      required: false,
+    }),
     visibility: t.field({
       type: EventVisibility,
       required: false,

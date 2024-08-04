@@ -168,6 +168,7 @@ export type Event = {
   longitude?: Maybe<Scalars["String"]["output"]>;
   meetingURL?: Maybe<Scalars["String"]["output"]>;
   name: Scalars["String"]["output"];
+  speakers: Array<Speaker>;
   startDateTime: Scalars["DateTime"]["output"];
   status: EventStatus;
   tags: Array<Tag>;
@@ -178,6 +179,11 @@ export type Event = {
   /** List of tickets that a user owns for this event. */
   usersTickets: Array<UserTicket>;
   visibility: EventVisibility;
+};
+
+/** Representation of an Event (Events and Users, is what tickets are linked to) */
+export type EventTicketsArgs = {
+  input?: InputMaybe<EventsTicketTemplateSearchInput>;
 };
 
 /** Representation of an Event (Events and Users, is what tickets are linked to) */
@@ -237,8 +243,13 @@ export type EventsSearchInput = {
   startDateTimeFrom?: InputMaybe<Scalars["DateTime"]["input"]>;
   startDateTimeTo?: InputMaybe<Scalars["DateTime"]["input"]>;
   status?: InputMaybe<EventStatus>;
+  ticketTags?: InputMaybe<Array<Scalars["String"]["input"]>>;
   userHasTickets?: InputMaybe<Scalars["Boolean"]["input"]>;
   visibility?: InputMaybe<EventVisibility>;
+};
+
+export type EventsTicketTemplateSearchInput = {
+  tags?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
 
 export type EventsTicketsSearchInput = {
@@ -778,6 +789,38 @@ export enum SearchableUserTags {
   Donor = "DONOR",
 }
 
+/** Representation of a Session */
+export type SessionRef = {
+  __typename?: "SessionRef";
+  description?: Maybe<Scalars["String"]["output"]>;
+  endTimestamp: Scalars["Date"]["output"];
+  id: Scalars["ID"]["output"];
+  speakers: Array<Speaker>;
+  startTimestamp: Scalars["Date"]["output"];
+  title: Scalars["String"]["output"];
+};
+
+export type SessionSearch = {
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  endDate?: InputMaybe<Scalars["String"]["input"]>;
+  eventIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  sessionIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  speakerIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  startDate?: InputMaybe<Scalars["String"]["input"]>;
+  title?: InputMaybe<Scalars["String"]["input"]>;
+};
+
+/** Representation of a Speaker */
+export type Speaker = {
+  __typename?: "Speaker";
+  avatar?: Maybe<Scalars["String"]["output"]>;
+  bio?: Maybe<Scalars["String"]["output"]>;
+  id: Scalars["ID"]["output"];
+  name: Scalars["String"]["output"];
+  sessions: Array<SessionRef>;
+  socials: Array<Scalars["String"]["output"]>;
+};
+
 /** Representation of a tag. Tags can be associated to many things. An event, a community, etc. */
 export type Tag = {
   __typename?: "Tag";
@@ -831,7 +874,9 @@ export type Ticket = {
   description?: Maybe<Scalars["String"]["output"]>;
   endDateTime?: Maybe<Scalars["DateTime"]["output"]>;
   event: Event;
+  externalLink?: Maybe<Scalars["String"]["output"]>;
   id: Scalars["ID"]["output"];
+  imageLink?: Maybe<Scalars["String"]["output"]>;
   /** Whether or not the ticket is free */
   isFree: Scalars["Boolean"]["output"];
   /** Whether or not the ticket has an unlimited quantity. This is reserved for things loike online events. */
@@ -840,6 +885,7 @@ export type Ticket = {
   prices?: Maybe<Array<Price>>;
   /** The number of tickets available for this ticket type */
   quantity?: Maybe<Scalars["Int"]["output"]>;
+  quantityLeft?: Maybe<Scalars["Int"]["output"]>;
   requiresApproval: Scalars["Boolean"]["output"];
   startDateTime: Scalars["DateTime"]["output"];
   status: TicketTemplateStatus;
@@ -849,6 +895,7 @@ export type Ticket = {
 export enum TicketApprovalStatus {
   Approved = "approved",
   Cancelled = "cancelled",
+  GiftAccepted = "gift_accepted",
   Gifted = "gifted",
   NotRequired = "not_required",
   Pending = "pending",

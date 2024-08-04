@@ -152,6 +152,7 @@ type Event {
   longitude: String
   meetingURL: String
   name: String!
+  speakers: [Speaker!]!
   startDateTime: DateTime!
   status: EventStatus!
   tags: [Tag!]!
@@ -160,7 +161,7 @@ type Event {
   """
   List of tickets for sale or redemption for this event. (If you are looking for a user's tickets, use the usersTickets field)
   """
-  tickets: [Ticket!]!
+  tickets(input: EventsTicketTemplateSearchInput): [Ticket!]!
   users: [User!]!
 
   """
@@ -224,8 +225,13 @@ input EventsSearchInput {
   startDateTimeFrom: DateTime
   startDateTimeTo: DateTime
   status: EventStatus
+  ticketTags: [String!]
   userHasTickets: Boolean
   visibility: EventVisibility
+}
+
+input EventsTicketTemplateSearchInput {
+  tags: [String!]
 }
 
 input EventsTicketsSearchInput {
@@ -741,6 +747,40 @@ enum SearchableUserTags {
 }
 
 """
+Representation of a Session
+"""
+type SessionRef {
+  description: String
+  endTimestamp: Date!
+  id: ID!
+  speakers: [Speaker!]!
+  startTimestamp: Date!
+  title: String!
+}
+
+input SessionSearch {
+  description: String
+  endDate: String
+  eventIds: [String!]
+  sessionIds: [String!]
+  speakerIds: [String!]
+  startDate: String
+  title: String
+}
+
+"""
+Representation of a Speaker
+"""
+type Speaker {
+  avatar: String
+  bio: String
+  id: ID!
+  name: String!
+  sessions: [SessionRef!]!
+  socials: [String!]!
+}
+
+"""
 Representation of a tag. Tags can be associated to many things. An event, a community, etc.
 """
 type Tag {
@@ -796,7 +836,9 @@ type Ticket {
   description: String
   endDateTime: DateTime
   event: Event!
+  externalLink: String
   id: ID!
+  imageLink: String
 
   """
   Whether or not the ticket is free
@@ -814,6 +856,7 @@ type Ticket {
   The number of tickets available for this ticket type
   """
   quantity: Int
+  quantityLeft: Int
   requiresApproval: Boolean!
   startDateTime: DateTime!
   status: TicketTemplateStatus!
@@ -823,6 +866,7 @@ type Ticket {
 enum TicketApprovalStatus {
   approved
   cancelled
+  gift_accepted
   gifted
   not_required
   pending

@@ -4,11 +4,14 @@ import { authHelpers } from "~/authz/helpers";
 import { builder } from "~/builder";
 import {
   selectCommunitySchema,
+  selectSpeakerSchema,
   selectTagsSchema,
   selectTeamsSchema,
   selectTicketSchema,
   selectUserTicketsSchema,
   selectUsersSchema,
+  ticketStatusEnum,
+  ticketVisibilityEnum,
   ticketsSchema,
   usersSchema,
 } from "~/datasources/db/schema";
@@ -23,8 +26,11 @@ import {
   UserRef,
   UserTicketRef,
 } from "~/schema/shared/refs";
+import { speakersFetcher } from "~/schema/speakers/speakersFetcher";
+import { SpeakerRef } from "~/schema/speakers/types";
 import { teamsFetcher } from "~/schema/teams/teamsFetcher";
 import { TeamRef } from "~/schema/teams/types";
+import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
 import {
   TicketApprovalStatus,
   TicketPaymentStatus,
@@ -60,6 +66,17 @@ const EventsTicketsSearchInput = builder.inputType("EventsTicketsSearchInput", {
     }),
   }),
 });
+
+const EventsTicketTemplateSearchInput = builder.inputType(
+  "EventsTicketTemplateSearchInput",
+  {
+    fields: (t) => ({
+      tags: t.stringList({
+        required: false,
+      }),
+    }),
+  },
+);
 
 export const EventLoadable = builder.loadableObject(EventRef, {
   description:
@@ -148,6 +165,17 @@ export const EventLoadable = builder.loadableObject(EventRef, {
         return selectCommunitySchema.parse(community);
       },
     }),
+    speakers: t.field({
+      type: [SpeakerRef],
+      resolve: async (root, args, ctx) => {
+        const speakers = await speakersFetcher.searchSpeakers({
+          DB: ctx.DB,
+          search: { eventIds: [root.id] },
+        });
+
+        return speakers.map((s) => selectSpeakerSchema.parse(s));
+      },
+    }),
     users: t.field({
       type: [UserRef],
       resolve: async (root, args, ctx) => {
@@ -208,24 +236,28 @@ export const EventLoadable = builder.loadableObject(EventRef, {
       description:
         "List of tickets for sale or redemption for this event. (If you are looking for a user's tickets, use the usersTickets field)",
       type: [TicketRef],
-      resolve: async (root, _, { DB, USER }) => {
+      args: {
+        input: t.arg({
+          type: EventsTicketTemplateSearchInput,
+          required: false,
+        }),
+      },
+      resolve: async (root, { input }, { DB, USER }) => {
         const wheres: SQL[] = [];
 
         wheres.push(eq(ticketsSchema.eventId, root.id));
 
         // If the user is an admin, they can see all tickets, otherwise, only
         // active tickets are shown.
-        let statusCheck = eq(ticketsSchema.status, "active");
-        let visibilityCheck = eq(ticketsSchema.visibility, "public");
+        let statusCheck: (typeof ticketStatusEnum)[number][] = ["active"];
+        let visibilityCheck: (typeof ticketVisibilityEnum)[number][] = [
+          "public",
+        ];
 
         if (USER) {
           if (USER.isSuperAdmin) {
-            statusCheck = inArray(ticketsSchema.status, ["active", "inactive"]);
-            visibilityCheck = inArray(ticketsSchema.visibility, [
-              "public",
-              "private",
-              "unlisted",
-            ]);
+            statusCheck = ["active", "inactive"];
+            visibilityCheck = ["public", "private", "unlisted"];
           } else {
             const eventCommunity =
               await DB.query.eventsToCommunitiesSchema.findFirst({
@@ -243,27 +275,22 @@ export const EventLoadable = builder.loadableObject(EventRef, {
               });
 
               if (isAdmin) {
-                statusCheck = inArray(ticketsSchema.status, [
-                  "active",
-                  "inactive",
-                ]);
-                visibilityCheck = inArray(ticketsSchema.visibility, [
-                  "public",
-                  "private",
-                  "unlisted",
-                ]);
+                statusCheck = ["active", "inactive"];
+                visibilityCheck = ["public", "private", "unlisted"];
               }
             }
           }
         }
 
-        wheres.push(statusCheck);
-        wheres.push(visibilityCheck);
-        const tickets = await DB.query.ticketsSchema.findMany({
-          where: (_, { and }) => and(...wheres),
-          orderBy(fields, operators) {
-            return operators.asc(fields.createdAt);
+        const tickets = await ticketsFetcher.searchTickets({
+          DB,
+          search: {
+            status: statusCheck,
+            visibility: visibilityCheck,
+            eventIds: [root.id],
+            tags: input?.tags ? input.tags : undefined,
           },
+          sort: [["createdAt", "asc"]],
         });
 
         return tickets.map((t) => selectTicketSchema.parse(t));

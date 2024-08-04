@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   boolean,
   integer,
@@ -8,14 +8,15 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 import { eventsSchema, userTicketsSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 import { ticketsPricesSchema } from "./ticketPrice";
 
-const ticketStatusEnum = ["active", "inactive"] as const;
+export const ticketStatusEnum = ["active", "inactive"] as const;
 
-const ticketVisibilityEnum = ["public", "private", "unlisted"] as const;
+export const ticketVisibilityEnum = ["public", "private", "unlisted"] as const;
 // TICKETS-TABLE
 export const ticketsSchema = pgTable("tickets", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -24,6 +25,13 @@ export const ticketsSchema = pgTable("tickets", {
   status: text("status", { enum: ticketStatusEnum })
     .notNull()
     .default("inactive"),
+  tags: text("tags")
+    .$type<string[]>()
+    .array()
+    .notNull()
+    .default(sql`ARRAY[]::text[]`),
+  externalLink: text("external_link"),
+  imageLink: text("image_link"),
   visibility: text("visibility", {
     enum: ticketVisibilityEnum,
   })
@@ -52,8 +60,12 @@ export const ticketRelations = relations(ticketsSchema, ({ one, many }) => ({
   ticketsPrices: many(ticketsPricesSchema),
 }));
 
-export const selectTicketSchema = createSelectSchema(ticketsSchema);
-export const insertTicketSchema = createInsertSchema(ticketsSchema);
+export const selectTicketSchema = createSelectSchema(ticketsSchema, {
+  tags: z.array(z.string()),
+});
+export const insertTicketSchema = createInsertSchema(ticketsSchema, {
+  tags: z.array(z.string()),
+});
 export const updateTicketSchema = insertTicketSchema
   .pick({
     name: true,
@@ -64,5 +76,6 @@ export const updateTicketSchema = insertTicketSchema
     endDateTime: true,
     quantity: true,
     requiresApproval: true,
+    tags: true,
   })
   .partial();

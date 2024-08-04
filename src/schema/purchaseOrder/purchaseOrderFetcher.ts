@@ -1,4 +1,4 @@
-import { SQL, and, ilike, inArray, desc } from "drizzle-orm";
+import { SQL, and, ilike, inArray, desc, asc } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
 import {
@@ -10,6 +10,7 @@ import {
   PaginationOptionsType,
   paginationDBHelper,
 } from "~/datasources/helpers/paginationQuery";
+import { SortableSchemaFields } from "~/datasources/helpers/sorting";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 
 export type PurchaseOrderSearch = {
@@ -18,15 +19,14 @@ export type PurchaseOrderSearch = {
   paymentPlatform?: (typeof purchaseOrderPaymentPlatforms)[number][];
   description?: string;
 };
-type SortableType =
-  // TODO: Implement sorting
-  // | [{ field: string; direction: "asc" | "desc" }]
-  null | undefined;
+
+type SortableFields = "createdAt" | "status";
+type EventFetcherSort = SortableSchemaFields<SortableFields>;
 
 const getSearchPurchaseOrdersQuery = (
   DB: ORM_TYPE,
   search: PurchaseOrderSearch = {},
-  sort: SortableType,
+  sort: EventFetcherSort,
 ) => {
   const { userIds, status, paymentPlatform, description } = search;
 
@@ -56,10 +56,14 @@ const getSearchPurchaseOrdersQuery = (
 
   const orderBy: SQL<unknown>[] = [];
 
-  if (sort !== null) {
-    // This is to support data loaders. for data loaders we should not order by anything.
-    // TODO: Handle the case for doing actual column sorting
-    orderBy.push(desc(purchaseOrdersSchema.createdAt));
+  if (sort) {
+    const sorts = sort.map(([field, direction]) => {
+      const sortDirection = direction === "asc" ? asc : desc;
+
+      return sortDirection(purchaseOrdersSchema[field]);
+    });
+
+    orderBy.push(...sorts);
   }
 
   return query.where(and(...wheres)).orderBy(...orderBy);
@@ -72,7 +76,7 @@ const searchPurchaseOrders = async ({
 }: {
   DB: ORM_TYPE;
   search: PurchaseOrderSearch;
-  sort?: SortableType;
+  sort?: EventFetcherSort;
 }) => {
   const purchaseOrders = await getSearchPurchaseOrdersQuery(
     DB,
@@ -91,7 +95,7 @@ const searchPaginatedPurchaseOrders = async ({
 }: {
   DB: ORM_TYPE;
   search: PurchaseOrderSearch;
-  sort?: SortableType;
+  sort?: EventFetcherSort;
   pagination: PaginationOptionsType;
 }) => {
   const query = getSearchPurchaseOrdersQuery(DB, search, sort);
