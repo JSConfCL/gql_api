@@ -67,6 +67,17 @@ const EventsTicketsSearchInput = builder.inputType("EventsTicketsSearchInput", {
   }),
 });
 
+const EventsTicketTemplateSearchInput = builder.inputType(
+  "EventsTicketTemplateSearchInput",
+  {
+    fields: (t) => ({
+      tags: t.stringList({
+        required: false,
+      }),
+    }),
+  },
+);
+
 export const EventLoadable = builder.loadableObject(EventRef, {
   description:
     "Representation of an Event (Events and Users, is what tickets are linked to)",
@@ -225,7 +236,13 @@ export const EventLoadable = builder.loadableObject(EventRef, {
       description:
         "List of tickets for sale or redemption for this event. (If you are looking for a user's tickets, use the usersTickets field)",
       type: [TicketRef],
-      resolve: async (root, _, { DB, USER }) => {
+      args: {
+        input: t.arg({
+          type: EventsTicketTemplateSearchInput,
+          required: false,
+        }),
+      },
+      resolve: async (root, { input }, { DB, USER }) => {
         const wheres: SQL[] = [];
 
         wheres.push(eq(ticketsSchema.eventId, root.id));
@@ -270,6 +287,8 @@ export const EventLoadable = builder.loadableObject(EventRef, {
           search: {
             status: statusCheck,
             visibility: visibilityCheck,
+            eventIds: [root.id],
+            tags: input?.tags ? input.tags : undefined,
           },
           sort: [["createdAt", "asc"]],
         });

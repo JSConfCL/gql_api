@@ -15,6 +15,7 @@ import { SortableSchemaFields } from "~/datasources/helpers/sorting";
 export type TicketsSearch = {
   ticketIds?: string[];
   ticketTags?: string[];
+  eventIds?: string[];
   status?: (typeof ticketStatusEnum)[number][];
   tags?: string[];
   visibility?: (typeof ticketVisibilityEnum)[number][];
@@ -28,7 +29,7 @@ const getSearchTicketQuery = (
   search: TicketsSearch = {},
   sort: TicketFetcherSort,
 ) => {
-  const { ticketIds, ticketTags, status, visibility, tags } = search;
+  const { ticketIds, eventIds, ticketTags, status, visibility, tags } = search;
 
   const query = DB.select().from(ticketsSchema);
   const wheres: SQL[] = [];
@@ -51,6 +52,10 @@ const getSearchTicketQuery = (
 
   if (tags && tags.length > 0) {
     wheres.push(arrayContains(ticketsSchema.tags, tags));
+  }
+
+  if (eventIds && eventIds.length > 0) {
+    wheres.push(inArray(ticketsSchema.eventId, eventIds));
   }
 
   const orderBy: SQL<unknown>[] = [];
