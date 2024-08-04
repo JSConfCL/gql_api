@@ -5,10 +5,12 @@ import {
   UserParticipationStatusEnum,
   UserTeamRoleEnum,
 } from "~/datasources/db/userTeams";
+import { UserTicketsApprovalStatusEnum } from "~/datasources/db/userTickets";
 import {
   EventStatus,
   EventVisibility,
   ParticipationStatus,
+  PurchaseOrderPaymentStatusEnum,
   TicketApprovalStatus,
   TicketPaymentStatus,
   TicketRedemptionStatus,
@@ -56,8 +58,8 @@ describe("Event", () => {
       id: event1.id,
       name: event1.name,
       description: event1.description,
-      status: event1.status,
-      visibility: event1.visibility,
+      status: EventStatus.Active,
+      visibility: EventVisibility.Public,
       startDateTime: toISODate(event1.startDateTime),
       endDateTime: toISODate(event1.endDateTime),
       community: null,
@@ -65,7 +67,7 @@ describe("Event", () => {
       teams: [],
       users: [],
       usersTickets: [],
-    } as EventQuery["event"]);
+    } satisfies EventQuery["event"]);
   });
   it("Should get an event Tags", async () => {
     const event1 = await insertEvent();
@@ -101,8 +103,8 @@ describe("Event", () => {
       id: event1.id,
       name: event1.name,
       description: event1.description,
-      status: event1.status,
-      visibility: event1.visibility,
+      status: EventStatus.Active,
+      visibility: EventVisibility.Public,
       startDateTime: toISODate(event1.startDateTime),
       endDateTime: toISODate(event1.endDateTime),
       community: null,
@@ -117,7 +119,7 @@ describe("Event", () => {
         },
       ],
       usersTickets: [],
-    } as EventQuery["event"]);
+    } satisfies EventQuery["event"]);
   });
   it("a user should get only their own event tickets", async () => {
     const community1 = await insertCommunity();
@@ -148,33 +150,33 @@ describe("Event", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: "approved",
+      approvalStatus: UserTicketsApprovalStatusEnum.Approved,
     });
 
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: "cancelled",
+      approvalStatus: UserTicketsApprovalStatusEnum.Cancelled,
     });
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: "pending",
+      approvalStatus: UserTicketsApprovalStatusEnum.Pending,
     });
     const ticket2 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: "not_required",
+      approvalStatus: UserTicketsApprovalStatusEnum.NotRequired,
     });
 
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user2.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: "approved",
+      approvalStatus: UserTicketsApprovalStatusEnum.Approved,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -196,8 +198,8 @@ describe("Event", () => {
       id: event1.id,
       name: event1.name,
       description: event1.description,
-      status: event1.status,
-      visibility: event1.visibility,
+      status: EventStatus.Active,
+      visibility: EventVisibility.Public,
       startDateTime: toISODate(event1.startDateTime),
       endDateTime: toISODate(event1.endDateTime),
       community: {
@@ -213,20 +215,20 @@ describe("Event", () => {
       usersTickets: [
         {
           id: ticket2.id,
-          approvalStatus: ticket2.approvalStatus,
-          paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
-          redemptionStatus: ticket2.redemptionStatus,
+          approvalStatus: TicketApprovalStatus.NotRequired,
+          paymentStatus: PurchaseOrderPaymentStatusEnum.Unpaid,
+          redemptionStatus: TicketRedemptionStatus.Pending,
           createdAt: toISODate(ticket2.createdAt),
         },
         {
           id: ticket1.id,
-          approvalStatus: ticket1.approvalStatus,
-          paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
-          redemptionStatus: ticket1.redemptionStatus,
+          approvalStatus: TicketApprovalStatus.Approved,
+          paymentStatus: PurchaseOrderPaymentStatusEnum.Unpaid,
+          redemptionStatus: TicketRedemptionStatus.Pending,
           createdAt: toISODate(ticket1.createdAt),
         },
       ],
-    } as EventQuery["event"]);
+    } satisfies EventQuery["event"]);
   });
   it("Should get an event community", async () => {
     const event1 = await insertEvent();
@@ -253,8 +255,8 @@ describe("Event", () => {
       id: event1.id,
       name: event1.name,
       description: event1.description,
-      status: event1.status,
-      visibility: event1.visibility,
+      status: EventStatus.Active,
+      visibility: EventVisibility.Public,
       startDateTime: toISODate(event1.startDateTime),
       endDateTime: toISODate(event1.endDateTime),
       users: [],
@@ -264,7 +266,7 @@ describe("Event", () => {
       tags: [],
       teams: [],
       usersTickets: [],
-    } as EventQuery["event"]);
+    } satisfies EventQuery["event"]);
   });
   it("Should get an event users", async () => {
     const event1 = await insertEvent();
@@ -284,8 +286,8 @@ describe("Event", () => {
       id: event1.id,
       name: event1.name,
       description: event1.description,
-      status: event1.status,
-      visibility: event1.visibility,
+      status: EventStatus.Active,
+      visibility: EventVisibility.Public,
       startDateTime: toISODate(event1.startDateTime),
       endDateTime: toISODate(event1.endDateTime),
       users: [],
@@ -293,7 +295,7 @@ describe("Event", () => {
       tags: [],
       teams: [],
       usersTickets: [],
-    } as EventQuery["event"]);
+    } satisfies EventQuery["event"]);
   });
   it("return null when no event  is found", async () => {
     const response = await executeGraphqlOperationAsSuperAdmin<
@@ -512,7 +514,7 @@ describe("Events", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: "approved",
+      approvalStatus: UserTicketsApprovalStatusEnum.Approved,
     });
 
     const purchaseOrder2 = await insertPurchaseOrder();
@@ -521,7 +523,7 @@ describe("Events", () => {
       ticketTemplateId: ticketTemplate2.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder2.id,
-      approvalStatus: "cancelled",
+      approvalStatus: UserTicketsApprovalStatusEnum.Cancelled,
     });
 
     await insertEvent({
@@ -732,7 +734,7 @@ describe("Event tickets filter", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: TicketApprovalStatus.Approved,
+      approvalStatus: UserTicketsApprovalStatusEnum.Approved,
     });
 
     await insertTicket({
@@ -762,8 +764,8 @@ describe("Event tickets filter", () => {
       id: event1.id,
       name: event1.name,
       description: event1.description,
-      status: event1.status,
-      visibility: event1.visibility,
+      status: EventStatus.Active,
+      visibility: EventVisibility.Public,
       startDateTime: toISODate(event1.startDateTime),
       endDateTime: toISODate(event1.endDateTime),
       community: {
@@ -779,13 +781,14 @@ describe("Event tickets filter", () => {
       usersTickets: [
         {
           id: ticket1.id,
-          approvalStatus: ticket1.approvalStatus,
-          paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
-          redemptionStatus: ticket1.redemptionStatus,
+
+          approvalStatus: TicketApprovalStatus.Approved,
+          paymentStatus: PurchaseOrderPaymentStatusEnum.Unpaid,
+          redemptionStatus: TicketRedemptionStatus.Pending,
           createdAt: toISODate(ticket1.createdAt),
         },
       ],
-    } as EventQuery["event"]);
+    } satisfies EventQuery["event"]);
   });
 
   it("Should filter event ticket by approval status", async () => {
@@ -815,14 +818,14 @@ describe("Event tickets filter", () => {
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      approvalStatus: TicketApprovalStatus.Approved,
+      approvalStatus: UserTicketsApprovalStatusEnum.Approved,
       purchaseOrderId: purchaseOrder.id,
     });
 
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      approvalStatus: TicketApprovalStatus.Pending,
+      approvalStatus: UserTicketsApprovalStatusEnum.Pending,
       purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
@@ -847,8 +850,8 @@ describe("Event tickets filter", () => {
       id: event1.id,
       name: event1.name,
       description: event1.description,
-      status: event1.status,
-      visibility: event1.visibility,
+      status: EventStatus.Active,
+      visibility: EventVisibility.Public,
       startDateTime: toISODate(event1.startDateTime),
       endDateTime: toISODate(event1.endDateTime),
       community: {
@@ -864,13 +867,13 @@ describe("Event tickets filter", () => {
       usersTickets: [
         {
           id: ticket1.id,
-          approvalStatus: ticket1.approvalStatus,
-          paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
-          redemptionStatus: ticket1.redemptionStatus,
+          approvalStatus: TicketApprovalStatus.Approved,
+          paymentStatus: PurchaseOrderPaymentStatusEnum.Unpaid,
+          redemptionStatus: TicketRedemptionStatus.Pending,
           createdAt: toISODate(ticket1.createdAt),
         },
       ],
-    } as EventQuery["event"]);
+    } satisfies EventQuery["event"]);
   });
 
   it("Should filter event ticket by payment status", async () => {
@@ -904,7 +907,7 @@ describe("Event tickets filter", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: TicketApprovalStatus.Approved,
+      approvalStatus: UserTicketsApprovalStatusEnum.Approved,
       createdAt: date1,
     });
 
@@ -913,7 +916,7 @@ describe("Event tickets filter", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: TicketApprovalStatus.Approved,
+      approvalStatus: UserTicketsApprovalStatusEnum.Approved,
       createdAt: date2,
     });
     const response = await executeGraphqlOperationAsUser<
@@ -938,8 +941,8 @@ describe("Event tickets filter", () => {
       id: event1.id,
       name: event1.name,
       description: event1.description,
-      status: event1.status,
-      visibility: event1.visibility,
+      status: EventStatus.Active,
+      visibility: EventVisibility.Public,
       startDateTime: toISODate(event1.startDateTime),
       endDateTime: toISODate(event1.endDateTime),
       community: {
@@ -955,20 +958,20 @@ describe("Event tickets filter", () => {
       usersTickets: [
         {
           id: ticket2.id,
-          approvalStatus: ticket1.approvalStatus,
-          paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
-          redemptionStatus: ticket1.redemptionStatus,
+          approvalStatus: TicketApprovalStatus.Approved,
+          paymentStatus: PurchaseOrderPaymentStatusEnum.Paid,
+          redemptionStatus: TicketRedemptionStatus.Pending,
           createdAt: toISODate(ticket2.createdAt),
         },
         {
           id: ticket1.id,
-          approvalStatus: ticket2.approvalStatus,
-          paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
-          redemptionStatus: ticket2.redemptionStatus,
+          approvalStatus: TicketApprovalStatus.Approved,
+          paymentStatus: PurchaseOrderPaymentStatusEnum.Paid,
+          redemptionStatus: TicketRedemptionStatus.Pending,
           createdAt: toISODate(ticket1.createdAt),
         },
       ],
-    } as EventQuery["event"]);
+    } satisfies EventQuery["event"]);
   });
 
   it("Should filter event ticket by redemption status", async () => {
@@ -1000,7 +1003,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       redemptionStatus: TicketRedemptionStatus.Redeemed,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: TicketApprovalStatus.Approved,
+      approvalStatus: UserTicketsApprovalStatusEnum.Approved,
     });
 
     await insertTicket({
@@ -1008,7 +1011,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       redemptionStatus: TicketRedemptionStatus.Pending,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: TicketApprovalStatus.Approved,
+      approvalStatus: UserTicketsApprovalStatusEnum.Approved,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -1032,8 +1035,8 @@ describe("Event tickets filter", () => {
       id: event1.id,
       name: event1.name,
       description: event1.description,
-      status: event1.status,
-      visibility: event1.visibility,
+      status: EventStatus.Active,
+      visibility: EventVisibility.Public,
       startDateTime: toISODate(event1.startDateTime),
       endDateTime: toISODate(event1.endDateTime),
       community: {
@@ -1049,12 +1052,12 @@ describe("Event tickets filter", () => {
       usersTickets: [
         {
           id: ticket1.id,
-          approvalStatus: ticket1.approvalStatus,
-          paymentStatus: purchaseOrder.purchaseOrderPaymentStatus,
-          redemptionStatus: ticket1.redemptionStatus,
+          approvalStatus: TicketApprovalStatus.Approved,
+          paymentStatus: PurchaseOrderPaymentStatusEnum.Unpaid,
+          redemptionStatus: TicketRedemptionStatus.Redeemed,
           createdAt: toISODate(ticket1.createdAt),
         },
       ],
-    } as EventQuery["event"]);
+    } satisfies EventQuery["event"]);
   });
 });

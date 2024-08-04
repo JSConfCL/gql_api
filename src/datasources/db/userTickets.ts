@@ -3,16 +3,20 @@ import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { purchaseOrdersSchema, ticketsSchema, usersSchema } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import {
+  createdAndUpdatedAtFields,
+  TypescriptEnumAsDBEnumOptions,
+} from "./shared";
 
-export const userTicketsApprovalStatusEnum = [
-  "approved",
-  "pending",
-  "gifted",
-  "not_required",
-  "rejected",
-  "cancelled",
-] as const;
+export enum UserTicketsApprovalStatusEnum {
+  Approved = "approved",
+  GiftAccepted = "gift_accepted",
+  NotRequired = "not_required",
+  Pending = "pending",
+  Gifted = "gifted",
+  Rejected = "rejected",
+  Cancelled = "cancelled",
+}
 export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;
 // USER-TICKETS-TABLE
 export const userTicketsSchema = pgTable("user_tickets", {
@@ -25,9 +29,9 @@ export const userTicketsSchema = pgTable("user_tickets", {
     .references(() => purchaseOrdersSchema.id)
     .notNull(),
   approvalStatus: text("approval_status", {
-    enum: userTicketsApprovalStatusEnum,
+    enum: TypescriptEnumAsDBEnumOptions(UserTicketsApprovalStatusEnum),
   })
-    .default("pending")
+    .default(UserTicketsApprovalStatusEnum.Pending)
     .notNull(),
   redemptionStatus: text("redemption_status", {
     enum: userTicketsRedemptionStatusEnum,

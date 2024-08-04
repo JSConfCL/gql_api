@@ -8,7 +8,7 @@ import {
 } from "~/datasources/db/purchaseOrders";
 import { ticketsSchema } from "~/datasources/db/tickets";
 import {
-  userTicketsApprovalStatusEnum,
+  UserTicketsApprovalStatusEnum,
   userTicketsRedemptionStatusEnum,
   userTicketsSchema,
 } from "~/datasources/db/userTickets";
@@ -23,7 +23,7 @@ export type UserTicketSearch = {
   userTicketIds?: string[];
   ticketIds?: string[];
   eventName?: string;
-  approvalStatus?: (typeof userTicketsApprovalStatusEnum)[number][];
+  approvalStatus?: UserTicketsApprovalStatusEnum[];
   paymentStatus?: (typeof puchaseOrderPaymentStatusEnum)[number][];
   redemptionStatus?: (typeof userTicketsRedemptionStatusEnum)[number][];
 };
