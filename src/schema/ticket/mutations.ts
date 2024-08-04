@@ -399,14 +399,6 @@ builder.mutationField("editTicket", (t) =>
           input.requiresApproval,
         );
         addToObjectIfPropertyExists(updateFields, "quantity", input.quantity);
-        // addToObjectIfPropertyExists(updateFields, "price", input.price);
-        // addToObjectIfPropertyExists(
-        //   updateFields,
-        //   "currencyId",
-        //   input.currencyId,
-        // );
-
-        const response = updateTicketSchema.safeParse(updateFields);
 
         if (response.success) {
           const ticket = (

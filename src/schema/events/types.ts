@@ -9,6 +9,8 @@ import {
   selectTicketSchema,
   selectUserTicketsSchema,
   selectUsersSchema,
+  ticketStatusEnum,
+  ticketVisibilityEnum,
   ticketsSchema,
   usersSchema,
 } from "~/datasources/db/schema";
@@ -25,6 +27,7 @@ import {
 } from "~/schema/shared/refs";
 import { teamsFetcher } from "~/schema/teams/teamsFetcher";
 import { TeamRef } from "~/schema/teams/types";
+import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
 import {
   TicketApprovalStatus,
   TicketPaymentStatus,
@@ -215,17 +218,15 @@ export const EventLoadable = builder.loadableObject(EventRef, {
 
         // If the user is an admin, they can see all tickets, otherwise, only
         // active tickets are shown.
-        let statusCheck = eq(ticketsSchema.status, "active");
-        let visibilityCheck = eq(ticketsSchema.visibility, "public");
+        let statusCheck: (typeof ticketStatusEnum)[number][] = ["active"];
+        let visibilityCheck: (typeof ticketVisibilityEnum)[number][] = [
+          "public",
+        ];
 
         if (USER) {
           if (USER.isSuperAdmin) {
-            statusCheck = inArray(ticketsSchema.status, ["active", "inactive"]);
-            visibilityCheck = inArray(ticketsSchema.visibility, [
-              "public",
-              "private",
-              "unlisted",
-            ]);
+            statusCheck = ["active", "inactive"];
+            visibilityCheck = ["public", "private", "unlisted"];
           } else {
             const eventCommunity =
               await DB.query.eventsToCommunitiesSchema.findFirst({
@@ -243,26 +244,18 @@ export const EventLoadable = builder.loadableObject(EventRef, {
               });
 
               if (isAdmin) {
-                statusCheck = inArray(ticketsSchema.status, [
-                  "active",
-                  "inactive",
-                ]);
-                visibilityCheck = inArray(ticketsSchema.visibility, [
-                  "public",
-                  "private",
-                  "unlisted",
-                ]);
+                statusCheck = ["active", "inactive"];
+                visibilityCheck = ["public", "private", "unlisted"];
               }
             }
           }
         }
 
-        wheres.push(statusCheck);
-        wheres.push(visibilityCheck);
-        const tickets = await DB.query.ticketsSchema.findMany({
-          where: (_, { and }) => and(...wheres),
-          orderBy(fields, operators) {
-            return operators.asc(fields.createdAt);
+        const tickets = await ticketsFetcher.searchTickets({
+          DB,
+          search: {
+            status: statusCheck,
+            visibility: visibilityCheck,
           },
         });
 

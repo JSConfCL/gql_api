@@ -224,6 +224,7 @@ input EventsSearchInput {
   startDateTimeFrom: DateTime
   startDateTimeTo: DateTime
   status: EventStatus
+  ticketTags: [String!]
   userHasTickets: Boolean
   visibility: EventVisibility
 }
@@ -814,6 +815,7 @@ type Ticket {
   The number of tickets available for this ticket type
   """
   quantity: Int
+  quantityLeft: Int
   requiresApproval: Boolean!
   startDateTime: DateTime!
   status: TicketTemplateStatus!

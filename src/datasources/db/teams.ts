@@ -3,8 +3,7 @@ import { pgTable, uuid, text, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { eventsSchema } from "~/datasources/db/events";
-import { userTeamsSchema } from "~/datasources/db/userTeams";
+import { eventsSchema, userTeamsSchema } from "./schema";
 
 import {
   createdAndUpdatedAtFields,

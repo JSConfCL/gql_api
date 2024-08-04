@@ -15,6 +15,8 @@ import {
   selectWorkRoleSchema,
   selectWorkSenioritySchema,
   selectPaymentLogsSchema,
+  selectSpeakerSchema,
+  selectSessionSchema,
 } from "~/datasources/db/schema";
 import { SanityAsset, SanityEvent } from "~/datasources/sanity/types";
 
@@ -75,6 +77,12 @@ type PaymentLogGraphqlSchema = z.infer<typeof selectPaymentLogsSchema>;
 export const PaymentLogRef = builder.objectRef<PaymentLogGraphqlSchema>(
   "PublicFinanceEntryRef",
 );
+
+type SpeakerGraphqlSchema = z.infer<typeof selectSpeakerSchema>;
+export const SpeakerRef = builder.objectRef<SpeakerGraphqlSchema>("Speaker");
+
+type SessionGraphqlSchema = z.infer<typeof selectSessionSchema>;
+export const SessionRef = builder.objectRef<SessionGraphqlSchema>("Session");
 
 export const ConsolidatedPaymentLogEntryRef = builder.objectRef<{
   id: string;
