@@ -4,6 +4,7 @@ import { authHelpers } from "~/authz/helpers";
 import { builder } from "~/builder";
 import {
   selectCommunitySchema,
+  selectSpeakerSchema,
   selectTagsSchema,
   selectTeamsSchema,
   selectTicketSchema,
@@ -25,6 +26,8 @@ import {
   UserRef,
   UserTicketRef,
 } from "~/schema/shared/refs";
+import { speakersFetcher } from "~/schema/speakers/speakersFetcher";
+import { SpeakerRef } from "~/schema/speakers/types";
 import { teamsFetcher } from "~/schema/teams/teamsFetcher";
 import { TeamRef } from "~/schema/teams/types";
 import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
@@ -149,6 +152,17 @@ export const EventLoadable = builder.loadableObject(EventRef, {
         }
 
         return selectCommunitySchema.parse(community);
+      },
+    }),
+    speakers: t.field({
+      type: [SpeakerRef],
+      resolve: async (root, args, ctx) => {
+        const speakers = await speakersFetcher.searchSpeakers({
+          DB: ctx.DB,
+          search: { eventIds: [root.id] },
+        });
+
+        return speakers.map((s) => selectSpeakerSchema.parse(s));
       },
     }),
     users: t.field({

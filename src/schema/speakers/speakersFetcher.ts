@@ -42,7 +42,7 @@ const getSearchSpeakersQuery = (
   }
 
   if (eventIds && eventIds.length) {
-    wheres.push(inArray(speakerSchema.id, eventIds));
+    wheres.push(inArray(speakerSchema.eventId, eventIds));
   }
 
   if (sessionIds && sessionIds.length) {

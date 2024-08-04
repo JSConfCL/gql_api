@@ -1,8 +1,16 @@
+import { z } from "zod";
+
 import { builder } from "~/builder";
-import { selectSpeakerSchema } from "~/datasources/db/schema";
+import {
+  selectSessionSchema,
+  selectSpeakerSchema,
+} from "~/datasources/db/schema";
 import { sessionsFetcher } from "~/schema/sessions/sessionsFetcher";
-import { SessionRef, SpeakerRef } from "~/schema/shared/refs";
 import { speakersFetcher } from "~/schema/speakers/speakersFetcher";
+import { SpeakerRef } from "~/schema/speakers/types";
+
+type SessionGraphqlSchema = z.infer<typeof selectSessionSchema>;
+export const SessionRef = builder.objectRef<SessionGraphqlSchema>("SessionRef");
 
 export const SessionLoadable = builder.loadableObject(SessionRef, {
   description: "Representation of a Session",

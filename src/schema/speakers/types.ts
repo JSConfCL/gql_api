@@ -1,9 +1,14 @@
+import { z } from "zod";
+
 import { builder } from "~/builder";
 import { selectSessionSchema } from "~/datasources/db/sessions";
+import { selectSpeakerSchema } from "~/datasources/db/speaker";
 import { sessionsFetcher } from "~/schema/sessions/sessionsFetcher";
 import { SessionLoadable } from "~/schema/sessions/types";
-import { SpeakerRef } from "~/schema/shared/refs";
 import { speakersFetcher } from "~/schema/speakers/speakersFetcher";
+
+type SpeakerGraphqlSchema = z.infer<typeof selectSpeakerSchema>;
+export const SpeakerRef = builder.objectRef<SpeakerGraphqlSchema>("Speaker");
 
 export const SpeakerLoadable = builder.loadableObject(SpeakerRef, {
   description: "Representation of a Speaker",
@@ -19,7 +24,7 @@ export const SpeakerLoadable = builder.loadableObject(SpeakerRef, {
     bio: t.exposeString("bio", { nullable: true }),
     avatar: t.exposeString("avatar", { nullable: true }),
     socials: t.field({
-      type: [String],
+      type: ["String"],
       resolve: (root) => {
         const socials = root.socials;
 
@@ -37,15 +42,5 @@ export const SpeakerLoadable = builder.loadableObject(SpeakerRef, {
         return sessions.map((s) => selectSessionSchema.parse(s));
       },
     }),
-  }),
-});
-
-export const SpeakerSearch = builder.inputType("SpeakerSearch", {
-  fields: (t) => ({
-    speakerIds: t.stringList({ required: false }),
-    name: t.string({ required: false }),
-    bio: t.string({ required: false }),
-    eventIds: t.stringList({ required: false }),
-    sessionIds: t.stringList({ required: false }),
   }),
 });
