@@ -1,13 +1,17 @@
 import { builder } from "~/builder";
 import { selectSessionSchema } from "~/datasources/db/sessions";
 import { sessionsFetcher } from "~/schema/sessions/sessionsFetcher";
-import { SpeakerRef, SessionRef } from "~/schema/shared/refs";
+import { SessionLoadable } from "~/schema/sessions/types";
+import { SpeakerRef } from "~/schema/shared/refs";
+import { speakersFetcher } from "~/schema/speakers/speakersFetcher";
 
 export const SpeakerLoadable = builder.loadableObject(SpeakerRef, {
   description: "Representation of a Speaker",
   load: (ids: string[], context) =>
-    context.DB.query.speakerSchema.findMany({
-      where: (speaker, { inArray }) => inArray(speaker.id, ids),
+    speakersFetcher.searchSpeakers({
+      DB: context.DB,
+      search: { speakerIds: ids },
+      sort: null,
     }),
   fields: (t) => ({
     id: t.exposeID("id", { nullable: false }),
@@ -23,7 +27,7 @@ export const SpeakerLoadable = builder.loadableObject(SpeakerRef, {
       },
     }),
     sessions: t.field({
-      type: [SessionRef],
+      type: [SessionLoadable],
       resolve: async (root, args, ctx) => {
         const sessions = await sessionsFetcher.searchSessions({
           DB: ctx.DB,
