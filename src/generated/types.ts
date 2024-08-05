@@ -889,6 +889,7 @@ export type Ticket = {
   requiresApproval: Scalars["Boolean"]["output"];
   startDateTime: Scalars["DateTime"]["output"];
   status: TicketTemplateStatus;
+  tags: Array<Scalars["String"]["output"]>;
   visibility: TicketTemplateVisibility;
 };
 

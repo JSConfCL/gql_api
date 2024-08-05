@@ -860,6 +860,7 @@ type Ticket {
   requiresApproval: Boolean!
   startDateTime: DateTime!
   status: TicketTemplateStatus!
+  tags: [String!]!
   visibility: TicketTemplateVisibility!
 }
 
