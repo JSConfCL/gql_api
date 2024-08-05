@@ -40,6 +40,10 @@ const TicketCreateInput = builder.inputType("TicketCreateInput", {
     name: t.string({
       required: true,
     }),
+    tags: t.field({
+      type: ["String"],
+      required: false,
+    }),
     description: t.string({
       required: false,
     }),
@@ -227,6 +231,9 @@ builder.mutationField("createTicket", (t) =>
             eventId: input.eventId,
             isUnlimited: input.unlimitedTickets,
             isFree: input.isFree,
+            tags: [
+              ...new Set(input.tags?.map((tag) => tag.trim().toLowerCase())),
+            ],
           });
           const insertedTickets = await trx
             .insert(ticketsSchema)

@@ -922,6 +922,7 @@ export type TicketCreateInput = {
   requiresApproval?: InputMaybe<Scalars["Boolean"]["input"]>;
   startDateTime: Scalars["DateTime"]["input"];
   status?: InputMaybe<TicketTemplateStatus>;
+  tags?: InputMaybe<Array<Scalars["String"]["input"]>>;
   /** If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold. */
   unlimitedTickets: Scalars["Boolean"]["input"];
   visibility?: InputMaybe<TicketTemplateVisibility>;

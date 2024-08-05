@@ -51,7 +51,9 @@ const getSearchTicketQuery = (
   }
 
   if (tags && tags.length > 0) {
-    wheres.push(arrayContains(ticketsSchema.tags, tags));
+    const cleanedTags = tags.map((tag) => tag.trim().toLowerCase());
+
+    wheres.push(arrayContains(ticketsSchema.tags, cleanedTags));
   }
 
   if (eventIds && eventIds.length > 0) {
