@@ -11,7 +11,6 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import {
   allowedCurrencySchema,
-  ticketsSchema,
   userTicketsSchema,
   usersSchema,
 } from "./schema";
@@ -59,7 +58,6 @@ export const purchaseOrdersSchema = pgTable("purchase_orders", {
 export const purchaseOrdersRelations = relations(
   purchaseOrdersSchema,
   ({ one, many }) => ({
-    tickets: many(ticketsSchema),
     userTickets: many(userTicketsSchema),
     user: one(usersSchema, {
       fields: [purchaseOrdersSchema.userId],
