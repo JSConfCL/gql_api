@@ -66,6 +66,12 @@ const TicketCreateInput = builder.inputType("TicketCreateInput", {
     requiresApproval: t.boolean({
       required: false,
     }),
+    imageLink: t.string({
+      required: false,
+    }),
+    externalLink: t.string({
+      required: false,
+    }),
     quantity: t.int({
       required: false,
     }),
@@ -231,6 +237,8 @@ builder.mutationField("createTicket", (t) =>
             eventId: input.eventId,
             isUnlimited: input.unlimitedTickets,
             isFree: input.isFree,
+            imageLink: input.imageLink,
+            externalLink: input.externalLink,
             tags: [
               ...new Set(input.tags?.map((tag) => tag.trim().toLowerCase())),
             ],
