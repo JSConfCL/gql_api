@@ -899,6 +899,7 @@ input TicketCreateInput {
   If the ticket is free, the price submitted will be ignored.
   """
   isFree: Boolean!
+  maxTicketsPerUser: Int
   name: String!
   prices: [PricingInputField!]
   quantity: Int
