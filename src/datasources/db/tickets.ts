@@ -49,6 +49,7 @@ export const ticketsSchema = pgTable("tickets", {
     .references(() => eventsSchema.id)
     .notNull(),
   stripeProductId: text("stripe_product_id"),
+  resendAudienceId: text("resend_audience_id"),
   mercadoPagoProductId: text("mercado_pago_product_id"),
   ...createdAndUpdatedAtFields,
 });
