@@ -1,6 +1,6 @@
 # 🚨 DEFAULT CONFIG 🚨
 name = "webhook"
-compatibility_date = "2024-04-29"
+compatibility_date = "2024-06-03"
 main = "./index.ts"
 node_compat = true
 

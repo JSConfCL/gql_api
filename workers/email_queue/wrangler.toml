@@ -1,6 +1,6 @@
 # 🚨 DEFAULT CONFIG 🚨
 name = "mail-queue-consumer"
-compatibility_date = "2023-06-06"
+compatibility_date = "2024-06-03"
 main = "./index.ts"
 upload_source_maps = true
 
