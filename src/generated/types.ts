@@ -815,6 +815,7 @@ export type Speaker = {
   __typename?: "Speaker";
   avatar?: Maybe<Scalars["String"]["output"]>;
   bio?: Maybe<Scalars["String"]["output"]>;
+  company?: Maybe<Scalars["String"]["output"]>;
   id: Scalars["ID"]["output"];
   name: Scalars["String"]["output"];
   sessions: Array<SessionRef>;

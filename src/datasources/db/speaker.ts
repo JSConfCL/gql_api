@@ -12,6 +12,7 @@ export const speakerSchema = pgTable("speakers", {
   bio: text("bio"),
   avatar: text("avatar"),
   eventId: uuid("event_id").references(() => eventsSchema.id),
+  company: text("company"),
   socials: text("social_links")
     .$type<string[]>()
     .array()
