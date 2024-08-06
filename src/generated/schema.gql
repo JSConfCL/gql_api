@@ -892,6 +892,8 @@ input TicketCreateInput {
   description: String
   endDateTime: DateTime
   eventId: String!
+  externalLink: String
+  imageLink: String
 
   """
   If the ticket is free, the price submitted will be ignored.

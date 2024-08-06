@@ -916,6 +916,8 @@ export type TicketCreateInput = {
   description?: InputMaybe<Scalars["String"]["input"]>;
   endDateTime?: InputMaybe<Scalars["DateTime"]["input"]>;
   eventId: Scalars["String"]["input"];
+  externalLink?: InputMaybe<Scalars["String"]["input"]>;
+  imageLink?: InputMaybe<Scalars["String"]["input"]>;
   /** If the ticket is free, the price submitted will be ignored. */
   isFree: Scalars["Boolean"]["input"];
   name: Scalars["String"]["input"];
