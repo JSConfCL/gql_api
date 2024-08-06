@@ -36,6 +36,7 @@ builder.queryField("myPurchaseOrders", (t) =>
         await purchaseOrderFetcher.searchPaginatedPurchaseOrders({
           DB,
           search: {
+            status: ["complete"],
             userIds: [USER.id],
             paymentPlatform: input.search?.paymentPlatform
               ? ([input.search?.paymentPlatform] as ["stripe" | "mercadopago"])
