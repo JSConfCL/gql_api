@@ -1,6 +1,6 @@
 # 🚨 DEFAULT CONFIG 🚨
 name = "purchase-order-payment-sync-cron"
-compatibility_date = "2024-05-13"
+compatibility_date = "2024-06-03"
 main = "./index.ts"
 node_compat = true
 upload_source_maps = true
