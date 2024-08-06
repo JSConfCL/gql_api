@@ -49,7 +49,7 @@ const getSearchUserTicketsQuery = (
     wheres.push(inArray(userTicketsSchema.userId, userIds));
   }
 
-  if (eventIds) {
+  if (eventIds && eventIds.length > 0) {
     const shouldFilterByUserIds = userIds && userIds.length > 0;
 
     // subquery to get all the tickets associated with events
@@ -88,19 +88,19 @@ const getSearchUserTicketsQuery = (
     );
   }
 
-  if (approvalStatus) {
+  if (approvalStatus && approvalStatus.length > 0) {
     wheres.push(inArray(userTicketsSchema.approvalStatus, approvalStatus));
   }
 
-  if (redemptionStatus) {
+  if (redemptionStatus && redemptionStatus.length > 0) {
     wheres.push(inArray(userTicketsSchema.redemptionStatus, redemptionStatus));
   }
 
-  if (ticketIds) {
+  if (ticketIds && ticketIds.length > 0) {
     wheres.push(inArray(userTicketsSchema.id, ticketIds));
   }
 
-  if (userTicketIds) {
+  if (userTicketIds && userTicketIds.length > 0) {
     wheres.push(inArray(userTicketsSchema.id, userTicketIds));
   }
 

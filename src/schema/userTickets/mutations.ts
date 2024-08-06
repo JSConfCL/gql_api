@@ -383,9 +383,8 @@ builder.mutationFields((t) => ({
                 }
               }
 
-              const isApproved = ticketTemplate.isFree
-                ? ticketTemplate.requiresApproval
-                : false;
+              const isApproved =
+                ticketTemplate.isFree && !ticketTemplate.requiresApproval;
 
               // If no errors were thrown, we can proceed to reserve the
               // tickets.
