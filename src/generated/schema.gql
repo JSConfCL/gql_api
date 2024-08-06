@@ -774,6 +774,7 @@ Representation of a Speaker
 type Speaker {
   avatar: String
   bio: String
+  company: String
   id: ID!
   name: String!
   sessions: [SessionRef!]!
