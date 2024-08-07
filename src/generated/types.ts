@@ -920,6 +920,7 @@ export type TicketCreateInput = {
   imageLink?: InputMaybe<Scalars["String"]["input"]>;
   /** If the ticket is free, the price submitted will be ignored. */
   isFree: Scalars["Boolean"]["input"];
+  maxTicketsPerUser?: InputMaybe<Scalars["Int"]["input"]>;
   name: Scalars["String"]["input"];
   prices?: InputMaybe<Array<PricingInputField>>;
   quantity?: InputMaybe<Scalars["Int"]["input"]>;

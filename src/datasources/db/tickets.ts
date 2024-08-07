@@ -31,6 +31,7 @@ export const ticketsSchema = pgTable("tickets", {
     .notNull()
     .default(sql`ARRAY[]::text[]`),
   externalLink: text("external_link"),
+  maxTicketsPerUser: integer("max_tickets_per_user"),
   imageLink: text("image_link"),
   visibility: text("visibility", {
     enum: ticketVisibilityEnum,
@@ -76,6 +77,11 @@ export const updateTicketSchema = insertTicketSchema
     endDateTime: true,
     quantity: true,
     requiresApproval: true,
+    maxTicketsPerUser: true,
+    imageLink: true,
+    externalLink: true,
+    isFree: true,
+    isUnlimited: true,
     tags: true,
   })
   .partial();
