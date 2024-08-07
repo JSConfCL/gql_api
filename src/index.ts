@@ -1,6 +1,8 @@
 import { useMaskedErrors } from "@envelop/core";
 import { useImmediateIntrospection } from "@envelop/immediate-introspection";
+import { useOpenTelemetry } from "@envelop/opentelemetry";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
+import { instrument, ResolveConfigFn } from "@microlabs/otel-cf-workers";
 import { createYoga, maskError } from "graphql-yoga";
 
 import { Env } from "worker-configuration";
@@ -63,13 +65,18 @@ export const yoga = createYoga<Env>({
         return maskError(error, message, APP_ENV !== "production");
       },
     }),
+    useOpenTelemetry({
+      resolvers: true, // Tracks resolvers calls, and tracks resolvers thrown errors
+      variables: true, // Includes the operation variables values as part of the metadata collected
+      result: true, // Includes execution result object as part of the metadata collected
+    }),
     useImmediateIntrospection(),
     authZEnvelopPlugin({ rules }),
   ].filter(Boolean),
   context: createGraphqlContext,
 });
 
-export default {
+const handler = {
   fetch: async (req: Request, env: Env, ctx: ExecutionContext) => {
     const logger = createLogger("graphql", {
       externalTraceId: req.headers.get("x-trace-id"),
@@ -90,3 +97,21 @@ export default {
     return response;
   },
 };
+
+const config: ResolveConfigFn = (env: Env) => {
+  console.log("env", env);
+
+  if (!env.BASELIME_API_KEY) {
+    throw new Error("BASELIME_API_KEY is required");
+  }
+
+  return {
+    exporter: {
+      url: "https://otel.baselime.io/v1",
+      headers: { "x-api-key": env.BASELIME_API_KEY },
+    },
+    service: { name: "graphql-api" },
+  };
+};
+
+export default instrument(handler, config);

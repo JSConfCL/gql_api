@@ -11,6 +11,7 @@ export interface Env {
   SANITY_PROJECT_ID: string | undefined;
   SANITY_DATASET: string | undefined;
   SANITY_API_VERSION: string | undefined;
+  BASELIME_API_KEY: string | undefined;
   SANITY_SECRET_TOKEN: string | undefined;
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
   RESEND_API_KEY: string;
