@@ -18,7 +18,7 @@
     "prettier:ci": "prettier ./src --cache --check",
     "prettier:fix": "prettier ./src --cache --write",
     "typecheck": "tsc",
-    "dev": "wrangler dev --log-level info --port 50123",
+    "dev": "wrangler dev --log-level info",
     "dev:wall-of-fame": "wrangler dev --test-scheduled --config ./workers/wall_of_fame_cron/wrangler.toml",
     "dev:sanity": "wrangler dev --test-scheduled --config ./workers/sanity_asset_importer/wrangler.toml",
     "dev:auth": "wrangler dev --test-scheduled --config ./workers/auth_tokens/wrangler.toml",
@@ -27,7 +27,7 @@
     "email:export": "email export --dir ./emails/templates --outDir ./emails/out --pretty true"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20231218.0",
+    "@cloudflare/workers-types": "^4.20240806.0",
     "@graphql-codegen/add": "^5.0.0",
     "@graphql-codegen/cli": "4.0.1",
     "@graphql-codegen/import-types-preset": "^2.2.6",
@@ -64,7 +64,7 @@
     "uuid": "^9.0.1",
     "vite-tsconfig-paths": "^4.2.0",
     "vitest": "^0.33.0",
-    "wrangler": "^3.65.0"
+    "wrangler": "^3.69.1"
   },
   "engines": {
     "node": ">=18"

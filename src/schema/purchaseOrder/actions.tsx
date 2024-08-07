@@ -1,11 +1,8 @@
-import { render } from "@react-email/components";
 import { and, eq, lt } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import { Logger } from "pino";
-import React from "react";
 import { AsyncReturnType } from "type-fest";
 
-import { PurchaseOrderSuccessful } from "emails/templates/tickets/purchase-order-successful";
 import { ORM_TYPE } from "~/datasources/db";
 import {
   USER,
@@ -16,7 +13,6 @@ import {
   selectTicketSchema,
   selectUserTicketsSchema,
 } from "~/datasources/db/schema";
-import { sendTransactionalHTMLEmail } from "~/datasources/email/sendEmailToWorkers";
 import {
   createMercadoPagoPayment,
   getMercadoPagoPayment,
@@ -25,6 +21,7 @@ import {
   createStripePayment,
   getStripePaymentStatus,
 } from "~/datasources/stripe";
+import { applicationError, ServiceErrors } from "~/errors";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
 import { Context } from "~/types";
 
@@ -50,6 +47,96 @@ const fetchPurchaseOrderInformation = async (
       },
     },
   });
+};
+
+const sendConfirmationEmail = async ({
+  transactionalEmailService,
+  logger,
+  DB,
+  purchaseOrderId,
+  email,
+}: {
+  DB: ORM_TYPE;
+  transactionalEmailService: Context["RPC_SERVICE_EMAIL"];
+  logger: Logger<never>;
+  purchaseOrderId: string;
+  email: string;
+}) => {
+  const information = await DB.query.purchaseOrdersSchema.findFirst({
+    where: (po, { eq }) => eq(po.id, purchaseOrderId),
+    with: {
+      user: true,
+      userTickets: {
+        with: {
+          ticketTemplate: {
+            with: {
+              event: {
+                with: {
+                  eventsToCommunities: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const eventInfo = information?.userTickets?.[0]?.ticketTemplate?.event;
+
+  if (!eventInfo) {
+    throw applicationError(
+      "Event not found",
+      ServiceErrors.FAILED_PRECONDITION,
+      logger,
+    );
+  }
+
+  const eventsToCommunities = eventInfo?.eventsToCommunities[0];
+
+  if (!eventsToCommunities) {
+    throw applicationError(
+      "Community relationship not found",
+      ServiceErrors.FAILED_PRECONDITION,
+      logger,
+    );
+  }
+
+  const communityId = eventsToCommunities?.communityId;
+  const communityInfo = await DB.query.communitySchema.findFirst({
+    where: (c, { eq }) => eq(c.id, communityId),
+  });
+
+  if (!communityInfo) {
+    throw applicationError(
+      "Community not found",
+      ServiceErrors.FAILED_PRECONDITION,
+      logger,
+    );
+  }
+
+  await transactionalEmailService.sendPurchaseOrderSuccessful({
+    purchaseOrderId,
+    purchaseOrder: {
+      user: {
+        name: information?.user?.name,
+        username: information?.user?.username,
+        email: information?.user?.email,
+      },
+    },
+    communityInfo: {
+      name: communityInfo.name,
+      logoImageSanityRef: communityInfo.logoImageSanityRef,
+    },
+    eventInfo: {
+      name: eventInfo.name,
+      addressDescriptiveName: eventInfo.addressDescriptiveName,
+      address: eventInfo.address,
+      startDateTime: eventInfo.startDateTime,
+      endDateTime: eventInfo.endDateTime,
+    },
+  });
+  logger.info(`Email sent to ${email}`);
 };
 
 const createMercadoPagoPaymentIntent = async ({
@@ -214,22 +301,22 @@ export const createPaymentIntent = async ({
   purchaseOrderId,
   currencyId,
   GET_MERCADOPAGO_CLIENT,
-  RESEND,
   GET_STRIPE_CLIENT,
   paymentSuccessRedirectURL,
   paymentCancelRedirectURL,
   logger,
+  transactionalEmailService,
 }: {
   DB: Context["DB"];
   purchaseOrderId: string;
   USER: USER;
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
   GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
-  RESEND: Context["RESEND"];
   paymentSuccessRedirectURL: string;
   paymentCancelRedirectURL: string;
   currencyId: string;
   logger: Logger<never>;
+  transactionalEmailService: Context["RPC_SERVICE_EMAIL"];
 }) => {
   if (!USER) {
     throw new GraphQLError("No autorizado");
@@ -319,78 +406,13 @@ export const createPaymentIntent = async ({
 
     const userTicketsIds = userTickets.map((t) => t.id);
 
-    const information = await DB.query.purchaseOrdersSchema.findFirst({
-      where: (po, { eq }) => eq(po.id, purchaseOrderId),
-      with: {
-        user: true,
-        userTickets: {
-          with: {
-            ticketTemplate: {
-              with: {
-                event: {
-                  with: {
-                    eventsToCommunities: {
-                      with: {
-                        community: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+    await sendConfirmationEmail({
+      DB,
+      transactionalEmailService,
+      logger,
+      purchaseOrderId,
+      email: USER.email,
     });
-
-    const eventInfo = information?.userTickets?.[0]?.ticketTemplate?.event;
-
-    if (!eventInfo) {
-      logger.error("Event not found");
-    }
-
-    const communityInfo = eventInfo?.eventsToCommunities[0].community;
-
-    if (!communityInfo) {
-      logger.error("Community not found");
-    }
-
-    if (communityInfo && eventInfo) {
-      await sendTransactionalHTMLEmail(RESEND, logger, {
-        htmlContent: render(
-          <PurchaseOrderSuccessful
-            purchaseOrderId={purchaseOrderId}
-            community={{
-              name: communityInfo.name,
-              // communityURL: "https://cdn.com",
-              logoURL: communityInfo.logoImageSanityRef,
-            }}
-            eventName={eventInfo.name}
-            place={{
-              name: eventInfo.addressDescriptiveName,
-              address: eventInfo.address,
-            }}
-            date={{
-              start: eventInfo.startDateTime,
-              end: eventInfo.endDateTime,
-            }}
-          />,
-        ),
-        to: [
-          {
-            name: purchaseOrder.user.name ?? purchaseOrder.user.username,
-            email: purchaseOrder.user.email,
-          },
-        ],
-        from: {
-          name: "CommunityOS",
-          email: "contacto@communityos.io",
-        },
-        subject: "Tus tickets están listos 🎉",
-      });
-    }
-
-    logger.info(`Email sent to ${purchaseOrder.user.email}`);
 
     return {
       purchaseOrder: selectPurchaseOrdersSchema.parse(updatedPO),

@@ -41,7 +41,7 @@ builder.mutationField("payForPurchaseOrder", (t) =>
         USER,
         PURCHASE_CALLBACK_URL,
         GET_MERCADOPAGO_CLIENT,
-        RESEND,
+        RPC_SERVICE_EMAIL,
         logger,
       },
     ) => {
@@ -60,7 +60,6 @@ builder.mutationField("payForPurchaseOrder", (t) =>
       const { purchaseOrder, ticketsIds } = await createPaymentIntent({
         DB,
         USER,
-        RESEND,
         purchaseOrderId,
         GET_STRIPE_CLIENT,
         paymentCancelRedirectURL,
@@ -68,6 +67,7 @@ builder.mutationField("payForPurchaseOrder", (t) =>
         GET_MERCADOPAGO_CLIENT,
         currencyId: currencyID,
         logger,
+        transactionalEmailService: RPC_SERVICE_EMAIL,
       });
 
       // 4. We return the payment link.

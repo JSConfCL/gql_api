@@ -28,6 +28,7 @@ export const createGraphqlContext = async ({
   STRIPE_KEY,
   HYPERDRIVE,
   MERCADOPAGO_KEY,
+  RPC_SERVICE_EMAIL,
   logger,
 }: YogaInitialContext &
   Env & {
@@ -35,6 +36,10 @@ export const createGraphqlContext = async ({
   }): Promise<Context> => {
   if (!MAIL_QUEUE) {
     throw new Error("Missing MAIL_QUEUE");
+  }
+
+  if (!RPC_SERVICE_EMAIL) {
+    throw new Error("RPC_SERVICE_EMAIL is not defined");
   }
 
   if (!GOOGLE_PHOTOS_IMPORT_QUEUE) {
@@ -102,6 +107,7 @@ export const createGraphqlContext = async ({
     DB,
     logger,
   });
+
   // This is the user that will be used for mostly all queries across the
   // application. However, in some cases, we might want to use the original
   // user. (Like on the "me" query)
@@ -127,5 +133,6 @@ export const createGraphqlContext = async ({
     GET_STRIPE_CLIENT,
     GET_MERCADOPAGO_CLIENT,
     logger,
+    RPC_SERVICE_EMAIL,
   } satisfies Context;
 };

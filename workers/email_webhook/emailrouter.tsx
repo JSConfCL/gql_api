@@ -8,7 +8,7 @@ import { AIHackathonPostulationWithTeamEmail } from "../../emails/templates/iaca
 import { AIHackathonPostulationWithoutTeamEmail } from "../../emails/templates/iacamp/postulation-without-team";
 import { SponsorsConfirmation } from "../../emails/templates/iacamp/sponsors";
 import { IACampWaitlist } from "../../emails/templates/iacamp/waitlist";
-import { sendTransactionalHTMLEmail } from "../../src/datasources/email/sendEmailToWorkers";
+import { sendTransactionalHTMLEmail } from "../../src/datasources/email/sendTransactionalHTMLEmail";
 
 type TallyWebhookProps = {
   data: {

@@ -8,7 +8,7 @@
     "./*.json",
     "generated",
     "emails/**/*",
-    "workers/email_queue"
+    "workers/**/*"
   ],
   "compilerOptions": {
     "target": "ESNext",
