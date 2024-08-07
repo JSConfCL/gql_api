@@ -5,7 +5,7 @@ import {
   insertSalariesSchema,
   salariesSchema,
   selectSalariesSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { GenderEnum } from "~/schema/shared/enums";
 import { SalaryRef } from "~/schema/shared/refs";
 

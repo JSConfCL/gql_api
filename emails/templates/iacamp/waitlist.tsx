@@ -44,13 +44,13 @@ export const IACampWaitlist = ({ nombre }: AddedToWaitlist) => {
           </Text>
 
           <Text className="text-center mb-8">
-          <Button
-            href="https://www.youtube.com/live/RSNRrqbLR84?si=DnG257y3MyWDppbi"
-            className="bg-blue-800 py-4 px-6 rounded-md text-gray-200 self-center"
-            target="_blank"
-          >
-            Entrar al Webinar
-          </Button>
+            <Button
+              href="https://www.youtube.com/live/RSNRrqbLR84?si=DnG257y3MyWDppbi"
+              className="bg-blue-800 py-4 px-6 rounded-md text-gray-200 self-center"
+              target="_blank"
+            >
+              Entrar al Webinar
+            </Button>
           </Text>
 
           <Text className="text-xl mb-8">
@@ -61,7 +61,10 @@ export const IACampWaitlist = ({ nombre }: AddedToWaitlist) => {
             para no olvidarlo.
           </Text>
 
-          <Text className="text-xl">Un saludo,<br/> Equipo CommunityOS</Text>
+          <Text className="text-xl">
+            Un saludo,
+            <br /> Equipo CommunityOS
+          </Text>
           <Text className="text-xl mb-8"></Text>
         </Section>
         <Hr className="my-8" />

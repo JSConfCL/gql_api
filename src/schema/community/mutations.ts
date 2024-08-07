@@ -6,7 +6,7 @@ import {
   communitySchema,
   insertCommunitySchema,
   selectCommunitySchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { CommunityRef } from "~/schema/shared/refs";
 import { canCreateCommunity, canEditCommunity } from "~/validations";
 

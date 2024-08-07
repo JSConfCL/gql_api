@@ -1,11 +1,13 @@
 import { z } from "zod";
 
 import { builder } from "~/builder";
-import { selectSessionSchema } from "~/datasources/db/sessions";
-import { selectSpeakerSchema } from "~/datasources/db/speaker";
 import { sessionsFetcher } from "~/schema/sessions/sessionsFetcher";
 import { SessionLoadable } from "~/schema/sessions/types";
 import { speakersFetcher } from "~/schema/speakers/speakersFetcher";
+import {
+  selectSpeakerSchema,
+  selectSessionSchema,
+} from "~workers/db_service/db/schema";
 
 type SpeakerGraphqlSchema = z.infer<typeof selectSpeakerSchema>;
 export const SpeakerRef = builder.objectRef<SpeakerGraphqlSchema>("Speaker");

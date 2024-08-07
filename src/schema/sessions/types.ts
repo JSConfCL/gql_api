@@ -4,7 +4,7 @@ import { builder } from "~/builder";
 import {
   selectSessionSchema,
   selectSpeakerSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { sessionsFetcher } from "~/schema/sessions/sessionsFetcher";
 import { speakersFetcher } from "~/schema/speakers/speakersFetcher";
 import { SpeakerRef } from "~/schema/speakers/types";

@@ -2,7 +2,7 @@ import { builder } from "~/builder";
 import {
   selectWorkRoleSchema,
   selectWorkSenioritySchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { WorkRoleRef, WorkSeniorityRef } from "~/schema/shared/refs";
 
 const WorkRoleSenioritiesInput = builder.inputType("WorkRoleSenioritiesInput", {

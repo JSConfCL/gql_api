@@ -2,8 +2,11 @@ import { eq } from "drizzle-orm";
 import { Logger } from "pino";
 import Stripe from "stripe";
 
-import { TRANSACTION_HANDLER } from "~/datasources/db";
-import { selectTicketSchema, ticketsSchema } from "~/datasources/db/schema";
+import { TRANSACTION_HANDLER } from "~workers/db_service/db";
+import {
+  selectTicketSchema,
+  ticketsSchema,
+} from "~workers/db_service/db/schema";
 import { createStripeProductAndPrice } from "~/datasources/stripe";
 
 export const ensureProductsAreCreated = async ({

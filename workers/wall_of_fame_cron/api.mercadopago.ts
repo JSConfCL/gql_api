@@ -1,6 +1,6 @@
 import { Logger } from "pino";
 
-import { ORM_TYPE, getDb } from "~/datasources/db";
+import { ORM_TYPE, getDb } from "~workers/db_service/db";
 import {
   insertUsersToTagsSchema,
   insertTagsSchema,
@@ -9,7 +9,7 @@ import {
   AllowedUserTags,
   insertPaymentLogsSchema,
   paymentLogsSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 
 import { ENV } from "./types";

@@ -3,7 +3,7 @@ import { GraphQLError } from "graphql";
 import { Logger } from "pino";
 import { AsyncReturnType } from "type-fest";
 
-import { ORM_TYPE } from "~/datasources/db";
+import { ORM_TYPE } from "~workers/db_service/db";
 import {
   USER,
   puchaseOrderPaymentStatusEnum,
@@ -12,7 +12,7 @@ import {
   selectPurchaseOrdersSchema,
   selectTicketSchema,
   selectUserTicketsSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import {
   createMercadoPagoPayment,
   getMercadoPagoPayment,

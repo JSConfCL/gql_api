@@ -1,0 +1,34 @@
+# 🚨 DEFAULT CONFIG 🚨
+name = "db-service"
+main = "./index.ts"
+node_compat = true
+compatibility_date = "2024-07-12"
+upload_source_maps = true
+
+[dev]
+port = 50124
+
+[define]
+_APP_ENV = "'development'"
+
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "f0bc5f4533eb4557976b7d0b59d880ad"
+localConnectionString="postgresql://fake-user:fake-pasword@fake:5432/fake-db"
+
+
+[env.production.define]
+_APP_ENV = "'production'"
+
+[[env.production.hyperdrive]]
+binding = "HYPERDRIVE"
+id = "faa163999e9f40c6a26b3612940bc5ba"
+
+
+[env.staging.define]
+_APP_ENV = "'staging'"
+
+[[env.staging.hyperdrive]]
+binding = "HYPERDRIVE"
+id = "c693e76575c64a8eab15032d97ab938f"
+

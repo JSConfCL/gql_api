@@ -1,4 +1,4 @@
-import { ORM_TYPE } from "~/datasources/db";
+import { ORM_TYPE } from "~workers/db_service/db";
 
 export const getPurchaseRedirectURLsFromPurchaseOrder = async ({
   DB,

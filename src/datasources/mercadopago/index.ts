@@ -7,7 +7,7 @@ import { Logger } from "pino";
 import {
   puchaseOrderPaymentStatusEnum,
   purchaseOrderStatusEnum,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import {
   someMinutesIntoTheFuture,
   toISOStringWithTimezone,

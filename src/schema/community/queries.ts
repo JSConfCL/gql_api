@@ -1,5 +1,5 @@
 import { builder } from "~/builder";
-import { selectCommunitySchema } from "~/datasources/db/schema";
+import { selectCommunitySchema } from "~workers/db_service/db/schema";
 import { communitiesFetcher } from "~/schema/community/communityFetcher";
 import { CommunityRef } from "~/schema/shared/refs";
 

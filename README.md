@@ -226,11 +226,11 @@ Usamos `drizzle` y `drizzle-kit` para manejar conexiones a la BDD, que genera au
 
 > AKA. Crea o edita Tablas, Columnas, Indices, etc.
 
-Primero, necesitas actualizar el archivo del esquema en `./src/datasources/db/schema/tables.ts`. (o )
+Primero, necesitas actualizar el archivo del esquema en `./src/workers/db_service/schema/tables.ts`. (o )
 Este archivo define la estructura de las tablas en la BDD.
 
-> Las relaciones entre tablas, se definen en `./src/datasources/db/schema/relations.ts`.
-> Los esquemas de query/update se definen en `./src/datasources/db/schema/CRUD.ts`.
+> Las relaciones entre tablas, se definen en `./src/workers/db_service/schema/relations.ts`.
+> Los esquemas de query/update se definen en `./src/workers/db_service/schema/CRUD.ts`.
 
 Para definir una tabla, utilizas la función `pgTable()`, donde el primer argumento es el nombre de la tabla y el segundo es un objeto que define los campos de la tabla.
 

@@ -1,11 +1,11 @@
 import { builder } from "~/builder";
-import { selectCompaniesSchema } from "~/datasources/db/schema";
-import { statusEnumOptions } from "~/datasources/db/shared";
 import {
   CompanyRef,
   ValidatedWorkEmailRef,
   WorkEmailRef,
 } from "~/schema/shared/refs";
+import { selectCompaniesSchema } from "~workers/db_service/db/schema";
+import { statusEnumOptions } from "~workers/db_service/db/shared";
 
 const EmailStatusEnum = builder.enumType("EmailStatus", {
   values: statusEnumOptions,

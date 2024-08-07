@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { GenderOptionsEnum } from "~/datasources/db/shared";
+import { GenderOptionsEnum } from "~workers/db_service/shared";
 import { Gender, TypeOfEmployment, WorkMetodology } from "~/generated/types";
 import {
   executeGraphqlOperation,

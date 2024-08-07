@@ -1,21 +1,19 @@
 import { SQL, and, desc, eq, inArray } from "drizzle-orm";
 
-import { ORM_TYPE } from "~/datasources/db";
-import { eventsSchema } from "~/datasources/db/events";
-import {
-  puchaseOrderPaymentStatusEnum,
-  purchaseOrdersSchema,
-} from "~/datasources/db/purchaseOrders";
-import { ticketsSchema } from "~/datasources/db/tickets";
-import {
-  userTicketsApprovalStatusEnum,
-  userTicketsRedemptionStatusEnum,
-  userTicketsSchema,
-} from "~/datasources/db/userTickets";
 import {
   PaginationOptionsType,
   paginationDBHelper,
 } from "~/datasources/helpers/paginationQuery";
+import { ORM_TYPE } from "~workers/db_service/db";
+import {
+  eventsSchema,
+  puchaseOrderPaymentStatusEnum,
+  purchaseOrdersSchema,
+  ticketsSchema,
+  userTicketsApprovalStatusEnum,
+  userTicketsRedemptionStatusEnum,
+  userTicketsSchema,
+} from "~workers/db_service/db/schema";
 
 export type UserTicketSearch = {
   userIds?: string[];

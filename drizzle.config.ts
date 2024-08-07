@@ -12,7 +12,7 @@ if (!process.env.NEON_URL) {
 
 export default defineConfig({
   dialect: "postgresql",
-  schema: "./src/datasources/db/schema.ts",
+  schema: "./src/workers/db_service/schema.ts",
   out: "./drizzle/migrations",
   breakpoints: true,
   strict: true,

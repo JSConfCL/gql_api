@@ -1,8 +1,8 @@
 import { inArray } from "drizzle-orm";
 import { z } from "zod";
 
-import { ORM_TYPE } from "~/datasources/db";
-import { selectUsersSchema } from "~/datasources/db/users";
+import { ORM_TYPE } from "~workers/db_service/db";
+import { selectUsersSchema } from "~workers/db_service/users";
 import { EventStatus } from "~/generated/types";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
 

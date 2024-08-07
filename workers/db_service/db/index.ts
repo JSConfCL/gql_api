@@ -1,35 +1,32 @@
 import { ExtractTablesWithRelations } from "drizzle-orm";
-import {
-  NodePgDatabase,
-  NodePgQueryResultHKT,
-  drizzle,
-} from "drizzle-orm/node-postgres";
 import { PgTransaction } from "drizzle-orm/pg-core";
-import { Client } from "pg";
+import {
+  PostgresJsDatabase,
+  PostgresJsQueryResultHKT,
+  drizzle,
+} from "drizzle-orm/postgres-js";
 import { Logger } from "pino";
+import postgres from "postgres";
 
 import * as schema from "./schema";
 
-export type ORM_TYPE = NodePgDatabase<typeof schema>;
+export type ORM_TYPE = PostgresJsDatabase<typeof schema>;
 export type TRANSACTION_HANDLER = PgTransaction<
-  NodePgQueryResultHKT,
+  PostgresJsQueryResultHKT,
   typeof schema,
   ExtractTablesWithRelations<typeof schema>
 >;
 
-export const getDb = async ({
+export const getDb = ({
   neonUrl,
   logger,
 }: {
   neonUrl: string;
   logger: Logger<never>;
 }) => {
-  const client = new Client({
-    connectionString: neonUrl,
-  });
+  const client = postgres(neonUrl);
 
   try {
-    await client.connect();
     const db = drizzle(client, {
       schema,
       // logger: {

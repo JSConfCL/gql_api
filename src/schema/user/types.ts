@@ -5,7 +5,7 @@ import {
   PronounsEnum,
   selectCommunitySchema,
   selectTeamsSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { CommunityRef, UserRef } from "~/schema/shared/refs";
 import { TeamRef } from "~/schema/teams/types";
 

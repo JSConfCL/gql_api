@@ -1,5 +1,5 @@
 import { builder } from "~/builder";
-import { selectUsersSchema } from "~/datasources/db/schema";
+import { selectUsersSchema } from "~workers/db_service/db/schema";
 import {
   createPaginationInputType,
   createPaginationObjectType,

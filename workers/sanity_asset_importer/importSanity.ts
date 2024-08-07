@@ -1,8 +1,8 @@
 import { Logger } from "pino";
 
-import { getDb } from "~/datasources/db";
-import { eventsSchema } from "~/datasources/db/events";
-import { eventsToCommunitiesSchema } from "~/datasources/db/eventsCommunities";
+import { getDb } from "~workers/db_service/db";
+import { eventsSchema } from "~workers/db_service/events";
+import { eventsToCommunitiesSchema } from "~workers/db_service/eventsCommunities";
 import { getSanityClient } from "~/datasources/sanity/client";
 import { SanityEvent } from "~/datasources/sanity/types";
 

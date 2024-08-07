@@ -9,7 +9,7 @@ import {
   selectPurchaseOrdersSchema,
   selectUserTicketsSchema,
   userTicketsSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { getPurchaseRedirectURLsFromPurchaseOrder } from "~/schema/purchaseOrder/helpers";
 import { PurchaseOrderRef } from "~/schema/purchaseOrder/types";
 import { isValidUUID } from "~/schema/shared/helpers";

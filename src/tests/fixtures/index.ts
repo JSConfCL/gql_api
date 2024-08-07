@@ -86,13 +86,13 @@ import {
   selectUserTeamsSchema,
   userTeamsSchema,
   PronounsEnum,
-} from "~/datasources/db/schema";
-import { GenderOptionsEnum } from "~/datasources/db/shared";
+} from "~workers/db_service/db/schema";
+import { GenderOptionsEnum } from "~workers/db_service/shared";
 import {
   insertTicketPriceSchema,
   selectTicketPriceSchema,
   ticketsPricesSchema,
-} from "~/datasources/db/ticketPrice";
+} from "~workers/db_service/ticketPrice";
 import {
   TicketApprovalStatus,
   TicketRedemptionStatus,

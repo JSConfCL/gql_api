@@ -11,13 +11,6 @@ import {
   lte,
 } from "drizzle-orm";
 
-import { ORM_TYPE } from "~/datasources/db";
-import { eventsSchema } from "~/datasources/db/events";
-import {
-  userTicketsSchema,
-  ticketsSchema,
-  eventsToCommunitiesSchema,
-} from "~/datasources/db/schema";
 import {
   PaginationOptionsType,
   paginationDBHelper,
@@ -25,6 +18,13 @@ import {
 import { SortableSchemaFields } from "~/datasources/helpers/sorting";
 import { eventStatus, eventVisibility } from "~/schema/events/types";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
+import { ORM_TYPE } from "~workers/db_service/db";
+import {
+  userTicketsSchema,
+  ticketsSchema,
+  eventsToCommunitiesSchema,
+  eventsSchema,
+} from "~workers/db_service/db/schema";
 
 export type UserTicketSearch = {
   userId?: string;

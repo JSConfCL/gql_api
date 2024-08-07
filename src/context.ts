@@ -5,7 +5,6 @@ import { Resend } from "resend";
 
 import { Env } from "worker-configuration";
 import { getUserFromRequest, upsertUserFromRequest } from "~/authn";
-import { getDb } from "~/datasources/db";
 import { getMercadoPagoFetch } from "~/datasources/mercadopago";
 import { getSanityClient } from "~/datasources/sanity/client";
 import { getStripeClient } from "~/datasources/stripe/client";
@@ -15,7 +14,6 @@ import { Context } from "~/types";
 //
 export const createGraphqlContext = async ({
   request,
-  NEON_URL,
   PURCHASE_CALLBACK_URL,
   MAIL_QUEUE,
   GOOGLE_PHOTOS_IMPORT_QUEUE,
@@ -26,9 +24,9 @@ export const createGraphqlContext = async ({
   SANITY_SECRET_TOKEN,
   SUPABASE_JWT_DECODER,
   STRIPE_KEY,
-  HYPERDRIVE,
   MERCADOPAGO_KEY,
   RPC_SERVICE_EMAIL,
+  RPC_SERVICE_DB,
   logger,
 }: YogaInitialContext &
   Env & {
@@ -44,10 +42,6 @@ export const createGraphqlContext = async ({
 
   if (!GOOGLE_PHOTOS_IMPORT_QUEUE) {
     throw new Error("Missing GOOGLE_PHOTOS_IMPORT_QUEUE");
-  }
-
-  if (!NEON_URL) {
-    throw new Error("Missing NEON_URL");
   }
 
   if (!SUPABASE_JWT_DECODER) {
@@ -79,12 +73,6 @@ export const createGraphqlContext = async ({
     throw new Error("Missing Sanity Configuration");
   }
 
-  const DB_URL =
-    HYPERDRIVE?.connectionString?.startsWith("postgresql://fake-user:fake") &&
-    APP_ENV === "development"
-      ? NEON_URL
-      : HYPERDRIVE.connectionString;
-
   const GET_SANITY_CLIENT = () =>
     getSanityClient({
       projectId: SANITY_PROJECT_ID,
@@ -96,10 +84,8 @@ export const createGraphqlContext = async ({
 
   const GET_STRIPE_CLIENT = () => getStripeClient(STRIPE_KEY);
   const GET_MERCADOPAGO_CLIENT = getMercadoPagoFetch(MERCADOPAGO_KEY, logger);
-  const DB = await getDb({
-    neonUrl: DB_URL,
-    logger,
-  });
+  const DB = RPC_SERVICE_DB.getConnection();
+
   const RESEND = new Resend(RESEND_API_KEY);
   const ORIGINAL_USER = await upsertUserFromRequest({
     request,
@@ -134,5 +120,6 @@ export const createGraphqlContext = async ({
     GET_MERCADOPAGO_CLIENT,
     logger,
     RPC_SERVICE_EMAIL,
+    RPC_SERVICE_DB,
   } satisfies Context;
 };

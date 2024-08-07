@@ -1,10 +1,10 @@
 import { builder } from "~/builder";
-import { selectPurchaseOrdersSchema } from "~/datasources/db/purchaseOrders";
 import {
   createPaginationInputType,
   createPaginationObjectType,
 } from "~/schema/pagination/types";
 import { purchaseOrderFetcher } from "~/schema/purchaseOrder/purchaseOrderFetcher";
+import { selectPurchaseOrdersSchema } from "~workers/db_service/db/schema";
 
 import { PurchaseOrderRef } from "./types";
 

@@ -15,7 +15,7 @@ import {
   selectWorkRoleSchema,
   selectWorkSenioritySchema,
   selectPaymentLogsSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { SanityAsset, SanityEvent } from "~/datasources/sanity/types";
 
 export type UserGraphqlSchema = z.infer<typeof selectUsersSchema>;

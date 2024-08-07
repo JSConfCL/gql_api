@@ -5,7 +5,7 @@ import {
   companiesSchema,
   insertCompaniesSchema,
   selectCompaniesSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { CompanyRef } from "~/schema/shared/refs";
 
 import { CompanyStatus } from "./types";

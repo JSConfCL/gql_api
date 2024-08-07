@@ -2,7 +2,7 @@
 import { sql } from "drizzle-orm";
 import { PgSelect } from "drizzle-orm/pg-core";
 
-import { ORM_TYPE } from "~/datasources/db";
+import { ORM_TYPE } from "~workers/db_service/db";
 
 export type PaginationOptionsType = {
   page: number;

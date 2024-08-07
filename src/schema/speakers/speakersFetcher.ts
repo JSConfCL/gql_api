@@ -1,13 +1,15 @@
 import { SQL, and, asc, ilike, inArray } from "drizzle-orm";
 
-import { ORM_TYPE } from "~/datasources/db";
-import { sessionToSpeakersSchema } from "~/datasources/db/sessionsToSpeakers";
-import { speakerSchema } from "~/datasources/db/speaker";
 import {
   PaginationOptionsType,
   paginationDBHelper,
 } from "~/datasources/helpers/paginationQuery";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
+import { ORM_TYPE } from "~workers/db_service/db";
+import {
+  sessionToSpeakersSchema,
+  speakerSchema,
+} from "~workers/db_service/db/schema";
 
 export type SpeakerSearch = {
   speakerIds?: string[];

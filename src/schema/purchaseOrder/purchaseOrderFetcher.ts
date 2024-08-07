@@ -1,17 +1,17 @@
 import { SQL, and, ilike, inArray, desc, asc } from "drizzle-orm";
 
-import { ORM_TYPE } from "~/datasources/db";
-import {
-  purchaseOrderPaymentPlatforms,
-  purchaseOrderStatusEnum,
-  purchaseOrdersSchema,
-} from "~/datasources/db/purchaseOrders";
 import {
   PaginationOptionsType,
   paginationDBHelper,
 } from "~/datasources/helpers/paginationQuery";
 import { SortableSchemaFields } from "~/datasources/helpers/sorting";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
+import { ORM_TYPE } from "~workers/db_service/db";
+import {
+  purchaseOrderPaymentPlatforms,
+  purchaseOrderStatusEnum,
+  purchaseOrdersSchema,
+} from "~workers/db_service/db/schema";
 
 export type PurchaseOrderSearch = {
   userIds?: string[];

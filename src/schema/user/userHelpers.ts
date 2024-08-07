@@ -1,14 +1,14 @@
 import { Logger } from "pino";
 import { SetOptional } from "type-fest";
 
-import { ORM_TYPE } from "~/datasources/db";
+import { usersFetcher } from "~/schema/user/userFetcher";
+import { ORM_TYPE } from "~workers/db_service/db";
 import {
   insertUsersSchema,
   USER,
   usersSchema,
   UserStatusEnum,
-} from "~/datasources/db/users";
-import { usersFetcher } from "~/schema/user/userFetcher";
+} from "~workers/db_service/db/schema";
 
 export const createUserIfNotExists = async ({
   DB,

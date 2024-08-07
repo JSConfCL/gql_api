@@ -2,11 +2,11 @@ import pino from "pino";
 import { Resend } from "resend";
 
 import { Env } from "worker-configuration";
-import { ORM_TYPE } from "~/datasources/db";
-import { USER } from "~/datasources/db/schema";
 import { MercadoPagoFetch } from "~/datasources/mercadopago";
 import { getSanityClient } from "~/datasources/sanity/client";
 import { getStripeClient } from "~/datasources/stripe/client";
+import { ORM_TYPE } from "~workers/db_service/db";
+import { USER } from "~workers/db_service/db/schema";
 
 export type Context = {
   DB: ORM_TYPE;
@@ -21,6 +21,7 @@ export type Context = {
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
   PURCHASE_CALLBACK_URL: string;
   RPC_SERVICE_EMAIL: Env["RPC_SERVICE_EMAIL"];
+  RPC_SERVICE_DB: Env["RPC_SERVICE_DB"];
 };
 
 export type GraphqlContext = Context &

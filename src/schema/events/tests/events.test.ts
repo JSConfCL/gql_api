@@ -4,7 +4,7 @@ import { it, describe, assert } from "vitest";
 import {
   UserParticipationStatusEnum,
   UserTeamRoleEnum,
-} from "~/datasources/db/userTeams";
+} from "~workers/db_service/userTeams";
 import {
   EventStatus,
   EventVisibility,

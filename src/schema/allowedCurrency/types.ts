@@ -1,5 +1,5 @@
 import { builder } from "~/builder";
-import { validPaymentMethodsEnum } from "~/datasources/db/schema";
+import { validPaymentMethodsEnum } from "~workers/db_service/db/schema";
 import { AllowedCurrencyRef } from "~/schema/shared/refs";
 
 const ValidPaymentMethodsEnumType = builder.enumType("ValidPaymentMethods", {

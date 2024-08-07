@@ -12,7 +12,7 @@ import {
   ticketsPricesSchema,
   ticketsSchema,
   updateTicketSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { addToObjectIfPropertyExists } from "~/schema/shared/helpers";
 import { TicketRef } from "~/schema/shared/refs";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";

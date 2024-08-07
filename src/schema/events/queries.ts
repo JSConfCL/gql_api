@@ -1,5 +1,5 @@
 import { builder } from "~/builder";
-import { selectEventsSchema } from "~/datasources/db/schema";
+import { selectEventsSchema } from "~workers/db_service/db/schema";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import {
   createPaginationInputType,

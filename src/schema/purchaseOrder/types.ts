@@ -5,7 +5,7 @@ import {
   selectAllowedCurrencySchema,
   puchaseOrderPaymentStatusEnum,
   purchaseOrderStatusEnum,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { AllowedCurrencyRef, UserTicketRef } from "~/schema/shared/refs";
 
 export const PurchaseOrderPaymentStatusEnum = builder.enumType(
