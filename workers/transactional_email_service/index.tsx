@@ -8,10 +8,22 @@ import { createLogger } from "~/logging";
 
 import { PurchaseOrderSuccessful } from "../../emails/templates/tickets/purchase-order-successful";
 
-export default class EmailService extends WorkerEntrypoint<{
-  RESEND_API_KEY: string;
-}> {
+type ENV = {
+  RESEND_API_KEY: string | undefined;
+};
+export default class EmailService extends WorkerEntrypoint<ENV> {
   logger = createLogger("EmailService");
+
+  resend: Resend = new Resend("");
+  constructor(ctx: ExecutionContext, env: ENV) {
+    super(ctx, env);
+
+    if (!env.RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is required");
+    }
+
+    this.resend = new Resend(env.RESEND_API_KEY);
+  }
 
   fetch() {
     return new Response("ok");
@@ -46,42 +58,38 @@ export default class EmailService extends WorkerEntrypoint<{
     this.logger.info(
       `About to send purchase order email for ID: ${purchaseOrderId}`,
     );
-    await sendTransactionalHTMLEmail(
-      new Resend(this.env.RESEND_API_KEY),
-      this.logger,
-      {
-        htmlContent: render(
-          <PurchaseOrderSuccessful
-            purchaseOrderId={purchaseOrderId}
-            community={{
-              name: communityInfo.name,
-              // communityURL: "https://cdn.com",
-              logoURL: communityInfo.logoImageSanityRef,
-            }}
-            eventName={eventInfo.name}
-            place={{
-              name: eventInfo.addressDescriptiveName,
-              address: eventInfo.address,
-            }}
-            date={{
-              start: eventInfo.startDateTime,
-              end: eventInfo.endDateTime,
-            }}
-          />,
-        ),
-        to: [
-          {
-            name: purchaseOrder.user.name ?? purchaseOrder.user.username,
-            email: purchaseOrder.user.email,
-          },
-        ],
-        from: {
-          name: "CommunityOS",
-          email: "contacto@communityos.io",
+    await sendTransactionalHTMLEmail(this.resend, this.logger, {
+      htmlContent: render(
+        <PurchaseOrderSuccessful
+          purchaseOrderId={purchaseOrderId}
+          community={{
+            name: communityInfo.name,
+            // communityURL: "https://cdn.com",
+            logoURL: communityInfo.logoImageSanityRef,
+          }}
+          eventName={eventInfo.name}
+          place={{
+            name: eventInfo.addressDescriptiveName,
+            address: eventInfo.address,
+          }}
+          date={{
+            start: eventInfo.startDateTime,
+            end: eventInfo.endDateTime,
+          }}
+        />,
+      ),
+      to: [
+        {
+          name: purchaseOrder.user.name ?? purchaseOrder.user.username,
+          email: purchaseOrder.user.email,
         },
-        subject: "Tus tickets están listos 🎉",
+      ],
+      from: {
+        name: "CommunityOS",
+        email: "contacto@communityos.io",
       },
-    );
+      subject: "Tus tickets están listos 🎉",
+    });
     this.logger.info(`Sent purchase order email for ID ${purchaseOrderId}`);
   }
 }
