@@ -1,12 +1,12 @@
 import { SQL, and, asc, ilike, inArray } from "drizzle-orm";
 
-import { ORM_TYPE } from "~/datasources/db";
+import { ORM_TYPE } from "~workers/db_service/db";
 import {
   teamsSchema,
   TeamStatusEnum,
   UserTeamRoleEnum,
   userTeamsSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import {
   PaginationOptionsType,
   paginationDBHelper,

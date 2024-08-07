@@ -8,7 +8,7 @@ import {
   insertEventsSchema,
   selectEventsSchema,
   updateEventsSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { EventRef } from "~/schema/shared/refs";
 import { canCreateEvent, canEditEvent } from "~/validations";
 

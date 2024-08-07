@@ -1,5 +1,5 @@
 import { builder } from "~/builder";
-import { selectSalariesSchema } from "~/datasources/db/schema";
+import { selectSalariesSchema } from "~workers/db_service/db/schema";
 import { SalaryRef } from "~/schema/shared/refs";
 
 builder.queryFields((t) => ({

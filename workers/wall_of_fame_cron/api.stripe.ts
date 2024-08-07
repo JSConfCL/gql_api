@@ -1,10 +1,10 @@
 import Stripe from "stripe";
 
-import { ORM_TYPE, getDb } from "~/datasources/db";
+import { ORM_TYPE, getDb } from "~workers/db_service/db";
 import {
   insertPaymentLogsSchema,
   paymentLogsSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { defaultLogger } from "~/logging";
 
 import { ENV } from "./types";

@@ -4,8 +4,8 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 import { v4 } from "uuid";
 
-import { ORM_TYPE } from "~/datasources/db";
-import * as schema from "~/datasources/db/schema";
+import { ORM_TYPE } from "~workers/db_service/db";
+import * as schema from "~workers/db_service/db/schema";
 
 export const testDatabasesFolder = `.test_dbs`;
 export const migrationsFolder = `${process.cwd()}/drizzle/migrations`;

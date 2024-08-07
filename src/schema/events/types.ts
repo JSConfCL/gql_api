@@ -14,7 +14,7 @@ import {
   ticketVisibilityEnum,
   ticketsSchema,
   usersSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { getImagesBySanityEventId } from "~/datasources/sanity/images";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import {

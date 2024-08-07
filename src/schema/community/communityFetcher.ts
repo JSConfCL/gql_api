@@ -1,7 +1,7 @@
 import { SQL, and, asc, ilike, inArray, lte } from "drizzle-orm";
 
-import { ORM_TYPE } from "~/datasources/db";
-import { communitySchema } from "~/datasources/db/schema";
+import { ORM_TYPE } from "~workers/db_service/db";
+import { communitySchema } from "~workers/db_service/db/schema";
 import {
   PaginationOptionsType,
   paginationDBHelper,

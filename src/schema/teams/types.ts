@@ -7,7 +7,7 @@ import {
   TeamStatusEnum,
   UserParticipationStatusEnum,
   UserTeamRoleEnum,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { EventLoadable } from "~/schema/events/types";
 import { UserGraphqlSchema, UserRef } from "~/schema/shared/refs";
 

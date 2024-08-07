@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { builder } from "~/builder";
-import { selectWorkEmailSchema } from "~/datasources/db/schema";
+import { selectWorkEmailSchema } from "~workers/db_service/db/schema";
 import { ValidatedWorkEmailRef, WorkEmailRef } from "~/schema/shared/refs";
 
 builder.queryFields((t) => ({

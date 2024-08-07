@@ -3,7 +3,7 @@ import {
   selectUserTicketsSchema,
   USER,
   userTicketsApprovalStatusEnum,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import {
   createPaginationInputType,
   createPaginationObjectType,

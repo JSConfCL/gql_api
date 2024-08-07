@@ -3,7 +3,7 @@ import {
   userTicketsApprovalStatusEnum,
   puchaseOrderPaymentStatusEnum,
   userTicketsRedemptionStatusEnum,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import {
   PurchaseOrderLoadable,
   PurchaseOrderPaymentStatusEnum,

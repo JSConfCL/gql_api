@@ -40,9 +40,7 @@ export const AIHackathonPostulationWithTeamEmail = ({ name }: Props) => {
             selección.
           </Text>
 
-          <Text className="text-xl mb-8">
-            ¡Éxitos en la postulación!
-          </Text>
+          <Text className="text-xl mb-8">¡Éxitos en la postulación!</Text>
 
           <Text className="text-xl">
             Un saludo,

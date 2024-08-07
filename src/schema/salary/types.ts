@@ -3,7 +3,7 @@ import {
   selectCompaniesSchema,
   selectWorkRoleSchema,
   selectWorkSenioritySchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { GenderEnum } from "~/schema/shared/enums";
 import {
   CompanyRef,

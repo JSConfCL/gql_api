@@ -1,4 +1,4 @@
-import { getDb } from "~/datasources/db";
+import { getDb } from "~workers/db_service/db";
 import { getMercadoPagoFetch } from "~/datasources/mercadopago";
 import { getStripeClient } from "~/datasources/stripe/client";
 import { createLogger } from "~/logging";

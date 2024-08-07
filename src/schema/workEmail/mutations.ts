@@ -9,7 +9,7 @@ import {
   insertWorkEmailSchema,
   selectWorkEmailSchema,
   workEmailSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { enqueueEmail } from "~/datasources/queues/mail";
 import { WorkEmailRef } from "~/schema/shared/refs";
 builder.mutationFields((t) => ({

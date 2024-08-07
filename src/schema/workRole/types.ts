@@ -1,5 +1,5 @@
 import { builder } from "~/builder";
-import { selectWorkSenioritySchema } from "~/datasources/db/schema";
+import { selectWorkSenioritySchema } from "~workers/db_service/db/schema";
 import { WorkRoleRef, WorkSeniorityRef } from "~/schema/shared/refs";
 
 builder.objectType(WorkRoleRef, {

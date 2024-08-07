@@ -2,13 +2,13 @@ import { SQL, gte, lte } from "drizzle-orm";
 
 import { builder } from "~/builder";
 import {
-  paymentLogsSchema,
-  selectPaymentLogsSchema,
-} from "~/datasources/db/paymentLogs";
-import {
   ConsolidatedPaymentLogEntryRef,
   PaymentLogRef,
 } from "~/schema/shared/refs";
+import {
+  paymentLogsSchema,
+  selectPaymentLogsSchema,
+} from "~workers/db_service/db/schema";
 
 const SearchPaymentLogsInput = builder.inputType("SearchPaymentLogsInput", {
   fields: (t) => ({

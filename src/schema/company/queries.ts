@@ -4,7 +4,7 @@ import { builder } from "~/builder";
 import {
   companiesSchema,
   selectCompaniesSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 import { CompanyRef } from "~/schema/shared/refs";
 

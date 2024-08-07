@@ -1,5 +1,5 @@
 import { builder } from "~/builder";
-import { selectAllowedCurrencySchema } from "~/datasources/db/schema";
+import { selectAllowedCurrencySchema } from "~workers/db_service/db/schema";
 import { EventLoadable } from "~/schema/events/types";
 import { AllowedCurrencyRef, PriceRef, TicketRef } from "~/schema/shared/refs";
 

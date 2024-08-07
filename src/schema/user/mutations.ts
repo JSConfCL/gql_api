@@ -8,7 +8,7 @@ import {
   updateUsersSchema,
   usersSchema,
   usersToCommunitiesSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { UserRef } from "~/schema/shared/refs";
 import { pronounsEnum } from "~/schema/user/types";
 import {

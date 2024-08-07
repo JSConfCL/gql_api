@@ -2,7 +2,7 @@
 import { neon } from "@neondatabase/serverless";
 import { config } from "dotenv";
 
-import { runMigration } from "~/datasources/db/runMigrations";
+import { runMigration } from "~workers/db_service/runMigrations";
 import { defaultLogger } from "~/logging";
 
 config({ path: process.cwd() + "/.dev.vars", override: true });

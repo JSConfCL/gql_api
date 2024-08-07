@@ -1,11 +1,11 @@
 import { SQL, and, arrayContains, asc, desc, inArray } from "drizzle-orm";
 
-import { ORM_TYPE } from "~/datasources/db";
+import { ORM_TYPE } from "~workers/db_service/db";
 import {
   ticketsSchema,
   ticketStatusEnum,
   ticketVisibilityEnum,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import {
   paginationDBHelper,
   PaginationOptionsType,

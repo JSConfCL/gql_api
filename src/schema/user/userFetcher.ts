@@ -1,12 +1,12 @@
 import { SQL, and, asc, ilike, inArray, or } from "drizzle-orm";
 
-import { ORM_TYPE } from "~/datasources/db";
+import { ORM_TYPE } from "~workers/db_service/db";
 import {
   AllowedUserTags,
   tagsSchema,
   usersSchema,
   usersTagsSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import {
   PaginationOptionsType,
   paginationDBHelper,

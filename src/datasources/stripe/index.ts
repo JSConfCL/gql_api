@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import {
   puchaseOrderPaymentStatusEnum,
   purchaseOrderStatusEnum,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { someMinutesIntoTheFuture } from "~/datasources/helpers";
 
 const getPaymentStatusFromStripeSession = (

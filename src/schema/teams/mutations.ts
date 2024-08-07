@@ -12,7 +12,7 @@ import {
   UserParticipationStatusEnum,
   UserTeamRoleEnum,
   userTeamsSchema,
-} from "~/datasources/db/schema";
+} from "~workers/db_service/db/schema";
 import { addToObjectIfPropertyExists } from "~/schema/shared/helpers";
 import { teamsFetcher } from "~/schema/teams/teamsFetcher";
 import { AddUserToTeamResponseRef, TeamRef } from "~/schema/teams/types";

@@ -1,7 +1,7 @@
 import { authHelpers } from "~/authz/helpers";
 import { builder } from "~/builder";
-import { selectPurchaseOrdersSchema } from "~/datasources/db/purchaseOrders";
 import { getPurchaseRedirectURLsFromPurchaseOrder } from "~/schema/purchaseOrder/helpers";
+import { selectPurchaseOrdersSchema } from "~workers/db_service/db/schema";
 
 import { createPaymentIntent, syncPurchaseOrderPaymentStatus } from "./actions";
 import { PurchaseOrderRef } from "./types";

@@ -1,13 +1,15 @@
 import { SQL, and, asc, ilike, inArray } from "drizzle-orm";
 
-import { ORM_TYPE } from "~/datasources/db";
-import { sessionSchema } from "~/datasources/db/sessions";
-import { sessionToSpeakersSchema } from "~/datasources/db/sessionsToSpeakers";
 import {
   PaginationOptionsType,
   paginationDBHelper,
 } from "~/datasources/helpers/paginationQuery";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
+import { ORM_TYPE } from "~workers/db_service/db";
+import {
+  sessionSchema,
+  sessionToSpeakersSchema,
+} from "~workers/db_service/db/schema";
 
 export type SessionSearch = {
   sessionIds?: string[];

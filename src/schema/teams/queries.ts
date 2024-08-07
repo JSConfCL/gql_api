@@ -1,11 +1,14 @@
 import { builder } from "~/builder";
-import { selectTeamsSchema, TeamStatusEnum } from "~/datasources/db/teams";
 import {
   createPaginationInputType,
   createPaginationObjectType,
 } from "~/schema/pagination/types";
 import { teamsFetcher } from "~/schema/teams/teamsFetcher";
 import { TeamRef, TeamStatus } from "~/schema/teams/types";
+import {
+  selectTeamsSchema,
+  TeamStatusEnum,
+} from "~workers/db_service/db/schema";
 
 const PaginatedTeamRef = createPaginationObjectType(TeamRef);
 

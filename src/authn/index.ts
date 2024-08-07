@@ -2,14 +2,14 @@ import { decode, verify } from "@tsndr/cloudflare-worker-jwt";
 import { Logger } from "pino";
 
 import { TokenPayload } from "~/authn/types";
-import { ORM_TYPE } from "~/datasources/db";
-import { insertUsersSchema, USER } from "~/datasources/db/schema";
 import {
   findUserByID,
   updateUserProfileInfo,
 } from "~/datasources/queries/users";
 import { getUsername } from "~/datasources/queries/utils/createUsername";
 import { unauthorizedError } from "~/errors";
+import { ORM_TYPE } from "~workers/db_service/db";
+import { insertUserTeamsSchema, USER } from "~workers/db_service/db/schema";
 
 // Obtener el token de autorización de la solicitud, ya sea del encabezado de
 // autorización o de la cookie "community-os-access-token"
@@ -124,7 +124,7 @@ export const upsertUserFromRequest = async ({
 
   const { avatar_url, name, user_name, email_verified, sub, picture } =
     payload.user_metadata;
-  const profileInfo = insertUsersSchema.safeParse({
+  const profileInfo = insertUserTeamsSchema.safeParse({
     email: payload.email.toLowerCase(),
     isEmailVerified: email_verified,
     imageUrl: avatar_url ? avatar_url : picture ? picture : "",

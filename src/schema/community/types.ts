@@ -1,5 +1,8 @@
 import { builder } from "~/builder";
-import { selectEventsSchema, selectUsersSchema } from "~/datasources/db/schema";
+import {
+  selectEventsSchema,
+  selectUsersSchema,
+} from "~workers/db_service/db/schema";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import { CommunityRef, EventRef, UserRef } from "~/schema/shared/refs";
 
