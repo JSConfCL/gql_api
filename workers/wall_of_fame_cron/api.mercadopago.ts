@@ -32,7 +32,7 @@ export const syncMercadopagoPaymentsAndSubscriptions = async (
   env: ENV,
   logger: Logger<never>,
 ) => {
-  const DB = await getDb({
+  const DB = getDb({
     neonUrl: env.NEON_URL,
     logger,
   });

@@ -10,7 +10,7 @@ import { ENV } from "./types";
 
 export const importFromSanity = async (env: ENV, logger: Logger<never>) => {
   try {
-    const DB = await getDb({
+    const DB = getDb({
       neonUrl: env.NEON_URL,
       logger,
     });

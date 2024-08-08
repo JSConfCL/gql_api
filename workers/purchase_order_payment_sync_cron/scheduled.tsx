@@ -25,7 +25,7 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
 ) => {
   ensureKeys(env, ["DB_URL", "STRIPE_KEY", "MERCADOPAGO_KEY"]);
   const logger = createLogger("purchase_order_payment_sync_cron");
-  const DB = await getDb({
+  const DB = getDb({
     neonUrl: env.DB_URL,
     logger,
   });
