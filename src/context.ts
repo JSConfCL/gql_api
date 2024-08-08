@@ -96,7 +96,7 @@ export const createGraphqlContext = async ({
 
   const GET_STRIPE_CLIENT = () => getStripeClient(STRIPE_KEY);
   const GET_MERCADOPAGO_CLIENT = getMercadoPagoFetch(MERCADOPAGO_KEY, logger);
-  const DB = await getDb({
+  const DB = getDb({
     neonUrl: DB_URL,
     logger,
   });

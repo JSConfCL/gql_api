@@ -335,16 +335,16 @@ export const createPaymentIntent = async ({
   });
   const currencyCode = currency?.currency;
 
+  if (!purchaseOrder) {
+    throw new GraphQLError("Orden de compra no encontrada");
+  }
+
   if (purchaseOrder?.userId !== USER.id) {
     throw new GraphQLError("No authorizado");
   }
 
   if (!currencyCode) {
     throw new GraphQLError("No encontramos un currency con ese ID");
-  }
-
-  if (!purchaseOrder) {
-    throw new GraphQLError("Orden de compra no encontrada");
   }
 
   if (purchaseOrder.purchaseOrderPaymentStatus === "paid") {

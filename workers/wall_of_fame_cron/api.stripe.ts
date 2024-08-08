@@ -44,7 +44,7 @@ export const getSubscriptions = async (env: ENV) => {
 };
 
 export const syncStripePayments = async (env: ENV) => {
-  const DB = await getDb({ neonUrl: env.NEON_URL, logger: defaultLogger });
+  const DB = getDb({ neonUrl: env.NEON_URL, logger: defaultLogger });
   const stripe = new Stripe(env.ST_KEY);
 
   const results = await stripe.charges.list({ limit: 100 });
