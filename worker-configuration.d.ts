@@ -17,6 +17,7 @@ export interface Env {
   HIGHLIGHT_PROJECT_ID: string;
   HYPERDRIVE: Hyperdrive;
   PURCHASE_CALLBACK_URL: string;
+  BASELIME_API_KEY: string;
   RPC_SERVICE_EMAIL: Service<WorkerEntrypoint>;
 }
 
