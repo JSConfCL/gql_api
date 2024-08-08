@@ -1,7 +1,9 @@
 import { useMaskedErrors } from "@envelop/core";
 import { useImmediateIntrospection } from "@envelop/immediate-introspection";
+import { useOpenTelemetry } from "@envelop/opentelemetry";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import { instrument, ResolveConfigFn } from "@microlabs/otel-cf-workers";
+import { trace } from "@opentelemetry/api";
 import { createYoga, maskError } from "graphql-yoga";
 
 import { Env } from "worker-configuration";
@@ -11,6 +13,7 @@ import { createGraphqlContext } from "~/context";
 import { APP_ENV } from "~/env";
 import { createLogger } from "~/logging";
 import { schema } from "~/schema";
+import { tracingPlugin } from "~/tracing";
 
 export const yoga = createYoga<Env>({
   landingPage: APP_ENV !== "production",
@@ -66,15 +69,32 @@ export const yoga = createYoga<Env>({
     }),
     useImmediateIntrospection(),
     authZEnvelopPlugin({ rules }),
+    // useOpenTelemetry({
+    //   resolvers: true, // Tracks resolvers calls, and tracks resolvers thrown errors
+    //   variables: true, // Includes the operation variables values as part of the metadata collected
+    //   result: true, // Includes execution result object as part of the metadata collected
+    // }),
+    tracingPlugin,
   ].filter(Boolean),
   context: createGraphqlContext,
 });
 
 const handler = {
   fetch: async (req: Request, env: Env, ctx: ExecutionContext) => {
+    const span = trace.getActiveSpan();
+
+    const internalUUID = crypto.randomUUID();
+
+    span?.setAttribute(
+      "extrenal-trace-id",
+      req.headers.get("x-trace-id") ?? "unknown",
+    );
+    span?.setAttribute("trace-id", internalUUID);
+
+    // const span = trace.getActiveSpan()
     const logger = createLogger("graphql", {
       externalTraceId: req.headers.get("x-trace-id"),
-      traceId: crypto.randomUUID(),
+      traceId: internalUUID,
     });
 
     logTraceId(req, logger);
