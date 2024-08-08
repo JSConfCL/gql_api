@@ -464,9 +464,8 @@ builder.mutationFields((t) => ({
                   default_redirect_url: PURCHASE_CALLBACK_URL,
                 });
 
-              logger.info("Generating payment link for purchase order");
               const { purchaseOrder, ticketsIds } = await createPaymentIntent({
-                DB,
+                DB: trx,
                 USER,
                 purchaseOrderId: createdPurchaseOrder.id,
                 GET_STRIPE_CLIENT,
