@@ -78,6 +78,7 @@
     "@graphql-authz/envelop-plugin": "^1.0.4",
     "@graphql-yoga/plugin-csrf-prevention": "^2.0.3",
     "@libsql/client": "^0.3.5",
+    "@microlabs/otel-cf-workers": "^1.0.0-rc.40",
     "@neondatabase/serverless": "^0.4.26",
     "@pothos/core": "^3.30.0",
     "@pothos/plugin-authz": "^3.5.8",

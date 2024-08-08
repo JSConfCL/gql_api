@@ -1,6 +1,7 @@
 import { useMaskedErrors } from "@envelop/core";
 import { useImmediateIntrospection } from "@envelop/immediate-introspection";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
+import { instrument, ResolveConfigFn } from "@microlabs/otel-cf-workers";
 import { createYoga, maskError } from "graphql-yoga";
 
 import { Env } from "worker-configuration";
@@ -69,7 +70,7 @@ export const yoga = createYoga<Env>({
   context: createGraphqlContext,
 });
 
-export default {
+const handler = {
   fetch: async (req: Request, env: Env, ctx: ExecutionContext) => {
     const logger = createLogger("graphql", {
       externalTraceId: req.headers.get("x-trace-id"),
@@ -90,3 +91,15 @@ export default {
     return response;
   },
 };
+
+const config: ResolveConfigFn = (env: Env) => {
+  return {
+    exporter: {
+      url: "https://otel.baselime.io/v1",
+      headers: { "x-api-key": env.BASELIME_API_KEY },
+    },
+    service: { name: "api" },
+  };
+};
+
+export default instrument(handler, config);
