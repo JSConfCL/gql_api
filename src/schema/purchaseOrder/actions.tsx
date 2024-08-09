@@ -136,6 +136,7 @@ const sendConfirmationEmail = async ({
       endDateTime: eventInfo.endDateTime,
     },
   });
+
   logger.info(`Email sent to ${email}`);
 };
 
@@ -295,6 +296,7 @@ const createStripePaymentIntent = async ({
 
   return paymentLink;
 };
+
 export const createPaymentIntent = async ({
   DB,
   USER,
@@ -483,10 +485,15 @@ export const createPaymentIntent = async ({
     }
 
     paymentPlatform = "stripe";
+
     totalPrice = paymentLink.amount_total.toString();
+
     paymentPlatformPaymentLink = paymentLink.url;
+
     paymentPlatformReferenceID = paymentLink.id;
+
     paymentPlatformStatus = paymentLink.status;
+
     paymentPlatformExpirationDate = new Date(paymentLink.expires_at);
   } else if (currencyCode === "CLP") {
     const { preference, expirationDate } = await createMercadoPagoPaymentIntent(
@@ -503,9 +510,13 @@ export const createPaymentIntent = async ({
     );
 
     paymentPlatform = "mercadopago";
+
     paymentPlatformPaymentLink = preference.init_point;
+
     paymentPlatformReferenceID = preference.id;
+
     paymentPlatformStatus = "none";
+
     paymentPlatformExpirationDate = new Date(expirationDate);
   }
 
@@ -577,6 +588,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
     });
 
     poPaymentStatus = stripeStatus.paymentStatus;
+
     poStatus = stripeStatus.status ?? poStatus;
   }
 
@@ -587,6 +599,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
     });
 
     poPaymentStatus = mercadoPagoStatus.paymentStatus;
+
     poStatus = mercadoPagoStatus.status ?? poStatus;
   }
 

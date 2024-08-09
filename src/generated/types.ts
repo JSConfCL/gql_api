@@ -789,6 +789,12 @@ export enum SearchableUserTags {
   Donor = "DONOR",
 }
 
+export enum ServiceErrors {
+  FailedPrecondition = "FAILED_PRECONDITION",
+  Forbidden = "FORBIDDEN",
+  Unauthenticated = "UNAUTHENTICATED",
+}
+
 /** Representation of a Session */
 export type SessionRef = {
   __typename?: "SessionRef";

@@ -27,6 +27,7 @@ export type UserTicketSearch = {
   paymentStatus?: (typeof puchaseOrderPaymentStatusEnum)[number][];
   redemptionStatus?: (typeof userTicketsRedemptionStatusEnum)[number][];
 };
+
 const getSearchUserTicketsQuery = (
   DB: ORM_TYPE,
   search: UserTicketSearch = {},

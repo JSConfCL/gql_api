@@ -34,17 +34,21 @@ describe("Community", () => {
       });
 
       assert.equal(response.errors, undefined);
+
       assert.equal(response.data?.createCommunity.name, fakeData.name);
+
       assert.equal(
         response.data?.createCommunity.description,
         fakeData.description,
       );
+
       assert.equal(
         response.data?.createCommunity.status,
         CommnunityStatus.Inactive,
       );
     });
   });
+
   describe("Should fail to create an community", () => {
     it("As normal user", async () => {
       const user1 = await insertUser();
@@ -67,8 +71,10 @@ describe("Community", () => {
       );
 
       assert.equal(response.errors?.length, 1);
+
       assert.equal(response.errors?.[0]?.message, "FORBIDDEN");
     });
+
     it("If community slug already exist", async () => {
       await insertCommunity({
         name: "aas",
@@ -90,8 +96,10 @@ describe("Community", () => {
       });
 
       assert.equal(response.errors?.length, 1);
+
       assert.equal(response.errors?.[0]?.message, "This slug already exist");
     });
+
     it("If community name shorter than 2 characters", async () => {
       const fakeData = {
         name: "s",
@@ -112,11 +120,13 @@ describe("Community", () => {
       }[];
 
       assert.equal(response.errors?.length, 1);
+
       assert.equal(
         msg[0].message,
         "String must contain at least 2 character(s)",
       );
     });
+
     it("If community name shorter than 65 characters", async () => {
       const fakeData = {
         name: faker.lorem.words(65),
@@ -137,6 +147,7 @@ describe("Community", () => {
       }[];
 
       assert.equal(response.errors?.length, 1);
+
       assert.equal(
         msg[0].message,
         "String must contain at most 64 character(s)",

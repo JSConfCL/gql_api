@@ -37,6 +37,7 @@ import {
   TicketRedemptionStatus,
 } from "~/schema/userTickets/types";
 import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
+
 export const eventStatus = ["active", "inactive"] as const;
 
 export const EventStatus = builder.enumType("EventStatus", {
@@ -44,6 +45,7 @@ export const EventStatus = builder.enumType("EventStatus", {
 });
 
 export const eventVisibility = ["public", "private", "unlisted"] as const;
+
 export const EventVisibility = builder.enumType("EventVisibility", {
   values: eventVisibility,
 });
@@ -257,6 +259,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
         if (USER) {
           if (USER.isSuperAdmin) {
             statusCheck = ["active", "inactive"];
+
             visibilityCheck = ["public", "private", "unlisted"];
           } else {
             const eventCommunity =
@@ -276,6 +279,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
 
               if (isAdmin) {
                 statusCheck = ["active", "inactive"];
+
                 visibilityCheck = ["public", "private", "unlisted"];
               }
             }

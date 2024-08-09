@@ -28,6 +28,7 @@ export const speakerRelations = relations(speakerSchema, ({ many }) => ({
 export const selectSpeakerSchema = createSelectSchema(speakerSchema, {
   socials: z.array(z.string()),
 });
+
 export const insertSpeakerSchema = createInsertSchema(speakerSchema, {
   socials: z.array(z.string()),
 });

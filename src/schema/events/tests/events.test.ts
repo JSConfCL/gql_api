@@ -52,6 +52,7 @@ describe("Event", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -67,6 +68,7 @@ describe("Event", () => {
       usersTickets: [],
     } as EventQuery["event"]);
   });
+
   it("Should get an event Tags", async () => {
     const event1 = await insertEvent();
     const tag1 = await insertTag({
@@ -80,6 +82,7 @@ describe("Event", () => {
       eventId: event1.id,
       tagId: tag1.id,
     });
+
     await insertEventTag({
       eventId: event1.id,
       tagId: tag2.id,
@@ -96,7 +99,9 @@ describe("Event", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.event?.tags?.length, 2);
+
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -119,6 +124,7 @@ describe("Event", () => {
       usersTickets: [],
     } as EventQuery["event"]);
   });
+
   it("a user should get only their own event tickets", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
@@ -135,6 +141,7 @@ describe("Event", () => {
       userId: user1.id,
       role: "admin",
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -157,6 +164,7 @@ describe("Event", () => {
       purchaseOrderId: purchaseOrder.id,
       approvalStatus: "cancelled",
     });
+
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
@@ -191,7 +199,9 @@ describe("Event", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.event?.usersTickets?.length, 2);
+
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -228,6 +238,7 @@ describe("Event", () => {
       ],
     } as EventQuery["event"]);
   });
+
   it("Should get an event community", async () => {
     const event1 = await insertEvent();
     const community1 = await insertCommunity();
@@ -248,7 +259,9 @@ describe("Event", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.notEqual(response.data?.event?.community, null);
+
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -266,6 +279,7 @@ describe("Event", () => {
       usersTickets: [],
     } as EventQuery["event"]);
   });
+
   it("Should get an event users", async () => {
     const event1 = await insertEvent();
     const response = await executeGraphqlOperationAsSuperAdmin<
@@ -280,6 +294,7 @@ describe("Event", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -295,6 +310,7 @@ describe("Event", () => {
       usersTickets: [],
     } as EventQuery["event"]);
   });
+
   it("return null when no event  is found", async () => {
     const response = await executeGraphqlOperationAsSuperAdmin<
       EventQuery,
@@ -308,6 +324,7 @@ describe("Event", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.event, null);
   });
 });
@@ -344,6 +361,7 @@ describe("Event Teams", () => {
     }
 
     assert.deepEqual(response.data?.event?.teams?.length, 1);
+
     assert.deepEqual(response.data?.event?.teams?.at(0), {
       id: team.id,
       users: [
@@ -373,6 +391,7 @@ describe("Event Teams", () => {
     );
 
     assert.equal(leaderResponse.errors, undefined);
+
     assert.deepEqual(leaderResponse.data?.event?.teams, []);
 
     const anyOtherUserResponse = await executeGraphqlOperationAsUser<
@@ -390,6 +409,7 @@ describe("Event Teams", () => {
     );
 
     assert.equal(anyOtherUserResponse.errors, undefined);
+
     assert.deepEqual(leaderResponse.data?.event?.teams, []);
   });
 });
@@ -419,7 +439,9 @@ describe("Events", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.searchEvents.data?.length, 3);
+
     assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
@@ -429,6 +451,7 @@ describe("Events", () => {
       startDateTime: toISODate(event1.startDateTime),
       endDateTime: toISODate(event1.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
+
     assert.deepEqual(response.data?.searchEvents.data?.at(1), {
       id: event2.id,
       name: event2.name,
@@ -438,6 +461,7 @@ describe("Events", () => {
       startDateTime: toISODate(event2.startDateTime),
       endDateTime: toISODate(event2.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
+
     assert.deepEqual(response.data?.searchEvents.data?.at(2), {
       id: event3.id,
       name: event3.name,
@@ -448,6 +472,7 @@ describe("Events", () => {
       endDateTime: toISODate(event3.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
   });
+
   it("Should Filter by ID", async () => {
     const event1 = await insertEvent({
       name: "MY CONFERENCE 1",
@@ -456,6 +481,7 @@ describe("Events", () => {
     await insertEvent({
       name: "MY MEETUP 2",
     });
+
     await insertEvent({
       name: "MY MEETTUP 3",
     });
@@ -474,7 +500,9 @@ describe("Events", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+
     assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
@@ -527,6 +555,7 @@ describe("Events", () => {
     await insertEvent({
       name: "MY MEETUP 2",
     });
+
     await insertEvent({
       name: "MY MEETUP 3",
     });
@@ -548,7 +577,9 @@ describe("Events", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+
     assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
@@ -559,6 +590,7 @@ describe("Events", () => {
       endDateTime: toISODate(event1.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
   });
+
   it("Should Filter by Visibility", async () => {
     const event1 = await insertEvent({
       visibility: "private",
@@ -567,6 +599,7 @@ describe("Events", () => {
     await insertEvent({
       visibility: "unlisted",
     });
+
     await insertEvent({
       visibility: "public",
     });
@@ -585,7 +618,9 @@ describe("Events", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+
     assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
@@ -596,6 +631,7 @@ describe("Events", () => {
       endDateTime: toISODate(event1.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
   });
+
   it("Should Filter by Status", async () => {
     const event1 = await insertEvent({
       status: EventStatus.Active,
@@ -619,7 +655,9 @@ describe("Events", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+
     assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
@@ -630,6 +668,7 @@ describe("Events", () => {
       endDateTime: toISODate(event1.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
   });
+
   it("Should Filter by Date", async () => {
     const event1 = await insertEvent({
       startDateTime: new Date("2021-02-02"),
@@ -656,7 +695,9 @@ describe("Events", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+
     assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
@@ -667,6 +708,7 @@ describe("Events", () => {
       endDateTime: toISODate(event1.endDateTime),
     } as EventsQuery["searchEvents"]["data"][0]);
   });
+
   it("Should Filter by Name", async () => {
     const event1 = await insertEvent({
       name: "MY CONFERENCE 1",
@@ -690,7 +732,9 @@ describe("Events", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.searchEvents.data?.length, 1);
+
     assert.deepEqual(response.data?.searchEvents.data?.at(0), {
       id: event1.id,
       name: event1.name,
@@ -702,6 +746,7 @@ describe("Events", () => {
     } as EventsQuery["searchEvents"]["data"][0]);
   });
 });
+
 //Event tickets filter test
 describe("Event tickets filter", () => {
   it("Should filter event ticket by id", async () => {
@@ -719,6 +764,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       role: "admin",
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -757,7 +803,9 @@ describe("Event tickets filter", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.event?.usersTickets.length, 1);
+
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -803,6 +851,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       role: "admin",
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -842,7 +891,9 @@ describe("Event tickets filter", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.event?.usersTickets.length, 1);
+
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -888,6 +939,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       role: "admin",
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -933,7 +985,9 @@ describe("Event tickets filter", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.event?.usersTickets.length, 2);
+
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,
@@ -986,6 +1040,7 @@ describe("Event tickets filter", () => {
       userId: user1.id,
       role: "admin",
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -1027,7 +1082,9 @@ describe("Event tickets filter", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.event?.usersTickets.length, 1);
+
     assert.deepEqual(response.data?.event, {
       id: event1.id,
       name: event1.name,

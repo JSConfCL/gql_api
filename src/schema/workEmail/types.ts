@@ -22,6 +22,7 @@ builder.objectType(WorkEmailRef, {
     }),
   }),
 });
+
 builder.objectType(ValidatedWorkEmailRef, {
   description: "Representation of a work email associated to the current user",
   fields: (t) => ({

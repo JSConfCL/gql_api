@@ -15,8 +15,11 @@ import {
   usersSchema,
 } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
+
 export const purchaseOrderStatusEnum = ["complete", "expired", "open"] as const;
+
 export const purchaseOrderPaymentPlatforms = ["mercadopago", "stripe"] as const;
+
 export const puchaseOrderPaymentStatusEnum = [
   "paid",
   "unpaid",
@@ -68,5 +71,6 @@ export const purchaseOrdersRelations = relations(
 
 export const selectPurchaseOrdersSchema =
   createSelectSchema(purchaseOrdersSchema);
+
 export const insertPurchaseOrdersSchema =
   createInsertSchema(purchaseOrdersSchema);

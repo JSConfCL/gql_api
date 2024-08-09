@@ -7,6 +7,7 @@ import { createdAndUpdatedAtFields } from "./shared";
 import { usersSchema } from "./users";
 
 const usersToCommunitiesRoleEnum = ["admin", "member", "collaborator"] as const;
+
 // USERS—COMMUNITIES—TABLE
 export const usersToCommunitiesSchema = pgTable("users_communities", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -33,6 +34,7 @@ export const usersToCommunitiesRelations = relations(
 export const selectUsersToCommunitiesSchema = createSelectSchema(
   usersToCommunitiesSchema,
 );
+
 export const insertUsersToCommunitiesSchema = createInsertSchema(
   usersToCommunitiesSchema,
 );

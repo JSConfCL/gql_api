@@ -68,6 +68,7 @@ export const getPurchaseRedirectURLsFromPurchaseOrder = async ({
   if (community) {
     paymentSuccessRedirectURL =
       community.paymentSuccessRedirectURL ?? paymentSuccessRedirectURL;
+
     paymentCancelRedirectURL =
       community.paymentCancelRedirectURL ?? paymentCancelRedirectURL;
   }
@@ -75,6 +76,7 @@ export const getPurchaseRedirectURLsFromPurchaseOrder = async ({
   paymentSuccessRedirectURL =
     eventsToCommunities[0]?.paymentCancelRedirectURL ??
     paymentSuccessRedirectURL;
+
   paymentSuccessRedirectURL =
     eventsToCommunities[0]?.paymentCancelRedirectURL ??
     paymentSuccessRedirectURL;

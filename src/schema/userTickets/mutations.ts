@@ -62,22 +62,19 @@ const TicketClaimInput = builder.inputType("TicketClaimInput", {
   }),
 });
 
-export const RedeemUserTicketResponse = builder.unionType(
-  "RedeemUserTicketResponse",
-  {
-    types: [PurchaseOrderRef, RedeemUserTicketError],
-    resolveType: (value) => {
-      if ("errorMessage" in value) {
-        return RedeemUserTicketError;
-      }
+const RedeemUserTicketResponse = builder.unionType("RedeemUserTicketResponse", {
+  types: [PurchaseOrderRef, RedeemUserTicketError],
+  resolveType: (value) => {
+    if ("errorMessage" in value) {
+      return RedeemUserTicketError;
+    }
 
-      return PurchaseOrderRef;
-    },
+    return PurchaseOrderRef;
   },
-);
+});
 
-builder.mutationFields((t) => ({
-  cancelUserTicket: t.field({
+builder.mutationField("cancelUserTicket", (t) =>
+  t.field({
     description: "Cancel a ticket",
     type: UserTicketRef,
     args: {
@@ -121,7 +118,10 @@ builder.mutationFields((t) => ({
       }
     },
   }),
-  approvalUserTicket: t.field({
+);
+
+builder.mutationField("approvalUserTicket", (t) =>
+  t.field({
     description: "Approve a ticket",
     type: UserTicketRef,
     args: {
@@ -183,7 +183,10 @@ builder.mutationFields((t) => ({
       }
     },
   }),
-  redeemUserTicket: t.field({
+);
+
+builder.mutationField("redeemUserTicket", (t) =>
+  t.field({
     description: "Redeem a ticket",
     type: UserTicketRef,
     args: {
@@ -242,7 +245,10 @@ builder.mutationFields((t) => ({
       }
     },
   }),
-  claimUserTicket: t.field({
+);
+
+builder.mutationField("claimUserTicket", (t) =>
+  t.field({
     description: "Attempt to claim a certain ammount of tickets",
     type: RedeemUserTicketResponse,
     args: {
@@ -489,12 +495,14 @@ builder.mutationFields((t) => ({
             return { selectedPurchaseOrder, claimedTickets };
           } catch (e) {
             logger.error((e as Error).message);
+
             transactionError =
               e instanceof Error
                 ? new GraphQLError(e.message, {
                     originalError: e,
                   })
                 : new GraphQLError("Unknown error");
+
             trx.rollback();
             throw e;
           }
@@ -523,7 +531,7 @@ builder.mutationFields((t) => ({
       }
     },
   }),
-}));
+);
 
 builder.mutationField("acceptGiftedTicket", (t) =>
   t.field({
@@ -544,15 +552,15 @@ builder.mutationField("acceptGiftedTicket", (t) =>
       // find the ticket for the user
       const ticket = await DB.query.userTicketsSchema.findFirst({
         where: (t, { eq, and }) =>
-          and(
-            eq(t.id, userTicketId),
-            eq(t.approvalStatus, "gifted"),
-            eq(t.userId, USER.id),
-          ),
+          and(eq(t.id, userTicketId), eq(t.userId, USER.id)),
       });
 
       if (!ticket) {
         throw new GraphQLError("Could not find ticket to accept");
+      }
+
+      if (ticket.approvalStatus !== "gifted") {
+        throw new GraphQLError("Ticket is not a gifted ticket");
       }
 
       const updatedTicket = (

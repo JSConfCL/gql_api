@@ -50,9 +50,12 @@ describe("Search users by tag", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.isArray(response.data?.userSearch.data);
+
     assert.equal(response.data?.userSearch?.data.length, 1);
   });
+
   it("Should return correct of users when passed 1 tag", async () => {
     const user = await insertUser();
     const user2 = await insertUser();
@@ -82,9 +85,12 @@ describe("Search users by tag", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.isArray(response.data?.userSearch.data);
+
     assert.equal(response.data?.userSearch?.data.length, 2);
   });
+
   it("Should return correct of users when passed multiple tags", async () => {
     const user = await insertUser();
     const user2 = await insertUser();
@@ -118,9 +124,12 @@ describe("Search users by tag", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.isArray(response.data?.userSearch.data);
+
     assert.equal(response.data?.userSearch?.data.length, 2);
   });
+
   it("Should fail if query is anonymous", async () => {
     const response = await executeGraphqlOperation<
       UserSearchQuery,
@@ -133,8 +142,10 @@ describe("Search users by tag", () => {
     });
 
     assert.equal(response.errors?.length, 1);
+
     assert.equal(response.errors?.[0]?.message, "Unauthorized!");
   });
+
   it("Should fail if account is normal user ", async () => {
     const user = await insertUser();
     const response = await executeGraphqlOperationAsUser<
@@ -151,6 +162,7 @@ describe("Search users by tag", () => {
     );
 
     assert.equal(response.errors?.length, 1);
+
     assert.equal(response.errors?.[0]?.message, "Unauthorized!");
   });
 });

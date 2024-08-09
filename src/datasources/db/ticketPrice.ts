@@ -32,4 +32,5 @@ export const ticketsPricesRelationsRelations = relations(
 );
 
 export const selectTicketPriceSchema = createSelectSchema(ticketsPricesSchema);
+
 export const insertTicketPriceSchema = createInsertSchema(ticketsPricesSchema);

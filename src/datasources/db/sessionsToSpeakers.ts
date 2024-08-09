@@ -32,6 +32,7 @@ export const sessionToSpeakersRelations = relations(
 export const selectSessionToSpeakersSchema = createSelectSchema(
   sessionToSpeakersSchema,
 );
+
 export const insertSessionToSpeakersSchema = createInsertSchema(
   sessionToSpeakersSchema,
 );

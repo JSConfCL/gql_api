@@ -7,6 +7,7 @@ import { EventStatus } from "~/generated/types";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
 
 export type UserRoleEvent = "admin" | "member" | "collaborator";
+
 export type UserRoleCommunity = "admin" | "member" | "collaborator";
 
 export async function isEventActive(
@@ -78,6 +79,7 @@ export async function canCreateEvent(
 
   return Boolean(communityAdmin);
 }
+
 export async function canEditEvent(
   userId: string,
   eventId: string,
@@ -311,11 +313,11 @@ export async function canRedeemUserTicket(
     return false;
   }
 
-  const eventToCommunitie = await DB.query.eventsToCommunitiesSchema.findFirst({
+  const eventToCommunity = await DB.query.eventsToCommunitiesSchema.findFirst({
     where: (utc, { eq }) => eq(utc.eventId, userTicket?.ticketTemplate.eventId),
   });
 
-  if (!eventToCommunitie) {
+  if (!eventToCommunity) {
     return false;
   }
 
@@ -324,7 +326,7 @@ export async function canRedeemUserTicket(
       where: (utc, { eq, and }) =>
         and(
           eq(utc.userId, userId),
-          eq(utc.communityId, eventToCommunitie?.communityId),
+          eq(utc.communityId, eventToCommunity?.communityId),
           inArray(utc.role, ["admin", "collaborator"]),
         ),
     });
@@ -340,6 +342,7 @@ export async function canRedeemUserTicket(
 
   return Boolean(isCommunityAdminOrCollaborator || isEventAdminOrCollaborator);
 }
+
 export function canCreateCommunity(
   user: z.infer<typeof selectUsersSchema> | null,
 ): boolean {
@@ -349,6 +352,7 @@ export function canCreateCommunity(
 
   return user.isSuperAdmin || false;
 }
+
 export async function canEditCommunity(
   user: z.infer<typeof selectUsersSchema> | null,
   communityId: string,

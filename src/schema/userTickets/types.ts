@@ -14,9 +14,11 @@ import { TicketLoadable } from "~/schema/ticket/types";
 export const TicketPaymentStatus = builder.enumType("TicketPaymentStatus", {
   values: puchaseOrderPaymentStatusEnum,
 });
+
 export const TicketApprovalStatus = builder.enumType("TicketApprovalStatus", {
   values: userTicketsApprovalStatusEnum,
 });
+
 export const TicketRedemptionStatus = builder.enumType(
   "TicketRedemptionStatus",
   {

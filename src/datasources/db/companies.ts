@@ -6,6 +6,7 @@ import { salariesSchema, workEmailSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
 const companiesStatusEnum = ["active", "inactive", "draft"] as const;
+
 // COMPANIES-TABLE
 export const companiesSchema = pgTable("companies", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -24,4 +25,5 @@ export const companiesRelations = relations(companiesSchema, ({ many }) => ({
 }));
 
 export const selectCompaniesSchema = createSelectSchema(companiesSchema);
+
 export const insertCompaniesSchema = createInsertSchema(companiesSchema);

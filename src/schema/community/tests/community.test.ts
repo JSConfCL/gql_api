@@ -34,11 +34,16 @@ describe("Communities", () => {
     response;
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.communities.length, 3);
+
     assert.equal(response.data?.communities[0].id, community1.id);
+
     assert.equal(response.data?.communities[1].id, community2.id);
+
     assert.equal(response.data?.communities[2].id, community3.id);
   });
+
   it("Should return a filtered list by id", async () => {
     const community1 = await insertCommunity();
 
@@ -56,9 +61,12 @@ describe("Communities", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.communities.length, 1);
+
     assert.equal(response.data?.communities[0].id, community1.id);
   });
+
   it("Should return a filtered list by name", async () => {
     const community1 = await insertCommunity({
       name: "Community 1",
@@ -83,10 +91,14 @@ describe("Communities", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.communities.length, 2);
+
     assert.equal(response.data?.communities[0].id, community1.id);
+
     assert.equal(response.data?.communities[1].id, community2.id);
   });
+
   it("Should return a filtered list by status", async () => {
     const community1 = await insertCommunity({
       status: "active",
@@ -110,7 +122,9 @@ describe("Communities", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.communities.length, 1);
+
     assert.equal(response.data?.communities[0].id, community3.id);
     const response2 = await executeGraphqlOperation<
       CommunitiesQuery,
@@ -125,15 +139,20 @@ describe("Communities", () => {
     });
 
     assert.equal(response2.errors, undefined);
+
     assert.equal(response2.data?.communities.length, 2);
+
     assert.equal(response2.data?.communities[0].id, community1.id);
+
     assert.equal(response2.data?.communities[1].id, community2.id);
   });
+
   it("Should do multiple filters", async () => {
     await insertCommunity({
       name: "Community 1",
       status: "active",
     });
+
     await insertCommunity({
       name: "Community 2",
       status: "inactive",
@@ -155,9 +174,12 @@ describe("Communities", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.communities.length, 1);
+
     assert.equal(response.data?.communities[0].id, community3.id);
   });
+
   it("Should return only related events", async () => {
     async function createCommunityWithEvents(numberOfEvents: number) {
       const community = await insertCommunity();
@@ -191,6 +213,7 @@ describe("Communities", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.communities.length, communitiesData.length);
 
     const responseData = response.data;
@@ -203,6 +226,7 @@ describe("Communities", () => {
       const responseCommunity = responseData.communities[index];
 
       assert.equal(responseCommunity.id, community.id);
+
       assert.equal(responseCommunity.events.length, events.length);
 
       responseCommunity.events.forEach((someResponseEvent) => {
@@ -215,6 +239,7 @@ describe("Communities", () => {
 describe("Community search", () => {
   it("Should error if called without arguments", async () => {
     await insertCommunity();
+
     await insertCommunity();
     const response = await executeGraphqlOperation<
       CommunityQuery,
@@ -224,8 +249,10 @@ describe("Community search", () => {
     });
 
     assert.exists(response.errors);
+
     assert.equal(response.errors?.length, 1);
   });
+
   it("Should filter by a community ID", async () => {
     const community1 = await insertCommunity();
 
@@ -241,6 +268,7 @@ describe("Community search", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.community, {
       description: community1.description,
       id: community1.id,
@@ -248,8 +276,10 @@ describe("Community search", () => {
       status: community1.status as CommnunityStatus,
     });
   });
+
   it("Should return null on a non-existing id", async () => {
     await insertCommunity();
+
     await insertCommunity();
     const response = await executeGraphqlOperation<
       CommunityQuery,
@@ -262,6 +292,7 @@ describe("Community search", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.community, null);
   });
 });

@@ -42,6 +42,7 @@ export const eventsToCommunitiesRelations = relations(
 export const selectEventsToCommunitiesSchema = createSelectSchema(
   eventsToCommunitiesSchema,
 );
+
 export const insertEventsToCommunitiesSchema = createInsertSchema(
   eventsToCommunitiesSchema,
 );

@@ -100,6 +100,7 @@ describe("Salary creation", () => {
         );
 
         expect(UpdateWorkEmail.errors).toBeUndefined();
+
         expect(UpdateWorkEmail.data?.updateSalary).toMatchObject({
           amount: 100000,
           countryCode: "CLP",
@@ -122,6 +123,7 @@ describe("Salary creation", () => {
       });
     });
   });
+
   describe("Creation should fail", () => {
     it("With an annonymous user", async () => {
       const { confirmationToken, salaryId } = await createSalary();
@@ -151,6 +153,7 @@ describe("Salary creation", () => {
 
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
+
     it("For a SuperAdmin", async () => {
       const { confirmationToken, salaryId } = await createSalary();
       const workSeniorityAndRole = await insertWorkSeniorityAndRole();
@@ -179,6 +182,7 @@ describe("Salary creation", () => {
 
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
+
     it("If the user using the code is not the same user that created it", async () => {
       const user2 = await insertUser();
       const insertedConfirmationToken = await insertConfirmationToken({
@@ -217,6 +221,7 @@ describe("Salary creation", () => {
 
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
+
     it("With a wrong code", async () => {
       const { salaryId, user } = await createSalary();
       const workSeniorityAndRole = await insertWorkSeniorityAndRole();
@@ -248,6 +253,7 @@ describe("Salary creation", () => {
 
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
+
     it("With a previously validated code", async () => {
       const { salaryId, user } = await createSalary();
       const insertedConfirmationToken = await insertConfirmationToken({
@@ -286,6 +292,7 @@ describe("Salary creation", () => {
 
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
+
     it("With a rejected code", async () => {
       const { salaryId, user } = await createSalary();
       const insertedConfirmationToken = await insertConfirmationToken({
@@ -324,6 +331,7 @@ describe("Salary creation", () => {
 
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
+
     it("With an expired code", async () => {
       const { salaryId, user } = await createSalary();
       const insertedConfirmationToken = await insertConfirmationToken({
@@ -363,6 +371,7 @@ describe("Salary creation", () => {
 
       expect(UpdateWorkEmail.errors).toBeDefined();
     });
+
     it("With an expired code — via date", async () => {
       const { salaryId, user } = await createSalary();
       const insertedConfirmationToken = await insertConfirmationToken({

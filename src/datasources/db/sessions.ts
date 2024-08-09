@@ -26,4 +26,5 @@ export const sessionRelations = relations(sessionSchema, ({ one, many }) => ({
 }));
 
 export const selectSessionSchema = createSelectSchema(sessionSchema);
+
 export const insertSessionSchema = createInsertSchema(sessionSchema);

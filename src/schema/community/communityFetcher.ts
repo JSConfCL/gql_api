@@ -16,6 +16,7 @@ export type UserTicketSearch = {
   communityStatus?: (typeof communityStatus)[number][];
   createdAt?: Date;
 };
+
 const getSearchCommunitiesQuery = (
   DB: ORM_TYPE,
   search: UserTicketSearch = {},

@@ -63,4 +63,5 @@ export const salairesRelations = relations(salariesSchema, ({ one }) => ({
 }));
 
 export const selectSalariesSchema = createSelectSchema(salariesSchema);
+
 export const insertSalariesSchema = createInsertSchema(salariesSchema);

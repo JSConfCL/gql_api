@@ -52,6 +52,7 @@ describe("Search for user tickets", () => {
 
       assert.equal(response.length, 1);
     });
+
     it("Should filter by userId", async () => {
       const { testDB, user1, ticketTemplate1, purchaseOrder } =
         await setupTest();
@@ -81,8 +82,10 @@ describe("Search for user tickets", () => {
       });
 
       assert.equal(response.length, 1);
+
       assert.equal(response[0].id, ticket1.id);
     });
+
     it("Should filter by eventId", async () => {
       const { testDB, user1, ticketTemplate1, event1, purchaseOrder } =
         await setupTest();
@@ -115,8 +118,10 @@ describe("Search for user tickets", () => {
       });
 
       assert.equal(response.length, 1);
+
       assert.equal(response[0].id, ticket1.id);
     });
+
     it("Should filter by paymentStatus", async () => {
       const { testDB, user1, ticketTemplate1, purchaseOrder } =
         await setupTest();
@@ -145,9 +150,12 @@ describe("Search for user tickets", () => {
       });
 
       assert.equal(response.length, 2);
+
       assert.equal(response[0].id, ticket2.id);
+
       assert.equal(response[1].id, ticket1.id);
     });
+
     it("Should filter by approvalStatus", async () => {
       const { testDB, user1, ticketTemplate1, purchaseOrder } =
         await setupTest();
@@ -176,8 +184,10 @@ describe("Search for user tickets", () => {
       });
 
       assert.equal(response.length, 1);
+
       assert.equal(response[0].id, ticket1.id);
     });
+
     it("Should filter by redemptionStatus", async () => {
       const { testDB, user1, ticketTemplate1, purchaseOrder } =
         await setupTest();
@@ -206,8 +216,10 @@ describe("Search for user tickets", () => {
       });
 
       assert.equal(response.length, 1);
+
       assert.equal(response[0].id, ticket1.id);
     });
+
     it("Should filter by multiple fields", async () => {
       const { testDB, user1, ticketTemplate1, purchaseOrder } =
         await setupTest();
@@ -238,6 +250,7 @@ describe("Search for user tickets", () => {
       });
 
       assert.equal(response.length, 1);
+
       assert.equal(response[0].id, ticket1.id);
     });
   });

@@ -45,11 +45,17 @@ describe("Users Communities Graphql Tests", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.users.length, 2);
+
     assert.equal(response.data?.users[0].id, user.id);
+
     assert.equal(response.data?.users[0].communities.length, 1);
+
     assert.equal(response.data?.users[0].communities[0].id, community1.id);
+
     assert.equal(response.data?.users[1].id, user2.id);
+
     assert.equal(response.data?.users[1].communities.length, 0);
   });
 
@@ -64,6 +70,7 @@ describe("Users Communities Graphql Tests", () => {
       communityId: community1.id,
       role: "member",
     });
+
     await insertUserToCommunity({
       userId: user2.id,
       communityId: community1.id,
@@ -78,11 +85,17 @@ describe("Users Communities Graphql Tests", () => {
       response?.data?.communities?.[0]?.users?.map((el) => el.id) ?? [];
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.communities.length, 2);
+
     assert.equal(response.data?.communities[0].id, community1.id);
+
     assert.equal(response.data?.communities[1].id, community2.id);
+
     assert.equal(response.data?.communities[0].users.length, 2);
+
     assert.oneOf(user1.id, userIds, "Could not find user");
+
     assert.oneOf(user2.id, userIds, "Could not find user");
   });
 
@@ -99,6 +112,7 @@ describe("Users Communities Graphql Tests", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response?.data?.community?.users.length, 0);
   });
 });

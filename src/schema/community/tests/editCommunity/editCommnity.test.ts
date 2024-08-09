@@ -34,12 +34,15 @@ describe("Edit community", () => {
       });
 
       assert.equal(response.errors, undefined);
+
       assert.equal(
         response.data?.editCommunity.status,
         CommnunityStatus.Active,
       );
+
       assert.equal(response.data?.editCommunity.id, community1.id);
     });
+
     it("As an community admin", async () => {
       const user1 = await insertUser();
       const community1 = await insertCommunity();
@@ -49,6 +52,7 @@ describe("Edit community", () => {
         role: "admin",
         userId: user1.id,
       });
+
       await executeGraphqlOperationAsUser<
         EditCommunityMutation,
         EditCommunityMutationVariables
@@ -82,13 +86,16 @@ describe("Edit community", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(
         response.data?.editCommunity.status,
         CommnunityStatus.Inactive,
       );
+
       assert.equal(response.data?.editCommunity.id, community1.id);
     });
   });
+
   describe("Should fail to create an community", () => {
     it("As normal user", async () => {
       const user1 = await insertUser();
@@ -110,8 +117,10 @@ describe("Edit community", () => {
       );
 
       assert.equal(response.errors?.length, 1);
+
       assert.equal(response.errors?.[0]?.message, "FORBIDDEN");
     });
+
     it("If community does not exist", async () => {
       const response = await executeGraphqlOperationAsSuperAdmin<
         EditCommunityMutation,
@@ -127,6 +136,7 @@ describe("Edit community", () => {
       });
 
       assert.equal(response.errors?.length, 1);
+
       assert.equal(response.errors?.[0]?.message, "Community not found");
     });
   });

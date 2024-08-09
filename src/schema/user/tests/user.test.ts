@@ -24,8 +24,11 @@ describe("Users Graphql Tests", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.users.length, 2);
+
     assert.equal(response.data?.users[0].id, user.id);
+
     assert.equal(response.data?.users[1].id, user2.id);
   });
 });

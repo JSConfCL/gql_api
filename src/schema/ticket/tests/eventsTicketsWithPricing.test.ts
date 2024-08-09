@@ -93,29 +93,37 @@ describe("Should get an event and its tickets", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.searchEvents.data.length, 1);
+
     assert.equal(response.data?.searchEvents.data[0]?.tickets.length, 1);
+
     assert.equal(
       response.data?.searchEvents.data[0]?.tickets[0]?.prices?.length,
       1,
     );
+
     assert.equal(
       response.data?.searchEvents.data[0]?.tickets[0]?.prices?.[0].amount,
       insertedPrice.price_in_cents,
     );
+
     assert.equal(
       response.data?.searchEvents.data[0]?.tickets[0]?.prices?.[0].id,
       insertedPrice.id,
     );
+
     assert.equal(
       response.data?.searchEvents.data[0]?.tickets[0]?.prices?.[0].currency.id,
       insertedCurrency.id,
     );
+
     assert.equal(
       response.data?.searchEvents.data[0]?.tickets[0]?.prices?.[0].currency
         .currency,
       insertedCurrency.currency,
     );
+
     assert.equal(
       response.data?.searchEvents.data[0]?.tickets[0]?.prices?.[0].currency
         .validPaymentMethods,

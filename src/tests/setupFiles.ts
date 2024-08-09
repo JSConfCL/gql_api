@@ -30,6 +30,7 @@ beforeEach(async ({ expect }) => {
   }
 
   await getTestDB(databaseName);
+
   console.log("DB for test: ", currentTestName, " ->", databaseName);
 });
 

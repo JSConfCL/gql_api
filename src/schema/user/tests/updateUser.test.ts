@@ -35,12 +35,15 @@ describe("User", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.updateUser?.id, user1.id);
+
     assert.deepEqual(response.data?.updateUser, {
       id: user1.id,
       ...fakeInput,
     });
   });
+
   it("Should update a user, only name", async () => {
     const user1 = await insertUser();
     const fakeInput = {
@@ -63,7 +66,9 @@ describe("User", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.updateUser?.id, user1.id);
+
     assert.deepEqual(response.data?.updateUser, {
       id: user1.id,
       lastName: user1.lastName,
@@ -72,6 +77,7 @@ describe("User", () => {
       ...fakeInput,
     });
   });
+
   it("It should throw an error, if not the same user", async () => {
     const user1 = await insertUser();
     const user2 = await insertUser();

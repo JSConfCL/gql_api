@@ -77,6 +77,7 @@ export default {
     });
 
     logTraceId(req, logger);
+
     logPossibleUserIdFromJWT(req, logger);
     const response = await yoga.fetch(
       // @ts-expect-error Los tipos de yoga están mal

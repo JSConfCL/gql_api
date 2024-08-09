@@ -7,6 +7,7 @@ import { createdAndUpdatedAtFields } from "./shared";
 import { usersSchema } from "./users";
 
 const eventsToUsersRoleEnum = ["admin", "member", "collaborator"] as const;
+
 // EVENT—USER
 export const eventsToUsersSchema = pgTable("events_users", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -32,5 +33,6 @@ export const eventsToUsersRelations = relations(
 
 export const selectEventsToUsersSchema =
   createSelectSchema(eventsToUsersSchema);
+
 export const insertEventsToUsersSchema =
   createInsertSchema(eventsToUsersSchema);

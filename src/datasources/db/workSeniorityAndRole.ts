@@ -34,6 +34,7 @@ export const workSeniorityAndRoleRelations = relations(
 export const selectWorkSeniorityAndRoleSchema = createSelectSchema(
   workSeniorityAndRoleSchema,
 );
+
 export const insertWorkSeniorityAndRoleSchema = createInsertSchema(
   workSeniorityAndRoleSchema,
 );

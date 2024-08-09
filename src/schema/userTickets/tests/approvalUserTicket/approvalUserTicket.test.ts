@@ -53,8 +53,10 @@ describe("Approval user ticket", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.approvalUserTicket?.approvalStatus, "approved");
   });
+
   it("Should approve a user ticket if is event admin", async () => {
     const event1 = await insertEvent();
     const user1 = await insertUser();
@@ -88,8 +90,10 @@ describe("Approval user ticket", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.approvalUserTicket?.approvalStatus, "approved");
   });
+
   it("It should throw an error if the user is not an event admin or superadmin", async () => {
     const event1 = await insertEvent();
     const user1 = await insertUser();
@@ -124,6 +128,7 @@ describe("Approval user ticket", () => {
 
     assert.equal(response.errors?.[0].message, "Unauthorized!");
   });
+
   it("It should throw an error if the ticket is already approved", async () => {
     const event1 = await insertEvent();
     const user1 = await insertUser({
@@ -161,6 +166,7 @@ describe("Approval user ticket", () => {
 
     assert.equal(response.errors?.[0].message, "Ticket already approved");
   });
+
   it("It should throw an error if the ticket does not require approval", async () => {
     const event1 = await insertEvent();
     const user1 = await insertUser({
@@ -200,6 +206,7 @@ describe("Approval user ticket", () => {
       "Ticket does not require approval",
     );
   });
+
   it("It should throw an error if the ticket is not found", async () => {
     const user1 = await insertUser({
       isSuperAdmin: true,

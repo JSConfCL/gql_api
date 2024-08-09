@@ -10,6 +10,7 @@ import {
 import { createdAndUpdatedAtFields } from "./shared";
 
 export const eventStatusEnum = ["active", "inactive"] as const;
+
 export const eventVisibilityEnum = ["public", "private", "unlisted"] as const;
 
 // EVENTS-TABLE
@@ -46,7 +47,9 @@ export const eventsRelations = relations(eventsSchema, ({ many }) => ({
 }));
 
 export const selectEventsSchema = createSelectSchema(eventsSchema);
+
 export const insertEventsSchema = createInsertSchema(eventsSchema);
+
 export const updateEventsSchema = insertEventsSchema.pick({
   name: true,
   description: true,

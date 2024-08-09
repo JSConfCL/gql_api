@@ -33,9 +33,13 @@ describe("Tags", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.tags.length, 3);
+
     assert.equal(response.data?.tags[0].id, tag1.id);
+
     assert.equal(response.data?.tags[1].id, tag2.id);
+
     assert.equal(response.data?.tags[2].id, tag3.id);
   });
 
@@ -54,9 +58,12 @@ describe("Tags", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.tags.length, 1);
+
     assert.equal(response.data?.tags[0].id, tag2.id);
   });
+
   it("Should filter by name", async () => {
     const { tag2 } = await createTags();
     const response = await executeGraphqlOperation<
@@ -72,9 +79,12 @@ describe("Tags", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.tags.length, 1);
+
     assert.equal(response.data?.tags[0].id, tag2.id);
   });
+
   it("Should filter by description", async () => {
     const { tag2 } = await createTags();
     const response = await executeGraphqlOperation<
@@ -90,7 +100,9 @@ describe("Tags", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.tags.length, 1);
+
     assert.equal(response.data?.tags[0].id, tag2.id);
   });
 });

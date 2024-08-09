@@ -18,4 +18,5 @@ export const workRoleRelations = relations(workRoleSchema, ({ many }) => ({
 }));
 
 export const selectWorkRoleSchema = createSelectSchema(workRoleSchema);
+
 export const insertWorkRoleSchema = createInsertSchema(workRoleSchema);

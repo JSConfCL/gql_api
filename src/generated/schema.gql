@@ -746,6 +746,12 @@ enum SearchableUserTags {
   DONOR
 }
 
+enum ServiceErrors {
+  FAILED_PRECONDITION
+  FORBIDDEN
+  UNAUTHENTICATED
+}
+
 """
 Representation of a Session
 """

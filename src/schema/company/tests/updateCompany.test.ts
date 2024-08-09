@@ -42,13 +42,21 @@ describe("Company", () => {
       });
 
       expect(response.data?.updateCompany).toBeDefined();
+
       expect(response.data?.updateCompany?.name).toEqual(name);
+
       expect(response.data?.updateCompany?.domain).toEqual(domain);
+
       expect(response.data?.updateCompany?.logo).toEqual(logo);
+
       expect(response.data?.updateCompany?.website).toBeDefined();
+
       expect(response.data?.updateCompany?.description).toEqual(description);
+
       expect(response.data?.updateCompany?.hasBeenUpdated).toBeDefined();
+
       expect(response.data?.updateCompany?.status).toEqual("draft");
+
       expect(response.data?.updateCompany?.salarySubmissions).toEqual(0);
     });
 
@@ -77,16 +85,25 @@ describe("Company", () => {
       });
 
       expect(response.data?.updateCompany).toBeDefined();
+
       expect(response.data?.updateCompany?.name).toEqual(name);
+
       expect(response.data?.updateCompany?.domain).toEqual(domain);
+
       expect(response.data?.updateCompany?.logo).toEqual(logo);
+
       expect(response.data?.updateCompany?.website).toBeDefined();
+
       expect(response.data?.updateCompany?.description).toEqual(description);
+
       expect(response.data?.updateCompany?.hasBeenUpdated).toBeDefined();
+
       expect(response.data?.updateCompany?.status).toEqual("draft");
+
       expect(response.data?.updateCompany?.salarySubmissions).toEqual(0);
     });
   });
+
   describe("As a User", () => {
     it("Should update", async () => {
       const company = await insertCompany({
@@ -117,13 +134,21 @@ describe("Company", () => {
       );
 
       expect(response.data?.updateCompany).toBeDefined();
+
       expect(response.data?.updateCompany?.name).toEqual(name);
+
       expect(response.data?.updateCompany?.domain).toEqual(domain);
+
       expect(response.data?.updateCompany?.logo).toEqual(logo);
+
       expect(response.data?.updateCompany?.website).toBeDefined();
+
       expect(response.data?.updateCompany?.description).toEqual(description);
+
       expect(response.data?.updateCompany?.hasBeenUpdated).toBeDefined();
+
       expect(response.data?.updateCompany?.status).toEqual(null);
+
       expect(response.data?.updateCompany?.salarySubmissions).toEqual(0);
     });
 
@@ -156,10 +181,13 @@ describe("Company", () => {
       );
 
       expect(response.data?.updateCompany).toBeUndefined();
+
       expect(response.errors).toBeDefined();
+
       expect(response.errors?.[0]?.message).toEqual("Unexpected error.");
     });
   });
+
   describe("As an anonymous User", () => {
     it("Should fail to update", async () => {
       const company = await insertCompany();
@@ -184,6 +212,7 @@ describe("Company", () => {
       });
 
       expect(response.data?.updateCompany).toBeUndefined();
+
       expect(response.errors).toBeDefined();
     });
   });

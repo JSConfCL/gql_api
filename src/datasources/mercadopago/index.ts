@@ -90,6 +90,7 @@ export const getMercadoPagoFetch =
     const headers = new Headers();
 
     headers.set("Authorization", `Bearer ${token}`);
+
     headers.set("Content-Type", "application/json");
     const response = await fetch(`https://api.mercadopago.com${parsedUrl}`, {
       method,

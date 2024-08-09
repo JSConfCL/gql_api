@@ -34,6 +34,7 @@ describe("Event", () => {
         userId: user1.id,
         role: "admin",
       });
+
       await insertEventToCommunity({
         communityId: community.id,
         eventId: event.id,
@@ -69,18 +70,24 @@ describe("Event", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(response.data?.editEvent.id, event.id);
+
       assert.equal(response.data?.editEvent.description, newDescription);
+
       assert.equal(response.data?.editEvent.name, newName);
+
       assert.equal(
         response.data?.editEvent.startDateTime,
         toISODate(newStartDateTime),
       );
+
       assert.equal(
         response.data?.editEvent.endDateTime,
         toISODate(newEndDateTime),
       );
     });
+
     it("As a super-admin", async () => {
       const user1 = await insertUser();
       const community = await insertCommunity();
@@ -93,6 +100,7 @@ describe("Event", () => {
         userId: user1.id,
         role: "admin",
       });
+
       await insertEventToCommunity({
         communityId: community.id,
         eventId: event.id,
@@ -125,19 +133,25 @@ describe("Event", () => {
       });
 
       assert.equal(response.errors, undefined);
+
       assert.equal(response.data?.editEvent.id, event.id);
+
       assert.equal(response.data?.editEvent.description, newDescription);
+
       assert.equal(response.data?.editEvent.name, newName);
+
       assert.equal(
         response.data?.editEvent.startDateTime,
         toISODate(newStartDateTime),
       );
+
       assert.equal(
         response.data?.editEvent.endDateTime,
         toISODate(newEndDateTime),
       );
     });
   });
+
   describe("Should fail to edit an event", () => {
     it("As normal user", async () => {
       const user1 = await insertUser();
@@ -151,6 +165,7 @@ describe("Event", () => {
         userId: user1.id,
         role: "member",
       });
+
       await insertEventToCommunity({
         communityId: community.id,
         eventId: event.id,
@@ -190,8 +205,10 @@ describe("Event", () => {
       );
 
       assert.equal(response.errors?.length, 1);
+
       assert.equal(response.errors?.[0]?.message, "FORBIDDEN");
     });
+
     it("As collaborator", async () => {
       const user1 = await insertUser();
       const community = await insertCommunity();
@@ -204,6 +221,7 @@ describe("Event", () => {
         userId: user1.id,
         role: "collaborator",
       });
+
       await insertEventToCommunity({
         communityId: community.id,
         eventId: event.id,
@@ -243,6 +261,7 @@ describe("Event", () => {
       );
 
       assert.equal(response.errors?.length, 1);
+
       assert.equal(response.errors?.[0]?.message, "FORBIDDEN");
     });
   });
@@ -259,6 +278,7 @@ describe("Event", () => {
       userId: user1.id,
       role: "admin",
     });
+
     await insertEventToCommunity({
       communityId: community.id,
       eventId: event.id,
@@ -298,6 +318,7 @@ describe("Event", () => {
     );
 
     assert.equal(response?.errors?.length, 1);
+
     await expect(
       findEventById(response?.data?.editEvent?.id),
     ).rejects.toThrow();

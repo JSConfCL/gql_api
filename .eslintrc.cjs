@@ -78,6 +78,9 @@ module.exports = {
           { blankLine: "always", prev: "try", next: "*" },
           { blankLine: "always", prev: "*", next: "function" },
           { blankLine: "always", prev: "function", next: "*" },
+          { blankLine: "always", prev: "export", next: "*" },
+          { blankLine: "always", prev: "*", next: "expression" },
+          { blankLine: "always", prev: "*", next: "export" },
           {
             blankLine: "always",
             prev: "import",

@@ -27,11 +27,13 @@ describe("User update role in communities", () => {
       eventId: event1.id,
       communityId: community1.id,
     });
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
       role: "member",
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -56,8 +58,10 @@ describe("User update role in communities", () => {
     );
 
     assert.equal(response.errors?.length, 1);
+
     assert.equal(response.errors?.[0].message, "Not authorized");
   });
+
   it("It should a error, if has a collaborator role", async () => {
     const user1 = await insertUser();
     const user2 = await insertUser();
@@ -68,11 +72,13 @@ describe("User update role in communities", () => {
       eventId: event1.id,
       communityId: community1.id,
     });
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
       role: "collaborator",
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -97,8 +103,10 @@ describe("User update role in communities", () => {
     );
 
     assert.equal(response.errors?.length, 1);
+
     assert.equal(response.errors?.[0].message, "Not authorized");
   });
+
   it("Should update a user role in community if user is a superadmin", async () => {
     const user1 = await insertUser({
       isSuperAdmin: true,
@@ -111,11 +119,13 @@ describe("User update role in communities", () => {
       eventId: event1.id,
       communityId: community1.id,
     });
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
       role: "member",
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -140,8 +150,10 @@ describe("User update role in communities", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.updateUserRoleInCommunity?.id, user2.id);
   });
+
   it("Should update a user role in community if user is a community admin", async () => {
     const user1 = await insertUser();
     const user2 = await insertUser();
@@ -152,11 +164,13 @@ describe("User update role in communities", () => {
       eventId: event1.id,
       communityId: community1.id,
     });
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
       role: "admin",
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -181,6 +195,7 @@ describe("User update role in communities", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.updateUserRoleInCommunity?.id, user2.id);
   });
 });

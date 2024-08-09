@@ -506,6 +506,7 @@ export const insertEvent = async (
     possibleInput,
   );
 };
+
 export const findEventById = async (id?: string) => findById(eventsSchema, id);
 
 export const insertTeam = async (
@@ -531,6 +532,7 @@ export const insertTeam = async (
     possibleInput,
   );
 };
+
 export const findTeamById = async (id?: string) => findById(teamsSchema, id);
 
 export const insertUserTeams = async (
@@ -552,6 +554,7 @@ export const insertUserTeams = async (
     possibleInput,
   );
 };
+
 export const findUserTeamsById = async (id?: string) =>
   findById(userTeamsSchema, id);
 
