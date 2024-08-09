@@ -311,11 +311,11 @@ export async function canRedeemUserTicket(
     return false;
   }
 
-  const eventToCommunitie = await DB.query.eventsToCommunitiesSchema.findFirst({
+  const eventToCommunity = await DB.query.eventsToCommunitiesSchema.findFirst({
     where: (utc, { eq }) => eq(utc.eventId, userTicket?.ticketTemplate.eventId),
   });
 
-  if (!eventToCommunitie) {
+  if (!eventToCommunity) {
     return false;
   }
 
@@ -324,7 +324,7 @@ export async function canRedeemUserTicket(
       where: (utc, { eq, and }) =>
         and(
           eq(utc.userId, userId),
-          eq(utc.communityId, eventToCommunitie?.communityId),
+          eq(utc.communityId, eventToCommunity?.communityId),
           inArray(utc.role, ["admin", "collaborator"]),
         ),
     });
