@@ -24,4 +24,5 @@ export const tagsRelations = relations(tagsSchema, ({ many }) => ({
 }));
 
 export const selectTagsSchema = createSelectSchema(tagsSchema);
+
 export const insertTagsSchema = createInsertSchema(tagsSchema);

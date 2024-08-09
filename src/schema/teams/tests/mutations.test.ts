@@ -45,8 +45,10 @@ describe("Team", () => {
       const team = await findTeamById(response?.data?.createTeam?.id);
 
       assert.equal(response.data?.createTeam.id, team.id);
+
       assert.equal(response.data?.createTeam.description, team.description);
     });
+
     it("As a super-admin", async () => {
       const event = await insertEvent();
       const response = await executeGraphqlOperationAsSuperAdmin<
@@ -67,9 +69,11 @@ describe("Team", () => {
       const team = await findTeamById(response?.data?.createTeam?.id);
 
       assert.equal(response.data?.createTeam.id, team.id);
+
       assert.equal(response.data?.createTeam.description, team.description);
     });
   });
+
   it("Should error on creating a second team", async () => {
     const event = await insertEvent();
     const user = await insertUser({
@@ -113,11 +117,13 @@ describe("Team", () => {
     );
 
     assert.equal(response?.errors?.length, 1);
+
     assert.equal(
       response?.errors?.[0]?.message,
       "You have already created a team for this event",
     );
   });
+
   it("Should error on non existing event", async () => {
     const response = await executeGraphqlOperation<
       CreateTeamMutation,
@@ -134,6 +140,7 @@ describe("Team", () => {
     });
 
     assert.equal(response?.errors?.length, 1);
+
     await expect(
       findTeamById(response?.data?.createTeam?.id),
     ).rejects.toThrow();

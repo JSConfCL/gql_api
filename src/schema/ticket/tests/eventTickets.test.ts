@@ -78,12 +78,15 @@ describe("Should get events and its tickets", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.searchEvents.data[0]?.tickets?.length, 1);
+
     assert.equal(
       response.data?.searchEvents.data[0]?.tickets[0]?.id,
       ticket.id,
     );
   });
+
   it("as an anonymous query", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
@@ -104,7 +107,9 @@ describe("Should get events and its tickets", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.searchEvents.data[0]?.tickets?.length, 1);
+
     assert.equal(
       response.data?.searchEvents.data[0]?.tickets[0]?.id,
       ticket.id,

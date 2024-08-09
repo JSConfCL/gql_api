@@ -43,7 +43,9 @@ export const teamRelations = relations(teamsSchema, ({ many, one }) => ({
 export type TEAM = z.infer<typeof selectTeamsSchema>;
 
 export const selectTeamsSchema = createSelectSchema(teamsSchema);
+
 export const insertTeamsSchema = createInsertSchema(teamsSchema);
+
 export const updateTeamsSchema = insertTeamsSchema
   .pick({
     name: true,

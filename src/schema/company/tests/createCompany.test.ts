@@ -35,16 +35,25 @@ describe("Company", () => {
       });
 
       expect(response.data?.createCompany).toBeDefined();
+
       expect(response.data?.createCompany?.name).toEqual(name);
+
       expect(response.data?.createCompany?.domain).toEqual(domain);
+
       expect(response.data?.createCompany?.logo).toBeDefined();
+
       expect(response.data?.createCompany?.website).toBeDefined();
+
       expect(response.data?.createCompany?.description).toEqual(description);
+
       expect(response.data?.createCompany?.hasBeenUpdated).toBeDefined();
+
       expect(response.data?.createCompany?.status).toEqual("draft");
+
       expect(response.data?.createCompany?.salarySubmissions).toEqual(0);
     });
   });
+
   describe("As a User", () => {
     it("Should error to create company", async () => {
       const domain = faker.internet.domainName();
@@ -69,10 +78,13 @@ describe("Company", () => {
       );
 
       expect(response.data?.createCompany).not.toBeDefined();
+
       expect(response.errors).toBeDefined();
+
       expect(response.errors?.[0].message).toBe("Unauthorized!");
     });
   });
+
   describe("As an anonymous User", () => {
     it("Should error to create company", async () => {
       const domain = faker.internet.domainName();
@@ -93,7 +105,9 @@ describe("Company", () => {
       });
 
       expect(response.data?.createCompany).not.toBeDefined();
+
       expect(response.errors).toBeDefined();
+
       expect(response.errors?.[0].message).toBe("Unauthorized!");
     });
   });

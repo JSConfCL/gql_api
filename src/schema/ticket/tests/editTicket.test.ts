@@ -35,6 +35,7 @@ describe("User", () => {
       eventId: event1.id,
       communityId: community1.id,
     });
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
@@ -77,6 +78,7 @@ describe("User", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.editTicket, {
       id: ticket.id,
       name: fakeInput.name,
@@ -93,6 +95,7 @@ describe("User", () => {
       quantity: 100,
     });
   });
+
   it("Should update a ticket, only one field", async () => {
     const user1 = await insertUser({
       isSuperAdmin: true,
@@ -104,6 +107,7 @@ describe("User", () => {
       eventId: event1.id,
       communityId: community1.id,
     });
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
@@ -132,6 +136,7 @@ describe("User", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.editTicket, {
       id: ticket.id,
       name: input.name,
@@ -148,6 +153,7 @@ describe("User", () => {
       isUnlimited: false,
     });
   });
+
   it("Should update a ticket is community admin", async () => {
     const user1 = await insertUser();
     const community1 = await insertCommunity();
@@ -157,6 +163,7 @@ describe("User", () => {
       eventId: event1.id,
       communityId: community1.id,
     });
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
@@ -185,6 +192,7 @@ describe("User", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.deepEqual(response.data?.editTicket, {
       id: ticket.id,
       name: input.name,
@@ -201,6 +209,7 @@ describe("User", () => {
       isUnlimited: false,
     });
   });
+
   it("It should throw an error, if don't have permission", async () => {
     const user1 = await insertUser();
     const community1 = await insertCommunity();
@@ -210,6 +219,7 @@ describe("User", () => {
       eventId: event1.id,
       communityId: community1.id,
     });
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,

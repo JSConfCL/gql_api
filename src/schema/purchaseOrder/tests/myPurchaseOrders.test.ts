@@ -51,8 +51,11 @@ describe("My Purchase Orders", () => {
     );
 
     assert.equal(result.errors, undefined);
+
     assert.equal(result?.data?.myPurchaseOrders?.data?.length, 1);
+
     assert.equal(result?.data?.myPurchaseOrders.data[0].id, purchaseOrderId1);
+
     assert.equal(
       result?.data?.myPurchaseOrders.data[0].status,
       purchaseOrder.status,

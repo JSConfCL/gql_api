@@ -7,6 +7,7 @@ export type EmailMessageType = {
   userId: string;
   to: string;
 };
+
 export const enqueueEmail = (
   MAIL_QUEUE: Queue,
   logger: Logger<never>,

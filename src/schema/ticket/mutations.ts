@@ -391,32 +391,39 @@ builder.mutationField("editTicket", (t) =>
         const updateFields = {};
 
         addToObjectIfPropertyExists(updateFields, "name", input.name);
+
         addToObjectIfPropertyExists(
           updateFields,
           "description",
           input.description,
         );
+
         addToObjectIfPropertyExists(updateFields, "status", input.status);
+
         addToObjectIfPropertyExists(
           updateFields,
           "visibility",
           input.visibility,
         );
+
         addToObjectIfPropertyExists(
           updateFields,
           "startDateTime",
           input.startDateTime,
         );
+
         addToObjectIfPropertyExists(
           updateFields,
           "endDateTime",
           input.endDateTime,
         );
+
         addToObjectIfPropertyExists(
           updateFields,
           "requiresApproval",
           input.requiresApproval,
         );
+
         addToObjectIfPropertyExists(updateFields, "quantity", input.quantity);
 
         const response = updateTicketSchema.safeParse(updateFields);

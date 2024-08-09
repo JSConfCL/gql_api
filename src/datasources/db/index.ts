@@ -11,6 +11,7 @@ import postgres from "postgres";
 import * as schema from "./schema";
 
 export type ORM_TYPE = PostgresJsDatabase<typeof schema>;
+
 export type TRANSACTION_HANDLER = PgTransaction<
   PostgresJsQueryResultHKT,
   typeof schema,

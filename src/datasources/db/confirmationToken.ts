@@ -55,6 +55,7 @@ export const confirmationTokenRelations = relations(
 export const selectConfirmationTokenSchema = createSelectSchema(
   confirmationTokenSchema,
 );
+
 export const insertConfirmationTokenSchema = createInsertSchema(
   confirmationTokenSchema,
 );

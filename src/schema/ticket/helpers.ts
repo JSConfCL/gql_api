@@ -40,6 +40,7 @@ export const ensureProductsAreCreated = async ({
       })
       .where(eq(ticketsSchema.id, ticket.id))
       .returning();
+
     logger.info(
       `Ticket ${ticket.id} updated with stripe ProductId ${stripeProductId}`,
     );

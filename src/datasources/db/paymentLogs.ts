@@ -39,4 +39,5 @@ export const paymentLogsSchema = pgTable(
 );
 
 export const selectPaymentLogsSchema = createSelectSchema(paymentLogsSchema);
+
 export const insertPaymentLogsSchema = createInsertSchema(paymentLogsSchema);

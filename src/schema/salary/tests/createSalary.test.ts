@@ -76,6 +76,7 @@ describe("Salary creation", () => {
       assert.equal(StartWorkEmailValidationResponse.errors, undefined);
     });
   });
+
   describe("Creation should fail", () => {
     it("With an annonymous user", async () => {
       const testDB = await getTestDB();
@@ -127,6 +128,7 @@ describe("Salary creation", () => {
 
       expect(StartWorkEmailValidationResponse.errors).toBeDefined();
     });
+
     it("If the user using the code is not the same user that created it", async () => {
       const testDB = await getTestDB();
       const user = await insertUser();
@@ -182,6 +184,7 @@ describe("Salary creation", () => {
 
       expect(StartWorkEmailValidationResponse.errors).toBeDefined();
     });
+
     it("With a wrong code", async () => {
       const testDB = await getTestDB();
       const user = await insertUser();
@@ -237,6 +240,7 @@ describe("Salary creation", () => {
 
       expect(StartWorkEmailValidationResponse.errors).toBeDefined();
     });
+
     it("With a previously validated code", async () => {
       const testDB = await getTestDB();
       const user = await insertUser();
@@ -291,6 +295,7 @@ describe("Salary creation", () => {
 
       expect(StartWorkEmailValidationResponse.errors).toBeDefined();
     });
+
     it("With a rejected code", async () => {
       const testDB = await getTestDB();
       const user = await insertUser();
@@ -345,6 +350,7 @@ describe("Salary creation", () => {
 
       expect(StartWorkEmailValidationResponse.errors).toBeDefined();
     });
+
     it("With an expired code", async () => {
       const testDB = await getTestDB();
       const user = await insertUser();
@@ -399,6 +405,7 @@ describe("Salary creation", () => {
 
       expect(StartWorkEmailValidationResponse.errors).toBeDefined();
     });
+
     it("With an expired code — via date", async () => {
       const testDB = await getTestDB();
       const user = await insertUser();

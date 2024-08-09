@@ -38,4 +38,5 @@ export const eventsToTagsRelations = relations(
 );
 
 export const selectEventsToTagsSchema = createSelectSchema(eventsToTagsSchema);
+
 export const insertEventsToTagsSchema = createInsertSchema(eventsToTagsSchema);

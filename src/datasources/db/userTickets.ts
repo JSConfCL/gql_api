@@ -14,7 +14,9 @@ export const userTicketsApprovalStatusEnum = [
   "rejected",
   "cancelled",
 ] as const;
+
 export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;
+
 // USER-TICKETS-TABLE
 export const userTicketsSchema = pgTable("user_tickets", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -54,4 +56,5 @@ export const userTicketsRelations = relations(userTicketsSchema, ({ one }) => ({
 }));
 
 export const selectUserTicketsSchema = createSelectSchema(userTicketsSchema);
+
 export const insertUserTicketsSchema = createInsertSchema(userTicketsSchema);

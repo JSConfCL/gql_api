@@ -552,15 +552,15 @@ builder.mutationField("acceptGiftedTicket", (t) =>
       // find the ticket for the user
       const ticket = await DB.query.userTicketsSchema.findFirst({
         where: (t, { eq, and }) =>
-          and(
-            eq(t.id, userTicketId),
-            eq(t.approvalStatus, "gifted"),
-            eq(t.userId, USER.id),
-          ),
+          and(eq(t.id, userTicketId), eq(t.userId, USER.id)),
       });
 
       if (!ticket) {
         throw new GraphQLError("Could not find ticket to accept");
+      }
+
+      if (ticket.approvalStatus !== "gifted") {
+        throw new GraphQLError("Ticket is not a gifted ticket");
       }
 
       const updatedTicket = (

@@ -8,6 +8,7 @@ import { ORM_TYPE } from "~/datasources/db";
 import * as schema from "~/datasources/db/schema";
 
 export const testDatabasesFolder = `.test_dbs`;
+
 export const migrationsFolder = `${process.cwd()}/drizzle/migrations`;
 
 const dbUrl = `postgres://postgres:postgres@${
@@ -18,7 +19,9 @@ const ensureDBIsClean = async (databaseName: string) => {
   const pgClient = postgres(dbUrl);
 
   await pgClient.unsafe(`DROP DATABASE IF EXISTS "${databaseName}";`);
+
   await pgClient.unsafe(`CREATE DATABASE "${databaseName}"`);
+
   await pgClient.end();
 
   return databaseName;
@@ -26,6 +29,7 @@ const ensureDBIsClean = async (databaseName: string) => {
 
 let db: PostgresJsDatabase<typeof schema> | null = null;
 let client: postgres.Sql<Record<string, unknown>> | null = null;
+
 export const getTestDB = async (maybeDatabaseName?: string) => {
   const databaseName = maybeDatabaseName || `test_${v4()}`;
 
@@ -36,11 +40,14 @@ export const getTestDB = async (maybeDatabaseName?: string) => {
   }
 
   console.log("🆕 Creando una nueva BDD");
+
   await ensureDBIsClean(databaseName);
   const migrationClient = postgres(`${dbUrl}/${databaseName}`, { max: 1 });
 
   client = migrationClient;
+
   db = drizzle(migrationClient, { schema: { ...schema } });
+
   await migrate(db, {
     migrationsFolder,
     migrationsTable: "migrations",
@@ -51,6 +58,8 @@ export const getTestDB = async (maybeDatabaseName?: string) => {
 
 export const closeConnection = async () => {
   await client?.end();
+
   db = null;
+
   client = null;
 };

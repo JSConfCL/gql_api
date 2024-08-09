@@ -6,6 +6,7 @@ import { AllowedCurrencyRef, PriceRef, TicketRef } from "~/schema/shared/refs";
 export const TicketTemplateStatus = builder.enumType("TicketTemplateStatus", {
   values: ["active", "inactive"] as const,
 });
+
 export const TicketTemplateVisibility = builder.enumType(
   "TicketTemplateVisibility",
   {

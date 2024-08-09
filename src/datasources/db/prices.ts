@@ -23,4 +23,5 @@ export const pricesRelations = relations(pricesSchema, ({ many, one }) => ({
 }));
 
 export const selectPriceSchema = createSelectSchema(pricesSchema);
+
 export const insertPriceSchema = createInsertSchema(pricesSchema);

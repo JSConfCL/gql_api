@@ -17,6 +17,7 @@ import { ticketsPricesSchema } from "./ticketPrice";
 export const ticketStatusEnum = ["active", "inactive"] as const;
 
 export const ticketVisibilityEnum = ["public", "private", "unlisted"] as const;
+
 // TICKETS-TABLE
 export const ticketsSchema = pgTable("tickets", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -64,9 +65,11 @@ export const ticketRelations = relations(ticketsSchema, ({ one, many }) => ({
 export const selectTicketSchema = createSelectSchema(ticketsSchema, {
   tags: z.array(z.string()),
 });
+
 export const insertTicketSchema = createInsertSchema(ticketsSchema, {
   tags: z.array(z.string()),
 });
+
 export const updateTicketSchema = insertTicketSchema
   .pick({
     name: true,

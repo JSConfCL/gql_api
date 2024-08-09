@@ -32,4 +32,5 @@ export const scheduleSchema = pgTable("schedule", {
 });
 
 export const selectScheduleSchema = createSelectSchema(scheduleSchema);
+
 export const insertScheduleSchema = createInsertSchema(scheduleSchema);

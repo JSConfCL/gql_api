@@ -30,7 +30,9 @@ describe("clearExpiredPurchaseOrders", () => {
     });
 
     assert.equal(result.length, 2);
+
     assert.equal(result[0].id, purchaseOrder1.id);
+
     assert.equal(result[1].id, purchaseOrder2.id);
   });
 });

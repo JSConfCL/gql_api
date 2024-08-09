@@ -4,6 +4,7 @@ import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import { CommunityRef, EventRef, UserRef } from "~/schema/shared/refs";
 
 export const communityStatus = ["active", "inactive"] as const;
+
 export const CommnunityStatus = builder.enumType("CommnunityStatus", {
   values: communityStatus,
 });

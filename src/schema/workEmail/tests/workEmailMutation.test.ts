@@ -69,6 +69,7 @@ describe("test the email validation process", () => {
       );
 
       assert.equal(StartWorkEmailValidationResponse.errors, undefined);
+
       assert.equal(
         StartWorkEmailValidationResponse.data?.startWorkEmailValidation
           .isValidated,
@@ -76,12 +77,14 @@ describe("test the email validation process", () => {
       );
 
       assert.equal(ValidateWorkEmailResponse.errors, undefined);
+
       assert.equal(
         ValidateWorkEmailResponse.data?.validateWorkEmail.isValidated,
         true,
       );
     });
   });
+
   describe("Test should fail", () => {
     it("If the user using the code is not the same user that created it", async () => {
       const testDB = await getTestDB();
@@ -131,6 +134,7 @@ describe("test the email validation process", () => {
       );
 
       assert.equal(StartWorkEmailValidationResponse.errors, undefined);
+
       assert.equal(
         StartWorkEmailValidationResponse.data?.startWorkEmailValidation
           .isValidated,
@@ -139,6 +143,7 @@ describe("test the email validation process", () => {
 
       assert.equal(ValidateWorkEmailResponse.errors?.length, 1);
     });
+
     it("With a wrong code", async () => {
       const testDB = await getTestDB();
       const email = faker.internet.email();
@@ -181,6 +186,7 @@ describe("test the email validation process", () => {
       );
 
       assert.equal(StartWorkEmailValidationResponse.errors, undefined);
+
       assert.equal(
         StartWorkEmailValidationResponse.data?.startWorkEmailValidation
           .isValidated,
@@ -189,6 +195,7 @@ describe("test the email validation process", () => {
 
       assert.equal(ValidateWorkEmailResponse.errors?.length, 1);
     });
+
     it("Without an email", async () => {
       const email = faker.internet.email();
       const user = await insertUser({
@@ -226,8 +233,10 @@ describe("test the email validation process", () => {
         StartWorkEmailValidationResponse.errors?.[0]?.message,
         "Unexpected error.",
       );
+
       assert.equal(ValidateWorkEmailResponse.errors?.length, 1);
     });
+
     it("Without a user", async () => {
       const testDB = await getTestDB();
       const email = faker.internet.email();
@@ -252,12 +261,16 @@ describe("test the email validation process", () => {
       });
 
       assert.equal(workEmailEntry, undefined);
+
       assert.equal(StartWorkEmailValidationResponse.errors?.length, 1);
+
       assert.equal(
         StartWorkEmailValidationResponse.errors?.[0]?.message,
         "User is not authenticated",
       );
+
       assert.equal(ValidateWorkEmailResponse.errors?.length, 1);
+
       assert.equal(
         ValidateWorkEmailResponse.errors?.[0]?.message,
         "User is not authenticated",

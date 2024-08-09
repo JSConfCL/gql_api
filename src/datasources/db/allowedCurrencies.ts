@@ -18,6 +18,7 @@ export const allowedCurrencySchema = pgTable("allowed_currencies", {
 export const selectAllowedCurrencySchema = createSelectSchema(
   allowedCurrencySchema,
 );
+
 export const insertAllowedCurrencySchema = createInsertSchema(
   allowedCurrencySchema,
 );

@@ -306,6 +306,7 @@ builder.mutationField("updateTeam", (t) =>
       const properties = {};
 
       addToObjectIfPropertyExists(properties, "name", name);
+
       addToObjectIfPropertyExists(properties, "description", description);
 
       const teamToUpdate = updateTeamsSchema.parse(properties);

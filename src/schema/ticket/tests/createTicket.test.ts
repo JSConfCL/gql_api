@@ -150,30 +150,42 @@ describe("As a SUPER_ADMIN", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(response.data?.createTicket?.name, input.name);
+
       assert.equal(
         response.data?.createTicket?.startDateTime,
         toISODate(startDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.endDateTime,
         toISODate(endDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.requiresApproval,
         input.requiresApproval,
       );
+
       assert.equal(response.data?.createTicket?.quantity, input.quantity);
+
       assert.equal(response.data?.createTicket?.status, input.status);
+
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
+
       assert.equal(response.data?.createTicket.event.id, input.eventId);
+
       assert.equal(response.data?.createTicket.prices?.[0].amount, value1);
+
       assert.deepEqual(response.data?.createTicket.prices?.[0].currency, {
         currency: currency1.currency,
         id: currency1.id,
         validPaymentMethods: ValidPaymentMethods.Stripe,
       });
+
       assert.equal(response.data?.createTicket.prices?.[1].amount, value2);
+
       assert.deepEqual(response.data?.createTicket.prices?.[1].currency, {
         currency: currency2.currency,
         id: currency2.id,
@@ -181,6 +193,7 @@ describe("As a SUPER_ADMIN", () => {
       });
     });
   });
+
   describe("Should create a free ticket", () => {
     it("Without pricing", async () => {
       const { user1, event1 } = await superAdminSetup();
@@ -217,27 +230,38 @@ describe("As a SUPER_ADMIN", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(response.data?.createTicket?.name, input.name);
+
       assert.equal(
         response.data?.createTicket?.startDateTime,
         toISODate(startDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.endDateTime,
         toISODate(endDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.requiresApproval,
         input.requiresApproval,
       );
+
       assert.equal(response.data?.createTicket?.isFree, true);
+
       assert.equal(response.data?.createTicket?.quantity, input.quantity);
+
       assert.equal(response.data?.createTicket?.status, input.status);
+
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
+
       assert.equal(response.data?.createTicket.event.id, input.eventId);
+
       assert.equal(response.data?.createTicket.prices, null);
     });
   });
+
   describe("Should create an unlimited ticket", () => {
     it("With pricing", async () => {
       const { user1, event1 } = await superAdminSetup();
@@ -285,32 +309,45 @@ describe("As a SUPER_ADMIN", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(response.data?.createTicket?.name, input.name);
+
       assert.equal(
         response.data?.createTicket?.startDateTime,
         toISODate(startDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.endDateTime,
         toISODate(endDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.requiresApproval,
         input.requiresApproval,
       );
+
       assert.equal(response.data?.createTicket?.quantity, null);
+
       assert.equal(response.data?.createTicket?.isUnlimited, true);
+
       assert.equal(response.data?.createTicket?.isFree, false);
+
       assert.equal(response.data?.createTicket?.status, input.status);
+
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
+
       assert.equal(response.data?.createTicket.event.id, input.eventId);
+
       assert.equal(response.data?.createTicket.prices?.[0].amount, value1);
+
       assert.deepEqual(response.data?.createTicket.prices?.[0].currency, {
         currency: currency1.currency,
         id: currency1.id,
         validPaymentMethods: ValidPaymentMethods.Stripe,
       });
     });
+
     it("without pricing", async () => {
       const { user1, event1 } = await superAdminSetup();
       const { startDateTime, endDateTime } = correctStartAndEndDateTime();
@@ -342,25 +379,36 @@ describe("As a SUPER_ADMIN", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(response.data?.createTicket?.name, input.name);
+
       assert.equal(
         response.data?.createTicket?.startDateTime,
         toISODate(startDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.endDateTime,
         toISODate(endDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.requiresApproval,
         input.requiresApproval,
       );
+
       assert.equal(response.data?.createTicket?.quantity, null);
+
       assert.equal(response.data?.createTicket?.isUnlimited, true);
+
       assert.equal(response.data?.createTicket?.isFree, true);
+
       assert.equal(response.data?.createTicket?.status, input.status);
+
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
+
       assert.equal(response.data?.createTicket.event.id, input.eventId);
+
       assert.equal(response.data?.createTicket.prices, null);
     });
   });
@@ -378,6 +426,7 @@ describe("Should throw an error", () => {
       eventId: event1.id,
       communityId: community1.id,
     });
+
     await insertUserToCommunity({
       communityId: community1.id,
       userId: user1.id,
@@ -405,6 +454,7 @@ describe("Should throw an error", () => {
 
     assert.equal(response.errors?.[0].message, "Not authorized");
   });
+
   it("If event does not exist", async () => {
     const { user1 } = await superAdminSetup();
     const response = await executeGraphqlOperationAsUser<
@@ -428,6 +478,7 @@ describe("Should throw an error", () => {
 
     assert.equal(response.errors?.[0].message, "Event not found");
   });
+
   it("If currency does not exist", async () => {
     const { user1, event1 } = await superAdminSetup();
     const price = faker.number.int({
@@ -461,6 +512,7 @@ describe("Should throw an error", () => {
 
     assert.equal(response.errors?.[0].message, "Error creating price");
   });
+
   it("If price is 0 (or less than 0) and isFree is false", async () => {
     const { user1, event1 } = await superAdminSetup();
     const currency1 = await insertAllowedCurrency({
@@ -497,6 +549,7 @@ describe("Should throw an error", () => {
       "Price must be greater than 0. If this is a free ticket, set isFree to true.",
     );
   });
+
   it("If price is set and isFree is true", async () => {
     const { user1, event1 } = await superAdminSetup();
     const currency1 = await insertAllowedCurrency({
@@ -533,6 +586,7 @@ describe("Should throw an error", () => {
       "Prices array must not be provided if ticket is free",
     );
   });
+
   it("If startDateTime is in the past", async () => {
     const { user1, event1 } = await superAdminSetup();
     const currency1 = await insertAllowedCurrency({
@@ -569,6 +623,7 @@ describe("Should throw an error", () => {
       "Start date must be in the future",
     );
   });
+
   it("If endDateTime is before startDateTime", async () => {
     const { user1, event1 } = await superAdminSetup();
     const currency1 = await insertAllowedCurrency({
@@ -606,6 +661,7 @@ describe("Should throw an error", () => {
       "End date must be after start date",
     );
   });
+
   it("If tickets are unlimited and quantity is provided", async () => {
     const { user1, event1 } = await superAdminSetup();
     const currency1 = await insertAllowedCurrency({
@@ -643,6 +699,7 @@ describe("Should throw an error", () => {
       "Quantity must not be provided if tickets are unlimited",
     );
   });
+
   it("If quantity is 0 (or less than 0) and tickets are not unlimited", async () => {
     const { user1, event1 } = await superAdminSetup();
     const currency1 = await insertAllowedCurrency({
@@ -680,6 +737,7 @@ describe("Should throw an error", () => {
       "Quantity must be provided if tickets are not unlimited",
     );
   });
+
   it("If amount of tickets is negative", async () => {
     const { user1, event1 } = await superAdminSetup();
     const currency1 = await insertAllowedCurrency({
@@ -717,6 +775,7 @@ describe("Should throw an error", () => {
       "Cannot have negative quantity of tickets",
     );
   });
+
   it("If we sent an empty prices array", async () => {
     const { user1, event1 } = await superAdminSetup();
     const response = await executeGraphqlOperationAsUser<
@@ -745,6 +804,7 @@ describe("Should throw an error", () => {
       "Prices array must not be empty",
     );
   });
+
   it("CurrencyId is required if prices are provided", async () => {
     const { user1, event1 } = await superAdminSetup();
     const value_in_cents = 10;
@@ -779,6 +839,7 @@ describe("Should throw an error", () => {
       `Variable "$input" got invalid value { value_in_cents: ${value_in_cents} } at "input.prices[0]"; Field "currencyId" of required type "String!" was not provided.`,
     );
   });
+
   it("If user is not authenticated", async () => {
     const { event1 } = await superAdminSetup();
     const response = await executeGraphqlOperation<
@@ -873,30 +934,42 @@ describe("As an ADMIN-USER", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(response.data?.createTicket?.name, input.name);
+
       assert.equal(
         response.data?.createTicket?.startDateTime,
         toISODate(startDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.endDateTime,
         toISODate(endDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.requiresApproval,
         input.requiresApproval,
       );
+
       assert.equal(response.data?.createTicket?.quantity, input.quantity);
+
       assert.equal(response.data?.createTicket?.status, input.status);
+
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
+
       assert.equal(response.data?.createTicket.event.id, input.eventId);
+
       assert.equal(response.data?.createTicket.prices?.[0].amount, value1);
+
       assert.deepEqual(response.data?.createTicket.prices?.[0].currency, {
         currency: currency1.currency,
         id: currency1.id,
         validPaymentMethods: ValidPaymentMethods.Stripe,
       });
+
       assert.equal(response.data?.createTicket.prices?.[1].amount, value2);
+
       assert.deepEqual(response.data?.createTicket.prices?.[1].currency, {
         currency: currency2.currency,
         id: currency2.id,
@@ -904,6 +977,7 @@ describe("As an ADMIN-USER", () => {
       });
     });
   });
+
   describe("Should create a free ticket", () => {
     it("Without pricing", async () => {
       const { user1, event1 } = await communityAdminSetup();
@@ -940,27 +1014,38 @@ describe("As an ADMIN-USER", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(response.data?.createTicket?.name, input.name);
+
       assert.equal(
         response.data?.createTicket?.startDateTime,
         toISODate(startDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.endDateTime,
         toISODate(endDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.requiresApproval,
         input.requiresApproval,
       );
+
       assert.equal(response.data?.createTicket?.isFree, true);
+
       assert.equal(response.data?.createTicket?.quantity, input.quantity);
+
       assert.equal(response.data?.createTicket?.status, input.status);
+
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
+
       assert.equal(response.data?.createTicket.event.id, input.eventId);
+
       assert.equal(response.data?.createTicket.prices, null);
     });
   });
+
   describe("Should create an unlimited ticket", () => {
     it("With pricing", async () => {
       const { user1, event1 } = await communityAdminSetup();
@@ -1008,32 +1093,45 @@ describe("As an ADMIN-USER", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(response.data?.createTicket?.name, input.name);
+
       assert.equal(
         response.data?.createTicket?.startDateTime,
         toISODate(startDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.endDateTime,
         toISODate(endDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.requiresApproval,
         input.requiresApproval,
       );
+
       assert.equal(response.data?.createTicket?.quantity, null);
+
       assert.equal(response.data?.createTicket?.isUnlimited, true);
+
       assert.equal(response.data?.createTicket?.isFree, false);
+
       assert.equal(response.data?.createTicket?.status, input.status);
+
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
+
       assert.equal(response.data?.createTicket.event.id, input.eventId);
+
       assert.equal(response.data?.createTicket.prices?.[0].amount, value1);
+
       assert.deepEqual(response.data?.createTicket.prices?.[0].currency, {
         currency: currency1.currency,
         id: currency1.id,
         validPaymentMethods: ValidPaymentMethods.Stripe,
       });
     });
+
     it("without pricing", async () => {
       const { user1, event1 } = await communityAdminSetup();
       const { startDateTime, endDateTime } = correctStartAndEndDateTime();
@@ -1065,25 +1163,36 @@ describe("As an ADMIN-USER", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(response.data?.createTicket?.name, input.name);
+
       assert.equal(
         response.data?.createTicket?.startDateTime,
         toISODate(startDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.endDateTime,
         toISODate(endDateTime),
       );
+
       assert.equal(
         response.data?.createTicket?.requiresApproval,
         input.requiresApproval,
       );
+
       assert.equal(response.data?.createTicket?.quantity, null);
+
       assert.equal(response.data?.createTicket?.isUnlimited, true);
+
       assert.equal(response.data?.createTicket?.isFree, true);
+
       assert.equal(response.data?.createTicket?.status, input.status);
+
       assert.equal(response.data?.createTicket?.visibility, input.visibility);
+
       assert.equal(response.data?.createTicket.event.id, input.eventId);
+
       assert.equal(response.data?.createTicket.prices, null);
     });
   });

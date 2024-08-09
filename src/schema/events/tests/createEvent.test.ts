@@ -65,8 +65,10 @@ describe("Event", () => {
       const event = await findEventById(response?.data?.createEvent?.id);
 
       assert.equal(response.data?.createEvent.id, event.id);
+
       assert.equal(response.data?.createEvent.description, event.description);
     });
+
     it("As a super-admin", async () => {
       const startDate = faker.date
         .future({
@@ -99,9 +101,11 @@ describe("Event", () => {
       const event = await findEventById(response?.data?.createEvent?.id);
 
       assert.equal(response.data?.createEvent.id, event.id);
+
       assert.equal(response.data?.createEvent.description, event.description);
     });
   });
+
   describe("Should fail to create an event", () => {
     it("As normal user", async () => {
       const startDate = faker.date
@@ -142,8 +146,10 @@ describe("Event", () => {
       );
 
       assert.equal(response.errors?.length, 1);
+
       assert.equal(response.errors?.[0]?.message, "FORBIDDEN");
     });
+
     it("As collaborator", async () => {
       const startDate = faker.date
         .future({
@@ -183,6 +189,7 @@ describe("Event", () => {
       );
 
       assert.equal(response.errors?.length, 1);
+
       assert.equal(response.errors?.[0]?.message, "FORBIDDEN");
     });
   });
@@ -233,8 +240,11 @@ describe("Event", () => {
     }
 
     assert.equal(response.errors, undefined);
+
     assert.equal(communityResponse.errors, undefined);
+
     assert.equal(communityResponse.data.community?.events?.length, 1);
+
     assert.deepEqual(communityResponse.data.community?.events?.at(0), {
       id: response.data.createEvent.id,
       name: response.data.createEvent.name,
@@ -242,6 +252,7 @@ describe("Event", () => {
       status: EventStatus.Inactive,
     });
   });
+
   it("Should error on non existing community", async () => {
     const startDate = faker.date
       .future({
@@ -270,6 +281,7 @@ describe("Event", () => {
     });
 
     assert.equal(response?.errors?.length, 1);
+
     await expect(
       findEventById(response?.data?.createEvent?.id),
     ).rejects.toThrow();

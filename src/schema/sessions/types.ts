@@ -10,6 +10,7 @@ import { speakersFetcher } from "~/schema/speakers/speakersFetcher";
 import { SpeakerRef } from "~/schema/speakers/types";
 
 type SessionGraphqlSchema = z.infer<typeof selectSessionSchema>;
+
 export const SessionRef = builder.objectRef<SessionGraphqlSchema>("SessionRef");
 
 export const SessionLoadable = builder.loadableObject(SessionRef, {

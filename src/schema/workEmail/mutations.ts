@@ -12,6 +12,7 @@ import {
 } from "~/datasources/db/schema";
 import { enqueueEmail } from "~/datasources/queues/mail";
 import { WorkEmailRef } from "~/schema/shared/refs";
+
 builder.mutationFields((t) => ({
   startWorkEmailValidation: t.field({
     description:
@@ -95,6 +96,7 @@ builder.mutationFields((t) => ({
             logger.info(
               "Updating the expiration date for the validation token",
             );
+
             await DB.update(confirmationTokenSchema)
               .set({
                 status: "expired",
@@ -171,6 +173,7 @@ builder.mutationFields((t) => ({
         )?.[0];
 
         logger.info("Ataching the token to the email");
+
         await DB.update(workEmailSchema)
           .set({
             confirmationTokenId: insertedToken.id,
@@ -178,6 +181,7 @@ builder.mutationFields((t) => ({
           .where(eq(workEmailSchema.id, insertedWorkEmail.id));
 
         logger.info("Enqueuing the email");
+
         await enqueueEmail(MAIL_QUEUE, logger, {
           userId: USER.id,
           code: insertedToken.token,

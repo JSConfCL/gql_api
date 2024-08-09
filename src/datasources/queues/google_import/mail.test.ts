@@ -38,6 +38,7 @@ describe("Test email library", () => {
 
       expect(spy).toHaveBeenCalledTimes(1);
     });
+
     it("Should enqueue an email via BATCH api", async () => {
       const spy = vi.fn().mockImplementation(() => {
         // do nothing

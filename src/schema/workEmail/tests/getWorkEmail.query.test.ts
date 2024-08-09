@@ -43,7 +43,9 @@ describe("test the work email query", () => {
     );
 
     assert.equal(query.errors, undefined);
+
     assert.equal(query.data?.workEmail.id, insertedWorkEmail.id);
+
     assert.equal(
       query.data?.workEmail.isValidated,
       Boolean(insertedWorkEmail.confirmationDate),

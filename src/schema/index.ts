@@ -1,4 +1,5 @@
 export const schema = builder.toSchema();
+
 import "./allowedCurrency/mutations";
 import "./allowedCurrency/queries";
 import "./allowedCurrency/types";

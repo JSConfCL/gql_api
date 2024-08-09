@@ -42,6 +42,7 @@ describe("Test email library", () => {
       });
 
       global.fetch = spiedFetch;
+
       await sendTransactionalEmail(
         {
           RESEND_API_KEY: "123",
@@ -54,6 +55,7 @@ describe("Test email library", () => {
         },
       );
     });
+
     it("Should error if status is over 400", async () => {
       const spiedFetch = vi.fn().mockImplementation(() => {
         return { status: 400 };

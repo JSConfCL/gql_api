@@ -80,9 +80,12 @@ describe("Should get an event and its tickets", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.event?.tickets?.length, 1);
+
     assert.equal(response.data?.event?.tickets[0]?.id, ticket.id);
   });
+
   it("as an ADMIN", async () => {
     const user1 = await insertUser({});
     const community1 = await insertCommunity();
@@ -115,14 +118,22 @@ describe("Should get an event and its tickets", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.event?.tickets?.length, 6);
+
     assert.equal(response.data?.event?.tickets[0]?.id, ticket.id);
+
     assert.equal(response.data?.event?.tickets[1]?.id, ticket2.id);
+
     assert.equal(response.data?.event?.tickets[2]?.id, ticket3.id);
+
     assert.equal(response.data?.event?.tickets[3]?.id, ticket4.id);
+
     assert.equal(response.data?.event?.tickets[4]?.id, ticket5.id);
+
     assert.equal(response.data?.event?.tickets[5]?.id, ticket6.id);
   });
+
   it("as a Collaborator", async () => {
     const user1 = await insertUser({});
     const community1 = await insertCommunity();
@@ -154,9 +165,12 @@ describe("Should get an event and its tickets", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.event?.tickets?.length, 1);
+
     assert.equal(response.data?.event?.tickets[0]?.id, ticket.id);
   });
+
   it("as an anonymous query", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
@@ -178,7 +192,9 @@ describe("Should get an event and its tickets", () => {
     });
 
     assert.equal(response.errors, undefined);
+
     assert.equal(response.data?.event?.tickets?.length, 1);
+
     assert.equal(response.data?.event?.tickets[0]?.id, ticket.id);
   });
 });

@@ -40,6 +40,7 @@ export const tagsToCommunitiesRelations = relations(
 export const selectTagsToCommuntiesSchema = createSelectSchema(
   tagsToCommunitiesSchema,
 );
+
 export const insertTagsToCommunitiesSchema = createInsertSchema(
   tagsToCommunitiesSchema,
 );

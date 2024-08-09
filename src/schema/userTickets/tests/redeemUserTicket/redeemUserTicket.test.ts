@@ -36,6 +36,7 @@ describe("Redeem user ticket", () => {
         userId: user1.id,
         role: "admin",
       });
+
       await insertUserToEvent({
         eventId: event1.id,
         userId: user1.id,
@@ -64,11 +65,13 @@ describe("Redeem user ticket", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(
         response.data?.redeemUserTicket?.redemptionStatus,
         "redeemed",
       );
     });
+
     it("if user is collaborator of community", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
@@ -84,6 +87,7 @@ describe("Redeem user ticket", () => {
         userId: user1.id,
         role: "collaborator",
       });
+
       await insertUserToEvent({
         eventId: event1.id,
         userId: user1.id,
@@ -112,11 +116,13 @@ describe("Redeem user ticket", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(
         response.data?.redeemUserTicket?.redemptionStatus,
         "redeemed",
       );
     });
+
     it("if user is super admin, and member of community", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
@@ -134,6 +140,7 @@ describe("Redeem user ticket", () => {
         userId: user1.id,
         role: "member",
       });
+
       await insertUserToEvent({
         eventId: event1.id,
         userId: user1.id,
@@ -162,11 +169,13 @@ describe("Redeem user ticket", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(
         response.data?.redeemUserTicket?.redemptionStatus,
         "redeemed",
       );
     });
+
     it("if user is event admin", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
@@ -182,6 +191,7 @@ describe("Redeem user ticket", () => {
         userId: user1.id,
         role: "member",
       });
+
       await insertUserToEvent({
         eventId: event1.id,
         userId: user1.id,
@@ -210,11 +220,13 @@ describe("Redeem user ticket", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(
         response.data?.redeemUserTicket?.redemptionStatus,
         "redeemed",
       );
     });
+
     it("if user is event collaborator", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
@@ -230,6 +242,7 @@ describe("Redeem user ticket", () => {
         userId: user1.id,
         role: "member",
       });
+
       await insertUserToEvent({
         eventId: event1.id,
         userId: user1.id,
@@ -258,12 +271,14 @@ describe("Redeem user ticket", () => {
       );
 
       assert.equal(response.errors, undefined);
+
       assert.equal(
         response.data?.redeemUserTicket?.redemptionStatus,
         "redeemed",
       );
     });
   });
+
   describe("Should throw an error", () => {
     it("if is not authorized", async () => {
       const community1 = await insertCommunity();
@@ -281,6 +296,7 @@ describe("Redeem user ticket", () => {
         userId: user1.id,
         role: "member",
       });
+
       await insertUserToEvent({
         eventId: event1.id,
         userId: user1.id,
@@ -313,6 +329,7 @@ describe("Redeem user ticket", () => {
         "No tienes permisos para redimir este ticket",
       );
     });
+
     it("if ticket is already rejected", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
@@ -328,6 +345,7 @@ describe("Redeem user ticket", () => {
         userId: user1.id,
         role: "admin",
       });
+
       await insertUserToEvent({
         eventId: event1.id,
         userId: user1.id,
@@ -361,6 +379,7 @@ describe("Redeem user ticket", () => {
         "No es posible redimir un ticket rechazado",
       );
     });
+
     it("if ticket is cancelled", async () => {
       const community1 = await insertCommunity();
       const event1 = await insertEvent();
@@ -376,6 +395,7 @@ describe("Redeem user ticket", () => {
         userId: user1.id,
         role: "admin",
       });
+
       await insertUserToEvent({
         eventId: event1.id,
         userId: user1.id,

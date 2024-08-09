@@ -43,4 +43,5 @@ export const workEmailRelations = relations(workEmailSchema, ({ one }) => ({
 }));
 
 export const selectWorkEmailSchema = createSelectSchema(workEmailSchema);
+
 export const insertWorkEmailSchema = createInsertSchema(workEmailSchema);

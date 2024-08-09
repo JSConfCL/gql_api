@@ -37,6 +37,7 @@ describe("Cancel User Ticket", () => {
       userId: user1.id,
       role: "admin",
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -65,11 +66,13 @@ describe("Cancel User Ticket", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(
       response.data?.cancelUserTicket?.approvalStatus,
       TicketApprovalStatus.Cancelled,
     );
   });
+
   it("Should cancel a user ticket with role superadmin", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
@@ -87,6 +90,7 @@ describe("Cancel User Ticket", () => {
       userId: user1.id,
       role: "member",
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -115,11 +119,13 @@ describe("Cancel User Ticket", () => {
     );
 
     assert.equal(response.errors, undefined);
+
     assert.equal(
       response.data?.cancelUserTicket?.approvalStatus,
       TicketApprovalStatus.Cancelled,
     );
   });
+
   it("It should throw an error, if ticket does not exist", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
@@ -135,6 +141,7 @@ describe("Cancel User Ticket", () => {
       userId: user1.id,
       role: "admin",
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
@@ -155,6 +162,7 @@ describe("Cancel User Ticket", () => {
 
     assert.equal(response.errors?.[0].message, "You can't cancel this ticket");
   });
+
   it("It should throw a error, if is not authorized", async () => {
     const community1 = await insertCommunity();
     const event1 = await insertEvent();
@@ -171,6 +179,7 @@ describe("Cancel User Ticket", () => {
       userId: user1.id,
       role: "member",
     });
+
     await insertUserToEvent({
       eventId: event1.id,
       userId: user1.id,
