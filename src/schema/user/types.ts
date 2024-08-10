@@ -6,9 +6,8 @@ import {
   selectCommunitySchema,
   selectTeamsSchema,
 } from "~/datasources/db/schema";
-import { CommunityRef, UserRef } from "~/schema/shared/refs";
+import { CommunityRef, TokenRef, UserRef } from "~/schema/shared/refs";
 import { TeamRef } from "~/schema/teams/types";
-import { TokenRef } from "~/schema/user/mutations";
 
 export const pronounsEnum = builder.enumType(PronounsEnum, {
   name: "PronounsEnum",

@@ -11,7 +11,7 @@ import {
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
-import { UserRef } from "~/schema/shared/refs";
+import { TokenRef, UserRef } from "~/schema/shared/refs";
 import { pronounsEnum } from "~/schema/user/types";
 import {
   UserRoleCommunity,
@@ -165,10 +165,6 @@ const retoolToken = builder.inputType("retoolToken", {
     authToken: t.string({ required: true }),
   }),
 });
-
-export const TokenRef = builder.objectRef<{
-  token: string;
-}>("TokenRef");
 
 builder.mutationField("retoolToken", (t) =>
   t.field({
