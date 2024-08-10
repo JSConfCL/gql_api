@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
+import { createAuthToken } from "~/authn";
 import { builder } from "~/builder";
 import {
   PronounsEnum,
@@ -9,6 +10,7 @@ import {
   usersSchema,
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
+import { applicationError, ServiceErrors } from "~/errors";
 import { UserRef } from "~/schema/shared/refs";
 import { pronounsEnum } from "~/schema/user/types";
 import {
@@ -151,6 +153,68 @@ builder.mutationField("updateUserRoleInCommunity", (t) =>
       } catch (e) {
         throw new GraphQLError(
           e instanceof Error ? e.message : "Unknown error",
+        );
+      }
+    },
+  }),
+);
+
+const retoolToken = builder.inputType("retoolToken", {
+  fields: (t) => ({
+    userEmail: t.string({ required: true }),
+    authToken: t.string({ required: true }),
+  }),
+});
+
+export const TokenRef = builder.objectRef<{
+  token: string;
+}>("TokenRef");
+
+builder.mutationField("retoolToken", (t) =>
+  t.field({
+    description: "Update a user role",
+    type: TokenRef,
+    deprecationReason: "Not enabled",
+    nullable: false,
+    args: {
+      input: t.arg({ type: retoolToken, required: true }),
+    },
+    resolve: async (root, { input }, ctx) => {
+      try {
+        const { userEmail, authToken } = input;
+
+        if (authToken !== ctx.RETOOL_AUTHENTICATION_TOKEN) {
+          throw new Error("Not authorized");
+        }
+
+        const user = await ctx.DB.query.usersSchema.findFirst({
+          where: (u, { eq, and }) =>
+            and(
+              eq(u.email, userEmail.trim().toLocaleLowerCase()),
+              eq(u.isRetoolEnabled, true),
+              eq(u.isSuperAdmin, true),
+            ),
+        });
+
+        if (!user) {
+          throw new Error("Not authorized");
+        }
+
+        const selectedUser = selectUsersSchema.parse(user);
+
+        const token = await createAuthToken(
+          selectedUser,
+          ctx.SUPABASE_JWT_ENCODER,
+        );
+
+        return {
+          token,
+        };
+      } catch (e) {
+        throw applicationError(
+          "Not authorized",
+          ServiceErrors.FORBIDDEN,
+          ctx.logger,
         );
       }
     },

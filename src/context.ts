@@ -25,6 +25,8 @@ export const createGraphqlContext = async ({
   SANITY_API_VERSION,
   SANITY_SECRET_TOKEN,
   SUPABASE_JWT_DECODER,
+  SUPABASE_JWT_ENCODER,
+  RETOOL_AUTHENTICATION_TOKEN,
   STRIPE_KEY,
   HYPERDRIVE,
   MERCADOPAGO_KEY,
@@ -36,6 +38,14 @@ export const createGraphqlContext = async ({
   }): Promise<Context> => {
   if (!MAIL_QUEUE) {
     throw new Error("Missing MAIL_QUEUE");
+  }
+
+  if (!RETOOL_AUTHENTICATION_TOKEN) {
+    throw new Error("Missing RETOOL_AUTHENTICATION_TOKEN");
+  }
+
+  if (!SUPABASE_JWT_ENCODER) {
+    throw new Error("Missing SUPABASE_JWT_ENCODER");
   }
 
   if (!RPC_SERVICE_EMAIL) {
@@ -134,5 +144,7 @@ export const createGraphqlContext = async ({
     GET_MERCADOPAGO_CLIENT,
     logger,
     RPC_SERVICE_EMAIL,
+    RETOOL_AUTHENTICATION_TOKEN,
+    SUPABASE_JWT_ENCODER,
   } satisfies Context;
 };

@@ -21,6 +21,8 @@ export type Context = {
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
   PURCHASE_CALLBACK_URL: string;
   RPC_SERVICE_EMAIL: Env["RPC_SERVICE_EMAIL"];
+  RETOOL_AUTHENTICATION_TOKEN: string;
+  SUPABASE_JWT_ENCODER: string;
 };
 
 export type GraphqlContext = Context &

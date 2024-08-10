@@ -8,6 +8,7 @@ import {
 } from "~/datasources/db/schema";
 import { CommunityRef, UserRef } from "~/schema/shared/refs";
 import { TeamRef } from "~/schema/teams/types";
+import { TokenRef } from "~/schema/user/mutations";
 
 export const pronounsEnum = builder.enumType(PronounsEnum, {
   name: "PronounsEnum",
@@ -107,4 +108,11 @@ builder.objectType(UserRef, {
 
 export const SearchableUserTags = builder.enumType("SearchableUserTags", {
   values: Object.values(AllowedUserTags),
+});
+
+builder.objectType(TokenRef, {
+  description: "Representation of a token",
+  fields: (t) => ({
+    token: t.exposeString("token", { nullable: false }),
+  }),
 });
