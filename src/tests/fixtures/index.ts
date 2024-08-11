@@ -100,6 +100,7 @@ import {
 import { defaultLogger } from "~/logging";
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
+import { Context } from "~/types";
 
 const insertUserRequest = insertUsersSchema.deepPartial();
 
@@ -121,7 +122,10 @@ const CRUDDates = ({
   deletedAt: typeof deletedAt !== "undefined" ? deletedAt : faker.date.recent(),
 });
 
-const createExecutor = (user?: Awaited<ReturnType<typeof insertUser>>) =>
+const createExecutor = (
+  user?: Awaited<ReturnType<typeof insertUser>> | undefined,
+  context?: Partial<Context>,
+) =>
   buildHTTPExecutor({
     fetch: createYoga<Env>({
       schema,
@@ -134,6 +138,7 @@ const createExecutor = (user?: Awaited<ReturnType<typeof insertUser>>) =>
           logger: defaultLogger,
           USER: user ? user : undefined,
           GET_STRIPE_CLIENT: () => null,
+          ...(context ?? {}),
         };
       },
       plugins: [authZEnvelopPlugin({ rules })],
@@ -145,8 +150,9 @@ export const executeGraphqlOperation = <
   TVariables extends Record<string, any> = Record<string, any>,
 >(
   params: ExecutionRequest<TVariables, unknown, unknown, undefined, unknown>,
+  context?: Partial<Context>,
 ): Promise<ExecutionResult<TResult>> => {
-  const executor = createExecutor();
+  const executor = createExecutor(undefined, context);
 
   // @ts-expect-error This is ok. Executor returns a promise with they types passed
   return executor(params);
@@ -158,8 +164,9 @@ export const executeGraphqlOperationAsUser = <
 >(
   params: ExecutionRequest<TVariables, unknown, unknown, undefined, unknown>,
   user: Awaited<ReturnType<typeof insertUser>>,
+  context?: Partial<Context>,
 ): Promise<ExecutionResult<TResult>> => {
-  const executor = createExecutor(user);
+  const executor = createExecutor(user, context);
 
   // @ts-expect-error This error is ok. Executor returns a promise with they types passed
   return executor(params);
@@ -171,13 +178,14 @@ export const executeGraphqlOperationAsSuperAdmin = async <
 >(
   params: ExecutionRequest<TVariables, unknown, unknown, undefined, unknown>,
   user?: Awaited<ReturnType<typeof insertUser>>,
+  context?: Partial<Context>,
 ): Promise<ExecutionResult<TResult>> => {
   if (user && !user.isSuperAdmin) {
     throw new Error("User passed is not a super admin");
   }
 
   const superAdmin = user ?? (await insertUser({ isSuperAdmin: true }));
-  const executor = createExecutor(superAdmin);
+  const executor = createExecutor(superAdmin, context);
 
   // @ts-expect-error This error is ok. Executor returns a promise with they types passed
   return executor(params);
@@ -234,10 +242,11 @@ export const insertUser = async (
     externalId: partialInput?.externalId ?? faker.string.uuid(),
     username: partialInput?.username ?? faker.internet.userName(),
     bio: partialInput?.bio ?? faker.lorem.paragraph(),
-    email: partialInput?.email ?? faker.internet.email(),
+    email: (partialInput?.email ?? faker.internet.email()).toLowerCase(),
     name: partialInput?.name,
     isSuperAdmin: partialInput?.isSuperAdmin,
     isEmailVerified: partialInput?.isEmailVerified,
+    isRetoolEnabled: partialInput?.isRetoolEnabled,
     pronouns:
       partialInput?.pronouns ??
       faker.helpers.arrayElement(Object.values(PronounsEnum)),

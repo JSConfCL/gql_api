@@ -186,8 +186,9 @@ builder.mutationField("retoolToken", (t) =>
         const user = await ctx.DB.query.usersSchema.findFirst({
           where: (u, { eq, and }) =>
             and(
-              eq(u.email, userEmail.trim().toLocaleLowerCase()),
+              eq(u.email, userEmail),
               eq(u.isRetoolEnabled, true),
+              eq(u.isEmailVerified, true),
               eq(u.isSuperAdmin, true),
             ),
         });
