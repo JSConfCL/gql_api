@@ -104,3 +104,77 @@ builder.queryFields((t) => ({
     },
   }),
 }));
+
+const FindUserTicketSearchInput = builder.inputType(
+  "FindUserTicketSearchInput",
+  {
+    fields: (t) => ({
+      eventIds: t.field({
+        type: ["String"],
+        required: false,
+      }),
+      paymentStatus: t.field({
+        type: [TicketPaymentStatus],
+        required: false,
+      }),
+      approvalStatus: t.field({
+        type: [TicketApprovalStatus],
+        required: false,
+      }),
+      redemptionStatus: t.field({
+        type: [TicketRedemptionStatus],
+        required: false,
+      }),
+      userIds: t.field({
+        type: ["String"],
+        required: false,
+      }),
+    }),
+  },
+);
+
+builder.queryField("findUserTickets", (t) =>
+  t.field({
+    description: "Get a list of user tickets",
+    type: PaginatedUserTicketsRef,
+    args: createPaginationInputType(t, FindUserTicketSearchInput),
+    authz: {
+      rules: ["IsSuperAdmin"],
+    },
+    resolve: async (root, { input }, { DB, USER }) => {
+      const {
+        approvalStatus,
+        eventIds,
+        paymentStatus,
+        redemptionStatus,
+        userIds,
+      } = input.search ?? {};
+
+      if (!USER) {
+        throw new Error("User not found");
+      }
+
+      const queryApprovalStatus = getQueryApprovalStatus(approvalStatus, USER);
+
+      const { data, pagination } =
+        await userTicketFetcher.searchPaginatedUserTickets({
+          DB,
+          search: {
+            eventIds: eventIds ? eventIds : undefined,
+            userIds: userIds ? userIds : undefined,
+            paymentStatus: paymentStatus ? paymentStatus : undefined,
+            approvalStatus: queryApprovalStatus,
+            redemptionStatus: redemptionStatus ? redemptionStatus : undefined,
+          },
+          pagination: input.pagination,
+        });
+
+      const results = data.map((t) => selectUserTicketsSchema.parse(t));
+
+      return {
+        data: results,
+        pagination,
+      };
+    },
+  }),
+);
