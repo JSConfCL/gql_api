@@ -1,4 +1,4 @@
-import { sign, decode, verify } from "@tsndr/cloudflare-worker-jwt";
+import { decode, verify } from "@tsndr/cloudflare-worker-jwt";
 import { Logger } from "pino";
 
 import { TokenPayload } from "~/authn/types";
@@ -25,20 +25,6 @@ const getAuthToken = (request: Request) => {
   }
 
   return null;
-};
-
-export const createMinimalAuthToken = async (user: USER, SECRET: string) => {
-  const payload = {
-    audience: "retool",
-    user_metadata: {
-      sub: user.id,
-    },
-    exp: Date.now() + 60 * 60 * 24 * 1000 /* 24 hours */,
-  };
-
-  const token = await sign(payload, SECRET);
-
-  return token;
 };
 
 // Obtener el token de autorización de la solicitud, ya sea del encabezado de

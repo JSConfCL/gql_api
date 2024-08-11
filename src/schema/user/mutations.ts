@@ -1,12 +1,13 @@
+import { sign } from "@tsndr/cloudflare-worker-jwt";
 import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
-import { createMinimalAuthToken } from "~/authn";
 import { builder } from "~/builder";
 import {
   PronounsEnum,
   selectUsersSchema,
   updateUsersSchema,
+  USER,
   usersSchema,
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
@@ -18,6 +19,20 @@ import {
   canUpdateUserRoleInCommunity,
   isSameUser,
 } from "~/validations";
+
+const createMinimalAuthToken = async (user: USER, SECRET: string) => {
+  const payload = {
+    audience: "retool",
+    user_metadata: {
+      sub: user.id,
+    },
+    exp: Date.now() + 60 * 60 * 24 * 1000 /* 24 hours */,
+  };
+
+  const token = await sign(payload, SECRET);
+
+  return token;
+};
 
 const userEditInput = builder.inputType("userEditInput", {
   fields: (t) => ({
