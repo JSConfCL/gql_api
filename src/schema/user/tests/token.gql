@@ -1,0 +1,5 @@
+mutation Tokens($input: retoolToken!) {
+  retoolToken(input: $input) {
+    token
+  }
+}

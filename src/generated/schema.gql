@@ -364,6 +364,11 @@ type Mutation {
   rejectTeamInvitation(input: RejectTeamInvitationInput!): TeamRef!
 
   """
+  Update a user role
+  """
+  retoolToken(input: retoolToken!): TokenRef! @deprecated(reason: "Not enabled")
+
+  """
   Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position
   """
   startWorkEmailValidation(email: String!): WorkEmail!
@@ -962,6 +967,13 @@ enum TicketTemplateVisibility {
   unlisted
 }
 
+"""
+Representation of a token
+"""
+type TokenRef {
+  token: String!
+}
+
 enum TypeOfEmployment {
   freelance
   fullTime
@@ -1109,6 +1121,11 @@ type WorkSeniority {
   description: String
   id: ID!
   name: String!
+}
+
+input retoolToken {
+  authToken: String!
+  userEmail: String!
 }
 
 input updateUserRoleInCommunityInput {

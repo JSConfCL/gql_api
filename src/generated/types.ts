@@ -321,6 +321,11 @@ export type Mutation = {
   redeemUserTicket: UserTicket;
   /** Reject the user's invitation to a team */
   rejectTeamInvitation: TeamRef;
+  /**
+   * Update a user role
+   * @deprecated Not enabled
+   */
+  retoolToken: TokenRef;
   /** Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position */
   startWorkEmailValidation: WorkEmail;
   /** Update a company */
@@ -419,6 +424,10 @@ export type MutationRedeemUserTicketArgs = {
 
 export type MutationRejectTeamInvitationArgs = {
   input: RejectTeamInvitationInput;
+};
+
+export type MutationRetoolTokenArgs = {
+  input: RetoolToken;
 };
 
 export type MutationStartWorkEmailValidationArgs = {
@@ -977,6 +986,12 @@ export enum TicketTemplateVisibility {
   Unlisted = "unlisted",
 }
 
+/** Representation of a token */
+export type TokenRef = {
+  __typename?: "TokenRef";
+  token: Scalars["String"]["output"];
+};
+
 export enum TypeOfEmployment {
   Freelance = "freelance",
   FullTime = "fullTime",
@@ -1117,6 +1132,11 @@ export type WorkSeniority = {
   description?: Maybe<Scalars["String"]["output"]>;
   id: Scalars["ID"]["output"];
   name: Scalars["String"]["output"];
+};
+
+export type RetoolToken = {
+  authToken: Scalars["String"]["input"];
+  userEmail: Scalars["String"]["input"];
 };
 
 export type UpdateUserRoleInCommunityInput = {

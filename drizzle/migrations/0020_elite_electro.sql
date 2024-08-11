@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "isRetoolEnabled" boolean DEFAULT false NOT NULL;

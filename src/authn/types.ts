@@ -7,6 +7,7 @@ export type TokenPayload = {
     sub: string;
     email: string;
     phone: string;
+    audience?: string;
     app_metadata: { provider: string; providers: string[] };
     user_metadata: {
       avatar_url: string;

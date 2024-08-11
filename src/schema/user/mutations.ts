@@ -1,3 +1,4 @@
+import { sign } from "@tsndr/cloudflare-worker-jwt";
 import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
@@ -6,16 +7,32 @@ import {
   PronounsEnum,
   selectUsersSchema,
   updateUsersSchema,
+  USER,
   usersSchema,
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
-import { UserRef } from "~/schema/shared/refs";
+import { applicationError, ServiceErrors } from "~/errors";
+import { TokenRef, UserRef } from "~/schema/shared/refs";
 import { pronounsEnum } from "~/schema/user/types";
 import {
   UserRoleCommunity,
   canUpdateUserRoleInCommunity,
   isSameUser,
 } from "~/validations";
+
+const createMinimalAuthToken = async (user: USER, SECRET: string) => {
+  const payload = {
+    audience: "retool",
+    user_metadata: {
+      sub: user.id,
+    },
+    exp: Date.now() + 60 * 60 * 24 * 1000 /* 24 hours */,
+  };
+
+  const token = await sign(payload, SECRET);
+
+  return token;
+};
 
 const userEditInput = builder.inputType("userEditInput", {
   fields: (t) => ({
@@ -151,6 +168,65 @@ builder.mutationField("updateUserRoleInCommunity", (t) =>
       } catch (e) {
         throw new GraphQLError(
           e instanceof Error ? e.message : "Unknown error",
+        );
+      }
+    },
+  }),
+);
+
+const retoolToken = builder.inputType("retoolToken", {
+  fields: (t) => ({
+    userEmail: t.string({ required: true }),
+    authToken: t.string({ required: true }),
+  }),
+});
+
+builder.mutationField("retoolToken", (t) =>
+  t.field({
+    description: "Update a user role",
+    type: TokenRef,
+    deprecationReason: "Not enabled",
+    nullable: false,
+    args: {
+      input: t.arg({ type: retoolToken, required: true }),
+    },
+    resolve: async (root, { input }, ctx) => {
+      try {
+        const { userEmail, authToken } = input;
+
+        if (authToken !== ctx.RETOOL_AUTHENTICATION_TOKEN) {
+          throw new Error("Not authorized");
+        }
+
+        const user = await ctx.DB.query.usersSchema.findFirst({
+          where: (u, { eq, and }) =>
+            and(
+              eq(u.email, userEmail),
+              eq(u.isRetoolEnabled, true),
+              eq(u.isEmailVerified, true),
+              eq(u.isSuperAdmin, true),
+            ),
+        });
+
+        if (!user) {
+          throw new Error("Not authorized");
+        }
+
+        const selectedUser = selectUsersSchema.parse(user);
+
+        const token = await createMinimalAuthToken(
+          selectedUser,
+          ctx.SUPABASE_JWT_ENCODER,
+        );
+
+        return {
+          token,
+        };
+      } catch (e) {
+        throw applicationError(
+          "Not authorized",
+          ServiceErrors.FORBIDDEN,
+          ctx.logger,
         );
       }
     },

@@ -48,6 +48,7 @@ export const usersSchema = pgTable("users", {
   }).default(UserStatusEnum.inactive),
   genderOtherText: text("gender_other_text"),
   isSuperAdmin: boolean("isSuperAdmin").default(false).notNull(),
+  isRetoolEnabled: boolean("isRetoolEnabled").default(false).notNull(),
   isEmailVerified: boolean("emailVerified").default(false).notNull(),
   imageUrl: text("imageUrl"),
   username: text("username").unique().notNull(),

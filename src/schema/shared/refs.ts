@@ -96,3 +96,7 @@ export const ConsolidatedPaymentLogEntryRef = builder.objectRef<{
   platform: string;
   currencyId: string;
 }>("ConsolidatedPaymentLogEntry");
+
+export const TokenRef = builder.objectRef<{
+  token: string;
+}>("TokenRef");
