@@ -5,9 +5,11 @@ import {
   PronounsEnum,
   selectCommunitySchema,
   selectTeamsSchema,
+  selectUserTicketsSchema,
 } from "~/datasources/db/schema";
-import { CommunityRef, UserRef } from "~/schema/shared/refs";
+import { CommunityRef, UserRef, UserTicketRef } from "~/schema/shared/refs";
 import { TeamRef } from "~/schema/teams/types";
+import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 
 export const pronounsEnum = builder.enumType(PronounsEnum, {
   name: "PronounsEnum",
@@ -71,6 +73,29 @@ builder.objectType(UserRef, {
         if (ctx.ORIGINAL_USER?.isSuperAdmin) {
           return ctx.USER;
         }
+      },
+    }),
+    rsvps: t.field({
+      type: [UserTicketRef],
+      resolve: async (root, args, ctx) => {
+        const canSeeTickets =
+          ctx.USER?.isSuperAdmin || ctx.USER?.id === root.id;
+
+        if (!canSeeTickets) {
+          return [];
+        }
+
+        const userTickets = await userTicketFetcher.searchUserTickets({
+          DB: ctx.DB,
+          search: {
+            userIds: [root.id],
+            approvalStatus: ctx.USER?.isSuperAdmin
+              ? undefined
+              : ["approved", "gifted", "gift_accepted", "not_required"],
+          },
+        });
+
+        return userTickets.map((el) => selectUserTicketsSchema.parse(el));
       },
     }),
     communities: t.field({
