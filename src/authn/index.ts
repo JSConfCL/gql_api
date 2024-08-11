@@ -9,7 +9,9 @@ import {
   updateUserProfileInfo,
 } from "~/datasources/queries/users";
 import { getUsername } from "~/datasources/queries/utils/createUsername";
-import { unauthorizedError } from "~/errors";
+import { applicationError, ServiceErrors, unauthorizedError } from "~/errors";
+
+const preventUserUpdate = new Set<"retool">(["retool"]);
 
 // Obtener el token de autorización de la solicitud, ya sea del encabezado de
 // autorización o de la cookie "community-os-access-token"
@@ -25,12 +27,12 @@ const getAuthToken = (request: Request) => {
   return null;
 };
 
-export const createAuthToken = async (user: USER, SECRET: string) => {
+export const createMinimalAuthToken = async (user: USER, SECRET: string) => {
   const payload = {
-    audience: "retool-autenticated",
-    id: user.id,
-    email: user.email,
-    user_metadata: user,
+    audience: "retool",
+    user_metadata: {
+      sub: user.id,
+    },
     exp: Date.now() + 60 * 60 * 24 * 1000 /* 24 hours */,
   };
 
@@ -136,26 +138,39 @@ export const upsertUserFromRequest = async ({
     throw unauthorizedError("Token expired", logger);
   }
 
-  const { avatar_url, name, user_name, email_verified, sub, picture } =
-    payload.user_metadata;
-  const profileInfo = insertUsersSchema.safeParse({
-    email: payload.email.toLowerCase(),
-    isEmailVerified: email_verified,
-    imageUrl: avatar_url ? avatar_url : picture ? picture : "",
-    externalId: sub,
-    name,
-    username: user_name ?? getUsername(),
-    publicMetadata: payload,
-  });
+  if (payload.audience && preventUserUpdate.has(payload.audience)) {
+    const userId = payload.user_metadata.sub;
 
-  if (profileInfo.success === false) {
-    logger.error("Could not parse profile info", profileInfo.error);
-    throw new Error("Could not parse profile info", profileInfo.error);
+    logger.info(`Preventing update for user ID: ${userId}`);
+    const user = await findUserByID(DB, userId);
+
+    if (!user) {
+      throw applicationError("User not found", ServiceErrors.FORBIDDEN, logger);
+    }
+
+    return user;
+  } else {
+    const { avatar_url, name, user_name, email_verified, sub, picture } =
+      payload.user_metadata;
+    const profileInfo = insertUsersSchema.safeParse({
+      email: payload.email.toLowerCase(),
+      isEmailVerified: email_verified,
+      imageUrl: avatar_url ? avatar_url : picture ? picture : "",
+      externalId: sub,
+      name,
+      username: user_name ?? getUsername(),
+      publicMetadata: payload,
+    });
+
+    if (profileInfo.success === false) {
+      logger.error("Could not parse profile info", profileInfo.error);
+      throw new Error("Could not parse profile info", profileInfo.error);
+    }
+
+    logger.info(`Updating profile Info for user ID: ${sub}`);
+
+    return updateUserProfileInfo(DB, profileInfo.data, logger);
   }
-
-  logger.info(`Updating profile Info for user ID: ${sub}`);
-
-  return updateUserProfileInfo(DB, profileInfo.data, logger);
 };
 
 export const logPossibleUserIdFromJWT = (

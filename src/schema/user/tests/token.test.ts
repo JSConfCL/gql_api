@@ -1,8 +1,7 @@
 import { faker } from "@faker-js/faker";
-import { decode, verify } from "@tsndr/cloudflare-worker-jwt";
+import { verify } from "jsonwebtoken";
 import { it, describe, assert } from "vitest";
 
-import { USER } from "~/datasources/db/users";
 import { executeGraphqlOperation, insertUser } from "~/tests/fixtures";
 
 import {
@@ -49,26 +48,25 @@ describe("User", () => {
       throw new Error("Token not found");
     }
 
-    const verified = await verify(token, encoder);
+    const decodedToken = verify(token, encoder, {
+      complete: true,
+    }) as unknown as {
+      payload: {
+        audience: string;
+        user_metadata: {
+          sub: string;
+        };
+      };
+    };
 
-    assert.exists(verified);
+    assert.exists(token);
 
-    assert.equal(verified, true);
+    const { user_metadata: userTokenData, audience } = decodedToken.payload;
 
-    const decodedToken = decode<{
-      user_metadata: USER;
-    }>(token);
+    assert.equal(userTokenData?.sub, user1.id);
 
-    const userTokenData = decodedToken?.payload?.user_metadata;
+    assert.equal(Object.keys(userTokenData).length, 1);
 
-    assert.equal(userTokenData?.email, user1.email);
-
-    assert.equal(userTokenData?.isSuperAdmin, true);
-
-    assert.equal(userTokenData?.isRetoolEnabled, true);
-
-    assert.equal(userTokenData?.isEmailVerified, true);
-
-    assert.equal(userTokenData?.id, user1.id);
+    assert.equal(audience, "retool");
   });
 });

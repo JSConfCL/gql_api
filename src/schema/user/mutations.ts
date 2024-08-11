@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
-import { createAuthToken } from "~/authn";
+import { createMinimalAuthToken } from "~/authn";
 import { builder } from "~/builder";
 import {
   PronounsEnum,
@@ -199,7 +199,7 @@ builder.mutationField("retoolToken", (t) =>
 
         const selectedUser = selectUsersSchema.parse(user);
 
-        const token = await createAuthToken(
+        const token = await createMinimalAuthToken(
           selectedUser,
           ctx.SUPABASE_JWT_ENCODER,
         );
