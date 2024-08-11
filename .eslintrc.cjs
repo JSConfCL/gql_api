@@ -118,6 +118,7 @@ module.exports = {
         // Incredible Plugin.
         // Rules URL: https://the-guild.dev/graphql/eslint/rules
         "@graphql-eslint/unique-fragment-name": "error",
+        "@graphql-eslint/no-deprecated": "warn",
         "@graphql-eslint/selection-set-depth": [
           "error",
           {
