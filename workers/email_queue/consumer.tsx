@@ -3,7 +3,7 @@ import * as React from "react";
 
 import { WorkEmailValidationEmail } from "emails/templates/salaries/invite-email";
 import { EmailMessageType } from "~/datasources/queues/mail";
-import { defaultLogger } from "~/logging";
+import { createLogger } from "~/logging";
 
 type ENV = {
   RESEND_API_KEY?: string;
@@ -14,8 +14,12 @@ export const queueConsumer: ExportedHandlerQueueHandler<
   ENV,
   EmailMessageType
 > = async (batch, env, ctx) => {
+  const logger = createLogger("email-queue-consumer", {
+    messageLength: batch.messages.length,
+  });
+
   for await (const msg of batch.messages) {
-    defaultLogger.info("Processing email for userId:", msg.body.userId);
+    logger.info("Processing email for userId:", msg.body.userId);
 
     try {
       switch (batch.queue) {
@@ -27,7 +31,7 @@ export const queueConsumer: ExportedHandlerQueueHandler<
           throw new Error(`Unknown queue ${batch.queue}`);
       }
     } catch (e) {
-      defaultLogger.error("Error processing message", e);
+      logger.error("Error processing message", e);
 
       msg.retry();
     }

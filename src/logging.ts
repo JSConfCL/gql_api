@@ -87,5 +87,3 @@ export class Logger {
 export const createLogger = (name: string, extraParams?: JsonObject) => {
   return new Logger(name, extraParams);
 };
-
-export const defaultLogger = createLogger("default");
