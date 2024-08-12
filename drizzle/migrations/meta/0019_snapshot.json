@@ -111,15 +111,6 @@
           "primaryKey": false,
           "notNull": false
         },
-<<<<<<< HEAD
-=======
-        "resend_audience_id": {
-          "name": "resend_audience_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
->>>>>>> 308c769 (DB Migration)
         "status": {
           "name": "status",
           "type": "text",
@@ -430,15 +421,6 @@
           "primaryKey": false,
           "notNull": false
         },
-<<<<<<< HEAD
-=======
-        "resend_audience_id": {
-          "name": "resend_audience_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
->>>>>>> 308c769 (DB Migration)
         "created_at": {
           "name": "created_at",
           "type": "timestamp (6)",
@@ -1629,15 +1611,6 @@
           "primaryKey": false,
           "notNull": false
         },
-<<<<<<< HEAD
-=======
-        "resend_audience_id": {
-          "name": "resend_audience_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
->>>>>>> 308c769 (DB Migration)
         "created_at": {
           "name": "created_at",
           "type": "timestamp (6)",
@@ -1783,15 +1756,12 @@
           "primaryKey": false,
           "notNull": false
         },
-<<<<<<< HEAD
         "max_tickets_per_user": {
           "name": "max_tickets_per_user",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-=======
->>>>>>> 308c769 (DB Migration)
         "image_link": {
           "name": "image_link",
           "type": "text",
@@ -1855,15 +1825,6 @@
           "primaryKey": false,
           "notNull": false
         },
-<<<<<<< HEAD
-=======
-        "resend_audience_id": {
-          "name": "resend_audience_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
->>>>>>> 308c769 (DB Migration)
         "mercado_pago_product_id": {
           "name": "mercado_pago_product_id",
           "type": "text",

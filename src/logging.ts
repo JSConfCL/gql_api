@@ -71,6 +71,7 @@ export class Logger {
 
   error(message: string | JsonObject | Error, ...optionalParams: unknown[]) {
     if (message instanceof Error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { cause, ...safeErrorMessage } = message;
 
       this.#do_log(Levels.ERROR, { ...safeErrorMessage }, ...optionalParams);
