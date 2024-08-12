@@ -1,13 +1,14 @@
 import { backOff } from "exponential-backoff";
-import { Logger } from "pino";
 import type { Resend } from "resend";
+
+import { Logger } from "~/logging";
 
 const numOfAttempts = 5; // Maximum number of retries
 const delay = 1000; // Initial delay in milliseconds
 
 export async function sendTransactionalHTMLEmail(
   resend: Resend,
-  logger: Logger<never>,
+  logger: Logger,
   {
     htmlContent,
     to,

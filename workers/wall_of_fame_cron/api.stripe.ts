@@ -5,7 +5,7 @@ import {
   insertPaymentLogsSchema,
   paymentLogsSchema,
 } from "~/datasources/db/schema";
-import { defaultLogger } from "~/logging";
+import type { Logger } from "~/logging";
 
 import { ENV } from "./types";
 
@@ -43,16 +43,20 @@ export const getSubscriptions = async (env: ENV) => {
   });
 };
 
-export const syncStripePayments = async (env: ENV) => {
-  const DB = getDb({ neonUrl: env.NEON_URL, logger: defaultLogger });
+export const syncStripePayments = async (env: ENV, logger: Logger) => {
+  const DB = getDb({ neonUrl: env.NEON_URL, logger });
   const stripe = new Stripe(env.ST_KEY);
 
   const results = await stripe.charges.list({ limit: 100 });
 
-  await savePaymentEntry(DB, results.data);
+  await savePaymentEntry(DB, results.data, logger);
 };
 
-const savePaymentEntry = async (DB: ORM_TYPE, results: Stripe.Charge[]) => {
+const savePaymentEntry = async (
+  DB: ORM_TYPE,
+  results: Stripe.Charge[],
+  logger: Logger,
+) => {
   try {
     const mappedResults = results.map((result: Stripe.Charge) => {
       return insertPaymentLogsSchema.parse({
@@ -70,15 +74,10 @@ const savePaymentEntry = async (DB: ORM_TYPE, results: Stripe.Charge[]) => {
       .onConflictDoNothing()
       .returning();
 
-    defaultLogger.info(
-      "👉Saved",
-      saved.length,
-      "financial entries from stripe",
-      {
-        saved,
-      },
-    );
+    logger.info("👉Saved", saved.length, "financial entries from stripe", {
+      saved,
+    });
   } catch (e) {
-    defaultLogger.error("Error saving payment entries", e);
+    logger.error("Error saving payment entries", e);
   }
 };

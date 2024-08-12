@@ -1,4 +1,3 @@
-import { APP_ENV } from "~/env";
 import { createLogger } from "~/logging";
 import { ensureKeys } from "~workers/utils";
 
@@ -23,9 +22,9 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   try {
     await Promise.all([
       syncMercadopagoPaymentsAndSubscriptions(env, logger),
-      syncStripePayments(env),
+      syncStripePayments(env, logger),
     ]);
   } catch (e) {
-    logger.error(e);
+    logger.error(e as Error);
   }
 };

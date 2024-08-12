@@ -5,8 +5,9 @@ import {
   PostgresJsQueryResultHKT,
   drizzle,
 } from "drizzle-orm/postgres-js";
-import { Logger } from "pino";
 import postgres from "postgres";
+
+import { Logger } from "~/logging";
 
 import * as schema from "./schema";
 
@@ -23,7 +24,7 @@ export const getDb = ({
   logger,
 }: {
   neonUrl: string;
-  logger: Logger<never>;
+  logger: Logger;
 }) => {
   const client = postgres(neonUrl);
 

@@ -97,10 +97,11 @@ import {
   TicketApprovalStatus,
   TicketRedemptionStatus,
 } from "~/generated/types";
-import { defaultLogger } from "~/logging";
+import { createLogger } from "~/logging";
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 
+const logger = createLogger("test-fixtures");
 const insertUserRequest = insertUsersSchema.deepPartial();
 
 const CRUDDates = ({
@@ -131,7 +132,7 @@ const createExecutor = (user?: Awaited<ReturnType<typeof insertUser>>) =>
         return {
           ...initContextCache(),
           DB,
-          logger: defaultLogger,
+          logger,
           USER: user ? user : undefined,
           GET_STRIPE_CLIENT: () => null,
         };

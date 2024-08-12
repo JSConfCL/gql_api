@@ -13,9 +13,11 @@ import {
   ticketsSchema,
   updateTicketSchema,
 } from "~/datasources/db/schema";
+import { applicationError, ServiceErrors } from "~/errors";
 import { addToObjectIfPropertyExists } from "~/schema/shared/helpers";
 import { TicketRef } from "~/schema/shared/refs";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
+import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
 import {
   TicketTemplateStatus,
   TicketTemplateVisibility,
@@ -357,7 +359,7 @@ const TicketEditInput = builder.inputType("TicketEditInput", {
         "If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold.",
     }),
     prices: t.field({
-      type: PricingInputField,
+      type: [PricingInputField],
       required: false,
     }),
   }),
@@ -378,7 +380,7 @@ builder.mutationField("editTicket", (t) =>
     },
     resolve: async (root, { input }, { logger, USER, DB }) => {
       try {
-        const { ticketId } = input;
+        const { ticketId, prices } = input;
 
         if (!USER) {
           throw new GraphQLError("User not found");
@@ -428,7 +430,69 @@ builder.mutationField("editTicket", (t) =>
 
         const response = updateTicketSchema.safeParse(updateFields);
 
-        if (response.success) {
+        const expectedFieldUpdate = Object.keys(response.data ?? {}).length > 0;
+        const expectedPricingUpdate = prices && prices.length >= 0;
+
+        if (expectedPricingUpdate) {
+          // Find prices for those currencies
+          const ticketPrices = await DB.query.ticketsPricesSchema.findMany({
+            where: (tp, { eq }) => eq(tp.ticketId, ticketId),
+            with: {
+              price: true,
+            },
+          });
+
+          // we update them with new values, or create if they don't exist
+          for (const price of prices) {
+            const foundPrice = ticketPrices.find(
+              (tp) => tp.price.currencyId === price.currencyId,
+            );
+
+            if (foundPrice) {
+              // update
+              await DB.update(pricesSchema)
+                .set({
+                  price_in_cents: price.value_in_cents,
+                })
+                .where(eq(pricesSchema.id, foundPrice.priceId));
+            } else {
+              // create
+              const insertPriceValues = insertPriceSchema.parse({
+                price_in_cents: price.value_in_cents,
+                currencyId: price.currencyId,
+              });
+              const insertedPrice = await DB.insert(pricesSchema)
+                .values(insertPriceValues)
+                .returning();
+              const newPrice = insertedPrice?.[0];
+
+              if (!newPrice) {
+                throw applicationError(
+                  "Price not created",
+                  ServiceErrors.INTERNAL_SERVER_ERROR,
+                  logger,
+                );
+              }
+
+              const ticketPriceToInsert = insertTicketPriceSchema.parse({
+                ticketId: ticketId,
+                priceId: newPrice.id,
+              });
+
+              await DB.insert(ticketsPricesSchema).values(ticketPriceToInsert);
+            }
+          }
+        }
+
+        if (!expectedFieldUpdate && !expectedPricingUpdate) {
+          throw applicationError(
+            "There are no fields to update",
+            ServiceErrors.FAILED_PRECONDITION,
+            logger,
+          );
+        }
+
+        if (expectedFieldUpdate && response.success) {
           const ticket = (
             await DB.update(ticketsSchema)
               .set(response.data)
@@ -437,13 +501,30 @@ builder.mutationField("editTicket", (t) =>
           )?.[0];
 
           return selectTicketSchema.parse(ticket);
-        } else {
-          logger.error("ERROR:", response.error);
-          throw new Error("Invalid input", response.error);
         }
+
+        const tickets = await ticketsFetcher.searchTickets({
+          DB,
+          search: {
+            ticketIds: [ticketId],
+          },
+        });
+        const ticket = tickets[0];
+
+        if (!ticket) {
+          throw applicationError(
+            "Ticket not found",
+            ServiceErrors.NOT_FOUND,
+            logger,
+          );
+        }
+
+        return selectTicketSchema.parse(ticket);
       } catch (e) {
-        throw new GraphQLError(
-          e instanceof Error ? e.message : "Unknown error",
+        throw applicationError(
+          (e as Error).message ?? "Uknown Error",
+          ServiceErrors.NOT_FOUND,
+          logger,
         );
       }
     },

@@ -5,8 +5,10 @@ import {
   printSchema,
 } from "graphql/utilities";
 
-import { defaultLogger } from "~/logging";
+import { createLogger } from "~/logging";
 import { schema } from "~/schema";
+
+const logger = createLogger("type-generation");
 
 const start = async () => {
   const schemaString = printSchema(schema);
@@ -14,4 +16,4 @@ const start = async () => {
   await writeFile("./src/generated/schema.gql", schemaString, "utf-8");
 };
 
-start().catch(defaultLogger.error);
+start().catch(logger.error);

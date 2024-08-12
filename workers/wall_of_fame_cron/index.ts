@@ -1,5 +1,3 @@
-import { P } from "pino";
-
 import { scheduled } from "./scheduled";
 
 export default {

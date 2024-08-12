@@ -1,6 +1,6 @@
 /* eslint-disable no-case-declarations */
 import { renderAsync } from "@react-email/render";
-import { Logger } from "pino";
+import { Logger } from "~/logging";
 import React from "react";
 import type { Resend } from "resend";
 
@@ -30,7 +30,7 @@ export const mailRouter = async ({
   emailTemplate: string;
   body: unknown;
   resend: Resend;
-  logger: Logger<never>;
+  logger: Logger;
 }) => {
   if (emailTemplate === "ia-camp-waitlist") {
     const {

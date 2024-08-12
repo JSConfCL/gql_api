@@ -3,7 +3,9 @@ import { neon } from "@neondatabase/serverless";
 import { config } from "dotenv";
 
 import { runMigration } from "~/datasources/db/runMigrations";
-import { defaultLogger } from "~/logging";
+import { createLogger } from "~/logging";
+
+const migrationLogger = createLogger("migration");
 
 config({ path: process.cwd() + "/.dev.vars", override: true });
 
@@ -14,6 +16,7 @@ if (!process.env.NEON_URL) {
 const client = neon(process.env.NEON_URL);
 
 runMigration(client).catch((e) => {
-  defaultLogger.error(e);
+  migrationLogger.error(e as Error);
+
   process.exit(1);
 });

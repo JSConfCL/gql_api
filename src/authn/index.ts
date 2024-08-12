@@ -1,5 +1,4 @@
 import { decode, verify } from "@tsndr/cloudflare-worker-jwt";
-import { Logger } from "pino";
 
 import { TokenPayload } from "~/authn/types";
 import { ORM_TYPE } from "~/datasources/db";
@@ -10,6 +9,7 @@ import {
 } from "~/datasources/queries/users";
 import { getUsername } from "~/datasources/queries/utils/createUsername";
 import { unauthorizedError } from "~/errors";
+import { Logger } from "~/logging";
 
 // Obtener el token de autorización de la solicitud, ya sea del encabezado de
 // autorización o de la cookie "community-os-access-token"
@@ -30,7 +30,7 @@ const getAuthToken = (request: Request) => {
 const getImpersonatedUserFromRequest = async (
   request: Request,
   DB: ORM_TYPE,
-  logger: Logger<never>,
+  logger: Logger,
 ) => {
   const authHeader = request.headers.get("x-impersonated-user-id");
 
@@ -49,7 +49,7 @@ const getImpersonatedUserFromRequest = async (
   return null;
 };
 
-const decodeJWT = (JWT_TOKEN: string, logger: Logger<never>) => {
+const decodeJWT = (JWT_TOKEN: string, logger: Logger) => {
   try {
     const { payload } = decode(JWT_TOKEN) as TokenPayload;
 
@@ -70,7 +70,7 @@ export const getUserFromRequest = async ({
   ORIGINAL_USER: USER | null;
   request: Request;
   DB: ORM_TYPE;
-  logger: Logger<never>;
+  logger: Logger;
 }) => {
   if (ORIGINAL_USER?.isSuperAdmin) {
     const user = await getImpersonatedUserFromRequest(request, DB, logger);
@@ -94,7 +94,7 @@ export const upsertUserFromRequest = async ({
   request: Request;
   SUPABASE_JWT_DECODER: string;
   DB: ORM_TYPE;
-  logger: Logger<never>;
+  logger: Logger;
 }) => {
   const JWT_TOKEN = getAuthToken(request);
 
@@ -144,10 +144,7 @@ export const upsertUserFromRequest = async ({
   return updateUserProfileInfo(DB, profileInfo.data, logger);
 };
 
-export const logPossibleUserIdFromJWT = (
-  request: Request,
-  logger: Logger<never>,
-) => {
+export const logPossibleUserIdFromJWT = (request: Request, logger: Logger) => {
   const isOptions = request.method === "OPTIONS";
 
   if (isOptions) {
@@ -176,7 +173,7 @@ export const logPossibleUserIdFromJWT = (
   }
 };
 
-export const logTraceId = (request: Request, logger: Logger<never>) => {
+export const logTraceId = (request: Request, logger: Logger) => {
   const traceId = request.headers.get("x-trace-id");
 
   if (traceId) {
