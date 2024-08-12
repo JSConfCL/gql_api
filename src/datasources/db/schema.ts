@@ -51,6 +51,8 @@ export * from "~/datasources/db/userTeams";
 
 export * from "~/datasources/db/userTickets";
 
+export * from "~/datasources/db/userTicketsEmailLogs";
+
 export * from "~/datasources/db/workEmail";
 
 export * from "~/datasources/db/workRole";
