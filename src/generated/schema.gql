@@ -241,6 +241,15 @@ input EventsTicketsSearchInput {
   redemptionStatus: TicketRedemptionStatus
 }
 
+input FindUserTicketSearchInput {
+  approvalStatus: [TicketApprovalStatus!]
+  eventIds: [String!]
+  paymentStatus: [TicketPaymentStatus!]
+  redemptionStatus: [TicketRedemptionStatus!]
+  userIds: [String!]
+  userTicketIds: [String!]
+}
+
 enum Gender {
   Agender
   Female
@@ -421,6 +430,11 @@ type PaginatedEvent {
 input PaginatedInputEventsSearchInput {
   pagination: PaginationSearchInputParams! = { page: 0, pageSize: 20 }
   search: EventsSearchInput
+}
+
+input PaginatedInputFindUserTicketSearchInput {
+  pagination: PaginationSearchInputParams! = { page: 0, pageSize: 20 }
+  search: FindUserTicketSearchInput
 }
 
 input PaginatedInputMyPurchaseOrdersInput {
@@ -604,6 +618,13 @@ type Query {
   Get a list of images, that are attached to an event
   """
   eventImages(input: EventImageSearch!): [SanityAssetRef!]!
+
+  """
+  Get a list of user tickets
+  """
+  findUserTickets(
+    input: PaginatedInputFindUserTicketSearchInput!
+  ): PaginatedUserTicket!
 
   """
   Get the current user
@@ -1019,6 +1040,7 @@ type User {
   lastName: String
   name: String
   pronouns: PronounsEnum
+  rsvps: [UserTicket!]!
   teams: [TeamRef!]!
   username: String!
 }
@@ -1045,6 +1067,7 @@ type UserTicket {
   purchaseOrder: PurchaseOrder
   redemptionStatus: TicketRedemptionStatus!
   ticketTemplate: Ticket!
+  user: User
 }
 
 """

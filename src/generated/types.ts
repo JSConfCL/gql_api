@@ -259,6 +259,15 @@ export type EventsTicketsSearchInput = {
   redemptionStatus?: InputMaybe<TicketRedemptionStatus>;
 };
 
+export type FindUserTicketSearchInput = {
+  approvalStatus?: InputMaybe<Array<TicketApprovalStatus>>;
+  eventIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  paymentStatus?: InputMaybe<Array<TicketPaymentStatus>>;
+  redemptionStatus?: InputMaybe<Array<TicketRedemptionStatus>>;
+  userIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  userTicketIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
+};
+
 export enum Gender {
   Agender = "Agender",
   Female = "Female",
@@ -472,6 +481,11 @@ export type PaginatedInputEventsSearchInput = {
   search?: InputMaybe<EventsSearchInput>;
 };
 
+export type PaginatedInputFindUserTicketSearchInput = {
+  pagination?: PaginationSearchInputParams;
+  search?: InputMaybe<FindUserTicketSearchInput>;
+};
+
 export type PaginatedInputMyPurchaseOrdersInput = {
   pagination?: PaginationSearchInputParams;
   search?: InputMaybe<MyPurchaseOrdersInput>;
@@ -624,6 +638,8 @@ export type Query = {
   event?: Maybe<Event>;
   /** Get a list of images, that are attached to an event */
   eventImages: Array<SanityAssetRef>;
+  /** Get a list of user tickets */
+  findUserTickets: PaginatedUserTicket;
   /** Get the current user */
   me: User;
   /** Get a list of purchase orders for the authenticated user */
@@ -680,6 +696,10 @@ export type QueryEventArgs = {
 
 export type QueryEventImagesArgs = {
   input: EventImageSearch;
+};
+
+export type QueryFindUserTicketsArgs = {
+  input: PaginatedInputFindUserTicketSearchInput;
 };
 
 export type QueryMyPurchaseOrdersArgs = {
@@ -1033,6 +1053,7 @@ export type User = {
   lastName?: Maybe<Scalars["String"]["output"]>;
   name?: Maybe<Scalars["String"]["output"]>;
   pronouns?: Maybe<PronounsEnum>;
+  rsvps: Array<UserTicket>;
   teams: Array<TeamRef>;
   username: Scalars["String"]["output"];
 };
@@ -1058,6 +1079,7 @@ export type UserTicket = {
   purchaseOrder?: Maybe<PurchaseOrder>;
   redemptionStatus: TicketRedemptionStatus;
   ticketTemplate: Ticket;
+  user?: Maybe<User>;
 };
 
 /** Representation of a user in a team */

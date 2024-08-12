@@ -3,13 +3,15 @@ import {
   userTicketsApprovalStatusEnum,
   puchaseOrderPaymentStatusEnum,
   userTicketsRedemptionStatusEnum,
+  selectUsersSchema,
 } from "~/datasources/db/schema";
 import {
   PurchaseOrderLoadable,
   PurchaseOrderPaymentStatusEnum,
 } from "~/schema/purchaseOrder/types";
-import { UserTicketRef } from "~/schema/shared/refs";
+import { UserRef, UserTicketRef } from "~/schema/shared/refs";
 import { TicketLoadable } from "~/schema/ticket/types";
+import { usersFetcher } from "~/schema/user/userFetcher";
 
 export const TicketPaymentStatus = builder.enumType("TicketPaymentStatus", {
   values: puchaseOrderPaymentStatusEnum,
@@ -42,6 +44,37 @@ builder.objectType(UserTicketRef, {
         }
 
         return purchaseOrder.purchaseOrder.purchaseOrderPaymentStatus;
+      },
+    }),
+    user: t.field({
+      type: UserRef,
+      nullable: true,
+      resolve: async (root, arg, context) => {
+        const canRequest =
+          context.USER?.id === root.userId || context.USER?.isSuperAdmin;
+
+        if (!canRequest) {
+          return null;
+        }
+
+        if (!root.userId) {
+          return null;
+        }
+
+        const users = await usersFetcher.searchUsers({
+          DB: context.DB,
+          search: {
+            userIds: [root.userId],
+          },
+        });
+
+        const user = users[0];
+
+        if (!user) {
+          return null;
+        }
+
+        return selectUsersSchema.parse(users[0]);
       },
     }),
     approvalStatus: t.field({
