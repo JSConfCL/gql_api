@@ -13,9 +13,11 @@ import {
   ticketsSchema,
   updateTicketSchema,
 } from "~/datasources/db/schema";
+import { applicationError, ServiceErrors } from "~/errors";
 import { addToObjectIfPropertyExists } from "~/schema/shared/helpers";
 import { TicketRef } from "~/schema/shared/refs";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
+import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
 import {
   TicketTemplateStatus,
   TicketTemplateVisibility,
@@ -428,7 +430,10 @@ builder.mutationField("editTicket", (t) =>
 
         const response = updateTicketSchema.safeParse(updateFields);
 
-        if (prices && prices.length >= 0) {
+        const expectedFieldUpdate = Object.keys(response.data ?? {}).length > 0;
+        const expectedPricingUpdate = prices && prices.length >= 0;
+
+        if (expectedPricingUpdate) {
           // Find prices for those currencies
           const ticketPrices = await DB.query.ticketsPricesSchema.findMany({
             where: (tp, { eq }) => eq(tp.ticketId, ticketId),
@@ -462,7 +467,11 @@ builder.mutationField("editTicket", (t) =>
               const newPrice = insertedPrice?.[0];
 
               if (!newPrice) {
-                throw new GraphQLError("Price not created");
+                throw applicationError(
+                  "Price not created",
+                  ServiceErrors.INTERNAL_SERVER_ERROR,
+                  logger,
+                );
               }
 
               const ticketPriceToInsert = insertTicketPriceSchema.parse({
@@ -475,7 +484,15 @@ builder.mutationField("editTicket", (t) =>
           }
         }
 
-        if (response.success && Object.keys(response.data).length > 0) {
+        if (!expectedFieldUpdate && !expectedPricingUpdate) {
+          throw applicationError(
+            "There are no fields to update",
+            ServiceErrors.FAILED_PRECONDITION,
+            logger,
+          );
+        }
+
+        if (expectedFieldUpdate && response.success) {
           const ticket = (
             await DB.update(ticketsSchema)
               .set(response.data)
@@ -484,13 +501,30 @@ builder.mutationField("editTicket", (t) =>
           )?.[0];
 
           return selectTicketSchema.parse(ticket);
-        } else {
-          logger.error("ERROR:", response.error);
-          throw new Error("Invalid input", response.error);
         }
+
+        const tickets = await ticketsFetcher.searchTickets({
+          DB,
+          search: {
+            ticketIds: [ticketId],
+          },
+        });
+        const ticket = tickets[0];
+
+        if (!ticket) {
+          throw applicationError(
+            "Ticket not found",
+            ServiceErrors.NOT_FOUND,
+            logger,
+          );
+        }
+
+        return selectTicketSchema.parse(ticket);
       } catch (e) {
-        throw new GraphQLError(
-          e instanceof Error ? e.message : "Unknown error",
+        throw applicationError(
+          (e as Error).message ?? "Uknown Error",
+          ServiceErrors.NOT_FOUND,
+          logger,
         );
       }
     },

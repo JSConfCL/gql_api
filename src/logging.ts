@@ -19,14 +19,20 @@ export class Logger {
     this.extraParams = extraParams ?? {};
   }
 
-  #loggerContent = (level: Levels, message: string | JsonObject) => ({
-    time: Date.now(),
-    loggerName: this.name,
-    level,
-    ...this.extraParams,
-    msg: typeof message === "string" ? message : "",
-    ...(typeof message !== "string" ? message : {}),
-  });
+  #loggerContent = (level: Levels, message: string | JsonObject) => {
+    const time = new Date();
+
+    return {
+      time: time.valueOf(),
+      readableTime: time.toISOString(),
+      UTCTime: time.toUTCString(),
+      loggerName: this.name,
+      level,
+      ...this.extraParams,
+      ...(typeof message !== "string" ? message : {}),
+      msg: message,
+    };
+  };
 
   #do_log(
     level: Levels,
