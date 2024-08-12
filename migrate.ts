@@ -14,6 +14,7 @@ if (!process.env.NEON_URL) {
 const client = neon(process.env.NEON_URL);
 
 runMigration(client).catch((e) => {
-  defaultLogger.error(e);
+  defaultLogger.error(e as Error);
+
   process.exit(1);
 });

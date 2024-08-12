@@ -1,14 +1,13 @@
-import { Logger } from "pino";
-
 import { getDb } from "~/datasources/db";
 import { eventsSchema } from "~/datasources/db/events";
 import { eventsToCommunitiesSchema } from "~/datasources/db/eventsCommunities";
 import { getSanityClient } from "~/datasources/sanity/client";
 import { SanityEvent } from "~/datasources/sanity/types";
+import { Logger } from "~/logging";
 
 import { ENV } from "./types";
 
-export const importFromSanity = async (env: ENV, logger: Logger<never>) => {
+export const importFromSanity = async (env: ENV, logger: Logger) => {
   try {
     const DB = getDb({
       neonUrl: env.NEON_URL,
@@ -52,6 +51,7 @@ export const importFromSanity = async (env: ENV, logger: Logger<never>) => {
 
     for (const event of events) {
       i++;
+
       logger.info("Finding event", event);
       const foundEvent = await DB.query.eventsSchema.findFirst({
         where: (e, { eq }) => eq(eventsSchema.sanityEventId, event._id),
@@ -97,7 +97,7 @@ export const importFromSanity = async (env: ENV, logger: Logger<never>) => {
       }
     }
   } catch (e) {
-    logger.error(e);
+    logger.error(e as Error);
     throw e;
   }
 };

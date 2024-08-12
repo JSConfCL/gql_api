@@ -1,4 +1,4 @@
-import { Logger } from "pino";
+import { Logger } from "~/logging";
 
 import { Env } from "../../../../worker-configuration";
 
@@ -10,7 +10,7 @@ export type EmailMessageType = {
 
 export const enqueueEmail = (
   MAIL_QUEUE: Queue,
-  logger: Logger<never>,
+  logger: Logger,
   emailMessage: EmailMessageType,
 ) => {
   logger.info("Enqueuing email", emailMessage, "to the queue: ", MAIL_QUEUE);

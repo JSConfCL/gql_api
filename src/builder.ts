@@ -5,8 +5,10 @@ import TracingPlugin, { wrapResolver } from "@pothos/plugin-tracing";
 import { DateResolver, DateTimeResolver } from "graphql-scalars";
 
 import * as rules from "~/authz";
-import { defaultLogger } from "~/logging";
+import { createLogger } from "~/logging";
 import { Context } from "~/types";
+
+const tracingLogger = createLogger("tracing");
 
 export const builder = new SchemaBuilder<{
   Context: Context;
@@ -27,7 +29,7 @@ export const builder = new SchemaBuilder<{
     default: () => true,
     wrap: (resolver, options, config) =>
       wrapResolver(resolver, (error, duration) => {
-        defaultLogger.debug(
+        tracingLogger.debug(
           `[TRACING] ${config.parentType}.${config.name} in ${duration}ms`,
         );
       }),

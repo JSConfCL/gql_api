@@ -1,4 +1,4 @@
-import { Logger } from "pino";
+import { Logger } from "~/logging";
 
 import { ORM_TYPE, getDb } from "~/datasources/db";
 import {
@@ -30,7 +30,7 @@ const getFetch = (env: ENV) => async (url: string) => {
 
 export const syncMercadopagoPaymentsAndSubscriptions = async (
   env: ENV,
-  logger: Logger<never>,
+  logger: Logger,
 ) => {
   const DB = getDb({
     neonUrl: env.NEON_URL,
@@ -49,7 +49,7 @@ export const syncMercadopagoPaymentsAndSubscriptions = async (
 const addTagsToDonorUsers = async (
   DB: ORM_TYPE,
   results: ResultItem[],
-  logger: Logger<never>,
+  logger: Logger,
 ) => {
   const tagToInsert = insertTagsSchema.parse({
     name: AllowedUserTags.DONOR,
@@ -100,7 +100,7 @@ const addTagsToDonorUsers = async (
 const savePaymentEntry = async (
   DB: ORM_TYPE,
   results: ResultItem[],
-  logger: Logger<never>,
+  logger: Logger,
 ) => {
   try {
     const mappedResults = results.map((result) => {

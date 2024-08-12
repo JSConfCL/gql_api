@@ -85,12 +85,12 @@ export const queueConsumer: ExportedHandlerQueueHandler<
 
         msg.ack();
       } catch (e) {
-        defaultLogger.error(e);
+        defaultLogger.error(e as Error);
         throw e;
       }
     }
   } catch (e) {
-    defaultLogger.error(e);
+    defaultLogger.error(e as Error);
     throw e;
   }
 };

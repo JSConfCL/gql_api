@@ -1,10 +1,10 @@
 import { eq } from "drizzle-orm";
-import { Logger } from "pino";
 import Stripe from "stripe";
 
 import { TRANSACTION_HANDLER } from "~/datasources/db";
 import { selectTicketSchema, ticketsSchema } from "~/datasources/db/schema";
 import { createStripeProductAndPrice } from "~/datasources/stripe";
+import { Logger } from "~/logging";
 
 export const ensureProductsAreCreated = async ({
   price,
@@ -19,7 +19,7 @@ export const ensureProductsAreCreated = async ({
   ticket: typeof selectTicketSchema._type;
   getStripeClient: () => Stripe;
   transactionHander: TRANSACTION_HANDLER;
-  logger: Logger<never>;
+  logger: Logger;
 }) => {
   if (currencyCode === "USD") {
     const stripeProductId = await createStripeProductAndPrice({

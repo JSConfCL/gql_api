@@ -1,6 +1,5 @@
 import { and, eq, lt } from "drizzle-orm";
 import { GraphQLError } from "graphql";
-import { Logger } from "pino";
 import { AsyncReturnType } from "type-fest";
 
 import { ORM_TYPE } from "~/datasources/db";
@@ -22,6 +21,7 @@ import {
   getStripePaymentStatus,
 } from "~/datasources/stripe";
 import { applicationError, ServiceErrors } from "~/errors";
+import { Logger } from "~/logging";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
 import { Context } from "~/types";
 
@@ -58,7 +58,7 @@ const sendConfirmationEmail = async ({
 }: {
   DB: ORM_TYPE;
   transactionalEmailService: Context["RPC_SERVICE_EMAIL"];
-  logger: Logger<never>;
+  logger: Logger;
   purchaseOrderId: string;
   email: string;
 }) => {
@@ -164,7 +164,7 @@ const createMercadoPagoPaymentIntent = async ({
     email: string;
     id: string;
   };
-  logger: Logger<never>;
+  logger: Logger;
 }) => {
   const pricesInCLP: Record<string, number | undefined> = {};
 
@@ -243,7 +243,7 @@ const createStripePaymentIntent = async ({
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
   paymentSuccessRedirectURL: string;
   paymentCancelRedirectURL: string;
-  logger: Logger<never>;
+  logger: Logger;
 }) => {
   const ticketsGroupedByTemplateId: Record<
     string,
@@ -317,7 +317,7 @@ export const createPaymentIntent = async ({
   paymentSuccessRedirectURL: string;
   paymentCancelRedirectURL: string;
   currencyId: string;
-  logger: Logger<never>;
+  logger: Logger;
   transactionalEmailService: Context["RPC_SERVICE_EMAIL"];
 }) => {
   if (!USER) {
@@ -555,7 +555,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
   purchaseOrderId: string;
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
   GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
-  logger: Logger<never>;
+  logger: Logger;
 }) => {
   logger.info("Finding purchase order:", purchaseOrderId);
   const purchaseOrder = await DB.query.purchaseOrdersSchema.findFirst({

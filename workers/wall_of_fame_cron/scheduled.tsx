@@ -26,6 +26,6 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
       syncStripePayments(env),
     ]);
   } catch (e) {
-    logger.error(e);
+    logger.error(e as Error);
   }
 };

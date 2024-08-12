@@ -1,4 +1,3 @@
-import { Logger } from "pino";
 import { SetOptional } from "type-fest";
 
 import { ORM_TYPE } from "~/datasources/db";
@@ -8,6 +7,7 @@ import {
   usersSchema,
   UserStatusEnum,
 } from "~/datasources/db/users";
+import { Logger } from "~/logging";
 import { usersFetcher } from "~/schema/user/userFetcher";
 
 export const createUserIfNotExists = async ({
@@ -18,7 +18,7 @@ export const createUserIfNotExists = async ({
 }: {
   DB: ORM_TYPE;
   email: string;
-  logger: Logger<never>;
+  logger: Logger;
   userFields?: Omit<SetOptional<USER, keyof USER>, "id" | "email">;
 }) => {
   const result = await usersFetcher.searchUsers({
@@ -71,7 +71,7 @@ export const createInactiveUser = async ({
   email,
 }: {
   DB: ORM_TYPE;
-  logger: Logger<never>;
+  logger: Logger;
   email: string;
 }) => {
   return createUserIfNotExists({

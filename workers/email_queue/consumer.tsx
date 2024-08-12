@@ -28,6 +28,7 @@ export const queueConsumer: ExportedHandlerQueueHandler<
       }
     } catch (e) {
       defaultLogger.error("Error processing message", e);
+
       msg.retry();
     }
   }

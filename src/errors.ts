@@ -1,7 +1,7 @@
 import { createGraphQLError } from "graphql-yoga";
-import { Logger } from "pino";
 
 import { builder } from "~/builder";
+import { Logger } from "~/logging";
 
 export enum ServiceErrors {
   UNAUTHENTICATED = "UNAUTHENTICATED",
@@ -22,7 +22,7 @@ const error_codes = {
 export const applicationError = (
   message: string,
   errorType: ServiceErrors,
-  logger: Logger<never>,
+  logger: Logger,
   options?: Parameters<typeof createGraphQLError>[1],
 ) => {
   logger.error(`Service error: ${errorType}: ${message}`);
@@ -38,7 +38,7 @@ export const applicationError = (
 
 export const unauthorizedError = (
   message: string,
-  logger: Logger<never>,
+  logger: Logger,
   options?: Parameters<typeof createGraphQLError>[1],
 ) =>
   applicationError(message, ServiceErrors.UNAUTHENTICATED, logger, {

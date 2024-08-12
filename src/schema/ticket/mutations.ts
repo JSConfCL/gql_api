@@ -357,7 +357,7 @@ const TicketEditInput = builder.inputType("TicketEditInput", {
         "If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold.",
     }),
     prices: t.field({
-      type: PricingInputField,
+      type: [PricingInputField],
       required: false,
     }),
   }),
@@ -378,7 +378,7 @@ builder.mutationField("editTicket", (t) =>
     },
     resolve: async (root, { input }, { logger, USER, DB }) => {
       try {
-        const { ticketId } = input;
+        const { ticketId, prices } = input;
 
         if (!USER) {
           throw new GraphQLError("User not found");
@@ -428,7 +428,54 @@ builder.mutationField("editTicket", (t) =>
 
         const response = updateTicketSchema.safeParse(updateFields);
 
-        if (response.success) {
+        if (prices && prices.length >= 0) {
+          // Find prices for those currencies
+          const ticketPrices = await DB.query.ticketsPricesSchema.findMany({
+            where: (tp, { eq }) => eq(tp.ticketId, ticketId),
+            with: {
+              price: true,
+            },
+          });
+
+          // we update them with new values, or create if they don't exist
+          for (const price of prices) {
+            const foundPrice = ticketPrices.find(
+              (tp) => tp.price.currencyId === price.currencyId,
+            );
+
+            if (foundPrice) {
+              // update
+              await DB.update(pricesSchema)
+                .set({
+                  price_in_cents: price.value_in_cents,
+                })
+                .where(eq(pricesSchema.id, foundPrice.priceId));
+            } else {
+              // create
+              const insertPriceValues = insertPriceSchema.parse({
+                price_in_cents: price.value_in_cents,
+                currencyId: price.currencyId,
+              });
+              const insertedPrice = await DB.insert(pricesSchema)
+                .values(insertPriceValues)
+                .returning();
+              const newPrice = insertedPrice?.[0];
+
+              if (!newPrice) {
+                throw new GraphQLError("Price not created");
+              }
+
+              const ticketPriceToInsert = insertTicketPriceSchema.parse({
+                ticketId: ticketId,
+                priceId: newPrice.id,
+              });
+
+              await DB.insert(ticketsPricesSchema).values(ticketPriceToInsert);
+            }
+          }
+        }
+
+        if (response.success && Object.keys(response.data).length > 0) {
           const ticket = (
             await DB.update(ticketsSchema)
               .set(response.data)

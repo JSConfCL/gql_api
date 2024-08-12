@@ -23,6 +23,6 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   try {
     await Promise.all([importFromSanity(env, logger)]);
   } catch (e) {
-    logger.error(e);
+    logger.error(e as Error);
   }
 };

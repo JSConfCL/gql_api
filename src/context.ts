@@ -1,6 +1,5 @@
 import { initContextCache } from "@pothos/core";
 import { YogaInitialContext } from "graphql-yoga";
-import pino from "pino";
 import { Resend } from "resend";
 
 import { Env } from "worker-configuration";
@@ -10,6 +9,7 @@ import { getMercadoPagoFetch } from "~/datasources/mercadopago";
 import { getSanityClient } from "~/datasources/sanity/client";
 import { getStripeClient } from "~/datasources/stripe/client";
 import { APP_ENV } from "~/env";
+import { Logger } from "~/logging";
 import { Context } from "~/types";
 
 //
@@ -32,7 +32,7 @@ export const createGraphqlContext = async ({
   logger,
 }: YogaInitialContext &
   Env & {
-    logger: pino.Logger<never>;
+    logger: Logger;
   }): Promise<Context> => {
   if (!MAIL_QUEUE) {
     throw new Error("Missing MAIL_QUEUE");

@@ -5,7 +5,7 @@ import {
   insertPaymentLogsSchema,
   paymentLogsSchema,
 } from "~/datasources/db/schema";
-import { defaultLogger } from "~/logging";
+import { createLogger, defaultLogger } from "~/logging";
 
 import { ENV } from "./types";
 
@@ -44,7 +44,7 @@ export const getSubscriptions = async (env: ENV) => {
 };
 
 export const syncStripePayments = async (env: ENV) => {
-  const DB = getDb({ neonUrl: env.NEON_URL, logger: defaultLogger });
+  const DB = getDb({ neonUrl: env.NEON_URL, logger: createLogger("stripe") });
   const stripe = new Stripe(env.ST_KEY);
 
   const results = await stripe.charges.list({ limit: 100 });
