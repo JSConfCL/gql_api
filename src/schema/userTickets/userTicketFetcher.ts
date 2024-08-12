@@ -98,7 +98,7 @@ const getSearchUserTicketsQuery = (
   }
 
   if (ticketIds && ticketIds.length > 0) {
-    wheres.push(inArray(userTicketsSchema.id, ticketIds));
+    wheres.push(inArray(userTicketsSchema.ticketTemplateId, ticketIds));
   }
 
   if (userTicketIds && userTicketIds.length > 0) {
