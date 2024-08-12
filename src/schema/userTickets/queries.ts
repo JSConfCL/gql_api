@@ -109,8 +109,10 @@ const FindUserTicketSearchInput = builder.inputType(
   "FindUserTicketSearchInput",
   {
     fields: (t) => ({
-      eventIds: t.field({
-        type: ["String"],
+      eventIds: t.stringList({
+        required: false,
+      }),
+      userTicketIds: t.stringList({
         required: false,
       }),
       paymentStatus: t.field({
@@ -125,8 +127,7 @@ const FindUserTicketSearchInput = builder.inputType(
         type: [TicketRedemptionStatus],
         required: false,
       }),
-      userIds: t.field({
-        type: ["String"],
+      userIds: t.stringList({
         required: false,
       }),
     }),
@@ -148,6 +149,7 @@ builder.queryField("findUserTickets", (t) =>
         paymentStatus,
         redemptionStatus,
         userIds,
+        userTicketIds,
       } = input.search ?? {};
 
       if (!USER) {
@@ -162,6 +164,7 @@ builder.queryField("findUserTickets", (t) =>
           search: {
             eventIds: eventIds ? eventIds : undefined,
             userIds: userIds ? userIds : undefined,
+            userTicketIds: userTicketIds ? userTicketIds : undefined,
             paymentStatus: paymentStatus ? paymentStatus : undefined,
             approvalStatus: queryApprovalStatus,
             redemptionStatus: redemptionStatus ? redemptionStatus : undefined,
