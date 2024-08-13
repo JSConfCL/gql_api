@@ -6,17 +6,17 @@ import {
 } from "~/datasources/db/userTicketsEmailLogs";
 import { applicationError, ServiceErrors } from "~/errors";
 import { Logger } from "~/logging";
-import EmailService from "~workers/transactional_email_service";
+import { Context } from "~/types";
 
 export const sendAddedToWaitlistEmail = async ({
   DB,
   userTicketId,
   userId,
-  EMAIL_SERVICE,
+  RPC_SERVICE_EMAIL,
   logger,
 }: {
   DB: ORM_TYPE;
-  EMAIL_SERVICE: EmailService;
+  RPC_SERVICE_EMAIL: Context["RPC_SERVICE_EMAIL"];
   userId: string;
   userTicketId: string;
   logger: Logger;
@@ -67,7 +67,7 @@ export const sendAddedToWaitlistEmail = async ({
 
   const userName = user.name ?? undefined;
 
-  await EMAIL_SERVICE.sendEventInvitationsBatch(
+  await RPC_SERVICE_EMAIL.sendEventInvitationsBatch(
     {
       // TODO: Change this image
       eventLogoCloudflareImageURL:
