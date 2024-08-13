@@ -14,7 +14,7 @@ import { eventsSchema, userTicketsSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 import { ticketsPricesSchema } from "./ticketPrice";
 
-export const ticketStatusEnum = ["active", "inactive", "waitlist"] as const;
+export const ticketStatusEnum = ["active", "inactive"] as const;
 
 export const ticketVisibilityEnum = ["public", "private", "unlisted"] as const;
 
