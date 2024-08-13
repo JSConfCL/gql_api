@@ -8,9 +8,27 @@ import {
 } from "./shared";
 
 export enum UserTicketsEmailType {
+  // waitlist comms
   WAITLIST_ENTRY_CREATED = "waitlist_entry_created",
-  WAITLIST_ENTRY_ACCEPTED = "waitlist_entry_accepted",
-  WAITLIST_ENTRY_REJECTED = "waitlist_entry_rejected",
+  WAITLIST_TICKET_ACCEPTED = "waitlist_ticket_accepted",
+  WAITLIST_TICKET_REJECTED = "waitlist_ticket_rejected",
+  // ticket purchase
+  TICKET_PURCHASED_SUCCESSFUL = "ticket_purchased_successful",
+  TICKET_PURCHASED_FAILED = "ticket_purchased_failed",
+  // ticket gift
+  TICKET_GIFT_SENT = "ticket_gift_sent",
+  TICKET_GIFT_RECEIVED = "ticket_gift_received",
+  TICKET_GIFT_ACCEPTED = "ticket_gift_accepted",
+  // free ticket
+  FREE_TICKET_ASSIGNED = "free_ticket_assigned",
+  // ticket transfer
+  TICKET_TRANSFER_REQUESTED = "ticket_transfer_requested",
+  TICKET_TRANSFER_ACCEPTED = "ticket_transfer_accepted",
+  TICKET_TRANSFER_REJECTED = "ticket_transfer_rejected",
+  // ticket cancellation
+  TICKET_CANCELLED = "ticket_cancelled",
+  // ticket reminder
+  TICKET_REMINDER = "ticket_reminder",
 }
 
 export const userTicketsEmailLogSchema = pgTable(

@@ -7,7 +7,11 @@ import { sendTransactionalHTMLEmail } from "~/datasources/email/sendTransactiona
 import { createLogger } from "~/logging";
 import { ENV } from "~workers/transactional_email_service/types";
 
+import { EventInvitation } from "../../emails/templates/tickets/event-invitation";
 import { PurchaseOrderSuccessful } from "../../emails/templates/tickets/purchase-order-successful";
+import { WaitlistRejected } from "../../emails/templates/tickets/waitlist-accepted";
+import { WaitlistAccepted } from "../../emails/templates/tickets/waitlist-rejected";
+import { YouAreOnTheWaitlist } from "../../emails/templates/tickets/you-are-on-the-waitlist-confirmation";
 
 export default class EmailService extends WorkerEntrypoint<ENV> {
   logger = createLogger("EmailService");
@@ -91,5 +95,159 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
     });
 
     this.logger.info(`Sent purchase order email for ID ${purchaseOrderId}`);
+  }
+
+  async sendConfirmationYouAreOnTheWaitlist({
+    eventLogoCloudflareImageURL,
+    eventName,
+    userName,
+    email,
+  }: {
+    eventLogoCloudflareImageURL: string;
+    eventName: string;
+    userName: string;
+    email: string;
+  }) {
+    this.logger.info(`About to send ConfirmationYouAreOnTheWaitlist`, {
+      eventName,
+      userName,
+    });
+
+    await sendTransactionalHTMLEmail(this.resend, this.logger, {
+      htmlContent: render(
+        <YouAreOnTheWaitlist
+          eventLogoCloudflareImageURL={eventLogoCloudflareImageURL}
+          eventName={eventName}
+          userName={userName}
+        />,
+      ),
+      to: [
+        {
+          name: userName,
+          email,
+        },
+      ],
+      from: {
+        name: "CommunityOS",
+        email: "contacto@communityos.io",
+      },
+      subject: `Estas en la Lista de espera para ${eventName}`,
+    });
+
+    this.logger.info(`Sent ConfirmationYouAreOnTheWaitlist`);
+  }
+
+  async sendConfirmationWaitlistAccepted({
+    eventLogoCloudflareImageURL,
+    eventName,
+    userName,
+    email,
+  }: {
+    eventLogoCloudflareImageURL: string;
+    eventName: string;
+    userName: string;
+    email: string;
+  }) {
+    this.logger.info(`About to send ConfirmationWaitlistAccepted`, {
+      eventName,
+      userName,
+    });
+
+    await sendTransactionalHTMLEmail(this.resend, this.logger, {
+      htmlContent: render(
+        <WaitlistAccepted
+          eventLogoCloudflareImageURL={eventLogoCloudflareImageURL}
+          eventName={eventName}
+          userName={userName}
+        />,
+      ),
+      to: [
+        {
+          name: userName,
+          email,
+        },
+      ],
+      from: {
+        name: "CommunityOS",
+        email: "contacto@communityos.io",
+      },
+      subject: `¡Felicidades! Tienes un lugar en ${eventName}`,
+    });
+  }
+
+  async sendConfirmationWaitlistRejected({
+    eventLogoCloudflareImageURL,
+    eventName,
+    userName,
+    email,
+  }: {
+    eventLogoCloudflareImageURL: string;
+    eventName: string;
+    userName: string;
+    email: string;
+  }) {
+    this.logger.info(`About to send ConfirmationWaitlistRejected`, {
+      eventName,
+      userName,
+    });
+
+    await sendTransactionalHTMLEmail(this.resend, this.logger, {
+      htmlContent: render(
+        <WaitlistRejected
+          eventLogoCloudflareImageURL={eventLogoCloudflareImageURL}
+          eventName={eventName}
+          userName={userName}
+        />,
+      ),
+      to: [
+        {
+          name: userName,
+          email,
+        },
+      ],
+      from: {
+        name: "CommunityOS",
+        email: "contacto@communityos.io",
+      },
+      subject: `Gracias por tu interés en ${eventName}`,
+    });
+  }
+
+  async sendEventInvitation({
+    eventLogoCloudflareImageURL,
+    eventName,
+    userName,
+    email,
+  }: {
+    eventLogoCloudflareImageURL: string;
+    eventName: string;
+    userName: string;
+    email: string;
+  }) {
+    this.logger.info(`About to send EventInvitation`, {
+      eventName,
+      userName,
+    });
+
+    await sendTransactionalHTMLEmail(this.resend, this.logger, {
+      htmlContent: render(
+        <EventInvitation
+          eventLogoCloudflareImageURL={eventLogoCloudflareImageURL}
+          eventName={eventName}
+          userName={userName}
+        />,
+      ),
+      to: [
+        {
+          name: userName,
+          email,
+        },
+      ],
+      from: {
+        name: "CommunityOS",
+        email: "contacto@communityos.io",
+      },
+      subject: `Estás invitado a ${eventName}`,
+    });
   }
 }
