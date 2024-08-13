@@ -4,17 +4,6 @@ import { UserTicketRef, WaitlistRef } from "~/schema/shared/refs";
 import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
 import { TicketLoadable } from "~/schema/ticket/types";
 
-export const TicketTemplateStatus = builder.enumType("TicketTemplateStatus", {
-  values: ["active", "inactive"] as const,
-});
-
-export const TicketTemplateVisibility = builder.enumType(
-  "TicketTemplateVisibility",
-  {
-    values: ["public", "private", "unlisted"] as const,
-  },
-);
-
 export const WaitlistApprovalStatus = builder.enumType(
   "WaitlistApprovalStatus",
   {
