@@ -38,13 +38,3 @@ export const selectCommunitySchema = createSelectSchema(communitySchema);
 export const insertCommunitySchema = createInsertSchema(communitySchema, {
   name: (schema) => schema.name.min(2).max(64),
 });
-
-export const updateCommunitySchema = insertCommunitySchema.pick({
-  name: true,
-  description: true,
-  status: true,
-  logoImageSanityRef: true,
-  bannerImageSanityRef: true,
-  paymentSuccessRedirectURL: true,
-  paymentCancelRedirectURL: true,
-});
