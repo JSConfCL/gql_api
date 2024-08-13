@@ -426,7 +426,9 @@ builder.mutationField("claimUserTicket", (t) =>
               }
 
               const isApproved =
-                ticketTemplate.isFree && !ticketTemplate.requiresApproval;
+                ticketTemplate.isFree &&
+                !ticketTemplate.requiresApproval &&
+                event.status !== "waitlist";
 
               // If no errors were thrown, we can proceed to reserve the
               // tickets.

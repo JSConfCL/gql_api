@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { AsyncReturnType } from "type-fest";
 import { it, describe, assert } from "vitest";
 
+import { TicketApprovalStatus } from "~/generated/types";
 import {
   executeGraphqlOperationAsUser,
   insertAllowedCurrency,
@@ -247,6 +248,118 @@ describe("Claim a user ticket", () => {
 
       if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
         assert.equal(response.data?.claimUserTicket.tickets.length, 3);
+      }
+    });
+  });
+
+  describe("Should prevent claiming when going over the limit", () => {
+    it("For a MEMBER user", async () => {
+      const maxTicketsPerUser = 2;
+      const event = await insertEvent({
+        status: "active",
+      });
+      const ticketTemplate = await insertTicketTemplate({
+        eventId: event.id,
+        quantity: 200,
+        maxTicketsPerUser,
+      });
+
+      const { community, user } =
+        await createCommunityEventUserAndTicketTemplate({
+          event,
+        });
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 2,
+                },
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 1,
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(
+        response.data?.claimUserTicket?.__typename,
+        "RedeemUserTicketError",
+      );
+
+      if (
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
+      ) {
+        assert.equal(
+          response.data?.claimUserTicket.errorMessage,
+          `You cannot get more than ${maxTicketsPerUser} for ticket ${ticketTemplate.id}`,
+        );
+      }
+    });
+  });
+
+  describe("Should properly create user tickets for a ticket in a waitlist state", () => {
+    it("For a MEMBER user", async () => {
+      const event = await insertEvent({
+        status: "waitlist",
+      });
+      const { user, ticketTemplate } =
+        await createCommunityEventUserAndTicketTemplate({
+          event,
+        });
+
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 2,
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+
+      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
+        assert.equal(response.data?.claimUserTicket.tickets.length, 2);
+
+        assert.equal(
+          response.data?.claimUserTicket.tickets[0].approvalStatus,
+          TicketApprovalStatus.Pending,
+        );
+
+        assert.equal(
+          response.data?.claimUserTicket.tickets[1].approvalStatus,
+          TicketApprovalStatus.Pending,
+        );
       }
     });
   });

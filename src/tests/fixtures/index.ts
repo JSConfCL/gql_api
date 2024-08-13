@@ -413,6 +413,7 @@ export const insertTicketTemplate = async (
     visibility: partialInput?.visibility,
     isFree: partialInput?.isFree ?? false,
     isUnlimited: partialInput?.isUnlimited ?? false,
+    maxTicketsPerUser: partialInput?.maxTicketsPerUser,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertTicketSchema>;
 

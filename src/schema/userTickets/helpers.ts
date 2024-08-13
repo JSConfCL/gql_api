@@ -85,7 +85,7 @@ export const assertCanStartTicketClaimingForEvent = async ({
       ticket.maxTicketsPerUser < purchaseOrderByTickets[ticket.id].quantity
     ) {
       throw applicationError(
-        `You cannot get more ${ticket.maxTicketsPerUser} for ticket ${ticket.id}`,
+        `You cannot get more than ${ticket.maxTicketsPerUser} for ticket ${ticket.id}`,
         ServiceErrors.FAILED_PRECONDITION,
         logger,
       );
