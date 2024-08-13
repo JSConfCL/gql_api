@@ -1,0 +1,15 @@
+query GetWaitlist($ticketId: String!) {
+  getWaitlist(ticketId: $ticketId) {
+    id
+    myRsvp {
+      id
+      user {
+        id
+      }
+      approvalStatus
+    }
+    ticket {
+      id
+    }
+  }
+}

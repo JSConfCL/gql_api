@@ -1,7 +1,5 @@
 import { builder } from "~/builder";
-import {
-  selectTicketSchema
-} from "~/datasources/db/schema";
+import { selectTicketSchema } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import { WaitlistRef } from "~/schema/shared/refs";
 import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
@@ -14,7 +12,7 @@ builder.queryField("getWaitlist", (t) =>
       ticketId: t.arg.string({ required: true }),
     },
     authz: {
-      rules: ["IsSuperAdmin"],
+      rules: ["IsAuthenticated"],
     },
     resolve: async (root, { ticketId }, { DB, USER, logger }) => {
       if (!USER) {

@@ -1,8 +1,8 @@
 import { builder } from "~/builder";
 import { selectUserTicketsSchema } from "~/datasources/db/schema";
 import { UserTicketRef, WaitlistRef } from "~/schema/shared/refs";
-import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
 import { TicketLoadable } from "~/schema/ticket/types";
+import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 
 export const WaitlistApprovalStatus = builder.enumType(
   "WaitlistApprovalStatus",
@@ -32,11 +32,11 @@ builder.objectType(WaitlistRef, {
           return null;
         }
 
-        const tickets = await ticketsFetcher.searchTickets({
+        const tickets = await userTicketFetcher.searchUserTickets({
           DB: ctx.DB,
           search: {
             ticketIds: [root.id],
-            tags: ["waitlist"],
+            eventIds: [root.eventId],
           },
         });
 

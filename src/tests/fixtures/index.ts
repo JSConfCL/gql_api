@@ -160,6 +160,10 @@ export const executeGraphqlOperationAsUser = <
   params: ExecutionRequest<TVariables, unknown, unknown, undefined, unknown>,
   user: Awaited<ReturnType<typeof insertUser>>,
 ): Promise<ExecutionResult<TResult>> => {
+  if (!user) {
+    throw new Error("User is required");
+  }
+
   const executor = createExecutor(user);
 
   // @ts-expect-error This error is ok. Executor returns a promise with they types passed

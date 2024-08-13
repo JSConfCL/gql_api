@@ -295,6 +295,8 @@ export type Mutation = {
   acceptTeamInvitation: TeamRef;
   /** Try to add a person to a team */
   addPersonToTeam: AddUserToTeamResponseRef;
+  /** Apply to a waitlist */
+  applyToWaitlist: UserTicket;
   /** Approve a ticket */
   approvalUserTicket: UserTicket;
   /** Cancel a ticket */
@@ -331,6 +333,7 @@ export type Mutation = {
   redeemUserTicket: UserTicket;
   /** Reject the user's invitation to a team */
   rejectTeamInvitation: TeamRef;
+  reserveWaitlistSpot: UserTicket;
   /** Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position */
   startWorkEmailValidation: WorkEmail;
   /** Update a company */
@@ -357,6 +360,10 @@ export type MutationAcceptTeamInvitationArgs = {
 
 export type MutationAddPersonToTeamArgs = {
   input: AddPersonToTeamInput;
+};
+
+export type MutationApplyToWaitlistArgs = {
+  ticketId: Scalars["String"]["input"];
 };
 
 export type MutationApprovalUserTicketArgs = {
@@ -429,6 +436,10 @@ export type MutationRedeemUserTicketArgs = {
 
 export type MutationRejectTeamInvitationArgs = {
   input: RejectTeamInvitationInput;
+};
+
+export type MutationReserveWaitlistSpotArgs = {
+  userTicketId: Scalars["String"]["input"];
 };
 
 export type MutationStartWorkEmailValidationArgs = {
@@ -641,6 +652,8 @@ export type Query = {
   eventImages: Array<SanityAssetRef>;
   /** Get a list of user tickets */
   findUserTickets: PaginatedUserTicket;
+  /** Get a single waitlist */
+  getWaitlist: Waitlist;
   /** Get the current user */
   me: User;
   /** Get a list of purchase orders for the authenticated user */
@@ -701,6 +714,10 @@ export type QueryEventImagesArgs = {
 
 export type QueryFindUserTicketsArgs = {
   input: PaginatedInputFindUserTicketSearchInput;
+};
+
+export type QueryGetWaitlistArgs = {
+  ticketId: Scalars["String"]["input"];
 };
 
 export type QueryMyPurchaseOrdersArgs = {
@@ -811,6 +828,7 @@ export enum SearchableUserTags {
 }
 
 export enum ServiceErrors {
+  AlreadyExists = "ALREADY_EXISTS",
   Conflict = "CONFLICT",
   FailedPrecondition = "FAILED_PRECONDITION",
   Forbidden = "FORBIDDEN",
@@ -1114,6 +1132,21 @@ export type ValidatedWorkEmail = {
   status: EmailStatus;
   workEmail: Scalars["String"]["output"];
 };
+
+/** Representation of a waitlist */
+export type Waitlist = {
+  __typename?: "Waitlist";
+  /** The ID of the waitlist. It matches the ID of the underlying ticket */
+  id: Scalars["ID"]["output"];
+  myRsvp?: Maybe<UserTicket>;
+  ticket: Ticket;
+};
+
+export enum WaitlistApprovalStatus {
+  Approved = "approved",
+  Pending = "pending",
+  Rejected = "rejected",
+}
 
 /** Representation of a (yet to validate) work email */
 export type WorkEmail = {

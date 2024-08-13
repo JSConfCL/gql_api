@@ -1,0 +1,16 @@
+mutation ApplyToWaitlist($ticketId: String!) {
+  applyToWaitlist(ticketId: $ticketId) {
+    id
+    redemptionStatus
+    approvalStatus
+    ticketTemplate {
+      id
+      event {
+        id
+      }
+    }
+    user {
+      id
+    }
+  }
+}

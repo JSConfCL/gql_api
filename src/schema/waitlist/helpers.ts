@@ -1,5 +1,6 @@
 import { ORM_TYPE } from "~/datasources/db";
 import {
+  insertUserTicketsSchema,
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/userTickets";
@@ -62,7 +63,7 @@ export const createWaitlistEntry = async ({
 
   const waitlistEntry = await DB.insert(userTicketsSchema)
     .values(
-      selectUserTicketsSchema.parse({
+      insertUserTicketsSchema.parse({
         ticketTemplateId: ticketId,
         userId,
         purchaseOrderId: purchaseOrder.id,
@@ -80,5 +81,5 @@ export const createWaitlistEntry = async ({
     );
   }
 
-  return insertedUserTicket;
+  return selectUserTicketsSchema.parse(insertedUserTicket);
 };

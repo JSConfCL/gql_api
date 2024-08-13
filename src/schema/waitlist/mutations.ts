@@ -1,5 +1,4 @@
 import { builder } from "~/builder";
-import { selectUserTicketsSchema } from "~/datasources/db/schema";
 import { UserTicketRef } from "~/schema/shared/refs";
 import { createWaitlistEntry } from "~/schema/waitlist/helpers";
 
@@ -11,7 +10,7 @@ builder.mutationField("applyToWaitlist", (t) =>
       ticketId: t.arg.string({ required: true }),
     },
     authz: {
-      rules: ["IsSuperAdmin"],
+      rules: ["IsAuthenticated"],
     },
     resolve: async (root, { ticketId }, { DB, USER, logger }) => {
       if (!USER) {
@@ -25,7 +24,7 @@ builder.mutationField("applyToWaitlist", (t) =>
         logger,
       });
 
-      return selectUserTicketsSchema.parse(insertedUserTicket);
+      return insertedUserTicket;
     },
   }),
 );
