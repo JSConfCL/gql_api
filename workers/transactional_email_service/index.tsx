@@ -5,12 +5,9 @@ import { Resend } from "resend";
 
 import { sendTransactionalHTMLEmail } from "~/datasources/email/sendTransactionalHTMLEmail";
 import { createLogger } from "~/logging";
+import { ENV } from "~workers/transactional_email_service/types";
 
 import { PurchaseOrderSuccessful } from "../../emails/templates/tickets/purchase-order-successful";
-
-type ENV = {
-  RESEND_API_KEY: string | undefined;
-};
 
 export default class EmailService extends WorkerEntrypoint<ENV> {
   logger = createLogger("EmailService");
