@@ -21,7 +21,6 @@ export const communitySchema = pgTable("communities", {
   bannerImageSanityRef: text("banner_image_sanity_ref"), // these are sanity image IDs
   paymentSuccessRedirectURL: text("payment_success_redirect_url"),
   paymentCancelRedirectURL: text("payment_cancel_redirect_url"),
-  resendAudienceId: text("resend_audience_id"),
   status: text("status", { enum: communityStatusEnum })
     .default("inactive")
     .notNull(),
@@ -48,5 +47,4 @@ export const updateCommunitySchema = insertCommunitySchema.pick({
   bannerImageSanityRef: true,
   paymentSuccessRedirectURL: true,
   paymentCancelRedirectURL: true,
-  resendAudienceId: true,
 });

@@ -29,7 +29,6 @@ export const teamsSchema = pgTable("teams", {
     .default(TeamStatusEnum.waiting_resolution)
     .notNull(),
   description: text("description"),
-  resendAudienceId: text("resend_audience_id"),
   ...createdAndUpdatedAtFields,
 });
 
