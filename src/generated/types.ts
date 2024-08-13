@@ -333,7 +333,6 @@ export type Mutation = {
   redeemUserTicket: UserTicket;
   /** Reject the user's invitation to a team */
   rejectTeamInvitation: TeamRef;
-  reserveWaitlistSpot: UserTicket;
   /** Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position */
   startWorkEmailValidation: WorkEmail;
   /** Update a company */
@@ -436,10 +435,6 @@ export type MutationRedeemUserTicketArgs = {
 
 export type MutationRejectTeamInvitationArgs = {
   input: RejectTeamInvitationInput;
-};
-
-export type MutationReserveWaitlistSpotArgs = {
-  userTicketId: Scalars["String"]["input"];
 };
 
 export type MutationStartWorkEmailValidationArgs = {
