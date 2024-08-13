@@ -1,8 +1,6 @@
-import { faker } from "@faker-js/faker";
 import { AsyncReturnType } from "type-fest";
-import { it, describe, assert } from "vitest";
+import { assert, describe, it } from "vitest";
 
-import { TicketApprovalStatus } from "~/generated/types";
 import {
   executeGraphqlOperationAsUser,
   insertAllowedCurrency,

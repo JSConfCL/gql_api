@@ -1,4 +1,4 @@
-query GetWaitlist($ticketId: String!) {
+query fetchWaitlist($ticketId: String!) {
   getWaitlist(ticketId: $ticketId) {
     id
     myRsvp {

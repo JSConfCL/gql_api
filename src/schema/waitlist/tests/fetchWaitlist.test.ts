@@ -1,10 +1,10 @@
 import { describe, assert, it } from "vitest";
 
 import {
-  GetWaitlist,
-  GetWaitlistQuery,
-  GetWaitlistQueryVariables,
-} from "~/schema/waitlist/tests/getWaitlist.generated";
+  FetchWaitlist,
+  FetchWaitlistQuery,
+  FetchWaitlistQueryVariables,
+} from "~/schema/waitlist/tests/fetchWaitlist.generated";
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -42,11 +42,11 @@ describe("Should get my ticket for a waitlist", () => {
     });
 
     const response = await executeGraphqlOperationAsUser<
-      GetWaitlistQuery,
-      GetWaitlistQueryVariables
+      FetchWaitlistQuery,
+      FetchWaitlistQueryVariables
     >(
       {
-        document: GetWaitlist,
+        document: FetchWaitlist,
         variables: {
           ticketId: ticket.id,
         },

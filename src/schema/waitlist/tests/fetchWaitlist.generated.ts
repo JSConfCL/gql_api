@@ -6,16 +6,16 @@ import type * as Types from '../../../generated/types';
 
 import type { JsonObject } from "type-fest";
 import gql from 'graphql-tag';
-export type GetWaitlistQueryVariables = Types.Exact<{
+export type FetchWaitlistQueryVariables = Types.Exact<{
   ticketId: Types.Scalars['String']['input'];
 }>;
 
 
-export type GetWaitlistQuery = { __typename?: 'Query', getWaitlist: { __typename?: 'Waitlist', id: string, myRsvp: { __typename?: 'UserTicket', id: string, approvalStatus: Types.TicketApprovalStatus, user: { __typename?: 'User', id: string } | null } | null, ticket: { __typename?: 'Ticket', id: string } } };
+export type FetchWaitlistQuery = { __typename?: 'Query', getWaitlist: { __typename?: 'Waitlist', id: string, myRsvp: { __typename?: 'UserTicket', id: string, approvalStatus: Types.TicketApprovalStatus, user: { __typename?: 'User', id: string } | null } | null, ticket: { __typename?: 'Ticket', id: string } } };
 
 
-export const GetWaitlist = gql`
-    query GetWaitlist($ticketId: String!) {
+export const FetchWaitlist = gql`
+    query fetchWaitlist($ticketId: String!) {
   getWaitlist(ticketId: $ticketId) {
     id
     myRsvp {
