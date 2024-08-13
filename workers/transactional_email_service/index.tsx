@@ -13,6 +13,8 @@ import { WaitlistRejected } from "../../emails/templates/tickets/waitlist-accept
 import { WaitlistAccepted } from "../../emails/templates/tickets/waitlist-rejected";
 import { YouAreOnTheWaitlist } from "../../emails/templates/tickets/you-are-on-the-waitlist-confirmation";
 
+type ReceiverType = { name?: string; email: string };
+
 export default class EmailService extends WorkerEntrypoint<ENV> {
   logger = createLogger("EmailService");
 
@@ -213,17 +215,18 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
     });
   }
 
-  async sendEventInvitation({
-    eventLogoCloudflareImageURL,
-    eventName,
-    userName,
-    email,
-  }: {
-    eventLogoCloudflareImageURL: string;
-    eventName: string;
-    userName: string;
-    email: string;
-  }) {
+  async sendEventInvitationsBatch(
+    {
+      eventLogoCloudflareImageURL,
+      eventName,
+      userName,
+    }: {
+      eventLogoCloudflareImageURL: string;
+      eventName: string;
+      userName: string;
+    },
+    to: ReceiverType[],
+  ) {
     this.logger.info(`About to send EventInvitation`, {
       eventName,
       userName,
@@ -237,17 +240,13 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
           userName={userName}
         />,
       ),
-      to: [
-        {
-          name: userName,
-          email,
-        },
-      ],
+      to,
       from: {
         name: "CommunityOS",
         email: "contacto@communityos.io",
       },
       subject: `Estás invitado a ${eventName}`,
+      isBatch: true,
     });
   }
 }

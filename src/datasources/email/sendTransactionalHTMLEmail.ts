@@ -14,30 +14,39 @@ export async function sendTransactionalHTMLEmail(
     to,
     from,
     subject,
+    isBatch = false,
   }: {
     htmlContent: string;
     from: { name: string; email: string };
     to: Array<{ name?: string; email: string }>;
     subject: string;
+    isBatch?: boolean;
   },
 ) {
   if (process?.env?.NODE_ENV === "test") {
     return;
   }
 
-  const resendPayload = {
-    to: to.map((t) => t.email),
-    from: `${from.name} <${from.email}>`,
-    subject,
-    html: htmlContent,
-  };
-
   try {
     // No tengo claro si resend tiene un ratelimit de 2 o 10 emails por segundo. (Hay documentación conflictiva).
     // Solo para estar seguros, usamos un backoff exponencial para reintentar el envío si falla, sumando 1 segundo
     await backOff(
       async () => {
-        const createEmailResponse = await resend.emails.send(resendPayload);
+        const createEmailResponse = isBatch
+          ? await resend.batch.send(
+              to.map((t) => ({
+                to: [t.email],
+                from: `${from.name} <${from.email}>`,
+                subject,
+                html: htmlContent,
+              })),
+            )
+          : await resend.emails.send({
+              to: to.map((t) => t.email),
+              from: `${from.name} <${from.email}>`,
+              subject,
+              html: htmlContent,
+            });
 
         if (createEmailResponse.error) {
           logger.error(
@@ -46,7 +55,7 @@ export async function sendTransactionalHTMLEmail(
           );
           throw new Error("Error sending email via Resend");
         } else {
-          logger.info("Email sent", createEmailResponse);
+          logger.info("Email sent", createEmailResponse.data);
         }
       },
       {
