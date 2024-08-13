@@ -1,4 +1,10 @@
 import { ORM_TYPE } from "~/datasources/db";
+import {
+  insertPurchaseOrdersSchema,
+  purchaseOrdersSchema,
+} from "~/datasources/db/purchaseOrders";
+import { applicationError, ServiceErrors } from "~/errors";
+import { Logger } from "~/logging";
 
 export const getPurchaseRedirectURLsFromPurchaseOrder = async ({
   DB,
@@ -85,4 +91,35 @@ export const getPurchaseRedirectURLsFromPurchaseOrder = async ({
     paymentSuccessRedirectURL,
     paymentCancelRedirectURL,
   };
+};
+
+export const createInitialPurchaseOrder = async ({
+  DB,
+  userId,
+  logger,
+}: {
+  DB: ORM_TYPE;
+  userId: string;
+  logger: Logger;
+}) => {
+  const createdPurchaseOrders = await DB.insert(purchaseOrdersSchema)
+    .values(
+      insertPurchaseOrdersSchema.parse({
+        userId,
+      }),
+    )
+    .returning()
+    .execute();
+
+  const createdPurchaseOrder = createdPurchaseOrders[0];
+
+  if (!createdPurchaseOrder) {
+    throw applicationError(
+      "Could not create purchase order",
+      ServiceErrors.FAILED_PRECONDITION,
+      logger,
+    );
+  }
+
+  return createdPurchaseOrder;
 };

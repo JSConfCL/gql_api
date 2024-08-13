@@ -11,6 +11,7 @@ import { PurchaseOrderSuccessful } from "../../emails/templates/tickets/purchase
 type ENV = {
   RESEND_API_KEY: string | undefined;
 };
+
 export default class EmailService extends WorkerEntrypoint<ENV> {
   logger = createLogger("EmailService");
 
@@ -58,6 +59,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
     this.logger.info(
       `About to send purchase order email for ID: ${purchaseOrderId}`,
     );
+
     await sendTransactionalHTMLEmail(this.resend, this.logger, {
       htmlContent: render(
         <PurchaseOrderSuccessful
@@ -90,6 +92,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
       },
       subject: "Tus tickets están listos 🎉",
     });
+
     this.logger.info(`Sent purchase order email for ID ${purchaseOrderId}`);
   }
 }

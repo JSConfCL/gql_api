@@ -10,10 +10,16 @@ import {
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
-import { getPurchaseRedirectURLsFromPurchaseOrder } from "~/schema/purchaseOrder/helpers";
+import { applicationError, ServiceErrors } from "~/errors";
+import { eventsFetcher } from "~/schema/events/eventsFetcher";
+import {
+  createInitialPurchaseOrder,
+  getPurchaseRedirectURLsFromPurchaseOrder,
+} from "~/schema/purchaseOrder/helpers";
 import { PurchaseOrderRef } from "~/schema/purchaseOrder/types";
 import { isValidUUID } from "~/schema/shared/helpers";
 import { UserTicketRef } from "~/schema/shared/refs";
+import { assertCanStartTicketClaimingForEvent } from "~/schema/userTickets/helpers";
 import {
   canApproveTicket,
   canCancelUserTicket,
@@ -58,6 +64,7 @@ const TicketClaimInput = builder.inputType("TicketClaimInput", {
       description:
         "A unique key to prevent duplicate requests, it's optional to send, but it's recommended to send it to prevent duplicate requests. If not sent, it will be created by the server.",
       required: false,
+      deprecationReason: "This field is deprecated",
     }),
   }),
 });
@@ -154,12 +161,12 @@ builder.mutationField("approvalUserTicket", (t) =>
           throw new GraphQLError("Unauthorized!");
         }
 
-        if (!USER) {
-          throw new GraphQLError("User not found");
-        }
-
         if (ticket.approvalStatus === "approved") {
           throw new GraphQLError("Ticket already approved");
+        }
+
+        if (ticket.approvalStatus !== "pending") {
+          throw new GraphQLError("Ticket cannot be approved");
         }
 
         if (!ticket.ticketTemplate?.requiresApproval) {
@@ -262,7 +269,7 @@ builder.mutationField("claimUserTicket", (t) =>
     },
     resolve: async (
       root,
-      { input: { purchaseOrder, idempotencyUUIDKey, generatePaymentLink } },
+      { input: { purchaseOrder, generatePaymentLink } },
       {
         USER,
         DB,
@@ -277,10 +284,6 @@ builder.mutationField("claimUserTicket", (t) =>
         throw new GraphQLError("User not found");
       }
 
-      if (idempotencyUUIDKey && !isValidUUID(idempotencyUUIDKey)) {
-        throw new GraphQLError("Idempotency key is not a valid UUID");
-      }
-
       // We try to reserve as many tickets as exist in purchaseOrder array. we
       // create a transaction to check on the tickets and reserve them. We
       // reverse the transacion if we find that:
@@ -289,48 +292,74 @@ builder.mutationField("claimUserTicket", (t) =>
       // - Other General errors
       let transactionError: null | GraphQLError = null;
 
+      if (purchaseOrder.length === 0) {
+        throw applicationError(
+          "Purchase order is empty",
+          ServiceErrors.INVALID_ARGUMENT,
+          logger,
+        );
+      }
+
+      const purchaseOrderByTickets: Record<
+        string,
+        {
+          ticketId: string;
+          quantity: number;
+        }
+      > = {};
+
+      for (const item of purchaseOrder) {
+        if (!isValidUUID(item.ticketId)) {
+          throw applicationError(
+            "Invalid ticket id",
+            ServiceErrors.INVALID_ARGUMENT,
+            logger,
+          );
+        }
+
+        if (item.quantity <= 0) {
+          throw applicationError(
+            "Invalid quantity",
+            ServiceErrors.INVALID_ARGUMENT,
+            logger,
+          );
+        }
+
+        if (!purchaseOrderByTickets[item.ticketId]) {
+          purchaseOrderByTickets[item.ticketId] = {
+            ticketId: item.ticketId,
+            quantity: 0,
+          };
+        }
+
+        purchaseOrderByTickets[item.ticketId].quantity += item.quantity;
+      }
+
       try {
         const transactionResults = await DB.transaction(async (trx) => {
           try {
-            if (idempotencyUUIDKey) {
-              const existingPurchaseOrder =
-                await trx.query.purchaseOrdersSchema.findFirst({
-                  where: (po, { eq }) =>
-                    eq(po.idempotencyUUIDKey, idempotencyUUIDKey),
-                });
+            await assertCanStartTicketClaimingForEvent({
+              DB: trx,
+              user: USER,
+              purchaseOrderByTickets,
+              logger,
+            });
+            const createdPurchaseOrder = await createInitialPurchaseOrder({
+              DB: trx,
+              userId: USER.id,
+              logger,
+            });
 
-              if (existingPurchaseOrder) {
-                throw new Error(
-                  `Purchase order with idempotency key ${idempotencyUUIDKey} already exists.`,
-                );
-              }
-            }
-
-            // We create a purchase order to keep track of the tickets we create.
-            const createdPurchaseOrders = await trx
-              .insert(purchaseOrdersSchema)
-              .values(
-                insertPurchaseOrdersSchema.parse({
-                  userId: USER.id,
-                  idempotencyUUIDKey: idempotencyUUIDKey ?? undefined,
-                }),
-              )
-              .returning()
-              .execute();
             let claimedTickets: Array<typeof insertUserTicketsSchema._type> =
               [];
 
-            const createdPurchaseOrder = createdPurchaseOrders[0];
-
-            if (!createdPurchaseOrder) {
-              throw new Error("Could not create purchase order");
-            }
-
             // TODO: Measure and consider parallelizing this.
-            for (const item of purchaseOrder) {
+            for (const { quantity, ticketId } of Object.values(
+              purchaseOrderByTickets,
+            )) {
               // We pull the ticket template to see if it exists.
               const ticketTemplate = await trx.query.ticketsSchema.findFirst({
-                where: (t, { eq }) => eq(t.id, item.ticketId),
+                where: (t, { eq }) => eq(t.id, ticketId),
                 with: {
                   event: true,
                   ticketsPrices: {
@@ -343,8 +372,10 @@ builder.mutationField("claimUserTicket", (t) =>
 
               // If the ticket template does not exist, we throw an error.
               if (!ticketTemplate) {
-                throw new Error(
-                  `Ticket template with id ${item.ticketId} not found`,
+                throw applicationError(
+                  `Ticket template with id ${ticketId} not found`,
+                  ServiceErrors.NOT_FOUND,
+                  logger,
                 );
               }
 
@@ -356,35 +387,40 @@ builder.mutationField("claimUserTicket", (t) =>
                     tp?.price?.price_in_cents !== null &&
                     tp?.price?.price_in_cents > 0,
                 );
-              const { status } = ticketTemplate.event;
-              const isEventActive = status === "active";
+
+              const { event } = ticketTemplate;
 
               // If the event is not active, we throw an error.
-              if (!isEventActive) {
-                throw new Error(
-                  `Event ${ticketTemplate.event.id} is not active. Cannot claim tickets for an inactive event.`,
+              if (event.status === "inactive") {
+                throw applicationError(
+                  `Event ${event.id} is not active. Cannot claim tickets for an inactive event.`,
+                  ServiceErrors.FAILED_PRECONDITION,
+                  logger,
                 );
               }
-
-              // We pull the tickets that are already reserved or in-process to
-              // see if we have enough to fulfill the purchase order
-              const tickets = await trx.query.userTicketsSchema.findMany({
-                where: (uts, { eq, and, notInArray }) =>
-                  and(
-                    eq(uts.ticketTemplateId, item.ticketId),
-                    notInArray(uts.approvalStatus, ["rejected", "cancelled"]),
-                  ),
-              });
 
               // If the ticket template has a quantity field,  means there's a
               // limit to the amount of tickets that can be created. So we check
               // if we have enough tickets to fulfill the purchase order.
               if (ticketTemplate.quantity) {
+                // We pull the tickets that are already reserved or in-process to
+                // see if we have enough to fulfill the purchase order
+                const tickets = await trx.query.userTicketsSchema.findMany({
+                  where: (uts, { eq, and, notInArray }) =>
+                    and(
+                      eq(uts.ticketTemplateId, ticketId),
+                      notInArray(uts.approvalStatus, ["rejected", "cancelled"]),
+                    ),
+                  columns: {
+                    id: true,
+                  },
+                });
+
                 // If we would be going over the limit of tickets, we throw an
                 // error.
-                if (tickets.length + item.quantity > ticketTemplate.quantity) {
+                if (tickets.length + quantity > ticketTemplate.quantity) {
                   throw new Error(
-                    `Not enough tickets for ticket template with id ${item.ticketId}`,
+                    `Not enough tickets for ticket template with id ${ticketId}`,
                   );
                 }
               }
@@ -394,7 +430,7 @@ builder.mutationField("claimUserTicket", (t) =>
 
               // If no errors were thrown, we can proceed to reserve the
               // tickets.
-              const newTickets = new Array(item.quantity)
+              const newTickets = new Array(quantity)
                 .fill(false)
                 .map(() => {
                   const result = insertUserTicketsSchema.safeParse({
@@ -414,8 +450,8 @@ builder.mutationField("claimUserTicket", (t) =>
                 .filter(Boolean);
 
               logger.info(
-                `Creating ${newTickets.length} user tickets for ticket template with id ${item.ticketId}`,
-                { newTickets, item },
+                `Creating ${newTickets.length} user tickets for ticket template with id ${ticketId}`,
+                { newTickets },
               );
 
               if (newTickets.length === 0) {
@@ -433,7 +469,7 @@ builder.mutationField("claimUserTicket", (t) =>
               const finalTickets = await trx.query.userTicketsSchema.findMany({
                 where: (uts, { eq, and, inArray }) =>
                   and(
-                    eq(uts.ticketTemplateId, item.ticketId),
+                    eq(uts.ticketTemplateId, ticketId),
                     inArray(uts.approvalStatus, ["approved", "pending"]),
                   ),
               });
@@ -441,7 +477,7 @@ builder.mutationField("claimUserTicket", (t) =>
               if (ticketTemplate.quantity) {
                 if (finalTickets.length > ticketTemplate.quantity) {
                   throw new Error(
-                    `We have gone over the limit of tickets for ticket template with id ${item.ticketId}`,
+                    `We have gone over the limit of tickets for ticket template with id ${ticketId}`,
                   );
                 }
               }
