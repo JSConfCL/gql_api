@@ -87,6 +87,7 @@ export const sendAddedToWaitlistEmail = async ({
     insertUserTicketsEmailLogSchema.parse({
       emailType: UserTicketsEmailType.WAITLIST_ENTRY_CREATED,
       userTicketId,
+      userId,
     }),
   );
 

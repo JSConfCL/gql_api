@@ -15,7 +15,7 @@ export type FetchWaitlistQuery = { __typename?: 'Query', getWaitlist: { __typena
 
 
 export const FetchWaitlist = gql`
-    query fetchWaitlist($ticketId: String!) {
+    query FetchWaitlist($ticketId: String!) {
   getWaitlist(ticketId: $ticketId) {
     id
     myRsvp {

@@ -9,7 +9,7 @@ import { PgTable } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { type ExecutionResult } from "graphql";
 import { createYoga } from "graphql-yoga";
-import { SetRequired } from "type-fest";
+import { JsonObject, SetRequired } from "type-fest";
 import { ZodType, z } from "zod";
 
 import { Env } from "worker-configuration";
@@ -100,6 +100,7 @@ import {
 import { createLogger } from "~/logging";
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
+import { Context } from "~/types";
 
 const logger = createLogger("test-fixtures");
 const insertUserRequest = insertUsersSchema.deepPartial();
@@ -122,8 +123,14 @@ const CRUDDates = ({
   deletedAt: typeof deletedAt !== "undefined" ? deletedAt : faker.date.recent(),
 });
 
-const createExecutor = (user?: Awaited<ReturnType<typeof insertUser>>) =>
-  buildHTTPExecutor({
+const createExecutor = ({
+  user,
+  context,
+}: {
+  user?: Awaited<ReturnType<typeof insertUser>>;
+  context?: Partial<Context>;
+}) => {
+  return buildHTTPExecutor({
     fetch: createYoga<Env>({
       schema,
       context: async () => {
@@ -135,19 +142,24 @@ const createExecutor = (user?: Awaited<ReturnType<typeof insertUser>>) =>
           logger,
           USER: user ? user : undefined,
           GET_STRIPE_CLIENT: () => null,
+          ...(context ?? {}),
         };
       },
       plugins: [authZEnvelopPlugin({ rules })],
     }).fetch,
   });
+};
 
 export const executeGraphqlOperation = <
   TResult,
   TVariables extends Record<string, any> = Record<string, any>,
 >(
   params: ExecutionRequest<TVariables, unknown, unknown, undefined, unknown>,
+  context: Partial<Context> = {},
 ): Promise<ExecutionResult<TResult>> => {
-  const executor = createExecutor();
+  const executor = createExecutor({
+    context,
+  });
 
   // @ts-expect-error This is ok. Executor returns a promise with they types passed
   return executor(params);
@@ -159,12 +171,13 @@ export const executeGraphqlOperationAsUser = <
 >(
   params: ExecutionRequest<TVariables, unknown, unknown, undefined, unknown>,
   user: Awaited<ReturnType<typeof insertUser>>,
+  context: Partial<Context> = {},
 ): Promise<ExecutionResult<TResult>> => {
   if (!user) {
     throw new Error("User is required");
   }
 
-  const executor = createExecutor(user);
+  const executor = createExecutor({ user, context });
 
   // @ts-expect-error This error is ok. Executor returns a promise with they types passed
   return executor(params);
@@ -176,13 +189,14 @@ export const executeGraphqlOperationAsSuperAdmin = async <
 >(
   params: ExecutionRequest<TVariables, unknown, unknown, undefined, unknown>,
   user?: Awaited<ReturnType<typeof insertUser>>,
+  context: Partial<Context> = {},
 ): Promise<ExecutionResult<TResult>> => {
   if (user && !user.isSuperAdmin) {
     throw new Error("User passed is not a super admin");
   }
 
   const superAdmin = user ?? (await insertUser({ isSuperAdmin: true }));
-  const executor = createExecutor(superAdmin);
+  const executor = createExecutor({ user: superAdmin, context });
 
   // @ts-expect-error This error is ok. Executor returns a promise with they types passed
   return executor(params);
