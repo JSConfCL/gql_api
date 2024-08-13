@@ -44,6 +44,8 @@ type TicketGraphqlSchema = z.infer<typeof selectTicketSchema>;
 
 export const TicketRef = builder.objectRef<TicketGraphqlSchema>("Ticket");
 
+export const WaitlistRef = builder.objectRef<TicketGraphqlSchema>("Waitlist");
+
 export const PriceRef = builder.objectRef<{
   id: string;
   amount: number;

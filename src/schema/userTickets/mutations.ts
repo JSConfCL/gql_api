@@ -3,15 +3,12 @@ import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
 import {
-  insertPurchaseOrdersSchema,
   insertUserTicketsSchema,
-  purchaseOrdersSchema,
   selectPurchaseOrdersSchema,
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
-import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import {
   createInitialPurchaseOrder,
   getPurchaseRedirectURLsFromPurchaseOrder,
@@ -426,9 +423,7 @@ builder.mutationField("claimUserTicket", (t) =>
               }
 
               const isApproved =
-                ticketTemplate.isFree &&
-                !ticketTemplate.requiresApproval &&
-                event.status !== "waitlist";
+                ticketTemplate.isFree && !ticketTemplate.requiresApproval;
 
               // If no errors were thrown, we can proceed to reserve the
               // tickets.
@@ -572,6 +567,50 @@ builder.mutationField("claimUserTicket", (t) =>
 );
 
 builder.mutationField("acceptGiftedTicket", (t) =>
+  t.field({
+    type: UserTicketRef,
+    args: {
+      userTicketId: t.arg.string({
+        required: true,
+      }),
+    },
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, { userTicketId }, { DB, USER }) => {
+      if (!USER) {
+        throw new GraphQLError("User not found");
+      }
+
+      // find the ticket for the user
+      const ticket = await DB.query.userTicketsSchema.findFirst({
+        where: (t, { eq, and }) =>
+          and(eq(t.id, userTicketId), eq(t.userId, USER.id)),
+      });
+
+      if (!ticket) {
+        throw new GraphQLError("Could not find ticket to accept");
+      }
+
+      if (ticket.approvalStatus !== "gifted") {
+        throw new GraphQLError("Ticket is not a gifted ticket");
+      }
+
+      const updatedTicket = (
+        await DB.update(userTicketsSchema)
+          .set({
+            approvalStatus: "approved",
+          })
+          .where(eq(userTicketsSchema.id, userTicketId))
+          .returning()
+      )?.[0];
+
+      return selectUserTicketsSchema.parse(updatedTicket);
+    },
+  }),
+);
+
+builder.mutationField("reserveWaitlistSpot", (t) =>
   t.field({
     type: UserTicketRef,
     args: {

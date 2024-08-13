@@ -412,6 +412,7 @@ export const insertTicketTemplate = async (
     status: partialInput?.status,
     visibility: partialInput?.visibility,
     isFree: partialInput?.isFree ?? false,
+    tags: partialInput?.tags,
     isUnlimited: partialInput?.isUnlimited ?? false,
     maxTicketsPerUser: partialInput?.maxTicketsPerUser,
     ...CRUDDates(partialInput),

@@ -1,7 +1,8 @@
+import { relations } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-import { userTicketsSchema } from "./schema";
+import { usersSchema, userTicketsSchema } from "./schema";
 import {
   createdAndUpdatedAtFields,
   TypescriptEnumAsDBEnumOptions,
@@ -38,6 +39,9 @@ export const userTicketsEmailLogSchema = pgTable(
     userTicketId: uuid("user_ticket_id")
       .references(() => userTicketsSchema.id)
       .notNull(),
+    userId: uuid("user_id")
+      .references(() => usersSchema.id)
+      .notNull(),
     emailType: text("email_type", {
       enum: TypescriptEnumAsDBEnumOptions(UserTicketsEmailType),
     }).notNull(),
@@ -53,6 +57,20 @@ export const userTicketsEmailLogSchema = pgTable(
       ),
     };
   },
+);
+
+export const userTicketsEmailLogSchemaRelations = relations(
+  userTicketsEmailLogSchema,
+  ({ one }) => ({
+    userTicket: one(userTicketsSchema, {
+      fields: [userTicketsEmailLogSchema.userTicketId],
+      references: [userTicketsSchema.id],
+    }),
+    user: one(usersSchema, {
+      fields: [userTicketsEmailLogSchema.userId],
+      references: [usersSchema.id],
+    }),
+  }),
 );
 
 export const selectUserTicketsEmailLogSchema = createSelectSchema(

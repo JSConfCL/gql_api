@@ -9,7 +9,7 @@ import {
 } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
-export const eventStatusEnum = ["active", "inactive", "waitlist"] as const;
+export const eventStatusEnum = ["active", "inactive"] as const;
 
 export const eventVisibilityEnum = ["public", "private", "unlisted"] as const;
 

@@ -314,15 +314,18 @@ describe("Claim a user ticket", () => {
     });
   });
 
-  describe("Should properly create user tickets for a ticket in a waitlist state", () => {
+  describe("Should fail to create user tickets for a ticket in a waitlist state", () => {
     it("For a MEMBER user", async () => {
-      const event = await insertEvent({
-        status: "waitlist",
+      const event = await insertEvent();
+      const ticketTemplate = await insertTicketTemplate({
+        tags: ["waitlist"],
+        eventId: event.id,
       });
-      const { user, ticketTemplate } =
-        await createCommunityEventUserAndTicketTemplate({
-          event,
-        });
+
+      const { user } = await createCommunityEventUserAndTicketTemplate({
+        event,
+        ticketTemplate,
+      });
 
       const response = await executeGraphqlOperationAsUser<
         ClaimUserTicketMutation,
@@ -346,19 +349,17 @@ describe("Claim a user ticket", () => {
 
       assert.equal(response.errors, undefined);
 
-      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+      assert.equal(
+        response.data?.claimUserTicket?.__typename,
+        "RedeemUserTicketError",
+      );
 
-      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
-        assert.equal(response.data?.claimUserTicket.tickets.length, 2);
-
+      if (
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
+      ) {
         assert.equal(
-          response.data?.claimUserTicket.tickets[0].approvalStatus,
-          TicketApprovalStatus.Pending,
-        );
-
-        assert.equal(
-          response.data?.claimUserTicket.tickets[1].approvalStatus,
-          TicketApprovalStatus.Pending,
+          response.data?.claimUserTicket.errorMessage,
+          `Ticket ${ticketTemplate.id} is a waitlist ticket. Cannot claim waitlist tickets`,
         );
       }
     });

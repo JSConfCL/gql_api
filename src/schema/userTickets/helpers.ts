@@ -90,5 +90,13 @@ export const assertCanStartTicketClaimingForEvent = async ({
         logger,
       );
     }
+
+    if (ticket.tags.includes("waitlist")) {
+      throw applicationError(
+        `Ticket ${ticket.id} is a waitlist ticket. Cannot claim waitlist tickets`,
+        ServiceErrors.FAILED_PRECONDITION,
+        logger,
+      );
+    }
   }
 };

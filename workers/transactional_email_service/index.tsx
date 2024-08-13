@@ -223,7 +223,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
     }: {
       eventLogoCloudflareImageURL: string;
       eventName: string;
-      userName: string;
+      userName?: string;
     },
     to: ReceiverType[],
   ) {
