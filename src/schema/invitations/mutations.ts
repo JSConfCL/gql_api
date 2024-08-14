@@ -20,7 +20,7 @@ const GiftTicketsToUserInput = builder.inputType("GiftTicketsToUserInput", {
     ticketId: t.string({ required: true }),
     userIds: t.stringList({ required: true }),
     allowMultipleTicketsPerUsers: t.boolean({ required: true }),
-    notifyUsers: t.boolean({ required: false }),
+    notifyUsers: t.boolean({ required: true }),
   }),
 });
 

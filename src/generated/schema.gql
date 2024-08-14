@@ -270,6 +270,13 @@ input GeneratePaymentLinkInput {
   currencyId: String!
 }
 
+input GiftTicketsToUserInput {
+  allowMultipleTicketsPerUsers: Boolean!
+  notifyUsers: Boolean!
+  ticketId: String!
+  userIds: [String!]!
+}
+
 type Mutation {
   acceptGiftedTicket(userTicketId: String!): UserTicket!
 
@@ -362,6 +369,11 @@ type Mutation {
   Enqueue images to import
   """
   enqueueGoogleAlbumImport(input: EnqueueGoogleAlbumImportInput!): Boolean!
+
+  """
+  Gift tickets to users, allowing multiple tickets per user, and conditionally notify them
+  """
+  giftTicketsToUsers(input: GiftTicketsToUserInput!): [UserTicket!]!
 
   """
   Create a purchase order

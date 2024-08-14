@@ -1,0 +1,16 @@
+mutation giftTicketsToUsers($input: GiftTicketsToUserInput!) {
+  giftTicketsToUsers(input: $input) {
+    id
+    redemptionStatus
+    paymentStatus
+    approvalStatus
+    ticketTemplate {
+      id
+      name
+      event {
+        id
+        name
+      }
+    }
+  }
+}
