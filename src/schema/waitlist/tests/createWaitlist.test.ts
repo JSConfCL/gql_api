@@ -16,7 +16,7 @@ import {
 import { Context } from "~/types";
 
 const mockedRpcServiceEmail = {
-  sendEventInvitationsBatch: vitest.fn(),
+  sendConfirmationYouAreOnTheWaitlist: vitest.fn(),
 } as unknown as Context["RPC_SERVICE_EMAIL"];
 
 const mockedContext = {
