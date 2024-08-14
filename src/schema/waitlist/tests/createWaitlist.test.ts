@@ -1,4 +1,4 @@
-import { describe, assert, it, vitest } from "vitest";
+import { assert, describe, it } from "vitest";
 
 import {
   ApplyToWaitlist,

@@ -2,7 +2,7 @@ import { vitest } from "vitest";
 
 import { Context } from "~/types";
 
-type MockedService<T extends Record<string, any>> = Omit<
+type MockedService<T extends Record<string, unknown>> = Omit<
   T,
   | "fetch"
   | "__WORKER_ENTRYPOINT_BRAND"

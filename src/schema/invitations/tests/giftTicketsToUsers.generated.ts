@@ -15,7 +15,7 @@ export type GiftTicketsToUsersMutation = { __typename?: 'Mutation', giftTicketsT
 
 
 export const GiftTicketsToUsers = gql`
-    mutation giftTicketsToUsers($input: GiftTicketsToUserInput!) {
+    mutation GiftTicketsToUsers($input: GiftTicketsToUserInput!) {
   giftTicketsToUsers(input: $input) {
     id
     redemptionStatus

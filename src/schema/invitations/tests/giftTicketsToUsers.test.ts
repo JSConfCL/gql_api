@@ -1,11 +1,8 @@
-import { describe, assert, it, vitest } from "vitest";
+import { assert, describe, it } from "vitest";
 
 import {
   executeGraphqlOperationAsSuperAdmin,
-  executeGraphqlOperationAsUser,
-  insertCommunity,
   insertEvent,
-  insertEventToCommunity,
   insertTicketTemplate,
   insertUser,
 } from "~/tests/fixtures";
@@ -157,57 +154,3 @@ describe("Should fail send tickets to users in bulk", () => {
     );
   });
 });
-
-// describe("Should fail to reserve a ticket for a waitlist", () => {
-//   it("If user has tickets already", async () => {
-//     const user1 = await insertUser({
-//       isSuperAdmin: false,
-//     });
-//     const community1 = await insertCommunity();
-//     const event1 = await insertEvent();
-//     const ticket = await insertTicketTemplate({
-//       eventId: event1.id,
-//       tags: ["waitlist"],
-//     });
-
-//     await insertEventToCommunity({
-//       eventId: event1.id,
-//       communityId: community1.id,
-//     });
-
-//     const response = await executeGraphqlOperationAsUser<
-//       ApplyToWaitlistMutation,
-//       ApplyToWaitlistMutationVariables
-//     >(
-//       {
-//         document: ApplyToWaitlist,
-//         variables: {
-//           ticketId: ticket.id,
-//         },
-//       },
-//       user1,
-//       mockedContext,
-//     );
-
-//     assert.equal(response.errors, undefined);
-
-//     const secondResponse = await executeGraphqlOperationAsUser<
-//       ApplyToWaitlistMutation,
-//       ApplyToWaitlistMutationVariables
-//     >(
-//       {
-//         document: ApplyToWaitlist,
-//         variables: {
-//           ticketId: ticket.id,
-//         },
-//       },
-//       user1,
-//       mockedContext,
-//     );
-
-//     assert.equal(
-//       secondResponse.errors?.[0]?.message,
-//       "User already applied to waitlist",
-//     );
-//   });
-// });
