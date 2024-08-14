@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm";
-import { jsonb, boolean, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import {
+  jsonb,
+  boolean,
+  pgTable,
+  text,
+  uuid,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -55,10 +62,14 @@ export const usersSchema = pgTable("users", {
   ...createdAndUpdatedAtFields,
 });
 
-export const userRelations = relations(usersSchema, ({ many }) => ({
+export const userRelations = relations(usersSchema, ({ many, one }) => ({
   usersToCommunities: many(usersToCommunitiesSchema),
   usersToTickets: many(userTicketsSchema),
   userTeams: many(userTeamsSchema),
+  userData: one(userDataSchema, {
+    fields: [usersSchema.id],
+    references: [userDataSchema.userId],
+  }),
 }));
 
 export type USER = z.infer<typeof selectUsersSchema>;
@@ -96,3 +107,29 @@ export const allowedUserUpdateForAuth = insertUsersSchema
     status: true,
   })
   .partial();
+
+export const userDataSchema = pgTable(
+  "userData",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    userId: uuid("user_id").references(() => usersSchema.id),
+    countryOfResidence: text("country_of_residence").notNull(),
+    city: text("city").notNull(),
+    worksInOrganization: boolean("works_in_organization").notNull(),
+    organizationName: text("organization_name"),
+    roleInOrganization: text("role_in_organization"),
+    ...createdAndUpdatedAtFields,
+  },
+  (table) => ({
+    userIdIndex: uniqueIndex("user_id_index").on(table.userId),
+  }),
+);
+
+export const userDataRelations = relations(userDataSchema, ({ one }) => ({
+  user: one(usersSchema, {
+    fields: [userDataSchema.userId],
+    references: [usersSchema.id],
+  }),
+}));
+
+export const selectUserDataSchema = createSelectSchema(userDataSchema);
