@@ -109,7 +109,7 @@ export const allowedUserUpdateForAuth = insertUsersSchema
   .partial();
 
 export const userDataSchema = pgTable(
-  "userData",
+  "user_data",
   {
     id: uuid("id").primaryKey().notNull().defaultRandom(),
     userId: uuid("user_id").references(() => usersSchema.id),
