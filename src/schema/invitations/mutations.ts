@@ -4,6 +4,7 @@ import { GraphQLError } from "graphql";
 import { builder } from "~/builder";
 import {
   insertUserTicketsSchema,
+  selectUsersSchema,
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
@@ -125,11 +126,13 @@ builder.mutationField("giftTicketsToUsers", (t) =>
           },
         });
 
+        const parsedUsers = users.map((user) => selectUsersSchema.parse(user));
+
         await sendTicketInvitationEmails({
           DB,
           logger,
           ticketId: ticket.id,
-          users,
+          users: parsedUsers,
           RPC_SERVICE_EMAIL,
         });
       }
