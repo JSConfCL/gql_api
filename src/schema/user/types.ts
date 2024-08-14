@@ -7,7 +7,12 @@ import {
   selectTeamsSchema,
   selectUserTicketsSchema,
 } from "~/datasources/db/schema";
-import { CommunityRef, UserRef, UserTicketRef } from "~/schema/shared/refs";
+import {
+  CommunityRef,
+  UserDataRef,
+  UserRef,
+  UserTicketRef,
+} from "~/schema/shared/refs";
 import { TeamRef } from "~/schema/teams/types";
 import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 
@@ -127,9 +132,31 @@ builder.objectType(UserRef, {
         );
       },
     }),
+    userData: t.field({
+      type: UserDataRef,
+      nullable: true,
+      resolve: (root, args, ctx) => {
+        return ctx.DB.query.userDataSchema.findFirst({
+          where: (ud, { eq }) => eq(ud.userId, root.id),
+        });
+      },
+    }),
   }),
 });
 
 export const SearchableUserTags = builder.enumType("SearchableUserTags", {
   values: Object.values(AllowedUserTags),
+});
+
+builder.objectType(UserDataRef, {
+  description: "Representation of a user's data",
+  fields: (t) => ({
+    countryOfResidence: t.exposeString("countryOfResidence"),
+    city: t.exposeString("city"),
+    worksInOrganization: t.exposeBoolean("worksInOrganization"),
+    organizationName: t.exposeString("organizationName", { nullable: true }),
+    roleInOrganization: t.exposeString("roleInOrganization", {
+      nullable: true,
+    }),
+  }),
 });

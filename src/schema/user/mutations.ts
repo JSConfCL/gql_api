@@ -6,6 +6,7 @@ import {
   PronounsEnum,
   selectUsersSchema,
   updateUsersSchema,
+  userDataSchema,
   usersSchema,
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
@@ -145,6 +146,76 @@ builder.mutationField("updateUserRoleInCommunity", (t) =>
 
         const user = await ctx.DB.query.usersSchema.findFirst({
           where: (u, { eq }) => eq(u.id, userId),
+        });
+
+        return selectUsersSchema.parse(user);
+      } catch (e) {
+        throw new GraphQLError(
+          e instanceof Error ? e.message : "Unknown error",
+        );
+      }
+    },
+  }),
+);
+
+const updateUserDataInput = builder.inputType("updateUserDataInput", {
+  fields: (t) => ({
+    countryOfResidence: t.string({ required: true }),
+    city: t.string({ required: true }),
+    worksInOrganization: t.boolean({ required: true }),
+    organizationName: t.string({ required: false }),
+    roleInOrganization: t.string({ required: false }),
+  }),
+});
+
+builder.mutationField("updateMyUserData", (t) =>
+  t.field({
+    type: UserRef,
+    nullable: false,
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    args: {
+      input: t.arg({ type: updateUserDataInput, required: true }),
+    },
+    resolve: async (root, { input }, ctx) => {
+      try {
+        const {
+          countryOfResidence,
+          city,
+          worksInOrganization,
+          organizationName,
+          roleInOrganization,
+        } = input;
+
+        const USER = ctx.USER;
+
+        if (!USER) {
+          throw new Error("User not found");
+        }
+
+        await ctx.DB.insert(userDataSchema)
+          .values({
+            userId: USER.id,
+            countryOfResidence,
+            city,
+            worksInOrganization,
+            organizationName,
+            roleInOrganization,
+          })
+          .onConflictDoUpdate({
+            target: userDataSchema.userId,
+            set: {
+              countryOfResidence,
+              city,
+              worksInOrganization,
+              organizationName,
+              roleInOrganization,
+            },
+          });
+
+        const user = await ctx.DB.query.usersSchema.findFirst({
+          where: (u, { eq }) => eq(u.id, USER.id),
         });
 
         return selectUsersSchema.parse(user);
