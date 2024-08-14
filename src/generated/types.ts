@@ -128,6 +128,10 @@ export type CreateCompanyInput = {
   website?: InputMaybe<Scalars["String"]["input"]>;
 };
 
+export type CreatePlaceholderUsersInput = {
+  users: Array<PlaceHolderUsersInput>;
+};
+
 export type CreateSalaryInput = {
   amount: Scalars["Int"]["input"];
   companyId: Scalars["String"]["input"];
@@ -318,6 +322,8 @@ export type Mutation = {
   createCompany: Company;
   /** Create an event */
   createEvent: Event;
+  /** Create placeholder users (used for things like invitations) */
+  createPlaceholderdUsers: Array<User>;
   /** Create a salary */
   createSalary: Salary;
   /** Create a team, associated to a specific event */
@@ -346,6 +352,7 @@ export type Mutation = {
   startWorkEmailValidation: WorkEmail;
   /** Update a company */
   updateCompany: Company;
+  updateMyUserData: User;
   /** Create a salary */
   updateSalary: Salary;
   /** Updates a team information */
@@ -402,6 +409,10 @@ export type MutationCreateEventArgs = {
   input: EventCreateInput;
 };
 
+export type MutationCreatePlaceholderdUsersArgs = {
+  input: CreatePlaceholderUsersInput;
+};
+
 export type MutationCreateSalaryArgs = {
   input: CreateSalaryInput;
 };
@@ -456,6 +467,10 @@ export type MutationStartWorkEmailValidationArgs = {
 
 export type MutationUpdateCompanyArgs = {
   input: UpdateCompanyInput;
+};
+
+export type MutationUpdateMyUserDataArgs = {
+  input: UpdateUserDataInput;
 };
 
 export type MutationUpdateSalaryArgs = {
@@ -1089,7 +1104,18 @@ export type User = {
   pronouns?: Maybe<PronounsEnum>;
   rsvps: Array<UserTicket>;
   teams: Array<TeamRef>;
+  userData?: Maybe<UserData>;
   username: Scalars["String"]["output"];
+};
+
+/** Representation of a user's data */
+export type UserData = {
+  __typename?: "UserData";
+  city: Scalars["String"]["output"];
+  countryOfResidence: Scalars["String"]["output"];
+  organizationName?: Maybe<Scalars["String"]["output"]>;
+  roleInOrganization?: Maybe<Scalars["String"]["output"]>;
+  worksInOrganization: Scalars["Boolean"]["output"];
 };
 
 export type UserSearchValues = {
@@ -1188,6 +1214,19 @@ export type WorkSeniority = {
   description?: Maybe<Scalars["String"]["output"]>;
   id: Scalars["ID"]["output"];
   name: Scalars["String"]["output"];
+};
+
+export type PlaceHolderUsersInput = {
+  email: Scalars["String"]["input"];
+  name: Scalars["String"]["input"];
+};
+
+export type UpdateUserDataInput = {
+  city: Scalars["String"]["input"];
+  countryOfResidence: Scalars["String"]["input"];
+  organizationName?: InputMaybe<Scalars["String"]["input"]>;
+  roleInOrganization?: InputMaybe<Scalars["String"]["input"]>;
+  worksInOrganization: Scalars["Boolean"]["input"];
 };
 
 export type UpdateUserRoleInCommunityInput = {

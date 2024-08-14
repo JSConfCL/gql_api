@@ -1,8 +1,10 @@
 import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
+import slugify from "slugify";
 
 import { builder } from "~/builder";
 import {
+  insertUsersSchema,
   PronounsEnum,
   selectUsersSchema,
   updateUsersSchema,
@@ -12,6 +14,7 @@ import {
 } from "~/datasources/db/schema";
 import { UserRef } from "~/schema/shared/refs";
 import { pronounsEnum } from "~/schema/user/types";
+import { usersFetcher } from "~/schema/user/userFetcher";
 import {
   UserRoleCommunity,
   canUpdateUserRoleInCommunity,
@@ -224,6 +227,68 @@ builder.mutationField("updateMyUserData", (t) =>
           e instanceof Error ? e.message : "Unknown error",
         );
       }
+    },
+  }),
+);
+
+const placeHolderUsersInput = builder.inputType("placeHolderUsersInput", {
+  fields: (t) => ({
+    email: t.string({ required: true }),
+    name: t.string({ required: true }),
+  }),
+});
+
+const createPlaceholderUsersInput = builder.inputType(
+  "CreatePlaceholderUsersInput",
+  {
+    fields: (t) => ({
+      users: t.field({ type: [placeHolderUsersInput], required: true }),
+    }),
+  },
+);
+
+builder.mutationField("createPlaceholderdUsers", (t) =>
+  t.field({
+    description: "Create placeholder users (used for things like invitations)",
+    type: [UserRef],
+    nullable: false,
+    authz: {
+      rules: ["IsSuperAdmin"],
+    },
+    args: {
+      input: t.arg({ type: createPlaceholderUsersInput, required: true }),
+    },
+    resolve: async (root, { input }, { DB, USER }) => {
+      const { users } = input;
+
+      if (!USER) {
+        throw new Error("User not found");
+      }
+
+      const cleanedUsers = users.map((u) =>
+        insertUsersSchema.parse({
+          name: u.name.trim(),
+          email: u.email.trim().toLowerCase(),
+          username: `${slugify(u.name, { lower: true })}${Math.floor(
+            Math.random() * 10,
+          )}`,
+        }),
+      );
+
+      const createdUsers = await DB.insert(usersSchema)
+        .values(cleanedUsers)
+        .onConflictDoNothing()
+        .returning();
+
+      const emails = cleanedUsers.map((u) => u.email);
+      const ids = createdUsers.map((u) => u.id);
+
+      const foundUsers = await DB.query.usersSchema.findMany({
+        where: (u, { inArray, or }) =>
+          or(inArray(u.email, emails), inArray(u.id, ids)),
+      });
+
+      return foundUsers.map((u) => selectUsersSchema.parse(u));
     },
   }),
 );

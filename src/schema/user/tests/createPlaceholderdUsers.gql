@@ -1,0 +1,8 @@
+mutation CreatePlaceholderdUsers($input: CreatePlaceholderUsersInput!) {
+  createPlaceholderdUsers(input: $input) {
+    id
+    email
+    lastName
+    username
+  }
+}
