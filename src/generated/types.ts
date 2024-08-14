@@ -288,6 +288,13 @@ export type GeneratePaymentLinkInput = {
   currencyId: Scalars["String"]["input"];
 };
 
+export type GiftTicketsToUserInput = {
+  allowMultipleTicketsPerUsers: Scalars["Boolean"]["input"];
+  notifyUsers: Scalars["Boolean"]["input"];
+  ticketId: Scalars["String"]["input"];
+  userIds: Array<Scalars["String"]["input"]>;
+};
+
 export type Mutation = {
   __typename?: "Mutation";
   acceptGiftedTicket: UserTicket;
@@ -327,6 +334,8 @@ export type Mutation = {
   editTicket: Ticket;
   /** Enqueue images to import */
   enqueueGoogleAlbumImport: Scalars["Boolean"]["output"];
+  /** Gift tickets to users, allowing multiple tickets per user, and conditionally notify them */
+  giftTicketsToUsers: Array<UserTicket>;
   /** Create a purchase order */
   payForPurchaseOrder: PurchaseOrder;
   /** Redeem a ticket */
@@ -423,6 +432,10 @@ export type MutationEditTicketArgs = {
 
 export type MutationEnqueueGoogleAlbumImportArgs = {
   input: EnqueueGoogleAlbumImportInput;
+};
+
+export type MutationGiftTicketsToUsersArgs = {
+  input: GiftTicketsToUserInput;
 };
 
 export type MutationPayForPurchaseOrderArgs = {

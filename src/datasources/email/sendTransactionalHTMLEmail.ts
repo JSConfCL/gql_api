@@ -6,27 +6,59 @@ import { Logger } from "~/logging";
 const numOfAttempts = 5; // Maximum number of retries
 const delay = 1000; // Initial delay in milliseconds
 
+export type ResendEmailArgs = {
+  htmlContent: string;
+  from: { name: string; email: string };
+  to: Array<{ name?: string; email: string }>;
+  subject: string;
+  tags?: {
+    name: string;
+    value: string;
+  }[];
+};
+
+const sendEmailFunction = async (
+  resend: Resend,
+  logger: Logger,
+  resendArgs: ResendEmailArgs | ResendEmailArgs[],
+) => {
+  if (Array.isArray(resendArgs)) {
+    logger.info("Using batch send");
+    const resendArgsArray = resendArgs.map((args) => {
+      const { from, htmlContent, subject, to, tags } = args;
+
+      return {
+        to: to.map((t) => t.email),
+        from: `${from.name} <${from.email}>`,
+        subject,
+        html: htmlContent,
+        tags,
+      };
+    });
+
+    const resendResponse = await resend.batch.send(resendArgsArray);
+
+    return resendResponse;
+  } else {
+    logger.info("Using single send");
+    const { from, htmlContent, subject, to, tags } = resendArgs;
+
+    const resendResponse = await resend.emails.send({
+      to: to.map((t) => t.email),
+      from: `${from.name} <${from.email}>`,
+      subject,
+      html: htmlContent,
+      tags,
+    });
+
+    return resendResponse;
+  }
+};
+
 export async function sendTransactionalHTMLEmail(
   resend: Resend,
   logger: Logger,
-  {
-    htmlContent,
-    to,
-    from,
-    subject,
-    isBatch = false,
-    tags,
-  }: {
-    htmlContent: string;
-    from: { name: string; email: string };
-    to: Array<{ name?: string; email: string }>;
-    subject: string;
-    isBatch?: boolean;
-    tags?: {
-      name: string;
-      value: string;
-    }[];
-  },
+  resendArgs: ResendEmailArgs | ResendEmailArgs[],
 ) {
   if (process?.env?.NODE_ENV === "test") {
     return;
@@ -39,23 +71,11 @@ export async function sendTransactionalHTMLEmail(
     // Solo para estar seguros, usamos un backoff exponencial para reintentar el envío si falla, sumando 1 segundo
     await backOff(
       async () => {
-        const createEmailResponse = isBatch
-          ? await resend.batch.send(
-              to.map((t) => ({
-                to: [t.email],
-                from: `${from.name} <${from.email}>`,
-                subject,
-                html: htmlContent,
-                tags,
-              })),
-            )
-          : await resend.emails.send({
-              to: to.map((t) => t.email),
-              from: `${from.name} <${from.email}>`,
-              subject,
-              html: htmlContent,
-              tags,
-            });
+        const createEmailResponse = await sendEmailFunction(
+          resend,
+          logger,
+          resendArgs,
+        );
 
         if (createEmailResponse.error) {
           logger.error(

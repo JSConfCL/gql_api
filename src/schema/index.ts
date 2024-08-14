@@ -19,6 +19,7 @@ import "./eventImages/types";
 import "./events/mutations";
 import "./events/queries";
 import "./events/types";
+import "./invitations/mutations";
 import "./money/mutations";
 import "./money/queries";
 import "./money/types";

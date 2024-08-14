@@ -9,7 +9,7 @@ import { PgTable } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { type ExecutionResult } from "graphql";
 import { createYoga } from "graphql-yoga";
-import { JsonObject, SetRequired } from "type-fest";
+import { SetRequired } from "type-fest";
 import { ZodType, z } from "zod";
 
 import { Env } from "worker-configuration";
@@ -100,6 +100,7 @@ import {
 import { createLogger } from "~/logging";
 import { schema } from "~/schema";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
+import { MOCKED_RPC_SERVICE_EMAIL } from "~/tests/fixtures/mocks";
 import { Context } from "~/types";
 
 const logger = createLogger("test-fixtures");
@@ -142,6 +143,7 @@ const createExecutor = ({
           logger,
           USER: user ? user : undefined,
           GET_STRIPE_CLIENT: () => null,
+          RPC_SERVICE_EMAIL: MOCKED_RPC_SERVICE_EMAIL,
           ...(context ?? {}),
         };
       },

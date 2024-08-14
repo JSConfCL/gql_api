@@ -1,4 +1,4 @@
-import { describe, assert, it, vitest } from "vitest";
+import { assert, describe, it } from "vitest";
 
 import {
   ApplyToWaitlist,
@@ -13,15 +13,6 @@ import {
   insertTicketTemplate,
   insertUser,
 } from "~/tests/fixtures";
-import { Context } from "~/types";
-
-const mockedRpcServiceEmail = {
-  sendEventInvitationsBatch: vitest.fn(),
-} as unknown as Context["RPC_SERVICE_EMAIL"];
-
-const mockedContext = {
-  RPC_SERVICE_EMAIL: mockedRpcServiceEmail,
-} as Context;
 
 describe("Should reserve a ticket for a waitlist", () => {
   it("as a User", async () => {
@@ -51,7 +42,6 @@ describe("Should reserve a ticket for a waitlist", () => {
         },
       },
       user1,
-      mockedContext,
     );
 
     assert.equal(response.errors, undefined);
@@ -92,7 +82,6 @@ describe("Should fail to reserve a ticket for a waitlist", () => {
         },
       },
       user1,
-      mockedContext,
     );
 
     assert.equal(response.errors, undefined);
@@ -108,7 +97,6 @@ describe("Should fail to reserve a ticket for a waitlist", () => {
         },
       },
       user1,
-      mockedContext,
     );
 
     assert.equal(

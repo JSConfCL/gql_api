@@ -1,4 +1,5 @@
 import { ORM_TYPE } from "~/datasources/db";
+import { USER } from "~/datasources/db/users";
 import {
   insertUserTicketsEmailLogSchema,
   userTicketsEmailLogSchema,
@@ -35,7 +36,7 @@ export const sendAddedToWaitlistEmail = async ({
     return;
   }
 
-  const ticketInformation = await DB.query.userTicketsSchema.findFirst({
+  const userTicketInformation = await DB.query.userTicketsSchema.findFirst({
     where: (t, { eq }) => eq(t.id, userTicketId),
     with: {
       user: true,
@@ -47,7 +48,7 @@ export const sendAddedToWaitlistEmail = async ({
     },
   });
 
-  if (!ticketInformation) {
+  if (!userTicketInformation) {
     throw applicationError(
       `Could not find user, ticket and event information associated to: ${userTicketId}`,
       ServiceErrors.NOT_FOUND,
@@ -55,7 +56,7 @@ export const sendAddedToWaitlistEmail = async ({
     );
   }
 
-  const { user } = ticketInformation;
+  const { user } = userTicketInformation;
 
   if (!user) {
     throw applicationError(
@@ -67,22 +68,13 @@ export const sendAddedToWaitlistEmail = async ({
 
   const userName = user.name ?? undefined;
 
-  await RPC_SERVICE_EMAIL.sendEventInvitationsBatch(
-    {
-      // TODO: Change this image
-      eventLogoCloudflareImageURL:
-        "https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/b6b43de1-d360-4faf-bd7a-7421e8fc1f00",
-      eventName: ticketInformation.ticketTemplate.event.name,
-      eventId: ticketInformation.ticketTemplate.event.id,
-      userName,
-    },
-    [
-      {
-        email: user.email,
-        name: userName,
-      },
-    ],
-  );
+  await RPC_SERVICE_EMAIL.sendConfirmationYouAreOnTheWaitlist({
+    // TODO: Change this image
+    ticketName: userTicketInformation.ticketTemplate.event.name,
+    ticketId: userTicketInformation.ticketTemplate.event.id,
+    userName,
+    email: user.email,
+  });
 
   await DB.insert(userTicketsEmailLogSchema).values(
     insertUserTicketsEmailLogSchema.parse({
@@ -93,4 +85,43 @@ export const sendAddedToWaitlistEmail = async ({
   );
 
   logger.info(`Sent waitlist entry created email to ${user.email}`);
+};
+
+export const sendTicketInvitationEmails = async ({
+  DB,
+  logger,
+  users,
+  ticketId,
+  RPC_SERVICE_EMAIL,
+}: {
+  DB: ORM_TYPE;
+  logger: Logger;
+  users: USER[];
+  ticketId: string;
+  RPC_SERVICE_EMAIL: Context["RPC_SERVICE_EMAIL"];
+}) => {
+  const ticketInformation = await DB.query.ticketsSchema.findFirst({
+    where: (t, { eq }) => eq(t.id, ticketId),
+    with: {
+      event: true,
+    },
+  });
+
+  if (!ticketInformation) {
+    throw applicationError(
+      `Could not find ticket and event information associated to: ${ticketId}`,
+      ServiceErrors.NOT_FOUND,
+      logger,
+    );
+  }
+
+  await RPC_SERVICE_EMAIL.sendEventTicketInvitationsBatch({
+    eventName: ticketInformation.event.name,
+    ticketId: ticketInformation.id,
+    eventId: ticketInformation.event.id,
+    to: users.map((user) => ({
+      name: user.name ?? undefined,
+      email: user.email,
+    })),
+  });
 };
