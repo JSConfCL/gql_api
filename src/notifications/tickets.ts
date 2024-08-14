@@ -73,6 +73,7 @@ export const sendAddedToWaitlistEmail = async ({
       eventLogoCloudflareImageURL:
         "https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/b6b43de1-d360-4faf-bd7a-7421e8fc1f00",
       eventName: ticketInformation.ticketTemplate.event.name,
+      eventId: ticketInformation.ticketTemplate.event.id,
       userName,
     },
     [

@@ -15,17 +15,24 @@ export async function sendTransactionalHTMLEmail(
     from,
     subject,
     isBatch = false,
+    tags,
   }: {
     htmlContent: string;
     from: { name: string; email: string };
     to: Array<{ name?: string; email: string }>;
     subject: string;
     isBatch?: boolean;
+    tags?: {
+      name: string;
+      value: string;
+    }[];
   },
 ) {
   if (process?.env?.NODE_ENV === "test") {
     return;
   }
+
+  logger.info("Sending email");
 
   try {
     // No tengo claro si resend tiene un ratelimit de 2 o 10 emails por segundo. (Hay documentación conflictiva).
@@ -39,6 +46,7 @@ export async function sendTransactionalHTMLEmail(
                 from: `${from.name} <${from.email}>`,
                 subject,
                 html: htmlContent,
+                tags,
               })),
             )
           : await resend.emails.send({
@@ -46,6 +54,7 @@ export async function sendTransactionalHTMLEmail(
               from: `${from.name} <${from.email}>`,
               subject,
               html: htmlContent,
+              tags,
             });
 
         if (createEmailResponse.error) {

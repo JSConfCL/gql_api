@@ -18,9 +18,11 @@ type ReceiverType = { name?: string; email: string };
 export default class EmailService extends WorkerEntrypoint<ENV> {
   logger = createLogger("EmailService");
 
-  resend: Resend = new Resend("");
+  resend: Resend;
   constructor(ctx: ExecutionContext, env: ENV) {
     super(ctx, env);
+
+    this.logger.info("Initializing EmailService");
 
     if (!env.RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY is required");
@@ -219,10 +221,12 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
     {
       eventLogoCloudflareImageURL,
       eventName,
+      eventId,
       userName,
     }: {
       eventLogoCloudflareImageURL: string;
       eventName: string;
+      eventId: string;
       userName?: string;
     },
     to: ReceiverType[],
@@ -247,6 +251,16 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
       },
       subject: `Estás invitado a ${eventName}`,
       isBatch: true,
+      tags: [
+        {
+          name: "type",
+          value: "event-invitation",
+        },
+        {
+          name: "event-id",
+          value: eventId,
+        },
+      ],
     });
   }
 }
