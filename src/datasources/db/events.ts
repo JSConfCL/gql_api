@@ -37,6 +37,7 @@ export const eventsSchema = pgTable("events", {
   meetingURL: text("meeting_url"),
   sanityEventId: text("sanity_event_id"),
   bannerImageSanityRef: text("banner_image_sanity_ref"),
+  logoId: text("logo_id"),
   ...createdAndUpdatedAtFields,
 });
 

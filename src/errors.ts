@@ -9,6 +9,8 @@ export enum ServiceErrors {
   FORBIDDEN = "FORBIDDEN",
   CONFLICT = "CONFLICT",
   NOT_FOUND = "NOT_FOUND",
+  ALREADY_EXISTS = "ALREADY_EXISTS",
+  INVALID_ARGUMENT = "INVALID_ARGUMENT",
   INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
 }
 
@@ -17,10 +19,12 @@ builder.enumType(ServiceErrors, {
 });
 
 const error_codes: Record<string, number> = {
+  [ServiceErrors.INVALID_ARGUMENT]: 400,
   [ServiceErrors.UNAUTHENTICATED]: 401,
   [ServiceErrors.FORBIDDEN]: 403,
   [ServiceErrors.NOT_FOUND]: 404,
   [ServiceErrors.FAILED_PRECONDITION]: 412,
+  [ServiceErrors.CONFLICT]: 409,
   [ServiceErrors.INTERNAL_SERVER_ERROR]: 500,
 };
 

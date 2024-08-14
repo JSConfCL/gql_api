@@ -1,6 +1,5 @@
-import { faker } from "@faker-js/faker";
 import { AsyncReturnType } from "type-fest";
-import { it, describe, assert } from "vitest";
+import { assert, describe, it } from "vitest";
 
 import {
   executeGraphqlOperationAsUser,
@@ -251,6 +250,119 @@ describe("Claim a user ticket", () => {
     });
   });
 
+  describe("Should prevent claiming when going over the limit", () => {
+    it("For a MEMBER user", async () => {
+      const maxTicketsPerUser = 2;
+      const event = await insertEvent({
+        status: "active",
+      });
+      const ticketTemplate = await insertTicketTemplate({
+        eventId: event.id,
+        quantity: 200,
+        maxTicketsPerUser,
+      });
+
+      const { community, user } =
+        await createCommunityEventUserAndTicketTemplate({
+          event,
+        });
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 2,
+                },
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 1,
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(
+        response.data?.claimUserTicket?.__typename,
+        "RedeemUserTicketError",
+      );
+
+      if (
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
+      ) {
+        assert.equal(
+          response.data?.claimUserTicket.errorMessage,
+          `You cannot get more than ${maxTicketsPerUser} for ticket ${ticketTemplate.id}`,
+        );
+      }
+    });
+  });
+
+  describe("Should fail to create user tickets for a ticket in a waitlist state", () => {
+    it("For a MEMBER user", async () => {
+      const event = await insertEvent();
+      const ticketTemplate = await insertTicketTemplate({
+        tags: ["waitlist"],
+        eventId: event.id,
+      });
+
+      const { user } = await createCommunityEventUserAndTicketTemplate({
+        event,
+        ticketTemplate,
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 2,
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(
+        response.data?.claimUserTicket?.__typename,
+        "RedeemUserTicketError",
+      );
+
+      if (
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
+      ) {
+        assert.equal(
+          response.data?.claimUserTicket.errorMessage,
+          `Ticket ${ticketTemplate.id} is a waitlist ticket. Cannot claim waitlist tickets`,
+        );
+      }
+    });
+  });
+
   describe("Should NOT allow claiming", () => {
     it("If the event is Inactive", async () => {
       const createdEvent = await insertEvent({
@@ -363,112 +475,6 @@ describe("Claim a user ticket", () => {
         assert.equal(
           response.data?.claimUserTicket.errorMessage,
           `Not enough tickets for ticket template with id ${ticketTemplate.id}`,
-        );
-      }
-    });
-
-    it("If the idempotency key is not a UUID", async () => {
-      const { community, user, ticketTemplate } =
-        await createCommunityEventUserAndTicketTemplate();
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
-      const idempotencyUUIDKey = "sup";
-      const input = {
-        idempotencyUUIDKey: idempotencyUUIDKey,
-        purchaseOrder: [
-          {
-            ticketId: ticketTemplate.id,
-            quantity: 2,
-          },
-          {
-            ticketId: ticketTemplate.id,
-            quantity: 1,
-          },
-        ],
-      };
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input,
-          },
-        },
-        user,
-      );
-
-      assert.equal(
-        response.errors?.[0]?.message,
-        "Idempotency key is not a valid UUID",
-      );
-    });
-
-    it("If the idempotency key is already used", async () => {
-      const { community, user, ticketTemplate } =
-        await createCommunityEventUserAndTicketTemplate();
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
-      const idempotencyUUIDKey = faker.string.uuid();
-      const input = {
-        idempotencyUUIDKey: idempotencyUUIDKey,
-        purchaseOrder: [
-          {
-            ticketId: ticketTemplate.id,
-            quantity: 2,
-          },
-          {
-            ticketId: ticketTemplate.id,
-            quantity: 1,
-          },
-        ],
-      };
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input,
-          },
-        },
-        user,
-      );
-
-      assert.equal(response.errors, undefined);
-      const response2 = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input,
-          },
-        },
-        user,
-      );
-
-      assert(
-        response2.data?.claimUserTicket?.__typename === "RedeemUserTicketError",
-      );
-
-      if (
-        response2.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.equal(
-          response2.data?.claimUserTicket.errorMessage,
-          `Purchase order with idempotency key ${idempotencyUUIDKey} already exists.`,
         );
       }
     });

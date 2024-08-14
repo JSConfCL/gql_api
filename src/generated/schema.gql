@@ -246,6 +246,7 @@ input FindUserTicketSearchInput {
   eventIds: [String!]
   paymentStatus: [TicketPaymentStatus!]
   redemptionStatus: [TicketRedemptionStatus!]
+  ticketsIds: [String!]
   userIds: [String!]
   userTicketIds: [String!]
 }
@@ -281,6 +282,11 @@ type Mutation {
   Try to add a person to a team
   """
   addPersonToTeam(input: AddPersonToTeamInput!): AddUserToTeamResponseRef!
+
+  """
+  Apply to a waitlist
+  """
+  applyToWaitlist(ticketId: String!): UserTicket!
 
   """
   Approve a ticket
@@ -627,6 +633,11 @@ type Query {
   ): PaginatedUserTicket!
 
   """
+  Get a single waitlist
+  """
+  getWaitlist(ticketId: String!): Waitlist!
+
+  """
   Get the current user
   """
   me: User!
@@ -768,8 +779,13 @@ enum SearchableUserTags {
 }
 
 enum ServiceErrors {
+  ALREADY_EXISTS
+  CONFLICT
   FAILED_PRECONDITION
   FORBIDDEN
+  INTERNAL_SERVER_ERROR
+  INVALID_ARGUMENT
+  NOT_FOUND
   UNAUTHENTICATED
 }
 
@@ -911,7 +927,7 @@ input TicketClaimInput {
   """
   A unique key to prevent duplicate requests, it's optional to send, but it's recommended to send it to prevent duplicate requests. If not sent, it will be created by the server.
   """
-  idempotencyUUIDKey: String
+  idempotencyUUIDKey: String @deprecated(reason: "This field is deprecated")
   purchaseOrder: [PurchaseOrderInput!]!
 }
 
@@ -947,7 +963,7 @@ input TicketEditInput {
   endDateTime: DateTime
   eventId: String
   name: String
-  prices: PricingInputField
+  prices: [PricingInputField!]
   quantity: Int
   requiresApproval: Boolean
   startDateTime: DateTime
@@ -1095,6 +1111,24 @@ type ValidatedWorkEmail {
   isValidated: Boolean!
   status: EmailStatus!
   workEmail: String!
+}
+
+"""
+Representation of a waitlist
+"""
+type Waitlist {
+  """
+  The ID of the waitlist. It matches the ID of the underlying ticket
+  """
+  id: ID!
+  myRsvp: UserTicket
+  ticket: Ticket!
+}
+
+enum WaitlistApprovalStatus {
+  approved
+  pending
+  rejected
 }
 
 """

@@ -29,6 +29,7 @@ import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 export type UserTicketSearch = {
   userId?: string;
   eventIds?: string[];
+  ticketIds?: string[];
   eventName?: string;
   eventStatus?: (typeof eventStatus)[number][];
   eventVisibility?: (typeof eventVisibility)[number][];
@@ -46,6 +47,7 @@ const getSearchEventsQuery = (
   sort: EventFetcherSort,
 ) => {
   const {
+    ticketIds,
     userId,
     eventIds,
     eventName,
@@ -100,6 +102,16 @@ const getSearchEventsQuery = (
     );
 
     wheres.push(existsQuery);
+  }
+
+  if (ticketIds && ticketIds.length) {
+    const subquery = DB.select({
+      id: ticketsSchema.eventId,
+    })
+      .from(ticketsSchema)
+      .where(inArray(ticketsSchema.id, ticketIds));
+
+    wheres.push(inArray(eventsSchema.id, subquery));
   }
 
   if (eventStatus) {

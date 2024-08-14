@@ -264,6 +264,7 @@ export type FindUserTicketSearchInput = {
   eventIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
   paymentStatus?: InputMaybe<Array<TicketPaymentStatus>>;
   redemptionStatus?: InputMaybe<Array<TicketRedemptionStatus>>;
+  ticketsIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
   userIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
   userTicketIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
@@ -294,6 +295,8 @@ export type Mutation = {
   acceptTeamInvitation: TeamRef;
   /** Try to add a person to a team */
   addPersonToTeam: AddUserToTeamResponseRef;
+  /** Apply to a waitlist */
+  applyToWaitlist: UserTicket;
   /** Approve a ticket */
   approvalUserTicket: UserTicket;
   /** Cancel a ticket */
@@ -356,6 +359,10 @@ export type MutationAcceptTeamInvitationArgs = {
 
 export type MutationAddPersonToTeamArgs = {
   input: AddPersonToTeamInput;
+};
+
+export type MutationApplyToWaitlistArgs = {
+  ticketId: Scalars["String"]["input"];
 };
 
 export type MutationApprovalUserTicketArgs = {
@@ -640,6 +647,8 @@ export type Query = {
   eventImages: Array<SanityAssetRef>;
   /** Get a list of user tickets */
   findUserTickets: PaginatedUserTicket;
+  /** Get a single waitlist */
+  getWaitlist: Waitlist;
   /** Get the current user */
   me: User;
   /** Get a list of purchase orders for the authenticated user */
@@ -700,6 +709,10 @@ export type QueryEventImagesArgs = {
 
 export type QueryFindUserTicketsArgs = {
   input: PaginatedInputFindUserTicketSearchInput;
+};
+
+export type QueryGetWaitlistArgs = {
+  ticketId: Scalars["String"]["input"];
 };
 
 export type QueryMyPurchaseOrdersArgs = {
@@ -810,8 +823,13 @@ export enum SearchableUserTags {
 }
 
 export enum ServiceErrors {
+  AlreadyExists = "ALREADY_EXISTS",
+  Conflict = "CONFLICT",
   FailedPrecondition = "FAILED_PRECONDITION",
   Forbidden = "FORBIDDEN",
+  InternalServerError = "INTERNAL_SERVER_ERROR",
+  InvalidArgument = "INVALID_ARGUMENT",
+  NotFound = "NOT_FOUND",
   Unauthenticated = "UNAUTHENTICATED",
 }
 
@@ -933,7 +951,10 @@ export enum TicketApprovalStatus {
 export type TicketClaimInput = {
   /** If this field is passed, a purchase order payment link will be generated right away */
   generatePaymentLink?: InputMaybe<GeneratePaymentLinkInput>;
-  /** A unique key to prevent duplicate requests, it's optional to send, but it's recommended to send it to prevent duplicate requests. If not sent, it will be created by the server. */
+  /**
+   * A unique key to prevent duplicate requests, it's optional to send, but it's recommended to send it to prevent duplicate requests. If not sent, it will be created by the server.
+   * @deprecated This field is deprecated
+   */
   idempotencyUUIDKey?: InputMaybe<Scalars["String"]["input"]>;
   purchaseOrder: Array<PurchaseOrderInput>;
 };
@@ -964,7 +985,7 @@ export type TicketEditInput = {
   endDateTime?: InputMaybe<Scalars["DateTime"]["input"]>;
   eventId?: InputMaybe<Scalars["String"]["input"]>;
   name?: InputMaybe<Scalars["String"]["input"]>;
-  prices?: InputMaybe<PricingInputField>;
+  prices?: InputMaybe<Array<PricingInputField>>;
   quantity?: InputMaybe<Scalars["Int"]["input"]>;
   requiresApproval?: InputMaybe<Scalars["Boolean"]["input"]>;
   startDateTime?: InputMaybe<Scalars["DateTime"]["input"]>;
@@ -1106,6 +1127,21 @@ export type ValidatedWorkEmail = {
   status: EmailStatus;
   workEmail: Scalars["String"]["output"];
 };
+
+/** Representation of a waitlist */
+export type Waitlist = {
+  __typename?: "Waitlist";
+  /** The ID of the waitlist. It matches the ID of the underlying ticket */
+  id: Scalars["ID"]["output"];
+  myRsvp?: Maybe<UserTicket>;
+  ticket: Ticket;
+};
+
+export enum WaitlistApprovalStatus {
+  Approved = "approved",
+  Pending = "pending",
+  Rejected = "rejected",
+}
 
 /** Representation of a (yet to validate) work email */
 export type WorkEmail = {

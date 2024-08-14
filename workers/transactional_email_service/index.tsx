@@ -5,18 +5,24 @@ import { Resend } from "resend";
 
 import { sendTransactionalHTMLEmail } from "~/datasources/email/sendTransactionalHTMLEmail";
 import { createLogger } from "~/logging";
+import { ENV } from "~workers/transactional_email_service/types";
 
+import { EventInvitation } from "../../emails/templates/tickets/event-invitation";
 import { PurchaseOrderSuccessful } from "../../emails/templates/tickets/purchase-order-successful";
+import { WaitlistRejected } from "../../emails/templates/tickets/waitlist-accepted";
+import { WaitlistAccepted } from "../../emails/templates/tickets/waitlist-rejected";
+import { YouAreOnTheWaitlist } from "../../emails/templates/tickets/you-are-on-the-waitlist-confirmation";
 
-type ENV = {
-  RESEND_API_KEY: string | undefined;
-};
+type ReceiverType = { name?: string; email: string };
+
 export default class EmailService extends WorkerEntrypoint<ENV> {
   logger = createLogger("EmailService");
 
-  resend: Resend = new Resend("");
+  resend: Resend;
   constructor(ctx: ExecutionContext, env: ENV) {
     super(ctx, env);
+
+    this.logger.info("Initializing EmailService");
 
     if (!env.RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY is required");
@@ -58,6 +64,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
     this.logger.info(
       `About to send purchase order email for ID: ${purchaseOrderId}`,
     );
+
     await sendTransactionalHTMLEmail(this.resend, this.logger, {
       htmlContent: render(
         <PurchaseOrderSuccessful
@@ -90,6 +97,170 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
       },
       subject: "Tus tickets están listos 🎉",
     });
+
     this.logger.info(`Sent purchase order email for ID ${purchaseOrderId}`);
+  }
+
+  async sendConfirmationYouAreOnTheWaitlist({
+    eventLogoCloudflareImageURL,
+    eventName,
+    userName,
+    email,
+  }: {
+    eventLogoCloudflareImageURL: string;
+    eventName: string;
+    userName: string;
+    email: string;
+  }) {
+    this.logger.info(`About to send ConfirmationYouAreOnTheWaitlist`, {
+      eventName,
+      userName,
+    });
+
+    await sendTransactionalHTMLEmail(this.resend, this.logger, {
+      htmlContent: render(
+        <YouAreOnTheWaitlist
+          eventLogoCloudflareImageURL={eventLogoCloudflareImageURL}
+          eventName={eventName}
+          userName={userName}
+        />,
+      ),
+      to: [
+        {
+          name: userName,
+          email,
+        },
+      ],
+      from: {
+        name: "CommunityOS",
+        email: "contacto@communityos.io",
+      },
+      subject: `Estas en la Lista de espera para ${eventName}`,
+    });
+
+    this.logger.info(`Sent ConfirmationYouAreOnTheWaitlist`);
+  }
+
+  async sendConfirmationWaitlistAccepted({
+    eventLogoCloudflareImageURL,
+    eventName,
+    userName,
+    email,
+  }: {
+    eventLogoCloudflareImageURL: string;
+    eventName: string;
+    userName: string;
+    email: string;
+  }) {
+    this.logger.info(`About to send ConfirmationWaitlistAccepted`, {
+      eventName,
+      userName,
+    });
+
+    await sendTransactionalHTMLEmail(this.resend, this.logger, {
+      htmlContent: render(
+        <WaitlistAccepted
+          eventLogoCloudflareImageURL={eventLogoCloudflareImageURL}
+          eventName={eventName}
+          userName={userName}
+        />,
+      ),
+      to: [
+        {
+          name: userName,
+          email,
+        },
+      ],
+      from: {
+        name: "CommunityOS",
+        email: "contacto@communityos.io",
+      },
+      subject: `¡Felicidades! Tienes un lugar en ${eventName}`,
+    });
+  }
+
+  async sendConfirmationWaitlistRejected({
+    eventLogoCloudflareImageURL,
+    eventName,
+    userName,
+    email,
+  }: {
+    eventLogoCloudflareImageURL: string;
+    eventName: string;
+    userName: string;
+    email: string;
+  }) {
+    this.logger.info(`About to send ConfirmationWaitlistRejected`, {
+      eventName,
+      userName,
+    });
+
+    await sendTransactionalHTMLEmail(this.resend, this.logger, {
+      htmlContent: render(
+        <WaitlistRejected
+          eventLogoCloudflareImageURL={eventLogoCloudflareImageURL}
+          eventName={eventName}
+          userName={userName}
+        />,
+      ),
+      to: [
+        {
+          name: userName,
+          email,
+        },
+      ],
+      from: {
+        name: "CommunityOS",
+        email: "contacto@communityos.io",
+      },
+      subject: `Gracias por tu interés en ${eventName}`,
+    });
+  }
+
+  async sendEventInvitationsBatch(
+    {
+      eventLogoCloudflareImageURL,
+      eventName,
+      eventId,
+      userName,
+    }: {
+      eventLogoCloudflareImageURL: string;
+      eventName: string;
+      eventId: string;
+      userName?: string;
+    },
+    to: ReceiverType[],
+  ) {
+    this.logger.info(`About to send EventInvitation`, {
+      eventName,
+      userName,
+    });
+
+    await sendTransactionalHTMLEmail(this.resend, this.logger, {
+      htmlContent: render(
+        <EventInvitation
+          eventLogoCloudflareImageURL={eventLogoCloudflareImageURL}
+          eventName={eventName}
+          userName={userName}
+        />,
+      ),
+      to,
+      from: {
+        name: "CommunityOS",
+        email: "contacto@communityos.io",
+      },
+      subject: `Estás invitado a ${eventName}`,
+      isBatch: true,
+      tags: [
+        {
+          name: "type",
+          value: "event-invitation",
+        },
+        {
+          name: "event-id",
+          value: eventId,
+        },
+      ],
+    });
   }
 }

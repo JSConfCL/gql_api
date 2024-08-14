@@ -45,7 +45,7 @@ logpush = true
 
 [[env.production.services]]
 binding = "RPC_SERVICE_EMAIL"
-service = "transactional-email-service"
+service = "transactional-email-service-production"
 
 [env.production.vars]
 GRAPHQL_BASE_ENDPOINT = "/"
@@ -80,7 +80,7 @@ logpush = true
 
 [[env.staging.services]]
 binding = "RPC_SERVICE_EMAIL"
-service = "transactional-email-service"
+service = "transactional-email-service-staging"
 
 [env.staging.vars]
 GRAPHQL_BASE_ENDPOINT = "/"
