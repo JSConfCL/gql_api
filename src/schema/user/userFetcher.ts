@@ -3,6 +3,7 @@ import { SQL, and, asc, ilike, inArray, or } from "drizzle-orm";
 import { ORM_TYPE } from "~/datasources/db";
 import {
   AllowedUserTags,
+  selectUsersSchema,
   tagsSchema,
   usersSchema,
   usersTagsSchema,
@@ -82,7 +83,7 @@ const searchUsers = async ({
 }) => {
   const users = await getSearchUsersQuery(DB, search).execute();
 
-  return users;
+  return users.map((user) => selectUsersSchema.parse(user));
 };
 
 const searchPaginatedUsers = async ({
