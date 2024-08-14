@@ -101,6 +101,10 @@ input CreateCompanyInput {
   website: String
 }
 
+input CreatePlaceholderUsersInput {
+  users: [placeHolderUsersInput!]!
+}
+
 input CreateSalaryInput {
   amount: Int!
   companyId: String!
@@ -331,6 +335,11 @@ type Mutation {
   createEvent(input: EventCreateInput!): Event!
 
   """
+  Create placeholder users (used for things like invitations)
+  """
+  createPlaceholderdUsers(input: CreatePlaceholderUsersInput!): [User!]!
+
+  """
   Create a salary
   """
   createSalary(input: CreateSalaryInput!): Salary!
@@ -399,6 +408,7 @@ type Mutation {
   Update a company
   """
   updateCompany(input: UpdateCompanyInput!): Company!
+  updateMyUserData(input: updateUserDataInput!): User!
 
   """
   Create a salary
@@ -1070,7 +1080,19 @@ type User {
   pronouns: PronounsEnum
   rsvps: [UserTicket!]!
   teams: [TeamRef!]!
+  userData: UserData
   username: String!
+}
+
+"""
+Representation of a user's data
+"""
+type UserData {
+  city: String!
+  countryOfResidence: String!
+  organizationName: String
+  roleInOrganization: String
+  worksInOrganization: Boolean!
 }
 
 input UserSearchValues {
@@ -1178,6 +1200,19 @@ type WorkSeniority {
   description: String
   id: ID!
   name: String!
+}
+
+input placeHolderUsersInput {
+  email: String!
+  name: String!
+}
+
+input updateUserDataInput {
+  city: String!
+  countryOfResidence: String!
+  organizationName: String
+  roleInOrganization: String
+  worksInOrganization: Boolean!
 }
 
 input updateUserRoleInCommunityInput {
