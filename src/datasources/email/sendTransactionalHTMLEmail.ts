@@ -1,6 +1,7 @@
 import { backOff } from "exponential-backoff";
 import type { Resend } from "resend";
 
+import { APP_ENV } from "~/env";
 import { Logger } from "~/logging";
 
 const numOfAttempts = 5; // Maximum number of retries
@@ -17,6 +18,19 @@ export type ResendEmailArgs = {
   }[];
 };
 
+const getEmails = (
+  to: {
+    name?: string;
+    email: string;
+  }[],
+) => {
+  if (APP_ENV === "production") {
+    return to.map((t) => t.email);
+  }
+
+  return ["email-test@communityos.io"];
+};
+
 const sendEmailFunction = async (
   resend: Resend,
   logger: Logger,
@@ -28,7 +42,7 @@ const sendEmailFunction = async (
       const { from, htmlContent, subject, to, tags } = args;
 
       return {
-        to: to.map((t) => t.email),
+        to: getEmails(to),
         from: `${from.name} <${from.email}>`,
         subject,
         html: htmlContent,
@@ -44,7 +58,7 @@ const sendEmailFunction = async (
     const { from, htmlContent, subject, to, tags } = resendArgs;
 
     const resendResponse = await resend.emails.send({
-      to: to.map((t) => t.email),
+      to: getEmails(to),
       from: `${from.name} <${from.email}>`,
       subject,
       html: htmlContent,
