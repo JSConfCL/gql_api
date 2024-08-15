@@ -584,6 +584,20 @@ type PublicFinanceEntryRef {
   transactionDate: DateTime
 }
 
+input PublicTicketInput {
+  publicTicketId: String!
+}
+
+"""
+Representation of the public information of a User ticket
+"""
+type PublicUserTicket {
+  id: ID!
+  ticket: Ticket!
+  userImage: String
+  userName: String
+}
+
 """
 Representation of a Purchase Order
 """
@@ -675,6 +689,11 @@ type Query {
   Get a list of tickets for the current user
   """
   myTickets(input: PaginatedInputMyTicketsSearchValues!): PaginatedUserTicket!
+
+  """
+  Get a list of user tickets
+  """
+  publicTicketInfo(input: PublicTicketInput!): PublicUserTicket!
 
   """
   Get a list of salaries associated to the user

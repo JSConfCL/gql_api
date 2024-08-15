@@ -4,11 +4,12 @@ import {
   USER,
   userTicketsApprovalStatusEnum,
 } from "~/datasources/db/schema";
+import { applicationError, ServiceErrors } from "~/errors";
 import {
   createPaginationInputType,
   createPaginationObjectType,
 } from "~/schema/pagination/types";
-import { UserTicketRef } from "~/schema/shared/refs";
+import { PublicUserTicketRef, UserTicketRef } from "~/schema/shared/refs";
 import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 
 import {
@@ -183,6 +184,55 @@ builder.queryField("findUserTickets", (t) =>
         data: results,
         pagination,
       };
+    },
+  }),
+);
+
+const publicTicketInput = builder.inputType("PublicTicketInput", {
+  fields: (t) => ({
+    publicTicketId: t.string({
+      required: true,
+    }),
+  }),
+});
+
+builder.queryField("publicTicketInfo", (t) =>
+  t.field({
+    description: "Get a list of user tickets",
+    type: PublicUserTicketRef,
+    args: {
+      input: t.arg({
+        type: publicTicketInput,
+        required: true,
+      }),
+    },
+    resolve: async (root, { input }, { DB, logger }) => {
+      const { publicTicketId } = input;
+
+      const { data: userTickets } =
+        await userTicketFetcher.searchPaginatedUserTickets({
+          DB,
+          search: {
+            publicIds: [publicTicketId],
+            approvalStatus: ["approved", "gift_accepted"],
+          },
+          pagination: {
+            page: 0,
+            pageSize: 1,
+          },
+        });
+
+      const userTicket = userTickets[0];
+
+      if (!userTicket) {
+        throw applicationError(
+          "Ticket not found",
+          ServiceErrors.NOT_FOUND,
+          logger,
+        );
+      }
+
+      return selectUserTicketsSchema.parse(userTicket);
     },
   }),
 );

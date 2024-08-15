@@ -5,6 +5,7 @@ import {
   PronounsEnum,
   selectCommunitySchema,
   selectTeamsSchema,
+  selectUsersSchema,
   selectUserTicketsSchema,
 } from "~/datasources/db/schema";
 import {
@@ -14,6 +15,7 @@ import {
   UserTicketRef,
 } from "~/schema/shared/refs";
 import { TeamRef } from "~/schema/teams/types";
+import { usersFetcher } from "~/schema/user/userFetcher";
 import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 
 export const pronounsEnum = builder.enumType(PronounsEnum, {
@@ -28,8 +30,17 @@ const RSVPFilterInput = builder.inputType("RSVPFilterInput", {
   }),
 });
 
-builder.objectType(UserRef, {
+export const UserLoadable = builder.loadableObject(UserRef, {
   description: "Representation of a user",
+  load: async (ids: string[], ctx) => {
+    const users = await usersFetcher.searchUsers({
+      DB: ctx.DB,
+      search: { userIds: ids },
+      sort: null,
+    });
+
+    return users.map((user) => selectUsersSchema.parse(user));
+  },
   fields: (t) => ({
     id: t.exposeID("id", { nullable: false }),
     name: t.exposeString("name", { nullable: true }),

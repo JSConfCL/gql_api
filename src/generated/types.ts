@@ -628,6 +628,19 @@ export type PublicFinanceEntryRef = {
   transactionDate?: Maybe<Scalars["DateTime"]["output"]>;
 };
 
+export type PublicTicketInput = {
+  publicTicketId: Scalars["String"]["input"];
+};
+
+/** Representation of the public information of a User ticket */
+export type PublicUserTicket = {
+  __typename?: "PublicUserTicket";
+  id: Scalars["ID"]["output"];
+  ticket: Ticket;
+  userImage?: Maybe<Scalars["String"]["output"]>;
+  userName?: Maybe<Scalars["String"]["output"]>;
+};
+
 /** Representation of a Purchase Order */
 export type PurchaseOrder = {
   __typename?: "PurchaseOrder";
@@ -683,6 +696,8 @@ export type Query = {
   myPurchaseOrders: PaginatedPurchaseOrder;
   /** Get a list of tickets for the current user */
   myTickets: PaginatedUserTicket;
+  /** Get a list of user tickets */
+  publicTicketInfo: PublicUserTicket;
   /** Get a list of salaries associated to the user */
   salaries: Array<Salary>;
   /** Search a consolidated payment logs, by date, aggregated by platform and currency_id */
@@ -749,6 +764,10 @@ export type QueryMyPurchaseOrdersArgs = {
 
 export type QueryMyTicketsArgs = {
   input: PaginatedInputMyTicketsSearchValues;
+};
+
+export type QueryPublicTicketInfoArgs = {
+  input: PublicTicketInput;
 };
 
 export type QuerySearchConsolidatedPaymentLogsArgs = {

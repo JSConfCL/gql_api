@@ -9,8 +9,13 @@ import {
   PurchaseOrderLoadable,
   PurchaseOrderPaymentStatusEnum,
 } from "~/schema/purchaseOrder/types";
-import { UserRef, UserTicketRef } from "~/schema/shared/refs";
+import {
+  UserRef,
+  UserTicketRef,
+  PublicUserTicketRef,
+} from "~/schema/shared/refs";
 import { TicketLoadable } from "~/schema/ticket/types";
+import { UserLoadable } from "~/schema/user/types";
 import { usersFetcher } from "~/schema/user/userFetcher";
 
 export const TicketPaymentStatus = builder.enumType("TicketPaymentStatus", {
@@ -98,6 +103,53 @@ builder.objectType(UserTicketRef, {
       type: "DateTime",
       nullable: false,
       resolve: (root) => new Date(root.createdAt),
+    }),
+  }),
+});
+
+builder.objectType(PublicUserTicketRef, {
+  description: "Representation of the public information of a User ticket",
+  fields: (t) => ({
+    id: t.exposeID("publicId"),
+    userImage: t.field({
+      type: "String",
+      nullable: true,
+      resolve: async (root, arg, context) => {
+        if (!root.userId) {
+          return null;
+        }
+
+        const loader = UserLoadable.getDataloader(context);
+        const user = await loader.load(root.userId);
+
+        if (!user) {
+          return null;
+        }
+
+        return user.imageUrl;
+      },
+    }),
+    userName: t.field({
+      type: "String",
+      nullable: true,
+      resolve: async (root, arg, context) => {
+        if (!root.userId) {
+          return null;
+        }
+
+        const loader = UserLoadable.getDataloader(context);
+        const user = await loader.load(root.userId);
+
+        if (!user) {
+          return null;
+        }
+
+        return user.username;
+      },
+    }),
+    ticket: t.field({
+      type: TicketLoadable,
+      resolve: (root) => root.ticketTemplateId,
     }),
   }),
 });

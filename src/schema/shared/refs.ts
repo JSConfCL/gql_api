@@ -45,6 +45,9 @@ type UserTicketGraphqlSchema = z.infer<typeof selectUserTicketsSchema>;
 export const UserTicketRef =
   builder.objectRef<UserTicketGraphqlSchema>("UserTicket");
 
+export const PublicUserTicketRef =
+  builder.objectRef<UserTicketGraphqlSchema>("PublicUserTicket");
+
 type TicketGraphqlSchema = z.infer<typeof selectTicketSchema>;
 
 export const TicketRef = builder.objectRef<TicketGraphqlSchema>("Ticket");
