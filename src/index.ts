@@ -71,9 +71,11 @@ export const yoga = createYoga<Env>({
 
 export default {
   fetch: async (req: Request, env: Env, ctx: ExecutionContext) => {
+    const externalTraceId = req.headers.get("x-trace-id");
+    const traceId = crypto.randomUUID();
     const logger = createLogger("graphql", {
       externalTraceId: req.headers.get("x-trace-id"),
-      traceId: crypto.randomUUID(),
+      traceId,
     });
 
     logTraceId(req, logger);
@@ -85,6 +87,12 @@ export default {
       env,
       { ...ctx, logger },
     );
+
+    if (externalTraceId) {
+      response.headers.set("x-trace-id", externalTraceId.toString());
+    }
+
+    response.headers.set("x-api-trace-id", traceId);
 
     logger.info("🏁 — End Request");
 
