@@ -1,4 +1,4 @@
-import { SQL, and, asc, ilike, inArray, or } from "drizzle-orm";
+import { SQL, and, asc, desc, ilike, inArray, or } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
 import {
@@ -11,6 +11,7 @@ import {
   PaginationOptionsType,
   paginationDBHelper,
 } from "~/datasources/helpers/paginationQuery";
+import { SortableSchemaFields } from "~/datasources/helpers/sorting";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 
 export type UserTicketSearch = {
@@ -22,7 +23,14 @@ export type UserTicketSearch = {
   tags?: AllowedUserTags[];
 };
 
-const getSearchUsersQuery = (DB: ORM_TYPE, search: UserTicketSearch = {}) => {
+type SortableFields = "createdAt" | "name";
+type UserFetcherSort = SortableSchemaFields<SortableFields>;
+
+const getSearchUsersQuery = (
+  DB: ORM_TYPE,
+  search: UserTicketSearch = {},
+  sort?: UserFetcherSort,
+) => {
   const { userIds, userName, name, email, tags } = search;
 
   const wheres: SQL[] = [];
@@ -70,17 +78,31 @@ const getSearchUsersQuery = (DB: ORM_TYPE, search: UserTicketSearch = {}) => {
     ilike(usersSchema.username, sanitizeForLikeSearch(userName));
   }
 
-  return query.where(and(...wheres)).orderBy(asc(usersSchema.createdAt));
+  const orderBy: SQL<unknown>[] = [];
+
+  if (sort) {
+    const sorts = sort.map(([field, direction]) => {
+      const sortDirection = direction === "asc" ? asc : desc;
+
+      return sortDirection(usersSchema[field]);
+    });
+
+    orderBy.push(...sorts);
+  }
+
+  return query.where(and(...wheres)).orderBy(...orderBy);
 };
 
 const searchUsers = async ({
   DB,
   search = {},
+  sort,
 }: {
   DB: ORM_TYPE;
   search: UserTicketSearch;
+  sort?: UserFetcherSort;
 }) => {
-  const users = await getSearchUsersQuery(DB, search).execute();
+  const users = await getSearchUsersQuery(DB, search, sort).execute();
 
   return users;
 };
@@ -89,12 +111,14 @@ const searchPaginatedUsers = async ({
   DB,
   pagination,
   search = {},
+  sort,
 }: {
   DB: ORM_TYPE;
   search: UserTicketSearch;
   pagination: PaginationOptionsType;
+  sort?: UserFetcherSort;
 }) => {
-  const query = getSearchUsersQuery(DB, search);
+  const query = getSearchUsersQuery(DB, search, sort);
 
   const results = await paginationDBHelper(DB, query, pagination);
 

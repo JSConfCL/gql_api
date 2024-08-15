@@ -99,6 +99,7 @@ import {
 } from "~/generated/types";
 import { createLogger } from "~/logging";
 import { schema } from "~/schema";
+import { CreateEvent } from "~/schema/events/tests/createEvent.generated";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 import { MOCKED_RPC_SERVICE_EMAIL } from "~/tests/fixtures/mocks";
 import { Context } from "~/types";
@@ -422,7 +423,7 @@ export const insertTicketTemplate = async (
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
-    eventId: partialInput?.eventId ?? faker.string.uuid(),
+    eventId: partialInput?.eventId ?? (await insertEvent()).id,
     name: partialInput?.name ?? faker.company.name(),
     startDateTime: partialInput?.startDateTime ?? faker.date.future(),
     endDateTime: partialInput?.endDateTime ?? faker.date.future(),
@@ -477,8 +478,12 @@ export const insertPurchaseOrder = async (
 };
 
 export const insertTicket = async (
-  partialInput?: Omit<z.infer<typeof insertUserTicketsSchema>, "id"> & {
+  partialInput?: Omit<
+    z.infer<typeof insertUserTicketsSchema>,
+    "id" | "purchaseOrderId"
+  > & {
     id?: string;
+    purchaseOrderId?: string;
   },
 ) => {
   const possibleInput = {

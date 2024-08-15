@@ -19,6 +19,7 @@ import {
 
 export type UserTicketSearch = {
   userIds?: string[];
+  publicIds?: string[];
   eventIds?: string[];
   userTicketIds?: string[];
   ticketIds?: string[];
@@ -35,6 +36,7 @@ const getSearchUserTicketsQuery = (
   const {
     userIds,
     eventIds,
+    publicIds,
     userTicketIds,
     ticketIds,
     approvalStatus,
@@ -95,6 +97,10 @@ const getSearchUserTicketsQuery = (
 
   if (redemptionStatus && redemptionStatus.length > 0) {
     wheres.push(inArray(userTicketsSchema.redemptionStatus, redemptionStatus));
+  }
+
+  if (publicIds && publicIds.length > 0) {
+    wheres.push(inArray(userTicketsSchema.publicId, publicIds));
   }
 
   if (ticketIds && ticketIds.length > 0) {

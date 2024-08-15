@@ -1,0 +1,7 @@
+query PublicTicketInfo($input: PublicTicketInput!) {
+  publicTicketInfo(input: $input) {
+    id
+    userImage
+    userName
+  }
+}
