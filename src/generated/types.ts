@@ -787,6 +787,10 @@ export type QueryWorkRoleSenioritiesArgs = {
   input: WorkRoleSenioritiesInput;
 };
 
+export type RsvpFilterInput = {
+  eventIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
+};
+
 export type RedeemUserTicketError = {
   __typename?: "RedeemUserTicketError";
   error: Scalars["Boolean"]["output"];
@@ -1102,10 +1106,16 @@ export type User = {
   lastName?: Maybe<Scalars["String"]["output"]>;
   name?: Maybe<Scalars["String"]["output"]>;
   pronouns?: Maybe<PronounsEnum>;
+  /** Get a list of user's RSVPs */
   rsvps: Array<UserTicket>;
   teams: Array<TeamRef>;
   userData?: Maybe<UserData>;
   username: Scalars["String"]["output"];
+};
+
+/** Representation of a user */
+export type UserRsvpsArgs = {
+  input?: InputMaybe<RsvpFilterInput>;
 };
 
 /** Representation of a user's data */
@@ -1121,6 +1131,7 @@ export type UserData = {
 export type UserSearchValues = {
   name?: InputMaybe<Scalars["String"]["input"]>;
   tags?: InputMaybe<Array<SearchableUserTags>>;
+  userIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
   userName?: InputMaybe<Scalars["String"]["input"]>;
 };
 
