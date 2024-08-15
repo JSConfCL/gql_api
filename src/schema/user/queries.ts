@@ -14,6 +14,9 @@ const UserSearchValues = builder.inputType("UserSearchValues", {
       type: "String",
       required: false,
     }),
+    userIds: t.stringList({
+      required: false,
+    }),
     tags: t.field({
       type: [SearchableUserTags],
       required: false,
@@ -78,11 +81,12 @@ builder.queryFields((t) => ({
     },
     args: createPaginationInputType(t, UserSearchValues),
     resolve: async (root, { input }, { DB }) => {
-      const { name, tags } = input.search ?? {};
+      const { name, tags, userIds } = input.search ?? {};
 
       const { data, pagination } = await usersFetcher.searchPaginatedUsers({
         DB,
         search: {
+          userIds: userIds ?? undefined,
           name: name ?? undefined,
           tags: tags ?? undefined,
         },

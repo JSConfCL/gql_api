@@ -736,6 +736,10 @@ type Query {
   workRoles: [WorkRole!]!
 }
 
+input RSVPFilterInput {
+  eventIds: [String!]
+}
+
 type RedeemUserTicketError {
   error: Boolean!
   errorMessage: String!
@@ -1078,7 +1082,11 @@ type User {
   lastName: String
   name: String
   pronouns: PronounsEnum
-  rsvps: [UserTicket!]!
+
+  """
+  Get a list of user's RSVPs
+  """
+  rsvps(input: RSVPFilterInput): [UserTicket!]!
   teams: [TeamRef!]!
   userData: UserData
   username: String!
@@ -1098,6 +1106,7 @@ type UserData {
 input UserSearchValues {
   name: String
   tags: [SearchableUserTags!]
+  userIds: [String!]
   userName: String
 }
 

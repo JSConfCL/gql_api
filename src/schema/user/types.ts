@@ -20,6 +20,14 @@ export const pronounsEnum = builder.enumType(PronounsEnum, {
   name: "PronounsEnum",
 });
 
+const RSVPFilterInput = builder.inputType("RSVPFilterInput", {
+  fields: (t) => ({
+    eventIds: t.stringList({
+      required: false,
+    }),
+  }),
+});
+
 builder.objectType(UserRef, {
   description: "Representation of a user",
   fields: (t) => ({
@@ -81,6 +89,13 @@ builder.objectType(UserRef, {
       },
     }),
     rsvps: t.field({
+      description: "Get a list of user's RSVPs",
+      args: {
+        input: t.arg({
+          type: RSVPFilterInput,
+          required: false,
+        }),
+      },
       type: [UserTicketRef],
       resolve: async (root, args, ctx) => {
         const canSeeTickets =
@@ -90,9 +105,12 @@ builder.objectType(UserRef, {
           return [];
         }
 
+        const { eventIds } = args.input || {};
+
         const userTickets = await userTicketFetcher.searchUserTickets({
           DB: ctx.DB,
           search: {
+            eventIds: eventIds ?? undefined,
             userIds: [root.id],
             approvalStatus: ctx.USER?.isSuperAdmin
               ? undefined
