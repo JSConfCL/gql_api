@@ -12,7 +12,6 @@ import { APP_ENV } from "~/env";
 import { Logger } from "~/logging";
 import { Context } from "~/types";
 
-//
 export const createGraphqlContext = async ({
   request,
   NEON_URL,
@@ -30,10 +29,13 @@ export const createGraphqlContext = async ({
   MERCADOPAGO_KEY,
   RPC_SERVICE_EMAIL,
   logger,
+  params,
 }: YogaInitialContext &
   Env & {
     logger: Logger;
   }): Promise<Context> => {
+  logger.info("graphql-params", params);
+
   if (!MAIL_QUEUE) {
     throw new Error("Missing MAIL_QUEUE");
   }
