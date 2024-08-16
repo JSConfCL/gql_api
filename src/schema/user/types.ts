@@ -190,5 +190,12 @@ builder.objectType(UserDataRef, {
     roleInOrganization: t.exposeString("roleInOrganization", {
       nullable: true,
     }),
+    rut: t.exposeString("rut", {
+      nullable: true,
+    }),
+    foodAllergies: t.exposeString("foodAllergies", { nullable: true }),
+    emergencyPhoneNumber: t.exposeString("emergencyPhoneNumber", {
+      nullable: true,
+    }),
   }),
 });

@@ -15,6 +15,9 @@ export const userDataSchema = pgTable(
     worksInOrganization: boolean("works_in_organization").notNull(),
     organizationName: text("organization_name"),
     roleInOrganization: text("role_in_organization"),
+    rut: text("rut"),
+    foodAllergies: text("food_allergies"),
+    emergencyPhoneNumber: text("emergency_phone_number"),
     ...createdAndUpdatedAtFields,
   },
   (table) => ({
@@ -39,4 +42,7 @@ export const updateUserDataSchema = insertUserDataSchema.pick({
   organizationName: true,
   roleInOrganization: true,
   worksInOrganization: true,
+  rut: true,
+  foodAllergies: true,
+  emergencyPhoneNumber: true,
 });
