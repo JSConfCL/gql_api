@@ -10,7 +10,7 @@ import {
 } from "@react-email/components";
 import * as React from "react";
 
-import { BigFooter, TicketTemplate } from "emails/helpers/tickets";
+import { BigFooter, TicketTemplate } from "emails/templates/helpers/tickets";
 
 interface EmailProps {
   eventName: string;
@@ -18,15 +18,15 @@ interface EmailProps {
   eventLogoCloudflareImageURL: string;
 }
 
-export const WaitlistAccepted = ({
+export const WaitlistRejected = ({
   eventName,
   userName,
   eventLogoCloudflareImageURL,
 }: EmailProps) => {
   return (
-    <TicketTemplate>
-      <Container className="bg-dark px-10 py-10 w-full max-w-2xl">
-        <Section className="text-light">
+    <TicketTemplate theme="light">
+      <Container className="px-10 py-10 w-full max-w-2xl">
+        <Section className="">
           <Preview>Gracias por tu interés en {eventName}</Preview>
           <Row className="h-20 mb-14">
             <Column>
@@ -37,11 +37,9 @@ export const WaitlistAccepted = ({
             </Column>
           </Row>
 
-          {userName ? (
-            <Text className="text-2xl mb-6">Hola {userName},</Text>
-          ) : (
-            <Text className="text-2xl mb-6">Hola,</Text>
-          )}
+          <Text className="text-2xl mb-6">
+            {userName ? `Hola ${userName},` : "Hola,"}
+          </Text>
 
           <Text className="text-xl mb-2">
             Queremos agradecerte por haber mostrado interés en asistir a:
@@ -69,18 +67,18 @@ export const WaitlistAccepted = ({
           </Text>
           <Text className="text-xl mb-8"></Text>
         </Section>
-        <Hr className="my-8" />
-        <BigFooter />
+        <Hr className="my-8 border-black" />
+        <BigFooter theme="light" />
       </Container>
     </TicketTemplate>
   );
 };
 
-WaitlistAccepted.PreviewProps = {
+WaitlistRejected.PreviewProps = {
   eventName: "El Potencial Clave de la Recuperación Aumentada (RAG) con OpenAI",
   userName: "John Doe",
   eventLogoCloudflareImageURL:
-    "https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/b6b43de1-d360-4faf-bd7a-7421e8fc1f00",
+    "https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/6cdd148e-b931-4b7a-f983-d75d388aff00",
 } satisfies EmailProps;
 
-export default WaitlistAccepted;
+export default WaitlistRejected;

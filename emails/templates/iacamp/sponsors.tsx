@@ -10,12 +10,12 @@ import {
 } from "@react-email/components";
 import * as React from "react";
 
-import { assetURL } from "emails/helpers";
-import { BigFooter, TicketTemplate } from "emails/helpers/tickets";
+import { assetURL } from "emails/templates/helpers";
+import { BigFooter, TicketTemplate } from "emails/templates/helpers/tickets";
 
 export const SponsorsConfirmation = () => {
   return (
-    <TicketTemplate>
+    <TicketTemplate theme="dark" font="roboto">
       <Container className="bg-dark px-10 py-10 w-full max-w-2xl">
         <Section className="text-light">
           <Preview>Gracias por tu interés en auspiciar IA Camp.</Preview>
@@ -46,7 +46,7 @@ export const SponsorsConfirmation = () => {
           </Text>
         </Section>
         <Hr className="my-4" />
-        <BigFooter />
+        <BigFooter theme="dark" />
       </Container>
     </TicketTemplate>
   );

@@ -9,7 +9,7 @@ import {
 } from "@react-email/components";
 import * as React from "react";
 
-import { BigFooter, TicketTemplate } from "emails/helpers/tickets";
+import { BigFooter, TicketTemplate } from "emails/templates/helpers/tickets";
 
 interface AddedToWaitlist {
   nombre?: string | null;
@@ -17,7 +17,7 @@ interface AddedToWaitlist {
 
 export const IACampWaitlist = ({ nombre }: AddedToWaitlist) => {
   return (
-    <TicketTemplate>
+    <TicketTemplate theme="dark" font="roboto">
       <Container className="bg-dark px-10 py-10 w-full max-w-2xl">
         <Section className="text-light">
           <Preview>
@@ -68,7 +68,7 @@ export const IACampWaitlist = ({ nombre }: AddedToWaitlist) => {
           <Text className="text-xl mb-8"></Text>
         </Section>
         <Hr className="my-8" />
-        <BigFooter />
+        <BigFooter theme="dark" />
       </Container>
     </TicketTemplate>
   );

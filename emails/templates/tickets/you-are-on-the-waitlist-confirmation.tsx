@@ -10,7 +10,7 @@ import {
 } from "@react-email/components";
 import * as React from "react";
 
-import { BigFooter, TicketTemplate } from "emails/helpers/tickets";
+import { BigFooter, TicketTemplate } from "emails/templates/helpers/tickets";
 
 interface EmailProps {
   eventName: string;
@@ -24,9 +24,9 @@ export const YouAreOnTheWaitlist = ({
   eventLogoCloudflareImageURL,
 }: EmailProps) => {
   return (
-    <TicketTemplate>
-      <Container className="bg-dark px-10 py-10 w-full max-w-2xl">
-        <Section className="text-light">
+    <TicketTemplate theme="light">
+      <Container className="px-10 py-10 w-full max-w-2xl">
+        <Section className="">
           <Preview>Estas en la Lista de espera para {eventName}</Preview>
           <Row className="h-20 mb-14">
             <Column>
@@ -37,39 +37,35 @@ export const YouAreOnTheWaitlist = ({
             </Column>
           </Row>
 
-          {userName ? (
-            <Text className="text-2xl mb-6">Hola {userName},</Text>
-          ) : (
-            <Text className="text-2xl mb-6">Hola,</Text>
-          )}
+          <Text className="text-2xl mb-6">
+            {userName ? `Hola ${userName},` : "Hola,"}
+          </Text>
 
-          <Text className="text-xl mb-8 ">
+          <Text className="text-xl mb-16 ">
             Actualmente estás en la lista de espera para el evento:
           </Text>
 
-          <Text className="text-xl text-center mb-8 px-4 text-gray-400">
+          <Text className="text-xl text-center mb-16 px-4 text-gray-400">
             {eventName}
           </Text>
 
-          <Text>
+          <Text className="text-xl">
             Esto significa que, si se libera un espacio, te notificaremos
-            inmediatamente para ofrecerte un lugar.
+            mediante esta vía para ofrecerte un lugar.
           </Text>
 
-          <Text className="text-xl mb-8">
+          <Text className="text-xl mb-16">
             Mientras tanto, te invitamos a seguir nuestras redes sociales y
             visitar nuestro sitio web para estar al tanto de cualquier
             actualización o anuncio relacionado con el evento.
           </Text>
 
-          <Text className="text-xl">
-            Un saludo,
-            <br /> Equipo CommunityOS
-          </Text>
-          <Text className="text-xl mb-8"></Text>
+          <Text className="text-xl mb-8">Un saludo,</Text>
+          <Text className="text-xl font-semibold mb-8">Equipo CommunityOS</Text>
+          <Text className="text-xl mb-16"></Text>
         </Section>
-        <Hr className="my-8" />
-        <BigFooter />
+        <Hr className="my-8 border-black" />
+        <BigFooter theme="light" />
       </Container>
     </TicketTemplate>
   );
@@ -79,7 +75,7 @@ YouAreOnTheWaitlist.PreviewProps = {
   eventName: "El Potencial Clave de la Recuperación Aumentada (RAG) con OpenAI",
   userName: "John Doe",
   eventLogoCloudflareImageURL:
-    "https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/b6b43de1-d360-4faf-bd7a-7421e8fc1f00",
+    "https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/6cdd148e-b931-4b7a-f983-d75d388aff00",
 } satisfies EmailProps;
 
 export default YouAreOnTheWaitlist;
