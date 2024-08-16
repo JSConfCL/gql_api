@@ -4,14 +4,17 @@ import slugify from "slugify";
 
 import { builder } from "~/builder";
 import {
+  insertUserDataSchema,
   insertUsersSchema,
   PronounsEnum,
   selectUsersSchema,
+  updateUserDataSchema,
   updateUsersSchema,
   userDataSchema,
   usersSchema,
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
+import { applicationError, ServiceErrors } from "~/errors";
 import { UserRef } from "~/schema/shared/refs";
 import { pronounsEnum } from "~/schema/user/types";
 import { usersFetcher } from "~/schema/user/userFetcher";
@@ -182,51 +185,60 @@ builder.mutationField("updateMyUserData", (t) =>
       input: t.arg({ type: updateUserDataInput, required: true }),
     },
     resolve: async (root, { input }, ctx) => {
-      try {
-        const {
-          countryOfResidence,
-          city,
-          worksInOrganization,
-          organizationName,
-          roleInOrganization,
-        } = input;
+      const {
+        countryOfResidence,
+        city,
+        worksInOrganization,
+        organizationName,
+        roleInOrganization,
+      } = input;
 
-        const USER = ctx.USER;
+      const USER = ctx.USER;
 
-        if (!USER) {
-          throw new Error("User not found");
-        }
+      if (!USER) {
+        throw new Error("User not found");
+      }
 
-        await ctx.DB.insert(userDataSchema)
-          .values({
-            userId: USER.id,
+      const userData = insertUserDataSchema.parse({
+        userId: USER.id,
+        countryOfResidence,
+        city,
+        worksInOrganization,
+        organizationName,
+        roleInOrganization,
+      });
+
+      const updatedUsers = await ctx.DB.insert(userDataSchema)
+        .values(userData)
+        .onConflictDoUpdate({
+          target: userDataSchema.userId,
+          set: updateUserDataSchema.parse({
             countryOfResidence,
             city,
             worksInOrganization,
             organizationName,
             roleInOrganization,
-          })
-          .onConflictDoUpdate({
-            target: userDataSchema.userId,
-            set: {
-              countryOfResidence,
-              city,
-              worksInOrganization,
-              organizationName,
-              roleInOrganization,
-            },
-          });
+          }),
+        })
+        .returning();
+      const updatedUser = updatedUsers[0];
 
-        const user = await ctx.DB.query.usersSchema.findFirst({
-          where: (u, { eq }) => eq(u.id, USER.id),
-        });
-
-        return selectUsersSchema.parse(user);
-      } catch (e) {
-        throw new GraphQLError(
-          e instanceof Error ? e.message : "Unknown error",
+      if (!updatedUser) {
+        throw applicationError(
+          "Could not update the user information",
+          ServiceErrors.NOT_FOUND,
+          ctx.logger,
         );
       }
+
+      const user = await usersFetcher.searchUsers({
+        DB: ctx.DB,
+        search: {
+          userIds: [USER.id],
+        },
+      });
+
+      return selectUsersSchema.parse(user[0]);
     },
   }),
 );

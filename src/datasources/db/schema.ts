@@ -1,4 +1,3 @@
-// TABLES/RELATIONS/CRUD
 export * from "~/datasources/db/allowedCurrencies";
 
 export * from "~/datasources/db/communities";
@@ -44,6 +43,8 @@ export * from "~/datasources/db/tickets";
 export * from "~/datasources/db/users";
 
 export * from "~/datasources/db/usersCommunities";
+
+export * from "~/datasources/db/usersData";
 
 export * from "~/datasources/db/usersTags";
 
