@@ -13,8 +13,8 @@ import { formatDate } from "date-fns";
 import { es } from "date-fns/locale";
 import * as React from "react";
 
-import { assetURL } from "emails/helpers";
-import { Footer, TicketTemplate } from "emails/helpers/tickets";
+import { assetURL } from "emails/templates/helpers";
+import { Footer, TicketTemplate } from "emails/templates/helpers/tickets";
 
 interface WorkEmailValidationEmailProps {
   purchaseOrderId: string;
@@ -78,7 +78,7 @@ export const PurchaseOrderSuccessful = ({
     : null;
 
   return (
-    <TicketTemplate>
+    <TicketTemplate theme="light">
       <Container>
         <Section>
           <Text className="text-xl text-muted">
@@ -162,7 +162,7 @@ export const PurchaseOrderSuccessful = ({
             )}
           </Text>
         </Section>
-        <Footer />
+        <Footer theme="light" />
       </Container>
     </TicketTemplate>
   );

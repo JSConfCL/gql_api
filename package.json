@@ -86,6 +86,7 @@
     "@sanity/client": "^6.7.0",
     "@tsndr/cloudflare-worker-jwt": "^2.5.3",
     "@types/react": "^18.2.22",
+    "classnames": "^2.5.1",
     "cookie": "^0.5.0",
     "dataloader": "^2.2.2",
     "date-fns": "^3.6.0",

@@ -24,7 +24,7 @@ type ReceiverType = {
 
 // TODO: CHANGE THIS 🚨
 const DEFAULT_CLOUDFLARE_LOGO_URL =
-  "https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/b6b43de1-d360-4faf-bd7a-7421e8fc1f00";
+  "https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/6cdd148e-b931-4b7a-f983-d75d388aff00";
 
 export default class EmailService extends WorkerEntrypoint<ENV> {
   logger = createLogger("EmailService");
@@ -258,6 +258,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
               eventLogoCloudflareImageURL={eventLogoCloudflareImageURL}
               eventName={eventName}
               userName={receiver.name}
+              userEmail={receiver.email}
             />,
           ),
           subject: `Estás invitado a ${eventName}`,
