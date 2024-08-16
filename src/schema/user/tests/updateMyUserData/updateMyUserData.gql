@@ -1,0 +1,12 @@
+mutation UpdateMyUserData($input: updateUserDataInput!) {
+  updateMyUserData(input: $input) {
+    id
+    userData {
+      city
+      countryOfResidence
+      organizationName
+      roleInOrganization
+      worksInOrganization
+    }
+  }
+}

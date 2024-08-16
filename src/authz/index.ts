@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { PreExecutionRule, UnauthorizedError } from "@graphql-authz/core";
+import {
+  PreExecutionRule,
+  UnauthorizedError,
+  PostExecutionRule,
+} from "@graphql-authz/core";
 import { GraphQLError } from "graphql";
 
+import { UserLoadable } from "~/schema/user/types";
 import { GraphqlContext } from "~/types";
 
 import { authHelpers } from "./helpers";
@@ -172,4 +177,29 @@ export class canApproveTicket extends PreExecutionRule {
 
     return Boolean(isEventAdmin);
   }
+}
+
+export class CanSeePersonalData extends PostExecutionRule {
+  public async execute(
+    ctx: GraphqlContext,
+    fieldArgs: any,
+    _: any,
+    parent: {
+      id: string;
+    },
+  ) {
+    if (!ctx.USER) {
+      return false;
+    }
+
+    if (ctx.USER.isSuperAdmin) {
+      return true;
+    }
+
+    const loadedUser = await UserLoadable.getDataloader(ctx).load(parent.id);
+
+    return loadedUser?.id === ctx.USER.id;
+  }
+
+  selectionSet = `{ id }`;
 }

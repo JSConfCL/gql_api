@@ -164,6 +164,9 @@ export const UserLoadable = builder.loadableObject(UserRef, {
     userData: t.field({
       type: UserDataRef,
       nullable: true,
+      authz: {
+        rules: ["CanSeePersonalData"],
+      },
       resolve: (root, args, ctx) => {
         return ctx.DB.query.userDataSchema.findFirst({
           where: (ud, { eq }) => eq(ud.userId, root.id),
