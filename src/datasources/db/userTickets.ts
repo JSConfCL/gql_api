@@ -66,7 +66,6 @@ export const selectUserTicketsSchema = createSelectSchema(userTicketsSchema);
 
 export const insertUserTicketsSchema = createInsertSchema(userTicketsSchema);
 
-export const updateUserTicketsSchema = selectUserTicketsSchema.pick({
+export const approveUserTicketsSchema = selectUserTicketsSchema.pick({
   approvalStatus: true,
-  redemptionStatus: true,
 });

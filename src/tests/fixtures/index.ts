@@ -99,7 +99,6 @@ import {
 } from "~/generated/types";
 import { createLogger } from "~/logging";
 import { schema } from "~/schema";
-import { CreateEvent } from "~/schema/events/tests/createEvent.generated";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 import { MOCKED_RPC_SERVICE_EMAIL } from "~/tests/fixtures/mocks";
 import { Context } from "~/types";

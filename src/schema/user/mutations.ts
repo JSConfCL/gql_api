@@ -241,7 +241,7 @@ builder.mutationField("updateMyUserData", (t) =>
       await validateUserDataAndApproveUserTickets({
         DB: ctx.DB,
         userId: USER.id,
-        eventId,
+        eventId: input.eventId,
         logger: ctx.logger,
       });
 

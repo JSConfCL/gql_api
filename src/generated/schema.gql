@@ -403,6 +403,10 @@ type Mutation {
   Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position
   """
   startWorkEmailValidation(email: String!): WorkEmail!
+  triggerUserTicketApprovalReview(
+    eventId: String!
+    userId: String!
+  ): [UserTicket!]!
 
   """
   Update a company
@@ -832,6 +836,7 @@ enum ServiceErrors {
   INVALID_ARGUMENT
   NOT_FOUND
   UNAUTHENTICATED
+  UNAUTHORIZED
 }
 
 """
@@ -1117,8 +1122,11 @@ Representation of a user's data
 type UserData {
   city: String!
   countryOfResidence: String!
+  emergencyPhoneNumber: String
+  foodAllergies: String
   organizationName: String
   roleInOrganization: String
+  rut: String
   worksInOrganization: Boolean!
 }
 
@@ -1238,8 +1246,12 @@ input placeHolderUsersInput {
 input updateUserDataInput {
   city: String!
   countryOfResidence: String!
+  emergencyPhoneNumber: String
+  eventId: String!
+  foodAllergies: String
   organizationName: String
   roleInOrganization: String
+  rut: String
   worksInOrganization: Boolean!
 }
 

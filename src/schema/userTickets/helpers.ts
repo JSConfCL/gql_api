@@ -5,7 +5,7 @@ import { TeamStatusEnum } from "~/datasources/db/teams";
 import { USER } from "~/datasources/db/users";
 import { UserParticipationStatusEnum } from "~/datasources/db/userTeams";
 import {
-  updateUserTicketsSchema,
+  approveUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/userTickets";
 import { applicationError, ServiceErrors } from "~/errors";
@@ -189,14 +189,6 @@ export const validateUserDataAndApproveUserTickets = async ({
     if (!userData.foodAllergies) {
       errors.push("Food allergies is missing");
     }
-
-    if (errors.length > 0) {
-      throw applicationError(
-        `Missing required conditions: ${errors.join(", ")}`,
-        ServiceErrors.FAILED_PRECONDITION,
-        logger,
-      );
-    }
   }
 
   if (!userData.rut) {
@@ -245,7 +237,7 @@ const bulkApproveUserTickets = async ({
 }) => {
   const updated = await DB.update(userTicketsSchema)
     .set(
-      updateUserTicketsSchema.parse({
+      approveUserTicketsSchema.parse({
         approvalStatus: "approved",
       }),
     )
