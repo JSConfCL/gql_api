@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import slugify from "slugify";
+import { z } from "zod";
 
 import { builder } from "~/builder";
 import {
@@ -171,6 +172,9 @@ const updateUserDataInput = builder.inputType("updateUserDataInput", {
     worksInOrganization: t.boolean({ required: true }),
     organizationName: t.string({ required: false }),
     roleInOrganization: t.string({ required: false }),
+    rut: t.string({ required: false }),
+    foodAllergies: t.string({ required: false }),
+    emergencyPhoneNumber: t.string({ required: false }),
   }),
 });
 
@@ -191,6 +195,9 @@ builder.mutationField("updateMyUserData", (t) =>
         worksInOrganization,
         organizationName,
         roleInOrganization,
+        rut,
+        foodAllergies,
+        emergencyPhoneNumber,
       } = input;
 
       const USER = ctx.USER;
@@ -199,26 +206,25 @@ builder.mutationField("updateMyUserData", (t) =>
         throw new Error("User not found");
       }
 
-      const userData = insertUserDataSchema.parse({
+      const valuesToParse: Partial<z.infer<typeof insertUserDataSchema>> = {
         userId: USER.id,
         countryOfResidence,
         city,
         worksInOrganization,
         organizationName,
         roleInOrganization,
-      });
+        emergencyPhoneNumber,
+        rut,
+        foodAllergies,
+      };
+
+      const userData = insertUserDataSchema.parse(valuesToParse);
 
       const updatedUsers = await ctx.DB.insert(userDataSchema)
         .values(userData)
         .onConflictDoUpdate({
           target: userDataSchema.userId,
-          set: updateUserDataSchema.parse({
-            countryOfResidence,
-            city,
-            worksInOrganization,
-            organizationName,
-            roleInOrganization,
-          }),
+          set: updateUserDataSchema.parse(userData),
         })
         .returning();
       const updatedUser = updatedUsers[0];
