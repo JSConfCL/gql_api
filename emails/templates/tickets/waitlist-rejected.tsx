@@ -18,7 +18,7 @@ interface EmailProps {
   eventLogoCloudflareImageURL: string;
 }
 
-export const WaitlistAccepted = ({
+export const WaitlistRejected = ({
   eventName,
   userName,
   eventLogoCloudflareImageURL,
@@ -74,11 +74,11 @@ export const WaitlistAccepted = ({
   );
 };
 
-WaitlistAccepted.PreviewProps = {
+WaitlistRejected.PreviewProps = {
   eventName: "El Potencial Clave de la Recuperación Aumentada (RAG) con OpenAI",
   userName: "John Doe",
   eventLogoCloudflareImageURL:
     "https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/6cdd148e-b931-4b7a-f983-d75d388aff00",
 } satisfies EmailProps;
 
-export default WaitlistAccepted;
+export default WaitlistRejected;

@@ -12,8 +12,8 @@ import { ENV } from "~workers/transactional_email_service/types";
 
 import { EventInvitation } from "../../emails/templates/tickets/event-invitation";
 import { PurchaseOrderSuccessful } from "../../emails/templates/tickets/purchase-order-successful";
-import { WaitlistRejected } from "../../emails/templates/tickets/waitlist-accepted";
-import { WaitlistAccepted } from "../../emails/templates/tickets/waitlist-rejected";
+import { WaitlistAccepted } from "../../emails/templates/tickets/waitlist-accepted";
+import { WaitlistRejected } from "../../emails/templates/tickets/waitlist-rejected";
 import { YouAreOnTheWaitlist } from "../../emails/templates/tickets/you-are-on-the-waitlist-confirmation";
 
 type ReceiverType = {
@@ -176,6 +176,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
           eventLogoCloudflareImageURL={eventLogoCloudflareImageURL}
           eventName={eventName}
           userName={userName}
+          userEmail={email}
         />,
       ),
       to: [
