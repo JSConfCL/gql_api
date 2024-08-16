@@ -6,6 +6,7 @@ import { Logger } from "~/logging";
 export enum ServiceErrors {
   UNAUTHENTICATED = "UNAUTHENTICATED",
   FAILED_PRECONDITION = "FAILED_PRECONDITION",
+  UNAUTHORIZED = "UNAUTHORIZED",
   FORBIDDEN = "FORBIDDEN",
   CONFLICT = "CONFLICT",
   NOT_FOUND = "NOT_FOUND",
@@ -21,6 +22,7 @@ builder.enumType(ServiceErrors, {
 const error_codes: Record<string, number> = {
   [ServiceErrors.INVALID_ARGUMENT]: 400,
   [ServiceErrors.UNAUTHENTICATED]: 401,
+  [ServiceErrors.UNAUTHORIZED]: 403,
   [ServiceErrors.FORBIDDEN]: 403,
   [ServiceErrors.NOT_FOUND]: 404,
   [ServiceErrors.FAILED_PRECONDITION]: 412,

@@ -115,7 +115,7 @@ export const sendTicketInvitationEmails = async ({
     );
   }
 
-  await RPC_SERVICE_EMAIL.sendEventTicketInvitationsBatch({
+  await RPC_SERVICE_EMAIL.bulkSendEventTicketInvitations({
     eventName: ticketInformation.event.name,
     ticketId: ticketInformation.id,
     eventId: ticketInformation.event.id,

@@ -16,7 +16,10 @@ import {
 import { PurchaseOrderRef } from "~/schema/purchaseOrder/types";
 import { isValidUUID } from "~/schema/shared/helpers";
 import { UserTicketRef } from "~/schema/shared/refs";
-import { assertCanStartTicketClaimingForEvent } from "~/schema/userTickets/helpers";
+import {
+  assertCanStartTicketClaimingForEvent,
+  validateUserDataAndApproveUserTickets,
+} from "~/schema/userTickets/helpers";
 import {
   canApproveTicket,
   canCancelUserTicket,
@@ -606,6 +609,51 @@ builder.mutationField("acceptGiftedTicket", (t) =>
       )?.[0];
 
       return selectUserTicketsSchema.parse(updatedTicket);
+    },
+  }),
+);
+
+builder.mutationField("triggerUserTicketApprovalReview", (t) =>
+  t.field({
+    type: [UserTicketRef],
+    args: {
+      eventId: t.arg.string({
+        required: true,
+      }),
+      userId: t.arg.string({
+        required: true,
+      }),
+    },
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, { userId, eventId }, { DB, USER, logger }) => {
+      if (!USER) {
+        throw applicationError(
+          "User not found",
+          ServiceErrors.NOT_FOUND,
+          logger,
+        );
+      }
+
+      if (USER.id !== userId || !USER.isSuperAdmin) {
+        throw applicationError(
+          "Unauthorized ",
+          ServiceErrors.UNAUTHORIZED,
+          logger,
+        );
+      }
+
+      const userTickets = await validateUserDataAndApproveUserTickets({
+        DB,
+        userId,
+        eventId,
+        logger,
+      });
+
+      return userTickets.map((userTicket) =>
+        selectUserTicketsSchema.parse(userTicket),
+      );
     },
   }),
 );
