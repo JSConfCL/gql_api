@@ -126,7 +126,7 @@ export const sendTicketInvitationEmails = async ({
   });
 };
 
-export const sendActualUserTicketRPSVPsEmails = async ({
+export const sendActualUserTicketQREmails = async ({
   DB,
   logger,
   userTicketIds,

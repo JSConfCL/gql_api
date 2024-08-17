@@ -16,7 +16,7 @@ import {
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import {
-  sendActualUserTicketRPSVPsEmails,
+  sendActualUserTicketQREmails,
   sendTicketInvitationEmails,
 } from "~/notifications/tickets";
 import { UserRef } from "~/schema/shared/refs";
@@ -250,12 +250,14 @@ builder.mutationField("updateMyUserData", (t) =>
           logger: ctx.logger,
         });
 
-        await sendActualUserTicketRPSVPsEmails({
-          DB: ctx.DB,
-          logger: ctx.logger,
-          userTicketIds: changedUserTickets.map((t) => t.id),
-          RPC_SERVICE_EMAIL: ctx.RPC_SERVICE_EMAIL,
-        });
+        if (changedUserTickets.length) {
+          await sendActualUserTicketQREmails({
+            DB: ctx.DB,
+            logger: ctx.logger,
+            userTicketIds: changedUserTickets.map((t) => t.id),
+            RPC_SERVICE_EMAIL: ctx.RPC_SERVICE_EMAIL,
+          });
+        }
       }
 
       const user = await usersFetcher.searchUsers({
