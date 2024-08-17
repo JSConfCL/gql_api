@@ -232,7 +232,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
     });
   }
 
-  async bulkSendUserTicketEmail({
+  async bulkSendUserQRTicketEmail({
     // TODO: Change this image
     eventLogoCloudflareImageURL = DEFAULT_CLOUDFLARE_LOGO_URL,
     eventName,

@@ -159,48 +159,46 @@ export const sendActualUserTicketQREmails = async ({
     );
   }
 
-  const to = userTickets
-    .map((userTicket) => {
-      if (!userTicket.user) {
-        return null;
-      }
+  await RPC_SERVICE_EMAIL.bulkSendUserQRTicketEmail({
+    to: userTickets
+      .map((userTicket) => {
+        if (!userTicket.user) {
+          return null;
+        }
 
-      return {
-        name: userTicket.user.name ?? undefined,
-        email: userTicket.user.email,
-        userTicketId: userTicket.id,
-        tags: [
-          {
-            name: "userTicket",
-            value: userTicket.id,
-          },
-          {
-            name: "ticketName",
-            value: userTicket.ticketTemplate.name,
-          },
-          {
-            name: "ticketId",
-            value: userTicket.ticketTemplate.id,
-          },
-          {
-            name: "eventId",
-            value: userTicket.ticketTemplate.event.id,
-          },
-          {
-            name: "eventName",
-            value: userTicket.ticketTemplate.event.name,
-          },
-          {
-            name: "userId",
-            value: userTicket.user.id,
-          },
-        ],
-      };
-    })
-    .filter((user) => user !== null);
-
-  await RPC_SERVICE_EMAIL.bulkSendUserTicketEmail({
-    to,
+        return {
+          name: userTicket.user.name ?? undefined,
+          email: userTicket.user.email,
+          userTicketId: userTicket.id,
+          tags: [
+            {
+              name: "userTicket",
+              value: userTicket.id,
+            },
+            {
+              name: "ticketName",
+              value: userTicket.ticketTemplate.name,
+            },
+            {
+              name: "ticketId",
+              value: userTicket.ticketTemplate.id,
+            },
+            {
+              name: "eventId",
+              value: userTicket.ticketTemplate.event.id,
+            },
+            {
+              name: "eventName",
+              value: userTicket.ticketTemplate.event.name,
+            },
+            {
+              name: "userId",
+              value: userTicket.user.id,
+            },
+          ],
+        };
+      })
+      .filter((user) => user !== null),
     eventName: userTickets[0].ticketTemplate.event.name,
   });
 };
