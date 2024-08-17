@@ -54,10 +54,10 @@ export const TicketConfirmation = ({
             {eventName}
           </Text>
 
-          <Row>
+          <Row className="w-full">
             <Img
-              className="px-20 mb-16"
-              src={`https://svg-renderer.communityos.io/qr/svg/${userTicketId}`}
+              className="w-full mx-auto"
+              src={`https://svg-renderer.communityos.io/qr/png/${userTicketId}`}
             />
           </Row>
 

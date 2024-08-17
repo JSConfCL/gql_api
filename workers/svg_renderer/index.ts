@@ -58,6 +58,7 @@ app.get("/qr/png/:id", async (c) => {
   const svg = QR(uuid);
 
   const resvg = new Resvg(svg, {
+    background: "white",
     fitTo: {
       mode: "width",
       value: 1200,
