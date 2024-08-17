@@ -20,7 +20,7 @@ import { YouAreOnTheWaitlist } from "../../emails/templates/tickets/you-are-on-t
 type ReceiverType = {
   name?: string;
   email: string;
-  tags?: { name: string; value: string }[];
+  tags: { name: string; value: string }[];
 };
 
 // TODO: CHANGE THIS 🚨
@@ -257,6 +257,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
               userEmail={receiver.email}
             />,
           ),
+          tags: receiver.tags,
           subject: `Tu ticket para ${eventName}`,
           to: [
             {
@@ -305,6 +306,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
               userEmail={receiver.email}
             />,
           ),
+          tags: receiver.tags,
           subject: `Estás invitado a ${eventName}`,
           to: [
             {

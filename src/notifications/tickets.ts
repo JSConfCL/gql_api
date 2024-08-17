@@ -122,6 +122,7 @@ export const sendTicketInvitationEmails = async ({
     to: users.map((user) => ({
       name: user.name ?? undefined,
       email: user.email,
+      tags: [],
     })),
   });
 };
@@ -159,46 +160,53 @@ export const sendActualUserTicketQREmails = async ({
     );
   }
 
-  await RPC_SERVICE_EMAIL.bulkSendUserQRTicketEmail({
-    to: userTickets
-      .map((userTicket) => {
-        if (!userTicket.user) {
-          return null;
-        }
+  const to: {
+    name?: string;
+    email: string;
+    tags: { name: string; value: string }[];
+    userTicketId: string;
+  }[] = [];
 
-        return {
-          name: userTicket.user.name ?? undefined,
-          email: userTicket.user.email,
-          userTicketId: userTicket.id,
-          tags: [
-            {
-              name: "userTicket",
-              value: userTicket.id,
-            },
-            {
-              name: "ticketName",
-              value: userTicket.ticketTemplate.name,
-            },
-            {
-              name: "ticketId",
-              value: userTicket.ticketTemplate.id,
-            },
-            {
-              name: "eventId",
-              value: userTicket.ticketTemplate.event.id,
-            },
-            {
-              name: "eventName",
-              value: userTicket.ticketTemplate.event.name,
-            },
-            {
-              name: "userId",
-              value: userTicket.user.id,
-            },
-          ],
-        };
-      })
-      .filter((user) => user !== null),
+  userTickets.forEach((userTicket) => {
+    if (!userTicket.user) {
+      return null;
+    }
+
+    to.push({
+      name: userTicket.user.name ?? undefined,
+      email: userTicket.user.email,
+      userTicketId: userTicket.id,
+      tags: [
+        {
+          name: "userTicket",
+          value: userTicket.id,
+        },
+        {
+          name: "ticketName",
+          value: userTicket.ticketTemplate.name,
+        },
+        {
+          name: "ticketId",
+          value: userTicket.ticketTemplate.id,
+        },
+        {
+          name: "eventId",
+          value: userTicket.ticketTemplate.event.id,
+        },
+        {
+          name: "eventName",
+          value: userTicket.ticketTemplate.event.name,
+        },
+        {
+          name: "userId",
+          value: userTicket.user.id,
+        },
+      ],
+    });
+  });
+
+  await RPC_SERVICE_EMAIL.bulkSendUserQRTicketEmail({
+    to,
     eventName: userTickets[0].ticketTemplate.event.name,
   });
 };
