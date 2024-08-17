@@ -12,6 +12,7 @@ import { ENV } from "~workers/transactional_email_service/types";
 
 import { EventInvitation } from "../../emails/templates/tickets/event-invitation";
 import { PurchaseOrderSuccessful } from "../../emails/templates/tickets/purchase-order-successful";
+import { TicketConfirmation } from "../../emails/templates/tickets/ticket-confirmation";
 import { WaitlistAccepted } from "../../emails/templates/tickets/waitlist-accepted";
 import { WaitlistRejected } from "../../emails/templates/tickets/waitlist-rejected";
 import { YouAreOnTheWaitlist } from "../../emails/templates/tickets/you-are-on-the-waitlist-confirmation";
@@ -229,6 +230,48 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
       },
       subject: `Gracias por tu interés en ${eventName}`,
     });
+  }
+
+  async bulkSendUserTicketEmail({
+    // TODO: Change this image
+    eventLogoCloudflareImageURL = DEFAULT_CLOUDFLARE_LOGO_URL,
+    eventName,
+    to,
+  }: {
+    eventLogoCloudflareImageURL?: string;
+    eventName: string;
+    to: (ReceiverType & { userTicketId: string })[];
+  }) {
+    this.logger.info(`About to send ConfirmationWaitlistAccepted`, {
+      eventName,
+    });
+    const resendArgs = to.map(
+      (receiver) =>
+        ({
+          htmlContent: render(
+            <TicketConfirmation
+              eventLogoCloudflareImageURL={eventLogoCloudflareImageURL}
+              eventName={eventName}
+              userTicketId={receiver.userTicketId}
+              userName={receiver.name}
+              userEmail={receiver.email}
+            />,
+          ),
+          subject: `Tu ticket para ${eventName}`,
+          to: [
+            {
+              name: receiver.name,
+              email: receiver.email,
+            },
+          ],
+          from: {
+            name: "CommunityOS",
+            email: "contacto@communityos.io",
+          },
+        }) satisfies ResendEmailArgs,
+    );
+
+    await sendTransactionalHTMLEmail(this.resend, this.logger, resendArgs);
   }
 
   async bulkSendEventTicketInvitations({

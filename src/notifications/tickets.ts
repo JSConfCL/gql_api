@@ -125,3 +125,82 @@ export const sendTicketInvitationEmails = async ({
     })),
   });
 };
+
+export const sendActualUserTicketRPSVPsEmails = async ({
+  DB,
+  logger,
+  userTicketIds,
+  RPC_SERVICE_EMAIL,
+}: {
+  DB: ORM_TYPE;
+  logger: Logger;
+  userTicketIds: string[];
+  RPC_SERVICE_EMAIL: Context["RPC_SERVICE_EMAIL"];
+}) => {
+  const userTickets = await DB.query.userTicketsSchema.findMany({
+    where: (t, { inArray }) => inArray(t.id, userTicketIds),
+    with: {
+      user: true,
+      ticketTemplate: {
+        with: {
+          event: true,
+        },
+      },
+    },
+  });
+
+  if (userTickets.length === 0) {
+    throw applicationError(
+      `Could not find ticket and event information associated to: ${userTicketIds.join(
+        ", ",
+      )}`,
+      ServiceErrors.NOT_FOUND,
+      logger,
+    );
+  }
+
+  const to = userTickets
+    .map((userTicket) => {
+      if (!userTicket.user) {
+        return null;
+      }
+
+      return {
+        name: userTicket.user.name ?? undefined,
+        email: userTicket.user.email,
+        userTicketId: userTicket.id,
+        tags: [
+          {
+            name: "userTicket",
+            value: userTicket.id,
+          },
+          {
+            name: "ticketName",
+            value: userTicket.ticketTemplate.name,
+          },
+          {
+            name: "ticketId",
+            value: userTicket.ticketTemplate.id,
+          },
+          {
+            name: "eventId",
+            value: userTicket.ticketTemplate.event.id,
+          },
+          {
+            name: "eventName",
+            value: userTicket.ticketTemplate.event.name,
+          },
+          {
+            name: "userId",
+            value: userTicket.user.id,
+          },
+        ],
+      };
+    })
+    .filter((user) => user !== null);
+
+  await RPC_SERVICE_EMAIL.bulkSendUserTicketEmail({
+    to,
+    eventName: userTickets[0].ticketTemplate.event.name,
+  });
+};

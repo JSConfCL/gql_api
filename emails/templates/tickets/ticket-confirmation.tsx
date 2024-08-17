@@ -1,6 +1,4 @@
 import {
-  Button,
-  CodeInline,
   Column,
   Container,
   Hr,
