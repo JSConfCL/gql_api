@@ -1,0 +1,8 @@
+mutation TriggerUserTicketApprovalReview($eventId: String!, $userId: String!) {
+  triggerUserTicketApprovalReview(eventId: $eventId, userId: $userId) {
+    id
+    paymentStatus
+    approvalStatus
+    redemptionStatus
+  }
+}

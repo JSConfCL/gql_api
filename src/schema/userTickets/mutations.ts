@@ -636,7 +636,7 @@ builder.mutationField("triggerUserTicketApprovalReview", (t) =>
         );
       }
 
-      if (USER.id !== userId || !USER.isSuperAdmin) {
+      if (USER.id !== userId && !USER.isSuperAdmin) {
         throw applicationError(
           "Unauthorized ",
           ServiceErrors.UNAUTHORIZED,
