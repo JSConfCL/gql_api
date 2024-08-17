@@ -1,11 +1,8 @@
 import {
   Body,
   Column,
-  Font,
   Head,
   Html,
-  Link,
-  Preview,
   Row,
   Tailwind,
 } from "@react-email/components";
@@ -27,8 +24,6 @@ export const TicketTemplate = ({
   theme,
   font = "poppins",
 }: WorkEmailValidationEmailProps & ThemeType) => {
-  console.log({ font });
-
   return (
     <Tailwind
       config={{

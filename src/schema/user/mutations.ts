@@ -15,6 +15,10 @@ import {
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
+import {
+  sendActualUserTicketQREmails,
+  sendTicketInvitationEmails,
+} from "~/notifications/tickets";
 import { UserRef } from "~/schema/shared/refs";
 import { pronounsEnum } from "~/schema/user/types";
 import { usersFetcher } from "~/schema/user/userFetcher";
@@ -239,12 +243,21 @@ builder.mutationField("updateMyUserData", (t) =>
       }
 
       if (input.eventId) {
-        await validateUserDataAndApproveUserTickets({
+        const changedUserTickets = await validateUserDataAndApproveUserTickets({
           DB: ctx.DB,
           userId: USER.id,
           eventId: input.eventId,
           logger: ctx.logger,
         });
+
+        if (changedUserTickets.length) {
+          await sendActualUserTicketQREmails({
+            DB: ctx.DB,
+            logger: ctx.logger,
+            userTicketIds: changedUserTickets.map((t) => t.id),
+            RPC_SERVICE_EMAIL: ctx.RPC_SERVICE_EMAIL,
+          });
+        }
       }
 
       const user = await usersFetcher.searchUsers({

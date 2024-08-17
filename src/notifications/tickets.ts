@@ -122,6 +122,91 @@ export const sendTicketInvitationEmails = async ({
     to: users.map((user) => ({
       name: user.name ?? undefined,
       email: user.email,
+      tags: [],
     })),
+  });
+};
+
+export const sendActualUserTicketQREmails = async ({
+  DB,
+  logger,
+  userTicketIds,
+  RPC_SERVICE_EMAIL,
+}: {
+  DB: ORM_TYPE;
+  logger: Logger;
+  userTicketIds: string[];
+  RPC_SERVICE_EMAIL: Context["RPC_SERVICE_EMAIL"];
+}) => {
+  const userTickets = await DB.query.userTicketsSchema.findMany({
+    where: (t, { inArray }) => inArray(t.id, userTicketIds),
+    with: {
+      user: true,
+      ticketTemplate: {
+        with: {
+          event: true,
+        },
+      },
+    },
+  });
+
+  if (userTickets.length === 0) {
+    throw applicationError(
+      `Could not find ticket and event information associated to: ${userTicketIds.join(
+        ", ",
+      )}`,
+      ServiceErrors.NOT_FOUND,
+      logger,
+    );
+  }
+
+  const to: {
+    name?: string;
+    email: string;
+    tags: { name: string; value: string }[];
+    userTicketId: string;
+  }[] = [];
+
+  userTickets.forEach((userTicket) => {
+    if (!userTicket.user) {
+      return null;
+    }
+
+    to.push({
+      name: userTicket.user.name ?? undefined,
+      email: userTicket.user.email,
+      userTicketId: userTicket.id,
+      tags: [
+        {
+          name: "userTicket",
+          value: userTicket.id,
+        },
+        {
+          name: "ticketName",
+          value: userTicket.ticketTemplate.name,
+        },
+        {
+          name: "ticketId",
+          value: userTicket.ticketTemplate.id,
+        },
+        {
+          name: "eventId",
+          value: userTicket.ticketTemplate.event.id,
+        },
+        {
+          name: "eventName",
+          value: userTicket.ticketTemplate.event.name,
+        },
+        {
+          name: "userId",
+          value: userTicket.user.id,
+        },
+      ],
+    });
+  });
+
+  await RPC_SERVICE_EMAIL.bulkSendUserQRTicketEmail({
+    to,
+    eventName: userTickets[0].ticketTemplate.event.name,
   });
 };

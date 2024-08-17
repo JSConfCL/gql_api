@@ -1,0 +1,48 @@
+# 🚨 DEFAULT CONFIG 🚨
+name = "svg-renderer"
+compatibility_date = "2024-06-03"
+main = "./index.ts"
+
+[placement]
+mode = "smart"
+
+[define]
+_APP_ENV = "'development'"
+
+
+
+# =====================================
+# =====================================
+# 🚨 PRODUCTION CONFIG 🚨
+# =====================================
+# =====================================
+[env.production]
+route = "svg-renderer.communityos.io/*"
+logpush = true
+
+[env.production.placement]
+mode = "smart"
+
+[env.production.define]
+_APP_ENV = "'production'"
+
+
+
+
+
+
+# =====================================
+# =====================================
+# 🚨 STAGING CONFIG 🚨
+# =====================================
+# =====================================
+[env.staging]
+route = "svg-renderer.jsconf.dev/*"
+logpush = true
+
+[env.staging.placement]
+mode = "smart"
+
+[env.staging.define]
+_APP_ENV = "'staging'"
+

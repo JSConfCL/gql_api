@@ -22,4 +22,5 @@ export const MOCKED_RPC_SERVICE_EMAIL = {
   sendConfirmationWaitlistAccepted: vitest.fn(),
   sendConfirmationWaitlistRejected: vitest.fn(),
   bulkSendEventTicketInvitations: vitest.fn(),
+  bulkSendUserQRTicketEmail: vitest.fn(),
 } satisfies MockedService<Context["RPC_SERVICE_EMAIL"]>;
