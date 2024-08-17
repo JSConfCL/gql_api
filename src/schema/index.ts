@@ -29,6 +29,7 @@ import "./purchaseOrder/types";
 import "./salary/mutations";
 import "./salary/queries";
 import "./salary/types";
+import "./schedules/queries";
 import "./schedules/types";
 import "./sessions/types";
 import "./speakers/types";
