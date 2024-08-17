@@ -1,0 +1,1 @@
+ALTER TABLE "speakers" ADD COLUMN "rol" text;

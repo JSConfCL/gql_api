@@ -24,6 +24,7 @@ export const SpeakerLoadable = builder.loadableObject(SpeakerRef, {
     name: t.exposeString("name", { nullable: false }),
     bio: t.exposeString("bio", { nullable: true }),
     avatar: t.exposeString("avatar", { nullable: true }),
+    rol: t.exposeString("rol", { nullable: true }),
     company: t.exposeString("company", { nullable: true }),
     socials: t.field({
       type: ["String"],

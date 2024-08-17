@@ -10,6 +10,7 @@ export const speakerSchema = pgTable("speakers", {
   id: uuid("id").primaryKey().defaultRandom().unique(),
   name: text("name").notNull(),
   bio: text("bio"),
+  rol: text("rol"),
   avatar: text("avatar"),
   eventId: uuid("event_id").references(() => eventsSchema.id),
   company: text("company"),

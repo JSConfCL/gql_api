@@ -183,6 +183,13 @@
       "when": 1723839908925,
       "tag": "0025_mighty_mathemanic",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1723897064321,
+      "tag": "0026_dapper_bastion",
+      "breakpoints": true
     }
   ]
 }
