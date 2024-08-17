@@ -1,7 +1,6 @@
 import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import slugify from "slugify";
-import { z } from "zod";
 
 import { builder } from "~/builder";
 import {
@@ -19,6 +18,7 @@ import { applicationError, ServiceErrors } from "~/errors";
 import { UserRef } from "~/schema/shared/refs";
 import { pronounsEnum } from "~/schema/user/types";
 import { usersFetcher } from "~/schema/user/userFetcher";
+import { validateUserDataAndApproveUserTickets } from "~/schema/userTickets/helpers";
 import {
   UserRoleCommunity,
   canUpdateUserRoleInCommunity,
@@ -167,6 +167,7 @@ builder.mutationField("updateUserRoleInCommunity", (t) =>
 
 const updateUserDataInput = builder.inputType("updateUserDataInput", {
   fields: (t) => ({
+    eventId: t.string({ required: true }),
     countryOfResidence: t.string({ required: true }),
     city: t.string({ required: true }),
     worksInOrganization: t.boolean({ required: true }),
@@ -206,7 +207,7 @@ builder.mutationField("updateMyUserData", (t) =>
         throw new Error("User not found");
       }
 
-      const valuesToParse: Partial<z.infer<typeof insertUserDataSchema>> = {
+      const valuesToParse: Partial<typeof insertUserDataSchema._type> = {
         userId: USER.id,
         countryOfResidence,
         city,
@@ -236,6 +237,13 @@ builder.mutationField("updateMyUserData", (t) =>
           ctx.logger,
         );
       }
+
+      await validateUserDataAndApproveUserTickets({
+        DB: ctx.DB,
+        userId: USER.id,
+        eventId: input.eventId,
+        logger: ctx.logger,
+      });
 
       const user = await usersFetcher.searchUsers({
         DB: ctx.DB,

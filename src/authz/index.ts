@@ -182,8 +182,8 @@ export class canApproveTicket extends PreExecutionRule {
 export class CanSeePersonalData extends PostExecutionRule {
   public async execute(
     ctx: GraphqlContext,
-    fieldArgs: any,
-    _: any,
+    fieldArgs: unknown,
+    _: unknown,
     parent: {
       id: string;
     },

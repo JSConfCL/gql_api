@@ -350,6 +350,7 @@ export type Mutation = {
   rejectTeamInvitation: TeamRef;
   /** Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position */
   startWorkEmailValidation: WorkEmail;
+  triggerUserTicketApprovalReview: Array<UserTicket>;
   /** Update a company */
   updateCompany: Company;
   updateMyUserData: User;
@@ -463,6 +464,11 @@ export type MutationRejectTeamInvitationArgs = {
 
 export type MutationStartWorkEmailValidationArgs = {
   email: Scalars["String"]["input"];
+};
+
+export type MutationTriggerUserTicketApprovalReviewArgs = {
+  eventId: Scalars["String"]["input"];
+  userId: Scalars["String"]["input"];
 };
 
 export type MutationUpdateCompanyArgs = {
@@ -882,6 +888,7 @@ export enum ServiceErrors {
   InvalidArgument = "INVALID_ARGUMENT",
   NotFound = "NOT_FOUND",
   Unauthenticated = "UNAUTHENTICATED",
+  Unauthorized = "UNAUTHORIZED",
 }
 
 /** Representation of a Session */
@@ -1142,8 +1149,11 @@ export type UserData = {
   __typename?: "UserData";
   city: Scalars["String"]["output"];
   countryOfResidence: Scalars["String"]["output"];
+  emergencyPhoneNumber?: Maybe<Scalars["String"]["output"]>;
+  foodAllergies?: Maybe<Scalars["String"]["output"]>;
   organizationName?: Maybe<Scalars["String"]["output"]>;
   roleInOrganization?: Maybe<Scalars["String"]["output"]>;
+  rut?: Maybe<Scalars["String"]["output"]>;
   worksInOrganization: Scalars["Boolean"]["output"];
 };
 
@@ -1254,8 +1264,12 @@ export type PlaceHolderUsersInput = {
 export type UpdateUserDataInput = {
   city: Scalars["String"]["input"];
   countryOfResidence: Scalars["String"]["input"];
+  emergencyPhoneNumber?: InputMaybe<Scalars["String"]["input"]>;
+  eventId: Scalars["String"]["input"];
+  foodAllergies?: InputMaybe<Scalars["String"]["input"]>;
   organizationName?: InputMaybe<Scalars["String"]["input"]>;
   roleInOrganization?: InputMaybe<Scalars["String"]["input"]>;
+  rut?: InputMaybe<Scalars["String"]["input"]>;
   worksInOrganization: Scalars["Boolean"]["input"];
 };
 

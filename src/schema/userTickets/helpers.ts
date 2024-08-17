@@ -1,9 +1,18 @@
+import { inArray } from "drizzle-orm";
+
 import { ORM_TYPE } from "~/datasources/db";
+import { TeamStatusEnum } from "~/datasources/db/teams";
 import { USER } from "~/datasources/db/users";
+import { UserParticipationStatusEnum } from "~/datasources/db/userTeams";
+import {
+  approveUserTicketsSchema,
+  userTicketsSchema,
+} from "~/datasources/db/userTickets";
 import { applicationError, ServiceErrors } from "~/errors";
 import { Logger } from "~/logging";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
+import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 
 export const assertCanStartTicketClaimingForEvent = async ({
   DB,
@@ -99,4 +108,141 @@ export const assertCanStartTicketClaimingForEvent = async ({
       );
     }
   }
+};
+
+export const validateUserDataAndApproveUserTickets = async ({
+  DB,
+  userId,
+  eventId,
+  logger,
+}: {
+  DB: ORM_TYPE;
+  userId: string;
+  eventId: string;
+  logger: Logger;
+}) => {
+  const event = await eventsFetcher.searchEvents({
+    DB,
+    search: {
+      eventIds: [eventId],
+    },
+  });
+
+  if (!event) {
+    throw applicationError("Event not found", ServiceErrors.NOT_FOUND, logger);
+  }
+
+  const userData = await DB.query.userDataSchema.findFirst({
+    where: (t, { eq }) => eq(t.userId, userId),
+    with: {
+      user: {
+        with: {
+          userTeams: {
+            with: {
+              team: {
+                with: {
+                  event: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!userData) {
+    throw applicationError("User not found", ServiceErrors.NOT_FOUND, logger);
+  }
+
+  const hasTeam =
+    userData.user?.userTeams && userData.user?.userTeams.length > 0;
+
+  // find the ticket for the user
+
+  const errors: string[] = [];
+
+  if (hasTeam) {
+    const hasApprovedTeam = userData.user?.userTeams?.some((ut) => {
+      return (
+        ut.userParticipationStatus === UserParticipationStatusEnum.accepted
+      );
+    });
+    const hasApprovedUser = userData.user?.userTeams?.some((ut) => {
+      return ut.team.teamStatus === TeamStatusEnum.accepted;
+    });
+
+    if (!hasApprovedTeam) {
+      errors.push("User team is not approved");
+    }
+
+    if (!hasApprovedUser) {
+      errors.push("User has not confirmed participation");
+    }
+
+    // If the user has a team, we check some values of userData.
+
+    if (!userData.emergencyPhoneNumber) {
+      errors.push("Emergency contact is missing");
+    }
+
+    if (!userData.foodAllergies) {
+      errors.push("Food allergies is missing");
+    }
+  }
+
+  if (!userData.rut) {
+    errors.push("RUT is missing");
+  }
+
+  if (!userData.countryOfResidence) {
+    errors.push("Country is missing");
+  }
+
+  if (!userData.city) {
+    errors.push("City is missing");
+  }
+
+  if (errors.length > 0) {
+    throw applicationError(
+      `Missing required conditions: ${errors.join(", ")}`,
+      ServiceErrors.FAILED_PRECONDITION,
+      logger,
+    );
+  }
+
+  const userTickets = await userTicketFetcher.searchUserTickets({
+    DB,
+    search: {
+      userIds: [userId],
+      eventIds: [eventId],
+      approvalStatus: ["pending"],
+    },
+  });
+
+  const approvedUserTickets = await bulkApproveUserTickets({
+    DB,
+    userTicketIds: userTickets.map((ut) => ut.id),
+  });
+
+  return approvedUserTickets;
+};
+
+const bulkApproveUserTickets = async ({
+  DB,
+  userTicketIds,
+}: {
+  DB: ORM_TYPE;
+  userTicketIds: string[];
+}) => {
+  const updated = await DB.update(userTicketsSchema)
+    .set(
+      approveUserTicketsSchema.parse({
+        approvalStatus: "approved",
+      }),
+    )
+    .where(inArray(userTicketsSchema.id, userTicketIds))
+    .returning();
+
+  return updated;
 };

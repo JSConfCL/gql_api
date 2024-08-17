@@ -15,6 +15,7 @@ import { ZodType, z } from "zod";
 import { Env } from "worker-configuration";
 import * as rules from "~/authz";
 import {
+  PronounsEnum,
   allowedCurrencySchema,
   communitySchema,
   companiesSchema,
@@ -31,17 +32,24 @@ import {
   insertEventsToCommunitiesSchema,
   insertEventsToTagsSchema,
   insertEventsToUsersSchema,
+  insertPriceSchema,
+  insertPurchaseOrdersSchema,
   insertSalariesSchema,
   insertTagsSchema,
+  insertTeamsSchema,
   insertTicketSchema,
+  insertUserDataSchema,
+  insertUserTeamsSchema,
   insertUserTicketsSchema,
   insertUsersSchema,
   insertUsersToCommunitiesSchema,
   insertUsersToTagsSchema,
   insertWorkEmailSchema,
   insertWorkRoleSchema,
-  insertWorkSenioritySchema,
   insertWorkSeniorityAndRoleSchema,
+  insertWorkSenioritySchema,
+  pricesSchema,
+  purchaseOrdersSchema,
   salariesSchema,
   selectAllowedCurrencySchema,
   selectCommunitySchema,
@@ -51,41 +59,36 @@ import {
   selectEventsToCommunitiesSchema,
   selectEventsToTagsSchema,
   selectEventsToUsersSchema,
+  selectPriceSchema,
+  selectPurchaseOrdersSchema,
   selectSalariesSchema,
   selectTagsSchema,
+  selectTeamsSchema,
   selectTicketSchema,
+  selectUserDataSchema,
+  selectUserTeamsSchema,
   selectUserTicketsSchema,
   selectUsersSchema,
   selectUsersToCommunitiesSchema,
   selectUsersToTagsSchema,
   selectWorkEmailSchema,
+  selectWorkRoleSchema,
   selectWorkSeniorityAndRoleSchema,
   selectWorkSenioritySchema,
-  selectWorkRoleSchema,
   tagsSchema,
+  teamsSchema,
   ticketsSchema,
+  userDataSchema,
+  userTeamsSchema,
   userTicketsSchema,
   usersSchema,
   usersTagsSchema,
   usersToCommunitiesSchema,
+  validPaymentMethodsEnum,
   workEmailSchema,
   workRoleSchema,
   workSeniorityAndRoleSchema,
   workSenioritySchema,
-  insertPriceSchema,
-  selectPriceSchema,
-  pricesSchema,
-  validPaymentMethodsEnum,
-  selectPurchaseOrdersSchema,
-  purchaseOrdersSchema,
-  insertPurchaseOrdersSchema,
-  insertTeamsSchema,
-  selectTeamsSchema,
-  teamsSchema,
-  insertUserTeamsSchema,
-  selectUserTeamsSchema,
-  userTeamsSchema,
-  PronounsEnum,
 } from "~/datasources/db/schema";
 import { GenderOptionsEnum } from "~/datasources/db/shared";
 import {
@@ -99,7 +102,6 @@ import {
 } from "~/generated/types";
 import { createLogger } from "~/logging";
 import { schema } from "~/schema";
-import { CreateEvent } from "~/schema/events/tests/createEvent.generated";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 import { MOCKED_RPC_SERVICE_EMAIL } from "~/tests/fixtures/mocks";
 import { Context } from "~/types";
@@ -274,6 +276,34 @@ export const insertUser = async (
     insertUsersSchema,
     selectUsersSchema,
     usersSchema,
+    possibleInput,
+  );
+};
+
+export const insertUserData = async (
+  partialInput?: Partial<typeof insertUserDataSchema._type>,
+  // userDataSchema,
+  // insertUserDataSchema,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    city: partialInput?.city ?? faker.address.city(),
+    countryOfResidence:
+      partialInput?.countryOfResidence ?? faker.address.country(),
+    worksInOrganization: partialInput?.worksInOrganization ?? false,
+    emergencyPhoneNumber: partialInput?.emergencyPhoneNumber,
+    foodAllergies: partialInput?.foodAllergies,
+    organizationName: partialInput?.organizationName,
+    roleInOrganization: partialInput?.roleInOrganization,
+    rut: partialInput?.rut,
+    userId: partialInput?.userId,
+    ...CRUDDates(partialInput),
+  } satisfies typeof insertUserDataSchema._type;
+
+  return insertOne(
+    insertUserDataSchema,
+    selectUserDataSchema,
+    userDataSchema,
     possibleInput,
   );
 };

@@ -65,3 +65,7 @@ export const userTicketsRelations = relations(userTicketsSchema, ({ one }) => ({
 export const selectUserTicketsSchema = createSelectSchema(userTicketsSchema);
 
 export const insertUserTicketsSchema = createInsertSchema(userTicketsSchema);
+
+export const approveUserTicketsSchema = selectUserTicketsSchema.pick({
+  approvalStatus: true,
+});

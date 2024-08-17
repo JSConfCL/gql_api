@@ -1,7 +1,11 @@
 import { faker } from "@faker-js/faker";
 import { it, describe, assert } from "vitest";
 
-import { executeGraphqlOperationAsUser, insertUser } from "~/tests/fixtures";
+import {
+  executeGraphqlOperationAsUser,
+  insertEvent,
+  insertUser,
+} from "~/tests/fixtures";
 
 import {
   UpdateMyUserDataMutationVariables,
@@ -12,12 +16,16 @@ import {
 describe("UpdateMyUserData", () => {
   it("I Should be able to update my data", async () => {
     const user = await insertUser();
+    const event = await insertEvent();
 
     const city = faker.location.city();
     const countryOfResidence = faker.location.country();
     const worksInOrganization = true;
     const organizationName = faker.company.name();
     const roleInOrganization = faker.name.jobTitle();
+    const rut = faker.lorem.text();
+    const foodAllergies = faker.lorem.words(3);
+    const emergencyPhoneNumber = faker.phone.number();
 
     const response = await executeGraphqlOperationAsUser<
       UpdateMyUserDataMutation,
@@ -27,11 +35,15 @@ describe("UpdateMyUserData", () => {
         document: UpdateMyUserData,
         variables: {
           input: {
+            eventId: event.id,
             city,
             countryOfResidence,
             worksInOrganization,
             organizationName,
             roleInOrganization,
+            rut,
+            foodAllergies,
+            emergencyPhoneNumber,
           },
         },
       },
@@ -67,6 +79,7 @@ describe("UpdateMyUserData", () => {
 
   it("I Should be able to edit my data", async () => {
     const user = await insertUser();
+    const event = await insertEvent();
 
     await executeGraphqlOperationAsUser<
       UpdateMyUserDataMutation,
@@ -81,6 +94,10 @@ describe("UpdateMyUserData", () => {
             worksInOrganization: true,
             organizationName: faker.company.name(),
             roleInOrganization: faker.name.jobTitle(),
+            eventId: event.id,
+            rut: faker.lorem.text(),
+            foodAllergies: faker.lorem.words(3),
+            emergencyPhoneNumber: faker.phone.number(),
           },
         },
       },
@@ -92,6 +109,9 @@ describe("UpdateMyUserData", () => {
     const worksInOrganization = true;
     const organizationName = faker.company.name();
     const roleInOrganization = faker.name.jobTitle();
+    const rut = faker.lorem.text();
+    const foodAllergies = faker.lorem.words(3);
+    const emergencyPhoneNumber = faker.phone.number();
 
     const response = await executeGraphqlOperationAsUser<
       UpdateMyUserDataMutation,
@@ -101,11 +121,15 @@ describe("UpdateMyUserData", () => {
         document: UpdateMyUserData,
         variables: {
           input: {
+            eventId: event.id,
             city,
             countryOfResidence,
             worksInOrganization,
             organizationName,
             roleInOrganization,
+            rut,
+            foodAllergies,
+            emergencyPhoneNumber,
           },
         },
       },
