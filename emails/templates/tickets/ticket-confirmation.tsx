@@ -54,12 +54,12 @@ export const TicketConfirmation = ({
             {eventName}
           </Text>
 
-          <Row className="w-full">
+          <Container className="px-20 mb-16">
             <Img
               className="w-full mx-auto"
               src={`https://svg-renderer.communityos.io/qr/png/${userTicketId}`}
             />
-          </Row>
+          </Container>
 
           <Text className="text-xl mb-16">
             Recuerda llevar este ticket contigo el día del evento. <br />
