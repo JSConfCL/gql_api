@@ -15,14 +15,14 @@ import * as React from "react";
 import { BigFooter, TicketTemplate } from "emails/templates/helpers/tickets";
 
 interface EmailProps {
-  eventName: string;
+  ticketName: string;
   userName?: string;
   eventLogoCloudflareImageURL: string;
   userEmail: string;
 }
 
 export const EventInvitation = ({
-  eventName,
+  ticketName,
   userName,
   userEmail,
   eventLogoCloudflareImageURL,
@@ -31,7 +31,7 @@ export const EventInvitation = ({
     <TicketTemplate theme="light">
       <Container className="px-10 py-10 w-full max-w-3xl font-light">
         <Section className="">
-          <Preview>Tienes una invitación a {eventName}</Preview>
+          <Preview>Tienes una invitación a {ticketName}</Preview>
           <Row className="h-20 mb-14">
             <Column>
               <Img
@@ -50,7 +50,7 @@ export const EventInvitation = ({
           </Text>
 
           <Text className="text-xl text-center mb-16 px-8 text-gray-500">
-            {eventName}
+            {ticketName}
           </Text>
 
           <Text className="text-xl mb-12">
@@ -91,7 +91,8 @@ export const EventInvitation = ({
 };
 
 EventInvitation.PreviewProps = {
-  eventName: "El Potencial Clave de la Recuperación Aumentada (RAG) con OpenAI",
+  ticketName:
+    "El Potencial Clave de la Recuperación Aumentada (RAG) con OpenAI",
   userName: "John Doe",
   eventLogoCloudflareImageURL:
     "https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/6cdd148e-b931-4b7a-f983-d75d388aff00",

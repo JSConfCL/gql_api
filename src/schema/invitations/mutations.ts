@@ -4,7 +4,6 @@ import { GraphQLError } from "graphql";
 import { builder } from "~/builder";
 import {
   insertUserTicketsSchema,
-  selectUsersSchema,
   selectUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
@@ -13,7 +12,6 @@ import { sendTicketInvitationEmails } from "~/notifications/tickets";
 import { createInitialPurchaseOrder } from "~/schema/purchaseOrder/helpers";
 import { UserTicketRef } from "~/schema/shared/refs";
 import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
-import { usersFetcher } from "~/schema/user/userFetcher";
 
 const GiftTicketsToUserInput = builder.inputType("GiftTicketsToUserInput", {
   fields: (t) => ({
@@ -117,23 +115,14 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         .returning();
 
       if (notifyUsers) {
-        const userIdsWithTickets = createdUserTickets
-          .map((userTicket) => userTicket.userId)
-          .filter(Boolean);
-        const users = await usersFetcher.searchUsers({
-          DB,
-          search: {
-            userIds: userIdsWithTickets,
-          },
-        });
-
-        const parsedUsers = users.map((user) => selectUsersSchema.parse(user));
+        const userTicketIds = createdUserTickets.map(
+          (userTicket) => userTicket.id,
+        );
 
         await sendTicketInvitationEmails({
           DB,
           logger,
-          ticketId: ticket.id,
-          users: parsedUsers,
+          userTicketIds,
           RPC_SERVICE_EMAIL,
         });
       }

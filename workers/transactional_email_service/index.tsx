@@ -235,15 +235,15 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
   async bulkSendUserQRTicketEmail({
     // TODO: Change this image
     eventLogoCloudflareImageURL = DEFAULT_CLOUDFLARE_LOGO_URL,
-    eventName,
+    ticketName,
     to,
   }: {
     eventLogoCloudflareImageURL?: string;
-    eventName: string;
+    ticketName: string;
     to: (ReceiverType & { userTicketId: string })[];
   }) {
     this.logger.info(`About to send ConfirmationWaitlistAccepted`, {
-      eventName,
+      ticketName,
     });
     const resendArgs = to.map(
       (receiver) =>
@@ -251,14 +251,14 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
           htmlContent: render(
             <TicketConfirmation
               eventLogoCloudflareImageURL={eventLogoCloudflareImageURL}
-              eventName={eventName}
+              ticketName={ticketName}
               userTicketId={receiver.userTicketId}
               userName={receiver.name}
               userEmail={receiver.email}
             />,
           ),
           tags: receiver.tags,
-          subject: `Tu ticket para ${eventName}`,
+          subject: `Tu ticket para ${ticketName}`,
           to: [
             {
               name: receiver.name,
@@ -278,22 +278,19 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
   async bulkSendEventTicketInvitations({
     // TODO: Change this image
     eventLogoCloudflareImageURL = DEFAULT_CLOUDFLARE_LOGO_URL,
-    eventName,
-    ticketId,
-    eventId,
     to,
   }: {
     eventLogoCloudflareImageURL?: string;
-    eventName: string;
-    ticketId: string;
-    eventId: string;
-    to: ReceiverType[];
+    to: (ReceiverType & {
+      userTicketId: string;
+      ticketName: string;
+      ticketId: string;
+      eventId: string;
+    })[];
   }) {
-    this.logger.info(`About to send batch EventInvitation`, {
-      eventName,
-      eventId,
-      ticketId,
-    });
+    this.logger.info(
+      `About to send bulkSendEventTicketInvitations to ${to.length} users`,
+    );
 
     const resendArgs = to.map(
       (receiver) =>
@@ -301,13 +298,13 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
           htmlContent: render(
             <EventInvitation
               eventLogoCloudflareImageURL={eventLogoCloudflareImageURL}
-              eventName={eventName}
+              ticketName={receiver.ticketName}
               userName={receiver.name}
               userEmail={receiver.email}
             />,
           ),
           tags: receiver.tags,
-          subject: `Estás invitado a ${eventName}`,
+          subject: `Estás invitado a ${receiver.ticketName}`,
           to: [
             {
               name: receiver.name,
