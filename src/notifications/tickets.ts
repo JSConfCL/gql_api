@@ -116,7 +116,7 @@ export const sendTicketInvitationEmails = async ({
   }
 
   await RPC_SERVICE_EMAIL.bulkSendEventTicketInvitations({
-    eventName: ticketInformation.event.name,
+    ticketName: ticketInformation.name,
     ticketId: ticketInformation.id,
     eventId: ticketInformation.event.id,
     to: users.map((user) => ({
@@ -207,6 +207,6 @@ export const sendActualUserTicketQREmails = async ({
 
   await RPC_SERVICE_EMAIL.bulkSendUserQRTicketEmail({
     to,
-    eventName: userTickets[0].ticketTemplate.event.name,
+    ticketName: userTickets[0].ticketTemplate.name,
   });
 };
