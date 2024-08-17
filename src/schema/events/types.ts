@@ -3,7 +3,9 @@ import { SQL, eq, inArray } from "drizzle-orm";
 import { authHelpers } from "~/authz/helpers";
 import { builder } from "~/builder";
 import {
+  ScheduleStatus,
   selectCommunitySchema,
+  selectScheduleSchema,
   selectSpeakerSchema,
   selectTagsSchema,
   selectTeamsSchema,
@@ -17,6 +19,8 @@ import {
 } from "~/datasources/db/schema";
 import { getImagesBySanityEventId } from "~/datasources/sanity/images";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
+import { schedulesFetcher } from "~/schema/schedules/schedulesFetcher";
+import { ScheduleLoadable, ScheduleRef } from "~/schema/schedules/types";
 import {
   CommunityRef,
   EventRef,
@@ -298,6 +302,20 @@ export const EventLoadable = builder.loadableObject(EventRef, {
         });
 
         return tickets.map((t) => selectTicketSchema.parse(t));
+      },
+    }),
+    schedules: t.field({
+      type: [ScheduleRef],
+      resolve: async (root, args, ctx) => {
+        const schedules = await schedulesFetcher.searchSchedules({
+          DB: ctx.DB,
+          search: {
+            eventIds: [root.id],
+            satus: ScheduleStatus.active,
+          },
+        });
+
+        return schedules.map((s) => selectScheduleSchema.parse(s));
       },
     }),
     usersTickets: t.field({

@@ -1,4 +1,4 @@
-import { SQL, and, asc, ilike, inArray } from "drizzle-orm";
+import { SQL, and, asc, desc, ilike, inArray } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
 import { sessionSchema } from "~/datasources/db/sessions";
@@ -7,6 +7,7 @@ import {
   PaginationOptionsType,
   paginationDBHelper,
 } from "~/datasources/helpers/paginationQuery";
+import { SortableSchemaFields } from "~/datasources/helpers/sorting";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 
 export type SessionSearch = {
@@ -17,12 +18,16 @@ export type SessionSearch = {
   speakerIds?: string[];
 };
 
-type SortableType = null | undefined;
-
+type SortableFields =
+  | "description"
+  | "title"
+  | "startTimestamp"
+  | "endTimestamp";
+type EventFetcherSort = SortableSchemaFields<SortableFields>;
 const getSearchSessionsQuery = (
   DB: ORM_TYPE,
   search: SessionSearch = {},
-  sort: SortableType,
+  sort: EventFetcherSort,
 ) => {
   const { sessionIds, scheduleIds, title, description, speakerIds } = search;
 
@@ -59,8 +64,14 @@ const getSearchSessionsQuery = (
 
   const orderBy: SQL<unknown>[] = [];
 
-  if (sort !== null) {
-    orderBy.push(asc(sessionSchema.startTimestamp));
+  if (sort) {
+    const sorts = sort.map(([field, direction]) => {
+      const sortDirection = direction === "asc" ? asc : desc;
+
+      return sortDirection(sessionSchema[field]);
+    });
+
+    orderBy.push(...sorts);
   }
 
   return query.where(and(...wheres)).orderBy(...orderBy);
@@ -73,7 +84,7 @@ const searchSessions = async ({
 }: {
   DB: ORM_TYPE;
   search: SessionSearch;
-  sort?: SortableType;
+  sort?: EventFetcherSort;
 }) => {
   const sessions = await getSearchSessionsQuery(DB, search, sort).execute();
 
@@ -89,7 +100,7 @@ const searchPaginatedSessions = async ({
   DB: ORM_TYPE;
   search: SessionSearch;
   pagination: PaginationOptionsType;
-  sort?: SortableType;
+  sort?: EventFetcherSort;
 }) => {
   const query = getSearchSessionsQuery(DB, search, sort);
 

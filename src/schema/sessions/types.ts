@@ -11,7 +11,7 @@ import { SpeakerRef } from "~/schema/speakers/types";
 
 type SessionGraphqlSchema = z.infer<typeof selectSessionSchema>;
 
-export const SessionRef = builder.objectRef<SessionGraphqlSchema>("SessionRef");
+export const SessionRef = builder.objectRef<SessionGraphqlSchema>("Session");
 
 export const SessionLoadable = builder.loadableObject(SessionRef, {
   description: "Representation of a Session",
@@ -25,11 +25,11 @@ export const SessionLoadable = builder.loadableObject(SessionRef, {
     title: t.exposeString("title", { nullable: false }),
     description: t.exposeString("description", { nullable: true }),
     startTimestamp: t.field({
-      type: "Date",
+      type: "DateTime",
       resolve: (root) => new Date(root.startTimestamp),
     }),
     endTimestamp: t.field({
-      type: "Date",
+      type: "DateTime",
       resolve: (root) => new Date(root.endTimestamp),
     }),
     speakers: t.field({
