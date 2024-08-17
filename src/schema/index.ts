@@ -30,6 +30,7 @@ import "./salary/mutations";
 import "./salary/queries";
 import "./salary/types";
 import "./schedules/types";
+import "./schedules/queries";
 import "./sessions/types";
 import "./speakers/types";
 import "./status/types";
