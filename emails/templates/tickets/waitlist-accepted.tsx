@@ -68,7 +68,7 @@ export const WaitlistAccepted = ({
 
           <Text className="mb-8 text-center">
             <Button
-              href="https://communityos.io/tickets"
+              href="https://communityos.io/ai-hackathon/tickets"
               className="bg-black py-4 px-6 rounded-3xl text-gray-200 self-center"
               target="_blank"
             >

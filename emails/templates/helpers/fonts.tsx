@@ -221,8 +221,9 @@ const poppins = [
 
 export const PoppinsFont = () => (
   <>
-    {poppins.map((font) => (
+    {poppins.map((font, index) => (
       <Font
+        key={index}
         fontFamily="Poppins"
         fallbackFontFamily="Verdana"
         webFont={{
