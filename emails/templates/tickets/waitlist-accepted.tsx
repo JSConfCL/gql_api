@@ -57,7 +57,7 @@ export const WaitlistAccepted = ({
             Ingresa con tu correo{" "}
             <CodeInline className="font-regular italic">{userEmail}</CodeInline>
             , conoce los detalles y completa tus datos para que podamos{" "}
-            <span className="font-medium">confirmar tu asistencia</span>.
+            <span className="font-semibold">confirmar tu asistencia</span>.
           </Text>
 
           <Text className="mb-4 text-center">

@@ -281,7 +281,7 @@ const createStripePaymentIntent = async ({
     });
   }
 
-  logger.info("🚨 Attempting to create payment on platform", {
+  logger.info("Attempting to create payment on platform", {
     items,
     purchaseOrderId,
   });

@@ -553,7 +553,7 @@ builder.mutationField("claimUserTicket", (t) =>
         };
       } catch (e: unknown) {
         if (transactionError) {
-          logger.error("🚨Transaction error", transactionError);
+          logger.error("Error claiming usertickets", transactionError);
 
           return {
             error: true as const,

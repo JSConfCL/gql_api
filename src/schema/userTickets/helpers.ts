@@ -212,7 +212,7 @@ export const validateUserDataAndApproveUserTickets = async ({
     search: {
       userIds: [userId],
       eventIds: [eventId],
-      approvalStatus: ["pending"],
+      approvalStatus: ["gifted"],
     },
   });
 
