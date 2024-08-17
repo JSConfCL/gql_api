@@ -31,7 +31,7 @@ export const EventInvitation = ({
     <TicketTemplate theme="light">
       <Container className="px-10 py-10 w-full max-w-3xl font-light">
         <Section className="">
-          <Preview>Estás invitado a {eventName}</Preview>
+          <Preview>Tienes una invitación a {eventName}</Preview>
           <Row className="h-20 mb-14">
             <Column>
               <Img
@@ -45,28 +45,22 @@ export const EventInvitation = ({
             {userName ? `Hola ${userName},` : "Hola,"}
           </Text>
 
-          <Text className="text-xl mb-16">
+          <Text className="text-xl mb-12">
             Tienes una invitación a participar de:
           </Text>
 
-          <Text className="text-xl text-center mb-16 px-8 text-gray-400">
+          <Text className="text-xl text-center mb-16 px-8 text-gray-500">
             {eventName}
           </Text>
 
-          <Text className="text-xl mb-16">
-            Tu lugar está reservado, y nos alegra que puedas ser parte de la
-            primera hackathon y conferencia de OpenAI en Latinoamérica. Ingresa
-            con tu correo{" "}
-            <CodeInline className="font-medium">{userEmail}</CodeInline>, y
-            rellena tus datos para que podamos confirmar tu asistencia.
+          <Text className="text-xl mb-12">
+            Ingresa con tu correo{" "}
+            <CodeInline className="font-regular italic">{userEmail}</CodeInline>
+            , conoce los detalles y completa tus datos para que podamos{" "}
+            <span className="font-medium">confirmar tu asistencia</span>.
           </Text>
 
-          <Text className="text-xl mb-16">
-            Es importante que completes tus datos para poder asegurar tu lugar
-            en el evento, si no, tu lugar será liberado para otro participante.
-          </Text>
-
-          <Text className="mb-16 text-center">
+          <Text className="mb-4 text-center">
             <Button
               href="https://communityos.io/ai-hackathon/tickets"
               className="bg-black py-4 px-6 rounded-3xl text-gray-200 self-center"
@@ -75,9 +69,17 @@ export const EventInvitation = ({
               Obtener ticket
             </Button>
           </Text>
+          <Text className="text-sm mb-12 max-w-xs text-center mx-auto">
+            Si no completas este paso, liberaremos el ticket para otra persona.
+          </Text>
 
-          <Text className="text-xl mb-8">Nos vemos en el evento,</Text>
-          <Text className="text-xl font-semibold mb-8">Equipo CommunityOS</Text>
+          <Text className="text-xl mb-16">
+            Nos alegra que puedas ser parte de la primera hackathon y
+            conferencia de OpenAI en Latinoamérica.
+          </Text>
+
+          <Text className="text-xl mb-4">Nos vemos en el evento,</Text>
+          <Text className="text-xl font-semibold mb-4">Equipo CommunityOS</Text>
 
           <Text className="text-xl mb-8"></Text>
         </Section>
