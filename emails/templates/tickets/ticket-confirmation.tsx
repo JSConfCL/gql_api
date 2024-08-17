@@ -65,10 +65,12 @@ export const TicketConfirmation = ({
 
           <Text className="text-xl mb-16">
             Recuerda llevar este ticket contigo el día del evento. <br />
-            También está disponible el tu perfil de CommunityOS, puedes verlo en{" "}
+            También está disponible el tu perfil de CommunityOS, ingresa con tu
+            correo <span className="font-semibold">{userEmail}</span> en{" "}
             <Link href="https://communityos.io/ai-hackathon/tickets">
               communityos.io/ai-hackathon/tickets
             </Link>
+            .
           </Text>
 
           <Text className="text-xl mb-8">Nos vemos en el evento,</Text>
