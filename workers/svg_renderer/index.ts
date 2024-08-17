@@ -6,7 +6,7 @@ import { isValidUUID } from "~/schema/shared/helpers";
 
 const app = new Hono();
 
-app.get("/qr/:id", (c) => {
+app.get("/qr/raw/:id", (c) => {
   const logger = createLogger("qr-render");
   const uuid = c.req.param("id").trim().toLowerCase();
 
@@ -16,6 +16,22 @@ app.get("/qr/:id", (c) => {
   }
 
   const svg = QR(uuid);
+
+  return c.text(svg);
+});
+
+app.get("/qr/svg/:id", (c) => {
+  const logger = createLogger("qr-render");
+  const uuid = c.req.param("id").trim().toLowerCase();
+
+  if (!isValidUUID(uuid)) {
+    logger.error("Invalid id");
+    throw new Error("Invalid id");
+  }
+
+  const svg = QR(uuid);
+
+  c.res.headers.set("Content-Type", "image/svg+xml");
 
   return c.text(svg);
 });
