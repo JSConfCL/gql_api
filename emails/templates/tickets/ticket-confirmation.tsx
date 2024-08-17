@@ -50,11 +50,11 @@ export const TicketConfirmation = ({
             Este es tu ticket para el evento:
           </Text>
 
-          <Text className="text-xl text-center mb-16 px-8 text-gray-400">
+          <Text className="text-xl text-center mb-8 px-8 text-gray-500">
             {eventName}
           </Text>
 
-          <Container className="px-20 mb-16">
+          <Container className="px-20 mb-12">
             <Img
               className="w-full mx-auto"
               src={`https://svg-renderer.communityos.io/qr/png/${userTicketId}`}
@@ -62,17 +62,17 @@ export const TicketConfirmation = ({
           </Container>
 
           <Text className="text-xl mb-16">
-            Recuerda llevar este ticket contigo el día del evento. <br />
-            También está disponible el tu perfil de CommunityOS, ingresa con tu
-            correo <span className="font-semibold">{userEmail}</span> en{" "}
+            Recuerda llevar este código contigo el día del evento, el que
+            también está disponible en tu perfil de CommunityOS ingresando con
+            tu correo <span className="font-semibold">{userEmail}</span> en{" "}
             <Link href="https://communityos.io/ai-hackathon/tickets">
               communityos.io/ai-hackathon/tickets
             </Link>
             .
           </Text>
 
-          <Text className="text-xl mb-8">Nos vemos en el evento,</Text>
-          <Text className="text-xl font-semibold mb-8">Equipo CommunityOS</Text>
+          <Text className="text-xl mb-4">Nos vemos en el evento,</Text>
+          <Text className="text-xl font-semibold mb-4">Equipo CommunityOS</Text>
 
           <Text className="text-xl mb-8"></Text>
         </Section>

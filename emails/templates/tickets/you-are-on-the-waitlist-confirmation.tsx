@@ -25,7 +25,7 @@ export const YouAreOnTheWaitlist = ({
 }: EmailProps) => {
   return (
     <TicketTemplate theme="light">
-      <Container className="px-10 py-10 w-full max-w-2xl">
+      <Container className="px-10 py-10 w-full max-w-2xl font-light">
         <Section className="">
           <Preview>Estas en la Lista de espera para {eventName}</Preview>
           <Row className="h-20 mb-14">
@@ -45,11 +45,11 @@ export const YouAreOnTheWaitlist = ({
             Actualmente estás en la lista de espera para el evento:
           </Text>
 
-          <Text className="text-xl text-center mb-16 px-4 text-gray-400">
+          <Text className="text-xl text-center mb-16 px-4 text-gray-500">
             {eventName}
           </Text>
 
-          <Text className="text-xl">
+          <Text className="text-xl mb-12">
             Esto significa que, si se libera un espacio, te notificaremos
             mediante esta vía para ofrecerte un lugar.
           </Text>
