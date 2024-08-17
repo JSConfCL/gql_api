@@ -238,12 +238,14 @@ builder.mutationField("updateMyUserData", (t) =>
         );
       }
 
-      await validateUserDataAndApproveUserTickets({
-        DB: ctx.DB,
-        userId: USER.id,
-        eventId: input.eventId,
-        logger: ctx.logger,
-      });
+      if (input.eventId) {
+        await validateUserDataAndApproveUserTickets({
+          DB: ctx.DB,
+          userId: USER.id,
+          eventId: input.eventId,
+          logger: ctx.logger,
+        });
+      }
 
       const user = await usersFetcher.searchUsers({
         DB: ctx.DB,

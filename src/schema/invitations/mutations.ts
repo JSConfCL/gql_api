@@ -110,7 +110,7 @@ builder.mutationField("giftTicketsToUsers", (t) =>
               userId,
               ticketTemplateId: ticket.id,
               purchaseOrderId: purchaseOrder.id,
-              approvalStatus: "approved",
+              approvalStatus: "gifted",
             }),
           ),
         )

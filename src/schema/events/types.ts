@@ -144,7 +144,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
     meetingURL: t.exposeString("meetingURL", { nullable: true }),
     latitude: t.exposeString("geoLatitude", { nullable: true }),
     longitude: t.exposeString("geoLongitude", { nullable: true }),
-    address: t.exposeString("geoAddressJSON", { nullable: true }),
+    address: t.exposeString("address", { nullable: true }),
     bannerImageSanityRef: t.exposeString("bannerImageSanityRef", {
       nullable: true,
     }),

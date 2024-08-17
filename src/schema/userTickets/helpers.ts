@@ -185,10 +185,6 @@ export const validateUserDataAndApproveUserTickets = async ({
     if (!userData.emergencyPhoneNumber) {
       errors.push("Emergency contact is missing");
     }
-
-    if (!userData.foodAllergies) {
-      errors.push("Food allergies is missing");
-    }
   }
 
   if (!userData.rut) {
