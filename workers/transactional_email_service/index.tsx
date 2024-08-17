@@ -278,22 +278,19 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
   async bulkSendEventTicketInvitations({
     // TODO: Change this image
     eventLogoCloudflareImageURL = DEFAULT_CLOUDFLARE_LOGO_URL,
-    ticketName,
-    ticketId,
-    eventId,
     to,
   }: {
     eventLogoCloudflareImageURL?: string;
-    ticketName: string;
-    ticketId: string;
-    eventId: string;
-    to: ReceiverType[];
+    to: (ReceiverType & {
+      userTicketId: string;
+      ticketName: string;
+      ticketId: string;
+      eventId: string;
+    })[];
   }) {
-    this.logger.info(`About to send batch EventInvitation`, {
-      ticketName,
-      eventId,
-      ticketId,
-    });
+    this.logger.info(
+      `About to send bulkSendEventTicketInvitations to ${to.length} users`,
+    );
 
     const resendArgs = to.map(
       (receiver) =>
@@ -301,13 +298,13 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
           htmlContent: render(
             <EventInvitation
               eventLogoCloudflareImageURL={eventLogoCloudflareImageURL}
-              ticketName={ticketName}
+              ticketName={receiver.ticketName}
               userName={receiver.name}
               userEmail={receiver.email}
             />,
           ),
           tags: receiver.tags,
-          subject: `Estás invitado a ${ticketName}`,
+          subject: `Estás invitado a ${receiver.ticketName}`,
           to: [
             {
               name: receiver.name,

@@ -90,40 +90,71 @@ export const sendAddedToWaitlistEmail = async ({
 export const sendTicketInvitationEmails = async ({
   DB,
   logger,
-  users,
-  ticketId,
+  userTicketIds,
   RPC_SERVICE_EMAIL,
 }: {
   DB: ORM_TYPE;
   logger: Logger;
-  users: USER[];
-  ticketId: string;
+  userTicketIds: string[];
   RPC_SERVICE_EMAIL: Context["RPC_SERVICE_EMAIL"];
 }) => {
-  const ticketInformation = await DB.query.ticketsSchema.findFirst({
-    where: (t, { eq }) => eq(t.id, ticketId),
+  const userTickets = await DB.query.userTicketsSchema.findMany({
+    where: (t, { inArray }) => inArray(t.id, userTicketIds),
     with: {
-      event: true,
+      user: true,
+      ticketTemplate: {
+        with: {
+          event: true,
+        },
+      },
     },
   });
 
-  if (!ticketInformation) {
-    throw applicationError(
-      `Could not find ticket and event information associated to: ${ticketId}`,
-      ServiceErrors.NOT_FOUND,
-      logger,
-    );
-  }
+  const to: {
+    name?: string;
+    email: string;
+    tags: { name: string; value: string }[];
+    userTicketId: string;
+    ticketName: string;
+    ticketId: string;
+    eventId: string;
+  }[] = [];
+
+  userTickets.forEach((userTicket) => {
+    if (!userTicket.user) {
+      return null;
+    }
+
+    to.push({
+      name: userTicket.user.name ?? undefined,
+      email: userTicket.user.email,
+      ticketName: userTicket.ticketTemplate.name,
+      ticketId: userTicket.ticketTemplate.id,
+      userTicketId: userTicket.id,
+      eventId: userTicket.ticketTemplate.event.id,
+      tags: [
+        {
+          name: "userTicket",
+          value: userTicket.id,
+        },
+        {
+          name: "ticketId",
+          value: userTicket.ticketTemplate.id,
+        },
+        {
+          name: "eventId",
+          value: userTicket.ticketTemplate.event.id,
+        },
+        {
+          name: "userId",
+          value: userTicket.user?.id ?? "",
+        },
+      ],
+    });
+  });
 
   await RPC_SERVICE_EMAIL.bulkSendEventTicketInvitations({
-    ticketName: ticketInformation.name,
-    ticketId: ticketInformation.id,
-    eventId: ticketInformation.event.id,
-    to: users.map((user) => ({
-      name: user.name ?? undefined,
-      email: user.email,
-      tags: [],
-    })),
+    to,
   });
 };
 
