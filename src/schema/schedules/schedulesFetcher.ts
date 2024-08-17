@@ -1,7 +1,7 @@
-import { SQL, and, asc, desc, ilike, inArray } from "drizzle-orm";
+import { SQL, and, asc, desc, eq, ilike, inArray } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
-import { scheduleSchema } from "~/datasources/db/schedule";
+import { scheduleSchema, ScheduleStatus } from "~/datasources/db/schedule";
 import {
   PaginationOptionsType,
   paginationDBHelper,
@@ -14,6 +14,7 @@ export type SchedulesSearch = {
   eventIds?: string[];
   title?: string;
   description?: string;
+  satus?: ScheduleStatus;
 };
 
 type SortableFields =
@@ -28,7 +29,7 @@ const getSearchSchedulesQuery = (
   search: SchedulesSearch = {},
   sort: EventFetcherSort,
 ) => {
-  const { scheduleIds, title, description, eventIds } = search;
+  const { scheduleIds, title, description, eventIds, satus } = search;
 
   const wheres: SQL[] = [];
   const query = DB.select().from(scheduleSchema);
@@ -49,6 +50,10 @@ const getSearchSchedulesQuery = (
     wheres.push(
       ilike(scheduleSchema.description, sanitizeForLikeSearch(description)),
     );
+  }
+
+  if (satus) {
+    wheres.push(eq(scheduleSchema.status, satus));
   }
 
   const orderBy: SQL<unknown>[] = [];

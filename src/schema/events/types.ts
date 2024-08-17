@@ -3,6 +3,7 @@ import { SQL, eq, inArray } from "drizzle-orm";
 import { authHelpers } from "~/authz/helpers";
 import { builder } from "~/builder";
 import {
+  ScheduleStatus,
   selectCommunitySchema,
   selectScheduleSchema,
   selectSpeakerSchema,
@@ -310,6 +311,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
           DB: ctx.DB,
           search: {
             eventIds: [root.id],
+            satus: ScheduleStatus.active,
           },
         });
 
