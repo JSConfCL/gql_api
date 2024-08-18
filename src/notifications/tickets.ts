@@ -213,20 +213,12 @@ export const sendActualUserTicketQREmails = async ({
           value: userTicket.id,
         },
         {
-          name: "ticketName",
-          value: userTicket.ticketTemplate.name,
-        },
-        {
           name: "ticketId",
           value: userTicket.ticketTemplate.id,
         },
         {
           name: "eventId",
           value: userTicket.ticketTemplate.event.id,
-        },
-        {
-          name: "eventName",
-          value: userTicket.ticketTemplate.event.name,
         },
         {
           name: "userId",
