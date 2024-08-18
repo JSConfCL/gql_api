@@ -107,6 +107,7 @@
     "qr-svg": "^1.1.0",
     "react": "^18.2.0",
     "resend": "^3.3.0",
+    "satori": "^0.10.14",
     "slugify": "^1.6.6",
     "stripe": "^14.2.0",
     "worker-auth-providers": "^0.0.13-beta.4",
