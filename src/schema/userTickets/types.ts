@@ -37,6 +37,7 @@ builder.objectType(UserTicketRef, {
   description: "Representation of a User ticket",
   fields: (t) => ({
     id: t.exposeID("id"),
+    publicId: t.exposeString("publicId"),
     paymentStatus: t.field({
       type: PurchaseOrderPaymentStatusEnum,
       nullable: true,
