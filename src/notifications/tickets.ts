@@ -232,4 +232,22 @@ export const sendActualUserTicketQREmails = async ({
     to,
     ticketName: userTickets[0].ticketTemplate.name,
   });
+
+  const emailLogsValuesToInsert = userTickets.map((someUserTicket) => {
+    const next = insertUserTicketsEmailLogSchema.parse({
+      emailType: UserTicketsEmailType.TICKET_GIFT_SENT,
+      userTicketId: someUserTicket.id,
+      userId: someUserTicket.user?.id ?? "",
+    });
+
+    return next;
+  });
+
+  await DB.insert(userTicketsEmailLogSchema).values(emailLogsValuesToInsert);
+
+  logger.info(
+    `Sent "TICKET_GIFT_SENT" email to ${userTickets
+      .map((t) => t.user?.email)
+      .join(", ")}`,
+  );
 };
