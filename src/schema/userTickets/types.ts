@@ -130,7 +130,7 @@ builder.objectType(PublicUserTicketRef, {
         return user.imageUrl;
       },
     }),
-    userName: t.field({
+    userUsername: t.field({
       type: "String",
       nullable: true,
       resolve: async (root, arg, context) => {
@@ -146,6 +146,24 @@ builder.objectType(PublicUserTicketRef, {
         }
 
         return user.username;
+      },
+    }),
+    userName: t.field({
+      type: "String",
+      nullable: true,
+      resolve: async (root, arg, context) => {
+        if (!root.userId) {
+          return null;
+        }
+
+        const loader = UserLoadable.getDataloader(context);
+        const user = await loader.load(root.userId);
+
+        if (!user) {
+          return null;
+        }
+
+        return user.name;
       },
     }),
     ticket: t.field({
