@@ -81,3 +81,45 @@ export const updateUserProfileInfo = async (
     return selectUsersSchema.parse(updatedUser);
   }
 };
+
+export const upsertProfileInfo = async (
+  db: ORM_TYPE,
+  parsedProfileInfo: z.infer<typeof insertUsersSchema>,
+  logger: Logger,
+) => {
+  const email = parsedProfileInfo.email.trim().toLowerCase();
+  const upsertedUsers = await db
+    .insert(usersSchema)
+    .values({
+      externalId: parsedProfileInfo.externalId,
+      email,
+      username: parsedProfileInfo.username ?? getUsername(),
+      name: parsedProfileInfo.name,
+      imageUrl: parsedProfileInfo.imageUrl,
+      isEmailVerified: parsedProfileInfo.isEmailVerified,
+      publicMetadata: parsedProfileInfo.publicMetadata ?? {},
+      status: UserStatusEnum.active,
+    })
+    .onConflictDoUpdate({
+      target: [usersSchema.email],
+      set: {
+        externalId: parsedProfileInfo.externalId,
+        name: parsedProfileInfo.name,
+        imageUrl: parsedProfileInfo.imageUrl,
+        isEmailVerified: parsedProfileInfo.isEmailVerified,
+        publicMetadata: parsedProfileInfo.publicMetadata ?? {},
+      },
+    })
+    .returning();
+
+  const upsertedUser = upsertedUsers?.[0];
+
+  if (!upsertedUser) {
+    logger.error("Could not upsert user");
+    throw new Error("Could not upsert user");
+  }
+
+  logger.info("User updated", upsertedUser);
+
+  return selectUsersSchema.parse(upsertedUser);
+};

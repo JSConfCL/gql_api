@@ -4,7 +4,7 @@ import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
 import { createYoga, maskError } from "graphql-yoga";
 
 import { Env } from "worker-configuration";
-import { logPossibleUserIdFromJWT, logTraceId } from "~/authn";
+import { logPossibleUserIdFromJWT } from "~/authn";
 import * as rules from "~/authz";
 import { createGraphqlContext } from "~/context";
 import { APP_ENV } from "~/env";
@@ -47,6 +47,7 @@ export const yoga = createYoga<Env>({
         "x-graphql-operation-name",
         "x-impersonated-user-id",
         "x-trace-id",
+        "x-api-trace-id",
       ],
       methods: ["POST", "GET", "OPTIONS"],
     };
@@ -77,8 +78,6 @@ export default {
       externalTraceId: req.headers.get("x-trace-id"),
       traceId,
     });
-
-    logTraceId(req, logger);
 
     logPossibleUserIdFromJWT(req, logger);
     const response = await yoga.fetch(
