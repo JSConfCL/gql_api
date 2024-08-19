@@ -15,10 +15,7 @@ import {
   usersToCommunitiesSchema,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
-import {
-  sendActualUserTicketQREmails,
-  sendTicketInvitationEmails,
-} from "~/notifications/tickets";
+import { sendActualUserTicketQREmails } from "~/notifications/tickets";
 import { UserRef } from "~/schema/shared/refs";
 import { pronounsEnum } from "~/schema/user/types";
 import { usersFetcher } from "~/schema/user/userFetcher";
@@ -276,6 +273,13 @@ const placeHolderUsersInput = builder.inputType("placeHolderUsersInput", {
   fields: (t) => ({
     email: t.string({ required: true }),
     name: t.string({ required: true }),
+    pais: t.string(),
+    ciudad: t.string(),
+    trabajasEnOrganizacion: t.string(),
+    nombreOrganizacion: t.string(),
+    rolEnOrganizacion: t.string(),
+    foodAllergies: t.string(),
+    emergencyPhoneNumber: t.string(),
   }),
 });
 
@@ -306,15 +310,56 @@ builder.mutationField("createPlaceholderdUsers", (t) =>
         throw new Error("User not found");
       }
 
-      const cleanedUsers = users.map((u) =>
-        insertUsersSchema.parse({
-          name: u.name.trim(),
-          email: u.email.trim().toLowerCase(),
-          username: `${slugify(u.name, { lower: true })}${Math.floor(
-            Math.random() * 10,
-          )}`,
-        }),
-      );
+      const usersMap = new Map<
+        string,
+        {
+          id: string | undefined;
+          name: string;
+          email: string;
+          pais: string | undefined;
+          ciudad: string | undefined;
+          username: string;
+          trabajasEnOrganizacion: boolean;
+          nombreOrganizacion: string | undefined;
+          rolEnOrganizacion: string | undefined;
+          foodAllergies: string | undefined;
+          emergencyPhoneNumber: string | undefined;
+        }
+      >();
+
+      const cleanedUsers = users.map((u) => {
+        const lowerCaseEmail = u.email.trim().toLowerCase();
+
+        const name = u.name.trim();
+        const email = u.email.trim().toLowerCase();
+        const username = `${slugify(name, { lower: true })}${Math.floor(
+          Math.random() * 100,
+        )}`;
+        const trabajasEnOrganizacion =
+          u.trabajasEnOrganizacion?.toLowerCase() === 'sí"';
+
+        if (!usersMap.has(lowerCaseEmail)) {
+          usersMap.set(lowerCaseEmail, {
+            id: undefined,
+            name,
+            email,
+            username,
+            pais: u.pais ?? undefined,
+            ciudad: u.ciudad ?? undefined,
+            trabajasEnOrganizacion,
+            nombreOrganizacion: u.nombreOrganizacion ?? undefined,
+            rolEnOrganizacion: u.rolEnOrganizacion ?? undefined,
+            foodAllergies: u.foodAllergies ?? undefined,
+            emergencyPhoneNumber: u.emergencyPhoneNumber ?? undefined,
+          });
+        }
+
+        return insertUsersSchema.parse({
+          name,
+          email,
+          username,
+        });
+      });
 
       const createdUsers = await DB.insert(usersSchema)
         .values(cleanedUsers)
@@ -323,6 +368,32 @@ builder.mutationField("createPlaceholderdUsers", (t) =>
 
       const emails = cleanedUsers.map((u) => u.email);
       const ids = createdUsers.map((u) => u.id);
+
+      const insertUserData = createdUsers
+        .map((u) => {
+          const user = usersMap.get(u.email);
+
+          if (!user) {
+            return null;
+          }
+
+          return insertUserDataSchema.parse({
+            userId: u.id,
+            countryOfResidence: user.pais ?? "",
+            city: user.ciudad ?? "",
+            worksInOrganization: user.trabajasEnOrganizacion,
+            organizationName: user.nombreOrganizacion ?? "",
+            roleInOrganization: user.rolEnOrganizacion ?? "",
+            foodAllergies: user.foodAllergies ?? "",
+            emergencyPhoneNumber: user.emergencyPhoneNumber ?? "",
+          });
+        })
+        .filter(Boolean);
+
+      await DB.insert(userDataSchema)
+        .values(insertUserData)
+        .onConflictDoNothing()
+        .returning();
 
       const foundUsers = await DB.query.usersSchema.findMany({
         where: (u, { inArray, or }) =>
