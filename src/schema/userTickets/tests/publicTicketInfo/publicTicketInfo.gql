@@ -3,5 +3,6 @@ query PublicTicketInfo($input: PublicTicketInput!) {
     id
     userImage
     userName
+    userUsername
   }
 }

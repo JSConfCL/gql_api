@@ -172,6 +172,7 @@ export type Event = {
   longitude?: Maybe<Scalars["String"]["output"]>;
   meetingURL?: Maybe<Scalars["String"]["output"]>;
   name: Scalars["String"]["output"];
+  schedules: Array<Schedule>;
   speakers: Array<Speaker>;
   startDateTime: Scalars["DateTime"]["output"];
   status: EventStatus;
@@ -645,6 +646,7 @@ export type PublicUserTicket = {
   ticket: Ticket;
   userImage?: Maybe<Scalars["String"]["output"]>;
   userName?: Maybe<Scalars["String"]["output"]>;
+  userUsername?: Maybe<Scalars["String"]["output"]>;
 };
 
 /** Representation of a Purchase Order */
@@ -706,6 +708,8 @@ export type Query = {
   publicTicketInfo: PublicUserTicket;
   /** Get a list of salaries associated to the user */
   salaries: Array<Salary>;
+  /** Get a schedule by its ID */
+  schedule: Schedule;
   /** Search a consolidated payment logs, by date, aggregated by platform and currency_id */
   searchConsolidatedPaymentLogs: Array<ConsolidatedPaymentLogEntry>;
   /** Get a list of events. Filter by name, id, status or date */
@@ -774,6 +778,10 @@ export type QueryMyTicketsArgs = {
 
 export type QueryPublicTicketInfoArgs = {
   input: PublicTicketInput;
+};
+
+export type QueryScheduleArgs = {
+  scheduleId: Scalars["String"]["input"];
 };
 
 export type QuerySearchConsolidatedPaymentLogsArgs = {
@@ -861,6 +869,18 @@ export type SanityAssetRef = {
   url: Scalars["String"]["output"];
 };
 
+/** Representation of a Schedule */
+export type Schedule = {
+  __typename?: "Schedule";
+  description?: Maybe<Scalars["String"]["output"]>;
+  endTimestamp: Scalars["DateTime"]["output"];
+  event: Event;
+  id: Scalars["ID"]["output"];
+  sessions: Array<Session>;
+  startTimestamp: Scalars["DateTime"]["output"];
+  title: Scalars["String"]["output"];
+};
+
 export type SearchCompaniesInput = {
   companyName?: InputMaybe<Scalars["String"]["input"]>;
   description?: InputMaybe<Scalars["String"]["input"]>;
@@ -892,13 +912,13 @@ export enum ServiceErrors {
 }
 
 /** Representation of a Session */
-export type SessionRef = {
-  __typename?: "SessionRef";
+export type Session = {
+  __typename?: "Session";
   description?: Maybe<Scalars["String"]["output"]>;
-  endTimestamp: Scalars["Date"]["output"];
+  endTimestamp: Scalars["DateTime"]["output"];
   id: Scalars["ID"]["output"];
   speakers: Array<Speaker>;
-  startTimestamp: Scalars["Date"]["output"];
+  startTimestamp: Scalars["DateTime"]["output"];
   title: Scalars["String"]["output"];
 };
 
@@ -920,7 +940,8 @@ export type Speaker = {
   company?: Maybe<Scalars["String"]["output"]>;
   id: Scalars["ID"]["output"];
   name: Scalars["String"]["output"];
-  sessions: Array<SessionRef>;
+  rol?: Maybe<Scalars["String"]["output"]>;
+  sessions: Array<Session>;
   socials: Array<Scalars["String"]["output"]>;
 };
 
@@ -1176,6 +1197,7 @@ export type UserTicket = {
   createdAt: Scalars["DateTime"]["output"];
   id: Scalars["ID"]["output"];
   paymentStatus?: Maybe<PurchaseOrderPaymentStatusEnum>;
+  publicId: Scalars["String"]["output"];
   purchaseOrder?: Maybe<PurchaseOrder>;
   redemptionStatus: TicketRedemptionStatus;
   ticketTemplate: Ticket;

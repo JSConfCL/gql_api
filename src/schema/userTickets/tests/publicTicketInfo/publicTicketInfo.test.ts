@@ -39,7 +39,9 @@ describe("public user ticket information", () => {
 
     assert.equal(response.data?.publicTicketInfo.id, ticket.publicId);
 
-    assert.equal(response.data?.publicTicketInfo.userName, user.username);
+    assert.equal(response.data?.publicTicketInfo.userName, user.name);
+
+    assert.equal(response.data?.publicTicketInfo.userUsername, user.username);
   });
 
   describe("Should not work", () => {

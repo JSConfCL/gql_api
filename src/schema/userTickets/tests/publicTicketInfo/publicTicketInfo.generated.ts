@@ -11,7 +11,7 @@ export type PublicTicketInfoQueryVariables = Types.Exact<{
 }>;
 
 
-export type PublicTicketInfoQuery = { __typename?: 'Query', publicTicketInfo: { __typename?: 'PublicUserTicket', id: string, userImage: string | null, userName: string | null } };
+export type PublicTicketInfoQuery = { __typename?: 'Query', publicTicketInfo: { __typename?: 'PublicUserTicket', id: string, userImage: string | null, userName: string | null, userUsername: string | null } };
 
 
 export const PublicTicketInfo = gql`
@@ -20,6 +20,7 @@ export const PublicTicketInfo = gql`
     id
     userImage
     userName
+    userUsername
   }
 }
     `;
