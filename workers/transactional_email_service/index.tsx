@@ -304,7 +304,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
             />,
           ),
           tags: receiver.tags,
-          subject: `Estás invitado a ${receiver.ticketName}`,
+          subject: `Tienes una invitación a ${receiver.ticketName}`,
           to: [
             {
               name: receiver.name,
