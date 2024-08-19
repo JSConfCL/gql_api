@@ -318,7 +318,7 @@ builder.mutationField("createPlaceholderdUsers", (t) =>
           email: string;
           pais: string | undefined;
           ciudad: string | undefined;
-          userName: string;
+          username: string;
           trabajasEnOrganizacion: boolean;
           nombreOrganizacion: string | undefined;
           rolEnOrganizacion: string | undefined;
@@ -332,7 +332,7 @@ builder.mutationField("createPlaceholderdUsers", (t) =>
 
         const name = u.name.trim();
         const email = u.email.trim().toLowerCase();
-        const userName = `${slugify(name, { lower: true })}${Math.floor(
+        const username = `${slugify(name, { lower: true })}${Math.floor(
           Math.random() * 7,
         )}`;
         const trabajasEnOrganizacion =
@@ -343,7 +343,7 @@ builder.mutationField("createPlaceholderdUsers", (t) =>
             id: undefined,
             name,
             email,
-            userName,
+            username,
             pais: u.pais ?? undefined,
             ciudad: u.ciudad ?? undefined,
             trabajasEnOrganizacion,
@@ -357,7 +357,7 @@ builder.mutationField("createPlaceholderdUsers", (t) =>
         return insertUsersSchema.parse({
           name,
           email,
-          userName,
+          username,
         });
       });
 
