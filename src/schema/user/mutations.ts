@@ -275,7 +275,7 @@ const placeHolderUsersInput = builder.inputType("placeHolderUsersInput", {
     name: t.string({ required: true }),
     pais: t.string(),
     ciudad: t.string(),
-    trabajasEnOrganizacion: t.boolean(),
+    trabajasEnOrganizacion: t.string(),
     nombreOrganizacion: t.string(),
     rolEnOrganizacion: t.string(),
     foodAllergies: t.string(),
@@ -335,6 +335,8 @@ builder.mutationField("createPlaceholderdUsers", (t) =>
         const userName = `${slugify(name, { lower: true })}${Math.floor(
           Math.random() * 7,
         )}`;
+        const trabajasEnOrganizacion =
+          u.trabajasEnOrganizacion?.toLowerCase() === 'sí"';
 
         if (!usersMap.has(lowerCaseEmail)) {
           usersMap.set(lowerCaseEmail, {
@@ -344,7 +346,7 @@ builder.mutationField("createPlaceholderdUsers", (t) =>
             userName,
             pais: u.pais ?? undefined,
             ciudad: u.ciudad ?? undefined,
-            trabajasEnOrganizacion: Boolean(u.trabajasEnOrganizacion),
+            trabajasEnOrganizacion,
             nombreOrganizacion: u.nombreOrganizacion ?? undefined,
             rolEnOrganizacion: u.rolEnOrganizacion ?? undefined,
             foodAllergies: u.foodAllergies ?? undefined,
