@@ -333,7 +333,7 @@ builder.mutationField("createPlaceholderdUsers", (t) =>
         const name = u.name.trim();
         const email = u.email.trim().toLowerCase();
         const username = `${slugify(name, { lower: true })}${Math.floor(
-          Math.random() * 7,
+          Math.random() * 100,
         )}`;
         const trabajasEnOrganizacion =
           u.trabajasEnOrganizacion?.toLowerCase() === 'sí"';
@@ -390,7 +390,10 @@ builder.mutationField("createPlaceholderdUsers", (t) =>
         })
         .filter(Boolean);
 
-      await DB.insert(userDataSchema).values(insertUserData).returning();
+      await DB.insert(userDataSchema)
+        .values(insertUserData)
+        .onConflictDoNothing()
+        .returning();
 
       const foundUsers = await DB.query.usersSchema.findMany({
         where: (u, { inArray, or }) =>
