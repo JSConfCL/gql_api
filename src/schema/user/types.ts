@@ -32,14 +32,20 @@ const RSVPFilterInput = builder.inputType("RSVPFilterInput", {
 
 export const UserLoadable = builder.loadableObject(UserRef, {
   description: "Representation of a user",
-  load: async (ids: string[], ctx) => {
-    const users = await usersFetcher.searchUsers({
-      DB: ctx.DB,
+  load: async (ids: string[], { DB }) => {
+    const result = await usersFetcher.searchUsers({
+      DB,
       search: { userIds: ids },
       sort: null,
     });
 
-    return users.map((user) => selectUsersSchema.parse(user));
+    const resultByIdMap = new Map(
+      result.map((item) => [item.id, selectUsersSchema.parse(item)]),
+    );
+
+    return ids.map(
+      (id) => resultByIdMap.get(id) || new Error(`Speaker ${id} not found`),
+    );
   },
   fields: (t) => ({
     id: t.exposeID("id", { nullable: false }),

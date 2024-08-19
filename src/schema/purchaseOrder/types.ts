@@ -27,24 +27,36 @@ export const PurchaseOrderRef = builder.objectRef<{
 export const PurchaseOrderLoadable = builder.loadableObject(PurchaseOrderRef, {
   description: "Representation of a Purchase Order",
   load: async (ids: string[], context) => {
-    const purchaseOrders = await context.DB.query.purchaseOrdersSchema.findMany(
-      {
+    const result = await context.DB.query.purchaseOrdersSchema
+      .findMany({
         where: (t, { inArray }) => inArray(t.id, ids),
         with: {
-          userTickets: true,
+          userTickets: {
+            columns: {
+              id: true,
+            },
+          },
         },
-      },
+      })
+      .then((purchaseOrders) => {
+        return purchaseOrders.map((somePurchaseOrder) => {
+          const ticketsIds = somePurchaseOrder.userTickets.map((ut) => ut.id);
+
+          return {
+            ticketsIds,
+            purchaseOrder: selectPurchaseOrdersSchema.parse(somePurchaseOrder),
+          };
+        });
+      });
+
+    const resultByIdMap = new Map(
+      result.map((item) => [item.purchaseOrder.id, item]),
     );
 
-    return purchaseOrders.map((po) => {
-      const parsedPurchaseOrder = selectPurchaseOrdersSchema.parse(po);
-      const ticketsIds = po.userTickets.map((ut) => ut.id);
-
-      return {
-        ticketsIds,
-        purchaseOrder: parsedPurchaseOrder,
-      };
-    });
+    return ids.map(
+      (id) =>
+        resultByIdMap.get(id) || new Error(`Purchase Order ${id} not found`),
+    );
   },
   fields: (t) => ({
     id: t.field({

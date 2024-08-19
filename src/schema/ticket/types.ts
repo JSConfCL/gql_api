@@ -34,10 +34,17 @@ builder.objectType(PriceRef, {
 
 export const TicketLoadable = builder.loadableObject(TicketRef, {
   description: "Representation of a ticket",
-  load: (ids: string[], context) =>
-    context.DB.query.ticketsSchema.findMany({
+  load: async (ids: string[], context) => {
+    const result = await context.DB.query.ticketsSchema.findMany({
       where: (t, { inArray }) => inArray(t.id, ids),
-    }),
+    });
+
+    const ticketMap = new Map(result.map((ticket) => [ticket.id, ticket]));
+
+    return ids.map(
+      (id) => ticketMap.get(id) || new Error(`Ticket ${id} not found`),
+    );
+  },
   fields: (t) => ({
     id: t.exposeID("id"),
     name: t.exposeString("name"),

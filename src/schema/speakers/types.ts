@@ -13,12 +13,19 @@ export const SpeakerRef = builder.objectRef<SpeakerGraphqlSchema>("Speaker");
 
 export const SpeakerLoadable = builder.loadableObject(SpeakerRef, {
   description: "Representation of a Speaker",
-  load: (ids: string[], context) =>
-    speakersFetcher.searchSpeakers({
+  load: async (ids: string[], context) => {
+    const result = await speakersFetcher.searchSpeakers({
       DB: context.DB,
       search: { speakerIds: ids },
       sort: null,
-    }),
+    });
+
+    const resultByIdMap = new Map(result.map((item) => [item.id, item]));
+
+    return ids.map(
+      (id) => resultByIdMap.get(id) || new Error(`Speaker ${id} not found`),
+    );
+  },
   fields: (t) => ({
     id: t.exposeID("id", { nullable: false }),
     name: t.exposeString("name", { nullable: false }),
