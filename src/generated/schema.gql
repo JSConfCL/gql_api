@@ -156,6 +156,7 @@ type Event {
   longitude: String
   meetingURL: String
   name: String!
+  schedules: [Schedule!]!
   speakers: [Speaker!]!
   startDateTime: DateTime!
   status: EventStatus!
@@ -600,6 +601,7 @@ type PublicUserTicket {
   ticket: Ticket!
   userImage: String
   userName: String
+  userUsername: String
 }
 
 """
@@ -703,6 +705,11 @@ type Query {
   Get a list of salaries associated to the user
   """
   salaries: [Salary!]!
+
+  """
+  Get a schedule by its ID
+  """
+  schedule(scheduleId: String!): Schedule!
 
   """
   Search a consolidated payment logs, by date, aggregated by platform and currency_id
@@ -809,6 +816,19 @@ type SanityAssetRef {
   url: String!
 }
 
+"""
+Representation of a Schedule
+"""
+type Schedule {
+  description: String
+  endTimestamp: DateTime!
+  event: Event!
+  id: ID!
+  sessions: [Session!]!
+  startTimestamp: DateTime!
+  title: String!
+}
+
 input SearchCompaniesInput {
   companyName: String
   description: String
@@ -842,12 +862,12 @@ enum ServiceErrors {
 """
 Representation of a Session
 """
-type SessionRef {
+type Session {
   description: String
-  endTimestamp: Date!
+  endTimestamp: DateTime!
   id: ID!
   speakers: [Speaker!]!
-  startTimestamp: Date!
+  startTimestamp: DateTime!
   title: String!
 }
 
@@ -870,7 +890,8 @@ type Speaker {
   company: String
   id: ID!
   name: String!
-  sessions: [SessionRef!]!
+  rol: String
+  sessions: [Session!]!
   socials: [String!]!
 }
 
@@ -1150,6 +1171,7 @@ type UserTicket {
   createdAt: DateTime!
   id: ID!
   paymentStatus: PurchaseOrderPaymentStatusEnum
+  publicId: String!
   purchaseOrder: PurchaseOrder
   redemptionStatus: TicketRedemptionStatus!
   ticketTemplate: Ticket!
