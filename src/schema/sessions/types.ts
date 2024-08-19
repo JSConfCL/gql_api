@@ -15,11 +15,18 @@ export const SessionRef = builder.objectRef<SessionGraphqlSchema>("Session");
 
 export const SessionLoadable = builder.loadableObject(SessionRef, {
   description: "Representation of a Session",
-  load: (ids: string[], context) =>
-    sessionsFetcher.searchSessions({
+  load: async (ids: string[], context) => {
+    const result = await sessionsFetcher.searchSessions({
       DB: context.DB,
       search: { sessionIds: ids },
-    }),
+    });
+
+    const resultByIdMap = new Map(result.map((item) => [item.id, item]));
+
+    return ids.map(
+      (id) => resultByIdMap.get(id) || new Error(`Session ${id} not found`),
+    );
+  },
   fields: (t) => ({
     id: t.exposeID("id", { nullable: false }),
     title: t.exposeString("title", { nullable: false }),

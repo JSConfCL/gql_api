@@ -19,11 +19,18 @@ export const ScheduleRef = builder.objectRef<ScheduleraphqlSchema>("Schedule");
 
 export const ScheduleLoadable = builder.loadableObject(ScheduleRef, {
   description: "Representation of a Schedule",
-  load: (ids: string[], context) =>
-    schedulesFetcher.searchSchedules({
+  load: async (ids: string[], context) => {
+    const result = await schedulesFetcher.searchSchedules({
       DB: context.DB,
       search: { scheduleIds: ids },
-    }),
+    });
+
+    const resultByIdMap = new Map(result.map((item) => [item.id, item]));
+
+    return ids.map(
+      (id) => resultByIdMap.get(id) || new Error(`Schedule ${id} not found`),
+    );
+  },
   fields: (t) => ({
     id: t.exposeID("id", { nullable: false }),
     title: t.exposeString("title", { nullable: false }),

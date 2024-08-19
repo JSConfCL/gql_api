@@ -87,12 +87,19 @@ const EventsTicketTemplateSearchInput = builder.inputType(
 export const EventLoadable = builder.loadableObject(EventRef, {
   description:
     "Representation of an Event (Events and Users, is what tickets are linked to)",
-  load: (ids: string[], context) =>
-    eventsFetcher.searchEvents({
+  load: async (ids: string[], context) => {
+    const result = await eventsFetcher.searchEvents({
       DB: context.DB,
       search: { eventIds: ids },
       sort: null,
-    }),
+    });
+
+    const resultByIdMap = new Map(result.map((item) => [item.id, item]));
+
+    return ids.map(
+      (id) => resultByIdMap.get(id) || new Error(`Event ${id} not found`),
+    );
+  },
   fields: (t) => ({
     id: t.exposeID("id", { nullable: false }),
     name: t.exposeString("name", { nullable: false }),
