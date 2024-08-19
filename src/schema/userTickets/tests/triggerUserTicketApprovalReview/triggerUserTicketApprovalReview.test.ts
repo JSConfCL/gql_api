@@ -1,10 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { it, describe, assert } from "vitest";
 
-import {
-  insertUserTicketsSchema,
-  userTicketsApprovalStatusEnum,
-} from "~/datasources/db/userTickets";
+import { userTicketsApprovalStatusEnum } from "~/datasources/db/userTickets";
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -50,8 +47,8 @@ const prepareTickets = async (
 
 describe("triggerUserTicketApprovalReview mutation", () => {
   describe("It should approve tickets", () => {
-    it("If data is complete", async () => {
-      const { event, user } = await prepareTickets("pending");
+    it("If data is complete and ticket is Gifted", async () => {
+      const { event, user } = await prepareTickets("gifted");
 
       await insertUserData({
         userId: user.id,
