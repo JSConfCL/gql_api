@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS pg_trgm;-->statement-breakpoint
+CREATE EXTENSION IF NOT EXISTS btree_gin;-->statement-breakpoint
 CREATE INDEX IF NOT EXISTS "users_email_index" ON "users" USING gin ("email");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "users_name_index" ON "users" USING gin ("name");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "users_last_name_index" ON "users" USING gin ("lastName");--> statement-breakpoint
