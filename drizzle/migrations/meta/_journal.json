@@ -190,6 +190,20 @@
       "when": 1723897064321,
       "tag": "0026_dapper_bastion",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1724113601864,
+      "tag": "0027_thick_pet_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1724128521361,
+      "tag": "0028_chunky_mattie_franklin",
+      "breakpoints": true
     }
   ]
 }
