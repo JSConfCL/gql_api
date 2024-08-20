@@ -1,3 +1,4 @@
+import { th } from "date-fns/locale";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -43,6 +44,7 @@ export const updateUserProfileInfo = async (
         isEmailVerified: parsedProfileInfo.isEmailVerified,
         publicMetadata: parsedProfileInfo.publicMetadata ?? {},
         status: UserStatusEnum.active,
+        updatedAt: new Date(),
       })
       .returning();
     const createdUser = createdUsers?.[0];
@@ -53,7 +55,10 @@ export const updateUserProfileInfo = async (
     }
 
     return selectUsersSchema.parse(createdUser);
-  } else {
+  } else if (
+    !result.updatedAt ||
+    new Date(result.updatedAt).getTime() <= Date.now() - 1000 * 60 * 60 * 24 // 1 week
+  ) {
     logger.info("User found — updating user");
     // we update the user
     const updateData = allowedUserUpdateForAuth.parse({
@@ -80,6 +85,8 @@ export const updateUserProfileInfo = async (
 
     return selectUsersSchema.parse(updatedUser);
   }
+
+  return selectUsersSchema.parse(result);
 };
 
 export const upsertProfileInfo = async (

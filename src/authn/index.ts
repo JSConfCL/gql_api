@@ -3,7 +3,10 @@ import { decode, verify } from "@tsndr/cloudflare-worker-jwt";
 import { TokenPayload } from "~/authn/types";
 import { ORM_TYPE } from "~/datasources/db";
 import { insertUsersSchema, USER } from "~/datasources/db/schema";
-import { findUserByID, upsertProfileInfo } from "~/datasources/queries/users";
+import {
+  findUserByID,
+  updateUserProfileInfo,
+} from "~/datasources/queries/users";
 import { getUsername } from "~/datasources/queries/utils/createUsername";
 import { unauthorizedError } from "~/errors";
 import { Logger } from "~/logging";
@@ -138,7 +141,7 @@ export const upsertUserFromRequest = async ({
 
   logger.info(`Updating profile Info for user ID: ${sub}`);
 
-  return upsertProfileInfo(DB, profileInfo.data, logger);
+  return updateUserProfileInfo(DB, profileInfo.data, logger);
 };
 
 export const logPossibleUserIdFromJWT = (request: Request, logger: Logger) => {
