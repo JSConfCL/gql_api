@@ -172,12 +172,28 @@ export const sendActualUserTicketQREmails = async ({
   const userTickets = await DB.query.userTicketsSchema.findMany({
     where: (t, { inArray }) => inArray(t.id, userTicketIds),
     with: {
-      user: true,
-      ticketTemplate: {
-        with: {
-          event: true,
+      user: {
+        columns: {
+          name: true,
+          email: true,
+          id: true,
         },
       },
+      ticketTemplate: {
+        columns: {
+          id: true,
+        },
+        with: {
+          event: {
+            columns: {
+              id: true,
+            },
+          },
+        },
+      },
+    },
+    columns: {
+      id: true,
     },
   });
 
@@ -191,47 +207,66 @@ export const sendActualUserTicketQREmails = async ({
     );
   }
 
-  const to: {
-    name?: string;
-    email: string;
-    tags: { name: string; value: string }[];
-    userTicketId: string;
-  }[] = [];
+  const uniqueTicketTemplates = await DB.query.ticketsSchema.findMany({
+    where: (t, { inArray }) =>
+      inArray(
+        t.id,
+        userTickets.map((t) => t.ticketTemplate.id),
+      ),
+    with: {
+      event: true,
+    },
+  });
 
-  userTickets.forEach((userTicket) => {
-    if (!userTicket.user) {
-      return null;
-    }
+  for (let i = 0; i < uniqueTicketTemplates.length; i++) {
+    const ticketTemplate = uniqueTicketTemplates[i];
 
-    to.push({
-      name: userTicket.user.name ?? undefined,
-      email: userTicket.user.email,
-      userTicketId: userTicket.id,
-      tags: [
-        {
-          name: "userTicket",
-          value: userTicket.id,
-        },
-        {
-          name: "ticketId",
-          value: userTicket.ticketTemplate.id,
-        },
-        {
-          name: "eventId",
-          value: userTicket.ticketTemplate.event.id,
-        },
-        {
-          name: "userId",
-          value: userTicket.user.id,
-        },
-      ],
+    const usersTicketsForTemplate = userTickets.filter(
+      (t) => t.ticketTemplate.id === ticketTemplate.id,
+    );
+
+    const to: {
+      name?: string;
+      email: string;
+      tags: { name: string; value: string }[];
+      userTicketId: string;
+    }[] = [];
+
+    usersTicketsForTemplate.forEach((userTicket) => {
+      if (!userTicket.user) {
+        return null;
+      }
+
+      to.push({
+        name: userTicket.user.name ?? undefined,
+        email: userTicket.user.email,
+        userTicketId: userTicket.id,
+        tags: [
+          {
+            name: "userTicket",
+            value: userTicket.id,
+          },
+          {
+            name: "ticketId",
+            value: userTicket.ticketTemplate.id,
+          },
+          {
+            name: "eventId",
+            value: userTicket.ticketTemplate.event.id,
+          },
+          {
+            name: "userId",
+            value: userTicket.user.id,
+          },
+        ],
+      });
     });
-  });
 
-  await RPC_SERVICE_EMAIL.bulkSendUserQRTicketEmail({
-    to,
-    ticketName: userTickets[0].ticketTemplate.name,
-  });
+    await RPC_SERVICE_EMAIL.bulkSendUserQRTicketEmail({
+      to,
+      ticketName: ticketTemplate.name,
+    });
+  }
 
   const emailLogsValuesToInsert = userTickets.map((someUserTicket) => {
     const next = insertUserTicketsEmailLogSchema.parse({
