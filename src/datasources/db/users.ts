@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm";
-import { boolean, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  jsonb,
+  pgTable,
+  text,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -31,30 +38,47 @@ export enum PronounsEnum {
 }
 
 // USERS
-export const usersSchema = pgTable("users", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
-  externalId: text("externalId"),
-  name: text("name"),
-  lastName: text("lastName"),
-  bio: text("bio").default(""),
-  email: text("email").unique().notNull(),
-  gender: text("gender", {
-    enum: TypescriptEnumAsDBEnumOptions(GenderOptionsEnum),
+export const usersSchema = pgTable(
+  "users",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    externalId: text("externalId"),
+    name: text("name"),
+    lastName: text("lastName"),
+    bio: text("bio").default(""),
+    email: text("email").unique().notNull(),
+    gender: text("gender", {
+      enum: TypescriptEnumAsDBEnumOptions(GenderOptionsEnum),
+    }),
+    pronouns: text("pronouns", {
+      enum: TypescriptEnumAsDBEnumOptions(PronounsEnum),
+    }),
+    status: text("status", {
+      enum: TypescriptEnumAsDBEnumOptions(UserStatusEnum),
+    }).default(UserStatusEnum.inactive),
+    genderOtherText: text("gender_other_text"),
+    isSuperAdmin: boolean("isSuperAdmin").default(false).notNull(),
+    isEmailVerified: boolean("emailVerified").default(false).notNull(),
+    imageUrl: text("imageUrl"),
+    username: text("username").unique().notNull(),
+    publicMetadata: jsonb("publicMetadata"),
+    ...createdAndUpdatedAtFields,
+  },
+  (table) => ({
+    emailIndex: index("users_email_index")
+      .using("gin", table.email)
+      .concurrently(),
+    nameIndex: index("users_name_index")
+      .using("gin", table.name)
+      .concurrently(),
+    lastNameIndex: index("users_last_name_index")
+      .using("gin", table.lastName)
+      .concurrently(),
+    userNameIndex: index("users_username_index")
+      .using("gin", table.username)
+      .concurrently(),
   }),
-  pronouns: text("pronouns", {
-    enum: TypescriptEnumAsDBEnumOptions(PronounsEnum),
-  }),
-  status: text("status", {
-    enum: TypescriptEnumAsDBEnumOptions(UserStatusEnum),
-  }).default(UserStatusEnum.inactive),
-  genderOtherText: text("gender_other_text"),
-  isSuperAdmin: boolean("isSuperAdmin").default(false).notNull(),
-  isEmailVerified: boolean("emailVerified").default(false).notNull(),
-  imageUrl: text("imageUrl"),
-  username: text("username").unique().notNull(),
-  publicMetadata: jsonb("publicMetadata"),
-  ...createdAndUpdatedAtFields,
-});
+);
 
 export const userRelations = relations(usersSchema, ({ many, one }) => ({
   usersToCommunities: many(usersToCommunitiesSchema),
