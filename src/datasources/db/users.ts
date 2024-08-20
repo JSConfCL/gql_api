@@ -65,18 +65,10 @@ export const usersSchema = pgTable(
     ...createdAndUpdatedAtFields,
   },
   (table) => ({
-    emailIndex: index("users_email_index")
-      .using("gin", table.email)
-      .concurrently(),
-    nameIndex: index("users_name_index")
-      .using("gin", table.name)
-      .concurrently(),
-    lastNameIndex: index("users_last_name_index")
-      .using("gin", table.lastName)
-      .concurrently(),
-    userNameIndex: index("users_username_index")
-      .using("gin", table.username)
-      .concurrently(),
+    emailIndex: index("users_email_index").using("gin", table.email),
+    nameIndex: index("users_name_index").using("gin", table.name),
+    lastNameIndex: index("users_last_name_index").using("gin", table.lastName),
+    userNameIndex: index("users_username_index").using("gin", table.username),
   }),
 );
 

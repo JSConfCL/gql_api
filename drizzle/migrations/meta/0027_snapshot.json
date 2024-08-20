@@ -1,5 +1,5 @@
 {
-  "id": "2590f546-03db-4d3e-8e27-0ca3fc9fb42a",
+  "id": "b8628d66-5c23-4254-bc5e-693a3365bd03",
   "prevId": "24dd0c96-63d9-4f9e-b3df-317104990012",
   "version": "7",
   "dialect": "postgresql",
@@ -2015,7 +2015,7 @@
             }
           ],
           "isUnique": false,
-          "concurrently": true,
+          "concurrently": false,
           "method": "gin",
           "with": {}
         },
@@ -2030,7 +2030,7 @@
             }
           ],
           "isUnique": false,
-          "concurrently": true,
+          "concurrently": false,
           "method": "gin",
           "with": {}
         },
@@ -2045,7 +2045,7 @@
             }
           ],
           "isUnique": false,
-          "concurrently": true,
+          "concurrently": false,
           "method": "gin",
           "with": {}
         },
@@ -2060,7 +2060,7 @@
             }
           ],
           "isUnique": false,
-          "concurrently": true,
+          "concurrently": false,
           "method": "gin",
           "with": {}
         }
