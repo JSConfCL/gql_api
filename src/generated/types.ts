@@ -643,6 +643,7 @@ export type PublicTicketInput = {
 export type PublicUserTicket = {
   __typename?: "PublicUserTicket";
   id: Scalars["ID"]["output"];
+  tags: Array<Scalars["String"]["output"]>;
   ticket: Ticket;
   userImage?: Maybe<Scalars["String"]["output"]>;
   userName?: Maybe<Scalars["String"]["output"]>;
@@ -1279,8 +1280,15 @@ export type WorkSeniority = {
 };
 
 export type PlaceHolderUsersInput = {
+  ciudad?: InputMaybe<Scalars["String"]["input"]>;
   email: Scalars["String"]["input"];
+  emergencyPhoneNumber?: InputMaybe<Scalars["String"]["input"]>;
+  foodAllergies?: InputMaybe<Scalars["String"]["input"]>;
   name: Scalars["String"]["input"];
+  nombreOrganizacion?: InputMaybe<Scalars["String"]["input"]>;
+  pais?: InputMaybe<Scalars["String"]["input"]>;
+  rolEnOrganizacion?: InputMaybe<Scalars["String"]["input"]>;
+  trabajasEnOrganizacion?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type UpdateUserDataInput = {

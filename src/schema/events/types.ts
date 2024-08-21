@@ -20,7 +20,7 @@ import {
 import { getImagesBySanityEventId } from "~/datasources/sanity/images";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import { schedulesFetcher } from "~/schema/schedules/schedulesFetcher";
-import { ScheduleLoadable, ScheduleRef } from "~/schema/schedules/types";
+import { ScheduleRef } from "~/schema/schedules/types";
 import {
   CommunityRef,
   EventRef,

@@ -598,6 +598,7 @@ Representation of the public information of a User ticket
 """
 type PublicUserTicket {
   id: ID!
+  tags: [String!]!
   ticket: Ticket!
   userImage: String
   userName: String
@@ -1261,8 +1262,15 @@ type WorkSeniority {
 }
 
 input placeHolderUsersInput {
+  ciudad: String
   email: String!
+  emergencyPhoneNumber: String
+  foodAllergies: String
   name: String!
+  nombreOrganizacion: String
+  pais: String
+  rolEnOrganizacion: String
+  trabajasEnOrganizacion: String
 }
 
 input updateUserDataInput {

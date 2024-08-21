@@ -1,5 +1,4 @@
 import { ORM_TYPE } from "~/datasources/db";
-import { USER } from "~/datasources/db/users";
 import {
   insertUserTicketsEmailLogSchema,
   userTicketsEmailLogSchema,
@@ -89,7 +88,6 @@ export const sendAddedToWaitlistEmail = async ({
 
 export const sendTicketInvitationEmails = async ({
   DB,
-  logger,
   userTicketIds,
   RPC_SERVICE_EMAIL,
 }: {
