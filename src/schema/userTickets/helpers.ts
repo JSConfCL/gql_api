@@ -110,17 +110,28 @@ export const assertCanStartTicketClaimingForEvent = async ({
   }
 };
 
+type ValidateUserDataAndApproveUserTicketsOptions = {
+  DB: ORM_TYPE;
+  userId: string;
+  eventId: string;
+  logger: Logger;
+};
+
+const HACKATHON_TICKETS_IDS_IN_PROD = [
+  // Dia 1
+  "8ab45972-2497-48b0-8714-f678d18bc5a9",
+  // Dia 2
+  "fae5b2cd-e441-4c43-845c-bfa7c59c7af1",
+  // Inauguracion
+  "900b2eab-3166-4e68-ab93-1831df094471",
+];
+
 export const validateUserDataAndApproveUserTickets = async ({
   DB,
   userId,
   eventId,
   logger,
-}: {
-  DB: ORM_TYPE;
-  userId: string;
-  eventId: string;
-  logger: Logger;
-}) => {
+}: ValidateUserDataAndApproveUserTicketsOptions) => {
   const event = await eventsFetcher.searchEvents({
     DB,
     search: {
@@ -138,10 +149,15 @@ export const validateUserDataAndApproveUserTickets = async ({
       user: {
         with: {
           userTeams: {
+            columns: {
+              id: true,
+              userParticipationStatus: true,
+            },
             with: {
               team: {
-                with: {
-                  event: true,
+                columns: {
+                  id: true,
+                  teamStatus: true,
                 },
               },
             },
@@ -155,37 +171,29 @@ export const validateUserDataAndApproveUserTickets = async ({
     throw applicationError("User not found", ServiceErrors.NOT_FOUND, logger);
   }
 
-  const hasTeam =
-    userData.user?.userTeams && userData.user?.userTeams.length > 0;
+  const userTickets = await userTicketFetcher.searchUserTickets({
+    DB,
+    search: {
+      userIds: [userId],
+      eventIds: [eventId],
+      approvalStatus: ["gifted"],
+    },
+  });
 
-  // find the ticket for the user
+  const hackathonUserTickets = [];
+  const nonHackathonUserTickets = [];
 
-  const errors: string[] = [];
+  for (let i = 0; i < userTickets.length; i++) {
+    const ut = userTickets[i];
 
-  if (hasTeam) {
-    const hasApprovedTeam = userData.user?.userTeams?.some((ut) => {
-      return (
-        ut.userParticipationStatus === UserParticipationStatusEnum.accepted
-      );
-    });
-    const hasApprovedUser = userData.user?.userTeams?.some((ut) => {
-      return ut.team.teamStatus === TeamStatusEnum.accepted;
-    });
-
-    if (!hasApprovedTeam) {
-      errors.push("User team is not approved");
-    }
-
-    if (!hasApprovedUser) {
-      errors.push("User has not confirmed participation");
-    }
-
-    // If the user has a team, we check some values of userData.
-
-    if (!userData.emergencyPhoneNumber) {
-      errors.push("Emergency contact is missing");
+    if (HACKATHON_TICKETS_IDS_IN_PROD.includes(ut.ticketTemplateId)) {
+      hackathonUserTickets.push(ut);
+    } else {
+      nonHackathonUserTickets.push(ut);
     }
   }
+
+  const errors: string[] = [];
 
   if (!userData.rut) {
     errors.push("RUT is missing");
@@ -199,6 +207,35 @@ export const validateUserDataAndApproveUserTickets = async ({
     errors.push("City is missing");
   }
 
+  if (hackathonUserTickets.length > 0) {
+    // If the user has a team, we check some values of userData.
+    if (!userData.emergencyPhoneNumber) {
+      errors.push("Emergency contact is missing");
+    }
+
+    if (!userData.foodAllergies) {
+      errors.push("Emergency contact is missing");
+    }
+
+    const acceptedTeams = userData.user?.userTeams?.filter((ut) => {
+      return ut.team.teamStatus === TeamStatusEnum.accepted;
+    });
+
+    if (!acceptedTeams || !acceptedTeams.length) {
+      errors.push("User teams are not accepted");
+    } else {
+      const hasAcceptedParticipation = acceptedTeams.some((ut) => {
+        return (
+          ut.userParticipationStatus === UserParticipationStatusEnum.accepted
+        );
+      });
+
+      if (!hasAcceptedParticipation) {
+        errors.push("User has not accepted participation");
+      }
+    }
+  }
+
   if (errors.length > 0) {
     throw applicationError(
       `Missing required conditions: ${errors.join(", ")}`,
@@ -206,15 +243,6 @@ export const validateUserDataAndApproveUserTickets = async ({
       logger,
     );
   }
-
-  const userTickets = await userTicketFetcher.searchUserTickets({
-    DB,
-    search: {
-      userIds: [userId],
-      eventIds: [eventId],
-      approvalStatus: ["gifted"],
-    },
-  });
 
   const approvedUserTickets = await bulkApproveUserTickets({
     DB,
