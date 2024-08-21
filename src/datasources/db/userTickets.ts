@@ -1,6 +1,7 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { index, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 import { purchaseOrdersSchema, ticketsSchema, usersSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
@@ -30,6 +31,11 @@ export const userTicketsSchema = pgTable(
     purchaseOrderId: uuid("purchase_order_id")
       .references(() => purchaseOrdersSchema.id)
       .notNull(),
+    tags: text("tags")
+      .$type<string[]>()
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     approvalStatus: text("approval_status", {
       enum: userTicketsApprovalStatusEnum,
     })
@@ -62,7 +68,9 @@ export const userTicketsRelations = relations(userTicketsSchema, ({ one }) => ({
   }),
 }));
 
-export const selectUserTicketsSchema = createSelectSchema(userTicketsSchema);
+export const selectUserTicketsSchema = createSelectSchema(userTicketsSchema, {
+  tags: z.array(z.string()),
+});
 
 export const insertUserTicketsSchema = createInsertSchema(userTicketsSchema);
 

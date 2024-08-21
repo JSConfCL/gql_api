@@ -1,0 +1,1 @@
+ALTER TABLE "user_tickets" ADD COLUMN "tags" text[] DEFAULT '{}'::text[] NOT NULL;
