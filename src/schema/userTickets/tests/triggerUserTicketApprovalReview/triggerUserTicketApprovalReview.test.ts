@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { it, describe, assert } from "vitest";
 
+import { TeamStatusEnum } from "~/datasources/db/teams";
+import { UserParticipationStatusEnum } from "~/datasources/db/userTeams";
 import { userTicketsApprovalStatusEnum } from "~/datasources/db/userTickets";
 import {
   executeGraphqlOperationAsUser,
@@ -12,6 +14,8 @@ import {
   insertTicketTemplate,
   insertUser,
   insertUserData,
+  insertTeam,
+  insertUserTeams,
 } from "~/tests/fixtures";
 
 import {
@@ -22,6 +26,7 @@ import {
 
 const prepareTickets = async (
   status: (typeof userTicketsApprovalStatusEnum)[number] = "gifted",
+  isTeamOnly = false,
 ) => {
   const community1 = await insertCommunity();
   const event1 = await insertEvent();
@@ -33,6 +38,7 @@ const prepareTickets = async (
   const user1 = await insertUser();
   const ticketTemplate1 = await insertTicketTemplate({
     eventId: event1.id,
+    tags: isTeamOnly ? ["hackathon"] : [],
   });
   const purchaseOrder = await insertPurchaseOrder();
   const ticket1 = await insertTicket({
@@ -47,13 +53,57 @@ const prepareTickets = async (
 
 describe("triggerUserTicketApprovalReview mutation", () => {
   describe("It should approve tickets", () => {
-    it("If data is complete and ticket is Gifted", async () => {
-      const { event, user } = await prepareTickets("gifted");
+    it("If data is complete for non-team tickets", async () => {
+      const { event, user } = await prepareTickets("gifted", false);
 
       await insertUserData({
         userId: user.id,
         rut: faker.random.alphaNumeric(10),
+        countryOfResidence: "Chile",
+        city: "Santiago",
       });
+
+      const response = await executeGraphqlOperationAsUser<
+        TriggerUserTicketApprovalReviewMutation,
+        TriggerUserTicketApprovalReviewMutationVariables
+      >(
+        {
+          document: TriggerUserTicketApprovalReview,
+          variables: {
+            eventId: event.id,
+            userId: user.id,
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(response.data?.triggerUserTicketApprovalReview.length, 1);
+    });
+
+    it("If data is complete for team tickets", async () => {
+      const { event, user } = await prepareTickets("gifted", true);
+      const team = await insertTeam({
+        eventId: event.id,
+        teamStatus: TeamStatusEnum.accepted,
+      });
+
+      await insertUserTeams({
+        userId: user.id,
+        teamId: team.id,
+        userParticipationStatus: UserParticipationStatusEnum.accepted,
+      });
+
+      await insertUserData({
+        userId: user.id,
+        rut: faker.random.alphaNumeric(10),
+        countryOfResidence: "Chile",
+        city: "Santiago",
+        emergencyPhoneNumber: "123456789",
+        foodAllergies: "None",
+      });
+
       const response = await executeGraphqlOperationAsUser<
         TriggerUserTicketApprovalReviewMutation,
         TriggerUserTicketApprovalReviewMutationVariables
@@ -75,13 +125,16 @@ describe("triggerUserTicketApprovalReview mutation", () => {
   });
 
   describe("It should not approve tickets", () => {
-    it("If ticket is not pending", async () => {
+    it("If ticket is not gifted", async () => {
       const { event, user } = await prepareTickets("cancelled");
 
       await insertUserData({
         userId: user.id,
         rut: faker.random.alphaNumeric(10),
+        countryOfResidence: "Chile",
+        city: "Santiago",
       });
+
       const response = await executeGraphqlOperationAsUser<
         TriggerUserTicketApprovalReviewMutation,
         TriggerUserTicketApprovalReviewMutationVariables
@@ -99,6 +152,109 @@ describe("triggerUserTicketApprovalReview mutation", () => {
       assert.equal(response.errors, undefined);
 
       assert.equal(response.data?.triggerUserTicketApprovalReview.length, 0);
+    });
+
+    it("If data is incomplete for non-team tickets", async () => {
+      const { event, user } = await prepareTickets("gifted", false);
+
+      await insertUserData({
+        userId: user.id,
+        rut: faker.random.alphaNumeric(10),
+        // Missing countryOfResidence and city
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        TriggerUserTicketApprovalReviewMutation,
+        TriggerUserTicketApprovalReviewMutationVariables
+      >(
+        {
+          document: TriggerUserTicketApprovalReview,
+          variables: {
+            eventId: event.id,
+            userId: user.id,
+          },
+        },
+        user,
+      );
+
+      assert.notEqual(response.errors, undefined);
+    });
+
+    it("If data is incomplete for team tickets", async () => {
+      const { event, user } = await prepareTickets("gifted", true);
+      const team = await insertTeam({
+        eventId: event.id,
+        teamStatus: TeamStatusEnum.accepted,
+      });
+
+      await insertUserTeams({
+        userId: user.id,
+        teamId: team.id,
+        userParticipationStatus: UserParticipationStatusEnum.accepted,
+      });
+
+      await insertUserData({
+        userId: user.id,
+        rut: faker.random.alphaNumeric(10),
+        countryOfResidence: "Chile",
+        city: "Santiago",
+        // Missing emergencyPhoneNumber and foodAllergies
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        TriggerUserTicketApprovalReviewMutation,
+        TriggerUserTicketApprovalReviewMutationVariables
+      >(
+        {
+          document: TriggerUserTicketApprovalReview,
+          variables: {
+            eventId: event.id,
+            userId: user.id,
+          },
+        },
+        user,
+      );
+
+      assert.notEqual(response.errors, undefined);
+    });
+
+    it("If team is not accepted for team tickets", async () => {
+      const { event, user } = await prepareTickets("gifted", true);
+      const team = await insertTeam({
+        eventId: event.id,
+        teamStatus: TeamStatusEnum.not_accepted,
+      });
+
+      await insertUserTeams({
+        userId: user.id,
+        teamId: team.id,
+        userParticipationStatus: UserParticipationStatusEnum.accepted,
+      });
+
+      await insertUserData({
+        userId: user.id,
+        rut: faker.random.alphaNumeric(10),
+        countryOfResidence: "Chile",
+        city: "Santiago",
+        emergencyPhoneNumber: "123456789",
+        foodAllergies: "None",
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        TriggerUserTicketApprovalReviewMutation,
+        TriggerUserTicketApprovalReviewMutationVariables
+      >(
+        {
+          document: TriggerUserTicketApprovalReview,
+          variables: {
+            eventId: event.id,
+            userId: user.id,
+          },
+        },
+        user,
+      );
+
+      assert.notEqual(response.errors, undefined);
     });
   });
 });
