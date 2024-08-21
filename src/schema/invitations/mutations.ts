@@ -81,9 +81,7 @@ builder.mutationField("giftTicketsToUsers", (t) =>
       let ticketTemplatesUsersMap = new Map<string, Set<string>>();
 
       for (const ticket of actualTickets) {
-        if (!ticketTemplatesUsersMap.has(ticket.id)) {
-          ticketTemplatesUsersMap.set(ticket.id, new Set());
-        }
+        ticketTemplatesUsersMap.set(ticket.id, new Set());
       }
 
       usersWithTickets.forEach((userWithTicket) => {
@@ -148,6 +146,14 @@ builder.mutationField("giftTicketsToUsers", (t) =>
           ticketsToInsert.push(parsedData);
         });
       });
+
+      if (!ticketsToInsert.length) {
+        throw applicationError(
+          "All provided users already have tickets",
+          ServiceErrors.INVALID_ARGUMENT,
+          logger,
+        );
+      }
 
       const createdUserTickets = await DB.insert(userTicketsSchema)
         .values(ticketsToInsert)

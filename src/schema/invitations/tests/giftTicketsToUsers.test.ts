@@ -29,10 +29,11 @@ describe("Should send tickets to users in bulk", () => {
       document: GiftTicketsToUsers,
       variables: {
         input: {
-          allowMultipleTicketsPerUsers: true,
-          ticketId: ticket.id,
+          allowMultipleTicketsPerUsers: false,
+          ticketIds: [ticket.id],
           userIds: [user1.id, user2.id],
           notifyUsers: false,
+          autoApproveTickets: false,
         },
       },
     });
@@ -57,10 +58,11 @@ describe("Should send tickets to users in bulk", () => {
       document: GiftTicketsToUsers,
       variables: {
         input: {
-          allowMultipleTicketsPerUsers: true,
-          ticketId: ticket.id,
+          allowMultipleTicketsPerUsers: false,
+          ticketIds: [ticket.id],
           userIds: [user1.id],
           notifyUsers: false,
+          autoApproveTickets: false,
         },
       },
     });
@@ -73,9 +75,10 @@ describe("Should send tickets to users in bulk", () => {
       variables: {
         input: {
           allowMultipleTicketsPerUsers: false,
-          ticketId: ticket.id,
+          ticketIds: [ticket.id],
           userIds: [user1.id, user2.id],
           notifyUsers: false,
+          autoApproveTickets: false,
         },
       },
     });
@@ -100,10 +103,11 @@ describe("Should fail send tickets to users in bulk", () => {
       document: GiftTicketsToUsers,
       variables: {
         input: {
-          allowMultipleTicketsPerUsers: true,
-          ticketId: ticket.id,
+          allowMultipleTicketsPerUsers: false,
+          ticketIds: [ticket.id],
           userIds: [],
           notifyUsers: false,
+          autoApproveTickets: false,
         },
       },
     });
@@ -127,9 +131,10 @@ describe("Should fail send tickets to users in bulk", () => {
       variables: {
         input: {
           allowMultipleTicketsPerUsers: false,
-          ticketId: ticket.id,
+          ticketIds: [ticket.id],
           userIds: [user1.id, user2.id],
           notifyUsers: false,
+          autoApproveTickets: false,
         },
       },
     });
@@ -141,9 +146,10 @@ describe("Should fail send tickets to users in bulk", () => {
       variables: {
         input: {
           allowMultipleTicketsPerUsers: false,
-          ticketId: ticket.id,
+          ticketIds: [ticket.id],
           userIds: [user1.id, user2.id],
           notifyUsers: false,
+          autoApproveTickets: false,
         },
       },
     });
