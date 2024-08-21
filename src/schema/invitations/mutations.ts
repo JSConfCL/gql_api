@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
@@ -8,16 +7,20 @@ import {
   userTicketsSchema,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
-import { sendTicketInvitationEmails } from "~/notifications/tickets";
+import {
+  sendActualUserTicketQREmails,
+  sendTicketInvitationEmails,
+} from "~/notifications/tickets";
 import { createInitialPurchaseOrder } from "~/schema/purchaseOrder/helpers";
 import { UserTicketRef } from "~/schema/shared/refs";
 import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
 
 const GiftTicketsToUserInput = builder.inputType("GiftTicketsToUserInput", {
   fields: (t) => ({
-    ticketId: t.string({ required: true }),
+    ticketIds: t.stringList({ required: true }),
     userIds: t.stringList({ required: true }),
     allowMultipleTicketsPerUsers: t.boolean({ required: true }),
+    autoApproveTickets: t.boolean({ required: true }),
     notifyUsers: t.boolean({ required: true }),
   }),
 });
@@ -43,8 +46,13 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         throw new GraphQLError("User not found");
       }
 
-      const { ticketId, allowMultipleTicketsPerUsers, notifyUsers } = input;
-      let userIds = input.userIds;
+      const {
+        ticketIds,
+        allowMultipleTicketsPerUsers,
+        notifyUsers,
+        autoApproveTickets,
+        userIds,
+      } = input;
 
       if (userIds.length === 0) {
         throw applicationError(
@@ -54,16 +62,37 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         );
       }
 
-      const tickets = await ticketsFetcher.searchTickets({
+      const actualTickets = await ticketsFetcher.searchTickets({
         DB,
         search: {
-          ticketIds: [ticketId],
+          ticketIds,
         },
       });
+      const actualTicketIds = actualTickets.map((ticket) => ticket.id);
 
-      const ticket = tickets[0];
+      const usersWithTickets = await DB.query.userTicketsSchema.findMany({
+        where: (u, { and, inArray }) =>
+          and(
+            inArray(u.userId, userIds),
+            inArray(u.ticketTemplateId, actualTicketIds),
+          ),
+      });
 
-      if (!ticket) {
+      let ticketTemplatesUsersMap = new Map<string, Set<string>>();
+
+      for (const ticket of actualTickets) {
+        ticketTemplatesUsersMap.set(ticket.id, new Set());
+      }
+
+      usersWithTickets.forEach((userWithTicket) => {
+        if (userWithTicket.userId) {
+          ticketTemplatesUsersMap
+            .get(userWithTicket.ticketTemplateId)
+            ?.add(userWithTicket.userId);
+        }
+      });
+
+      if (ticketTemplatesUsersMap.size === 0) {
         throw applicationError(
           "Ticket not found",
           ServiceErrors.NOT_FOUND,
@@ -71,26 +100,22 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         );
       }
 
-      const purchaseOrder = await createInitialPurchaseOrder({
-        DB,
-        logger,
-        userId: USER.id,
-      });
-
       if (!allowMultipleTicketsPerUsers) {
-        const usersWithTickets = await DB.query.userTicketsSchema.findMany({
-          where: (u, { and, inArray }) =>
-            and(inArray(u.userId, userIds), eq(u.ticketTemplateId, ticket.id)),
-          columns: {
-            userId: true,
-          },
+        const clearedTicketTemplatesUserMap = new Map<string, Set<string>>();
+
+        ticketTemplatesUsersMap.forEach((existingUserSet, ticketTemplateId) => {
+          const newUserSet = new Set<string>();
+
+          userIds.forEach((userId) => {
+            if (!existingUserSet.has(userId)) {
+              newUserSet.add(userId);
+            }
+          });
+
+          clearedTicketTemplatesUserMap.set(ticketTemplateId, newUserSet);
         });
 
-        const userIdsWithTickets = new Set(
-          usersWithTickets.map((user) => user.userId),
-        );
-
-        userIds = userIds.filter((userId) => !userIdsWithTickets.has(userId));
+        ticketTemplatesUsersMap = clearedTicketTemplatesUserMap;
       }
 
       if (userIds.length === 0) {
@@ -101,17 +126,37 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         );
       }
 
+      const purchaseOrder = await createInitialPurchaseOrder({
+        DB,
+        logger,
+        userId: USER.id,
+      });
+
+      const ticketsToInsert: (typeof insertUserTicketsSchema._type)[] = [];
+
+      ticketTemplatesUsersMap.forEach((userSet, ticketTemplateId) => {
+        userSet.forEach((userId) => {
+          const parsedData = insertUserTicketsSchema.parse({
+            userId,
+            ticketTemplateId,
+            purchaseOrderId: purchaseOrder.id,
+            approvalStatus: autoApproveTickets ? "approved" : "gifted",
+          });
+
+          ticketsToInsert.push(parsedData);
+        });
+      });
+
+      if (!ticketsToInsert.length) {
+        throw applicationError(
+          "All provided users already have tickets",
+          ServiceErrors.INVALID_ARGUMENT,
+          logger,
+        );
+      }
+
       const createdUserTickets = await DB.insert(userTicketsSchema)
-        .values(
-          userIds.map((userId) =>
-            insertUserTicketsSchema.parse({
-              userId,
-              ticketTemplateId: ticket.id,
-              purchaseOrderId: purchaseOrder.id,
-              approvalStatus: "gifted",
-            }),
-          ),
-        )
+        .values(ticketsToInsert)
         .returning();
 
       if (notifyUsers) {
@@ -119,12 +164,21 @@ builder.mutationField("giftTicketsToUsers", (t) =>
           (userTicket) => userTicket.id,
         );
 
-        await sendTicketInvitationEmails({
-          DB,
-          logger,
-          userTicketIds,
-          RPC_SERVICE_EMAIL,
-        });
+        if (autoApproveTickets) {
+          await sendActualUserTicketQREmails({
+            DB,
+            logger,
+            userTicketIds,
+            RPC_SERVICE_EMAIL,
+          });
+        } else {
+          await sendTicketInvitationEmails({
+            DB,
+            logger,
+            userTicketIds,
+            RPC_SERVICE_EMAIL,
+          });
+        }
       }
 
       return createdUserTickets.map((userTicket) =>

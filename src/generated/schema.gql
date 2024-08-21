@@ -277,8 +277,9 @@ input GeneratePaymentLinkInput {
 
 input GiftTicketsToUserInput {
   allowMultipleTicketsPerUsers: Boolean!
+  autoApproveTickets: Boolean!
   notifyUsers: Boolean!
-  ticketId: String!
+  ticketIds: [String!]!
   userIds: [String!]!
 }
 
@@ -1261,8 +1262,15 @@ type WorkSeniority {
 }
 
 input placeHolderUsersInput {
+  ciudad: String
   email: String!
+  emergencyPhoneNumber: String
+  foodAllergies: String
   name: String!
+  nombreOrganizacion: String
+  pais: String
+  rolEnOrganizacion: String
+  trabajasEnOrganizacion: String
 }
 
 input updateUserDataInput {

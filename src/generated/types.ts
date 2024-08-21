@@ -295,8 +295,9 @@ export type GeneratePaymentLinkInput = {
 
 export type GiftTicketsToUserInput = {
   allowMultipleTicketsPerUsers: Scalars["Boolean"]["input"];
+  autoApproveTickets: Scalars["Boolean"]["input"];
   notifyUsers: Scalars["Boolean"]["input"];
-  ticketId: Scalars["String"]["input"];
+  ticketIds: Array<Scalars["String"]["input"]>;
   userIds: Array<Scalars["String"]["input"]>;
 };
 
@@ -1279,8 +1280,15 @@ export type WorkSeniority = {
 };
 
 export type PlaceHolderUsersInput = {
+  ciudad?: InputMaybe<Scalars["String"]["input"]>;
   email: Scalars["String"]["input"];
+  emergencyPhoneNumber?: InputMaybe<Scalars["String"]["input"]>;
+  foodAllergies?: InputMaybe<Scalars["String"]["input"]>;
   name: Scalars["String"]["input"];
+  nombreOrganizacion?: InputMaybe<Scalars["String"]["input"]>;
+  pais?: InputMaybe<Scalars["String"]["input"]>;
+  rolEnOrganizacion?: InputMaybe<Scalars["String"]["input"]>;
+  trabajasEnOrganizacion?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type UpdateUserDataInput = {
