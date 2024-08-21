@@ -8,16 +8,20 @@ import {
   userTicketsSchema,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
-import { sendTicketInvitationEmails } from "~/notifications/tickets";
+import {
+  sendActualUserTicketQREmails,
+  sendTicketInvitationEmails,
+} from "~/notifications/tickets";
 import { createInitialPurchaseOrder } from "~/schema/purchaseOrder/helpers";
 import { UserTicketRef } from "~/schema/shared/refs";
 import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
 
 const GiftTicketsToUserInput = builder.inputType("GiftTicketsToUserInput", {
   fields: (t) => ({
-    ticketId: t.string({ required: true }),
+    ticketIds: t.stringList({ required: true }),
     userIds: t.stringList({ required: true }),
     allowMultipleTicketsPerUsers: t.boolean({ required: true }),
+    autoApproveTickets: t.boolean({ required: true }),
     notifyUsers: t.boolean({ required: true }),
   }),
 });
@@ -43,7 +47,12 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         throw new GraphQLError("User not found");
       }
 
-      const { ticketId, allowMultipleTicketsPerUsers, notifyUsers } = input;
+      const {
+        ticketIds,
+        allowMultipleTicketsPerUsers,
+        notifyUsers,
+        autoApproveTickets,
+      } = input;
       let userIds = input.userIds;
 
       if (userIds.length === 0) {
@@ -54,16 +63,14 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         );
       }
 
-      const tickets = await ticketsFetcher.searchTickets({
+      const foundTickets = await ticketsFetcher.searchTickets({
         DB,
         search: {
-          ticketIds: [ticketId],
+          ticketIds: ticketIds,
         },
       });
 
-      const ticket = tickets[0];
-
-      if (!ticket) {
+      if (!foundTickets[0]) {
         throw applicationError(
           "Ticket not found",
           ServiceErrors.NOT_FOUND,
@@ -77,10 +84,15 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         userId: USER.id,
       });
 
+      const foundTicketIds = foundTickets.map((ticket) => ticket.id);
+
       if (!allowMultipleTicketsPerUsers) {
         const usersWithTickets = await DB.query.userTicketsSchema.findMany({
           where: (u, { and, inArray }) =>
-            and(inArray(u.userId, userIds), eq(u.ticketTemplateId, ticket.id)),
+            and(
+              inArray(u.userId, userIds),
+              inArray(u.ticketTemplateId, foundTicketIds),
+            ),
           columns: {
             userId: true,
           },
@@ -101,17 +113,23 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         );
       }
 
+      const ticketsToInsert: (typeof insertUserTicketsSchema._type)[] = [];
+
+      foundTickets.forEach((ticket) => {
+        userIds.forEach((userId) => {
+          const parsedData = insertUserTicketsSchema.parse({
+            userId,
+            ticketTemplateId: ticket.id,
+            purchaseOrderId: purchaseOrder.id,
+            approvalStatus: autoApproveTickets ? "approved" : "gifted",
+          });
+
+          ticketsToInsert.push(parsedData);
+        });
+      });
+
       const createdUserTickets = await DB.insert(userTicketsSchema)
-        .values(
-          userIds.map((userId) =>
-            insertUserTicketsSchema.parse({
-              userId,
-              ticketTemplateId: ticket.id,
-              purchaseOrderId: purchaseOrder.id,
-              approvalStatus: "gifted",
-            }),
-          ),
-        )
+        .values(ticketsToInsert)
         .returning();
 
       if (notifyUsers) {
@@ -119,12 +137,21 @@ builder.mutationField("giftTicketsToUsers", (t) =>
           (userTicket) => userTicket.id,
         );
 
-        await sendTicketInvitationEmails({
-          DB,
-          logger,
-          userTicketIds,
-          RPC_SERVICE_EMAIL,
-        });
+        if (autoApproveTickets) {
+          await sendActualUserTicketQREmails({
+            DB,
+            logger,
+            userTicketIds,
+            RPC_SERVICE_EMAIL,
+          });
+        } else {
+          await sendTicketInvitationEmails({
+            DB,
+            logger,
+            userTicketIds,
+            RPC_SERVICE_EMAIL,
+          });
+        }
       }
 
       return createdUserTickets.map((userTicket) =>
