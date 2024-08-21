@@ -72,7 +72,9 @@ export const selectUserTicketsSchema = createSelectSchema(userTicketsSchema, {
   tags: z.array(z.string()),
 });
 
-export const insertUserTicketsSchema = createInsertSchema(userTicketsSchema);
+export const insertUserTicketsSchema = createInsertSchema(userTicketsSchema, {
+  tags: z.array(z.string()),
+});
 
 export const approveUserTicketsSchema = selectUserTicketsSchema.pick({
   approvalStatus: true,
