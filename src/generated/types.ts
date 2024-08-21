@@ -295,8 +295,9 @@ export type GeneratePaymentLinkInput = {
 
 export type GiftTicketsToUserInput = {
   allowMultipleTicketsPerUsers: Scalars["Boolean"]["input"];
+  autoApproveTickets: Scalars["Boolean"]["input"];
   notifyUsers: Scalars["Boolean"]["input"];
-  ticketId: Scalars["String"]["input"];
+  ticketIds: Array<Scalars["String"]["input"]>;
   userIds: Array<Scalars["String"]["input"]>;
 };
 
@@ -643,7 +644,6 @@ export type PublicTicketInput = {
 export type PublicUserTicket = {
   __typename?: "PublicUserTicket";
   id: Scalars["ID"]["output"];
-  tags: Array<Scalars["String"]["output"]>;
   ticket: Ticket;
   userImage?: Maybe<Scalars["String"]["output"]>;
   userName?: Maybe<Scalars["String"]["output"]>;

@@ -277,8 +277,9 @@ input GeneratePaymentLinkInput {
 
 input GiftTicketsToUserInput {
   allowMultipleTicketsPerUsers: Boolean!
+  autoApproveTickets: Boolean!
   notifyUsers: Boolean!
-  ticketId: String!
+  ticketIds: [String!]!
   userIds: [String!]!
 }
 
@@ -598,7 +599,6 @@ Representation of the public information of a User ticket
 """
 type PublicUserTicket {
   id: ID!
-  tags: [String!]!
   ticket: Ticket!
   userImage: String
   userName: String

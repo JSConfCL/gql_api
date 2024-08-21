@@ -148,7 +148,6 @@ builder.objectType(PublicUserTicketRef, {
         return user.username;
       },
     }),
-    tags: t.exposeStringList("tags"),
     userName: t.field({
       type: "String",
       nullable: true,

@@ -526,7 +526,6 @@ export const insertTicket = async (
       partialInput?.approvalStatus ?? TicketApprovalStatus.Pending,
     redemptionStatus:
       partialInput?.redemptionStatus ?? TicketRedemptionStatus.Pending,
-    tags: partialInput?.tags,
     ...CRUDDates(partialInput),
   } satisfies z.infer<typeof insertUserTicketsSchema>;
 
