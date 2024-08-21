@@ -117,15 +117,6 @@ type ValidateUserDataAndApproveUserTicketsOptions = {
   logger: Logger;
 };
 
-const HACKATHON_TICKETS_IDS_IN_PROD = [
-  // Dia 1
-  "8ab45972-2497-48b0-8714-f678d18bc5a9",
-  // Dia 2
-  "fae5b2cd-e441-4c43-845c-bfa7c59c7af1",
-  // Inauguracion
-  "900b2eab-3166-4e68-ab93-1831df094471",
-];
-
 export const validateUserDataAndApproveUserTickets = async ({
   DB,
   userId,
@@ -180,16 +171,40 @@ export const validateUserDataAndApproveUserTickets = async ({
     },
   });
 
-  const hackathonUserTickets = [];
-  const nonHackathonUserTickets = [];
+  const ticketTemplatesOfUserTicketsByTemplateId = await ticketsFetcher
+    .searchTickets({
+      DB,
+      search: {
+        ticketIds: userTickets.map((ut) => ut.ticketTemplateId),
+      },
+    })
+    .then((tickets) => {
+      return tickets.reduce(
+        (acc, ticket) => {
+          acc[ticket.id] = ticket;
+
+          return acc;
+        },
+        {} as Record<
+          string,
+          Awaited<ReturnType<typeof ticketsFetcher.searchTickets>>[0]
+        >,
+      );
+    });
+
+  const ticketTemplatesForTeams = [];
+  const ticketTemplatesForAnyone = [];
 
   for (let i = 0; i < userTickets.length; i++) {
     const ut = userTickets[i];
 
-    if (HACKATHON_TICKETS_IDS_IN_PROD.includes(ut.ticketTemplateId)) {
-      hackathonUserTickets.push(ut);
+    const ticketTemplate =
+      ticketTemplatesOfUserTicketsByTemplateId[ut.ticketTemplateId];
+
+    if (ticketTemplate.tags.includes("hackathon")) {
+      ticketTemplatesForTeams.push(ticketTemplate);
     } else {
-      nonHackathonUserTickets.push(ut);
+      ticketTemplatesForAnyone.push(ticketTemplate);
     }
   }
 
@@ -207,7 +222,7 @@ export const validateUserDataAndApproveUserTickets = async ({
     errors.push("City is missing");
   }
 
-  if (hackathonUserTickets.length > 0) {
+  if (ticketTemplatesForTeams.length > 0) {
     // If the user has a team, we check some values of userData.
     if (!userData.emergencyPhoneNumber) {
       errors.push("Emergency contact is missing");

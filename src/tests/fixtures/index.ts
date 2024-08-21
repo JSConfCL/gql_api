@@ -287,9 +287,8 @@ export const insertUserData = async (
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
-    city: partialInput?.city ?? faker.address.city(),
-    countryOfResidence:
-      partialInput?.countryOfResidence ?? faker.address.country(),
+    city: partialInput?.city || "",
+    countryOfResidence: partialInput?.countryOfResidence || "",
     worksInOrganization: partialInput?.worksInOrganization ?? false,
     emergencyPhoneNumber: partialInput?.emergencyPhoneNumber,
     foodAllergies: partialInput?.foodAllergies,
