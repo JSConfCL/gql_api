@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
@@ -52,8 +51,8 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         allowMultipleTicketsPerUsers,
         notifyUsers,
         autoApproveTickets,
+        userIds,
       } = input;
-      let userIds = input.userIds;
 
       if (userIds.length === 0) {
         throw applicationError(
@@ -63,14 +62,39 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         );
       }
 
-      const foundTickets = await ticketsFetcher.searchTickets({
+      const actualTickets = await ticketsFetcher.searchTickets({
         DB,
         search: {
-          ticketIds: ticketIds,
+          ticketIds,
         },
       });
+      const actualTicketIds = actualTickets.map((ticket) => ticket.id);
 
-      if (!foundTickets[0]) {
+      const usersWithTickets = await DB.query.userTicketsSchema.findMany({
+        where: (u, { and, inArray }) =>
+          and(
+            inArray(u.userId, userIds),
+            inArray(u.ticketTemplateId, actualTicketIds),
+          ),
+      });
+
+      let ticketTemplatesUsersMap = new Map<string, Set<string>>();
+
+      for (const ticket of actualTickets) {
+        if (!ticketTemplatesUsersMap.has(ticket.id)) {
+          ticketTemplatesUsersMap.set(ticket.id, new Set());
+        }
+      }
+
+      usersWithTickets.forEach((userWithTicket) => {
+        if (userWithTicket.userId) {
+          ticketTemplatesUsersMap
+            .get(userWithTicket.ticketTemplateId)
+            ?.add(userWithTicket.userId);
+        }
+      });
+
+      if (ticketTemplatesUsersMap.size === 0) {
         throw applicationError(
           "Ticket not found",
           ServiceErrors.NOT_FOUND,
@@ -78,31 +102,22 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         );
       }
 
-      const purchaseOrder = await createInitialPurchaseOrder({
-        DB,
-        logger,
-        userId: USER.id,
-      });
-
-      const foundTicketIds = foundTickets.map((ticket) => ticket.id);
-
       if (!allowMultipleTicketsPerUsers) {
-        const usersWithTickets = await DB.query.userTicketsSchema.findMany({
-          where: (u, { and, inArray }) =>
-            and(
-              inArray(u.userId, userIds),
-              inArray(u.ticketTemplateId, foundTicketIds),
-            ),
-          columns: {
-            userId: true,
-          },
+        const clearedTicketTemplatesUserMap = new Map<string, Set<string>>();
+
+        ticketTemplatesUsersMap.forEach((existingUserSet, ticketTemplateId) => {
+          const newUserSet = new Set<string>();
+
+          userIds.forEach((userId) => {
+            if (!existingUserSet.has(userId)) {
+              newUserSet.add(userId);
+            }
+          });
+
+          clearedTicketTemplatesUserMap.set(ticketTemplateId, newUserSet);
         });
 
-        const userIdsWithTickets = new Set(
-          usersWithTickets.map((user) => user.userId),
-        );
-
-        userIds = userIds.filter((userId) => !userIdsWithTickets.has(userId));
+        ticketTemplatesUsersMap = clearedTicketTemplatesUserMap;
       }
 
       if (userIds.length === 0) {
@@ -113,13 +128,19 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         );
       }
 
+      const purchaseOrder = await createInitialPurchaseOrder({
+        DB,
+        logger,
+        userId: USER.id,
+      });
+
       const ticketsToInsert: (typeof insertUserTicketsSchema._type)[] = [];
 
-      foundTickets.forEach((ticket) => {
-        userIds.forEach((userId) => {
+      ticketTemplatesUsersMap.forEach((userSet, ticketTemplateId) => {
+        userSet.forEach((userId) => {
           const parsedData = insertUserTicketsSchema.parse({
             userId,
-            ticketTemplateId: ticket.id,
+            ticketTemplateId,
             purchaseOrderId: purchaseOrder.id,
             approvalStatus: autoApproveTickets ? "approved" : "gifted",
           });
