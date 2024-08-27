@@ -150,6 +150,7 @@ type Event {
   community: Community
   description: String
   endDateTime: DateTime
+  galleries: [Gallery!]!
   id: ID!
   images: [SanityAssetRef!]!
   latitude: String
@@ -256,6 +257,17 @@ input FindUserTicketSearchInput {
   userTicketIds: [String!]
 }
 
+"""
+Representation of a Gallery, usually associated to an event
+"""
+type Gallery {
+  description: String
+  event: Event
+  id: ID!
+  images: [Image!]!
+  name: String!
+}
+
 enum Gender {
   Agender
   Female
@@ -281,6 +293,21 @@ input GiftTicketsToUserInput {
   notifyUsers: Boolean!
   ticketIds: [String!]!
   userIds: [String!]!
+}
+
+"""
+An image, usually associated to a gallery
+"""
+type Image {
+  gallery: Gallery
+  hosting: ImageHostingEnum!
+  id: ID!
+  url: String!
+}
+
+enum ImageHostingEnum {
+  cloudflare
+  sanity
 }
 
 type Mutation {

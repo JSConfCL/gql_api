@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS "gallery_slug_index";

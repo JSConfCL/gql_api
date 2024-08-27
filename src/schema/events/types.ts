@@ -5,6 +5,7 @@ import { builder } from "~/builder";
 import {
   ScheduleStatus,
   selectCommunitySchema,
+  selectGalleriesSchema,
   selectScheduleSchema,
   selectSpeakerSchema,
   selectTagsSchema,
@@ -19,6 +20,7 @@ import {
 } from "~/datasources/db/schema";
 import { getImagesBySanityEventId } from "~/datasources/sanity/images";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
+import { GalleryRef } from "~/schema/gallery/types";
 import { schedulesFetcher } from "~/schema/schedules/schedulesFetcher";
 import { ScheduleRef } from "~/schema/schedules/types";
 import {
@@ -123,6 +125,16 @@ export const EventLoadable = builder.loadableObject(EventRef, {
       type: "DateTime",
       nullable: true,
       resolve: (root) => (root.endDateTime ? new Date(root.endDateTime) : null),
+    }),
+    galleries: t.field({
+      type: [GalleryRef],
+      resolve: async ({ id }, args, ctx) => {
+        const galleries = await ctx.DB.query.galleriesSchema.findMany({
+          where: (g, { eq }) => eq(g.eventId, id),
+        });
+
+        return galleries.map((g) => selectGalleriesSchema.parse(g));
+      },
     }),
     images: t.field({
       type: [SanityAssetRef],

@@ -166,6 +166,7 @@ export type Event = {
   community?: Maybe<Community>;
   description?: Maybe<Scalars["String"]["output"]>;
   endDateTime?: Maybe<Scalars["DateTime"]["output"]>;
+  galleries: Array<Gallery>;
   id: Scalars["ID"]["output"];
   images: Array<SanityAssetRef>;
   latitude?: Maybe<Scalars["String"]["output"]>;
@@ -274,6 +275,16 @@ export type FindUserTicketSearchInput = {
   userTicketIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
 
+/** Representation of a Gallery, usually associated to an event */
+export type Gallery = {
+  __typename?: "Gallery";
+  description?: Maybe<Scalars["String"]["output"]>;
+  event?: Maybe<Event>;
+  id: Scalars["ID"]["output"];
+  images: Array<Image>;
+  name: Scalars["String"]["output"];
+};
+
 export enum Gender {
   Agender = "Agender",
   Female = "Female",
@@ -300,6 +311,20 @@ export type GiftTicketsToUserInput = {
   ticketIds: Array<Scalars["String"]["input"]>;
   userIds: Array<Scalars["String"]["input"]>;
 };
+
+/** An image, usually associated to a gallery */
+export type Image = {
+  __typename?: "Image";
+  gallery?: Maybe<Gallery>;
+  hosting: ImageHostingEnum;
+  id: Scalars["ID"]["output"];
+  url: Scalars["String"]["output"];
+};
+
+export enum ImageHostingEnum {
+  Cloudflare = "cloudflare",
+  Sanity = "sanity",
+}
 
 export type Mutation = {
   __typename?: "Mutation";

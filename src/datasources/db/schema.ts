@@ -14,6 +14,10 @@ export * from "~/datasources/db/eventsTags";
 
 export * from "~/datasources/db/eventsUsers";
 
+export * from "~/datasources/db/galleries";
+
+export * from "~/datasources/db/images";
+
 export * from "~/datasources/db/paymentLogs";
 
 export * from "~/datasources/db/prices";

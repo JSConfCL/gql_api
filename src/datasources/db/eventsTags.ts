@@ -2,8 +2,8 @@ import { relations } from "drizzle-orm";
 import { primaryKey, pgTable, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-import { eventsSchema, tagsSchema } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { eventsSchema, tagsSchema } from "~/datasources/db/schema";
+import { createdAndUpdatedAtFields } from "~/datasources/db/shared";
 
 // EVENTS—TAGS-TABLE
 export const eventsToTagsSchema = pgTable(
