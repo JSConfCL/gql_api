@@ -1,11 +1,13 @@
 import { relations } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { usersSchema, userTicketsSchema } from "./schema";
 import {
   createdAndUpdatedAtFields,
+  timestamp,
   TypescriptEnumAsDBEnumOptions,
+  uuid,
 } from "./shared";
 
 export enum UserTicketsEmailType {
@@ -32,10 +34,10 @@ export enum UserTicketsEmailType {
   TICKET_REMINDER = "ticket_reminder",
 }
 
-export const userTicketsEmailLogSchema = pgTable(
+export const userTicketsEmailLogSchema = sqliteTable(
   "user_tickets_email_logs",
   {
-    id: uuid("id").primaryKey().defaultRandom().unique(),
+    id: uuid("id").primaryKey().unique(),
     userTicketId: uuid("user_ticket_id")
       .references(() => userTicketsSchema.id)
       .notNull(),
@@ -45,9 +47,7 @@ export const userTicketsEmailLogSchema = pgTable(
     emailType: text("email_type", {
       enum: TypescriptEnumAsDBEnumOptions(UserTicketsEmailType),
     }).notNull(),
-    sentAt: timestamp("sent_at", {
-      precision: 6,
-    }),
+    sentAt: timestamp("sent_at"),
     ...createdAndUpdatedAtFields,
   },
   (table) => {

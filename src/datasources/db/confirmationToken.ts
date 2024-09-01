@@ -1,8 +1,8 @@
 import { relations } from "drizzle-orm";
-import { timestamp, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, uuid } from "./shared";
 import { usersSchema } from "./users";
 
 const confirmationTokenStatusEnum = [
@@ -24,8 +24,8 @@ const confirmationTokenSourceEnum = [
 // Por ejemplo, si source es "workEmail" y sourceId es el id de un workEmailSchema
 // entonces sabes que esta validando un email
 // validUntil es el timestamp en el que el token deja de ser valido
-export const confirmationTokenSchema = pgTable("confirmation_token", {
-  id: uuid("id").primaryKey().defaultRandom(),
+export const confirmationTokenSchema = sqliteTable("confirmation_token", {
+  id: uuid("id").primaryKey(),
   source: text("source", {
     enum: confirmationTokenSourceEnum,
   }).notNull(),
@@ -33,12 +33,14 @@ export const confirmationTokenSchema = pgTable("confirmation_token", {
     .references(() => usersSchema.id)
     .notNull(),
   sourceId: text("source_id").notNull(),
-  token: uuid("token").notNull().unique().defaultRandom(),
+  token: uuid("token").notNull().unique(),
   status: text("status", {
     enum: confirmationTokenStatusEnum,
   }).default("pending"),
-  validUntil: timestamp("valid_until").notNull(),
-  confirmationDate: timestamp("confirmation_date"),
+  validUntil: integer("valid_until", { mode: "timestamp_ms" }).notNull(),
+  confirmationDate: integer("confirmation_date", {
+    mode: "timestamp_ms",
+  }),
   ...createdAndUpdatedAtFields,
 });
 

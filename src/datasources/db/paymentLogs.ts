@@ -1,36 +1,34 @@
 import {
-  pgTable,
-  uuid,
+  sqliteTable,
   text,
-  jsonb,
-  decimal,
-  timestamp,
+  real,
   unique,
-} from "drizzle-orm/pg-core";
+  integer,
+} from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, uuid } from "./shared";
 
 const paymentPlatforms = ["mercadopago", "stripe"] as const;
 
 // TAG—COMMUNITY
-export const paymentLogsSchema = pgTable(
+export const paymentLogsSchema = sqliteTable(
   "payments_logs",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey(),
     externalId: text("external_id").notNull(),
     externalProductReference: text("external_product_reference"),
     platform: text("platform", {
       enum: paymentPlatforms,
     }).notNull(),
-    transactionAmount: decimal("transaction_amount").notNull(),
-    externalCreationDate: timestamp("external_creation_date", {
-      mode: "date",
-      precision: 6,
-      withTimezone: true,
+    transactionAmount: text("transaction_amount").notNull(),
+    externalCreationDate: integer("external_creation_date", {
+      mode: "timestamp_ms",
     }),
     currencyId: text("currency_id").notNull(),
-    originalResponseBlob: jsonb("original_response_blob").notNull(),
+    originalResponseBlob: text("original_response_blob", {
+      mode: "json",
+    }).notNull(),
     ...createdAndUpdatedAtFields,
   },
   (t) => ({

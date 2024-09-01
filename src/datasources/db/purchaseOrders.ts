@@ -1,12 +1,5 @@
 import { relations } from "drizzle-orm";
-import {
-  jsonb,
-  pgTable,
-  text,
-  uuid,
-  numeric,
-  timestamp,
-} from "drizzle-orm/pg-core";
+import { sqliteTable, text, numeric } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import {
@@ -14,7 +7,7 @@ import {
   userTicketsSchema,
   usersSchema,
 } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, uuid, timestamp } from "./shared";
 
 export const purchaseOrderStatusEnum = ["complete", "expired", "open"] as const;
 
@@ -27,15 +20,15 @@ export const puchaseOrderPaymentStatusEnum = [
 ] as const;
 
 // PURCHASE_OURDERS TABLE
-export const purchaseOrdersSchema = pgTable("purchase_orders", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
+export const purchaseOrdersSchema = sqliteTable("purchase_orders", {
+  id: uuid("id").primaryKey().notNull(),
   userId: uuid("user_id")
     .references(() => usersSchema.id)
     .notNull(),
   description: text("description"),
   idempotencyUUIDKey: uuid("idempotency_uuid_key")
     .notNull()
-    .defaultRandom()
+
     .unique(),
   paymentPlatform: text("payment_platform", {
     enum: purchaseOrderPaymentPlatforms,
@@ -49,7 +42,7 @@ export const purchaseOrdersSchema = pgTable("purchase_orders", {
   paymentPlatformExpirationDate: timestamp("payment_platform_expiration_date"),
   paymentPlatformReferenceID: text("payment_platform_reference_id"),
   paymentPlatformStatus: text("payment_platform_status"),
-  paymentPlatformMetadata: jsonb("payment_platform_metadata"),
+  paymentPlatformMetadata: text("payment_platform_metadata", { mode: "json" }),
   purchaseOrderPaymentStatus: text("purchase_order_payment_status", {
     enum: puchaseOrderPaymentStatusEnum,
   })

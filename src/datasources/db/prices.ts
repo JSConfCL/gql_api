@@ -1,14 +1,14 @@
 import { relations } from "drizzle-orm";
-import { integer, pgTable, uuid } from "drizzle-orm/pg-core";
+import { integer, sqliteTable } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { allowedCurrencySchema } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, uuid } from "./shared";
 import { ticketsPricesSchema } from "./ticketPrice";
 
 // TICKETS-TABLE
-export const pricesSchema = pgTable("prices", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
+export const pricesSchema = sqliteTable("prices", {
+  id: uuid("id").primaryKey().notNull(),
   price_in_cents: integer("price").notNull(),
   currencyId: uuid("currency_id").references(() => allowedCurrencySchema.id),
   ...createdAndUpdatedAtFields,

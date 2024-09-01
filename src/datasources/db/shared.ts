@@ -1,18 +1,16 @@
-import { timestamp } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { text, integer } from "drizzle-orm/sqlite-core";
 import { z } from "zod";
 
+export const timestamp = (columnName: string) =>
+  integer(columnName, { mode: "timestamp_ms" });
+
 export const createdAndUpdatedAtFields = {
-  createdAt: timestamp("created_at", {
-    precision: 6,
-  })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("updated_at", {
-    precision: 6,
-  }),
-  deletedAt: timestamp("deleted_at", {
-    precision: 6,
-  }),
+  createdAt: timestamp("created_at")
+    .notNull()
+    .default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: timestamp("updated_at"),
+  deletedAt: timestamp("deleted_at"),
 };
 
 export const createdAndUpdatedAtFieldsSelectZodSchema = {
@@ -47,3 +45,9 @@ export const TypescriptEnumAsDBEnumOptions = <
 ) => {
   return Object.values(enumObject) as EnumValuesAsTuple<E>;
 };
+
+export const uuid = (columnName: string) =>
+  text(columnName).$defaultFn(() => crypto.randomUUID());
+
+export const boolean = (columnName: string) =>
+  integer(columnName, { mode: "boolean" }).$type<boolean>();

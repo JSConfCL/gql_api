@@ -1,14 +1,14 @@
 import { relations } from "drizzle-orm";
-import { boolean, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { usersSchema } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, uuid, boolean } from "./shared";
 
-export const userDataSchema = pgTable(
+export const userDataSchema = sqliteTable(
   "user_data",
   {
-    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    id: uuid("id").primaryKey().notNull(),
     userId: uuid("user_id").references(() => usersSchema.id),
     countryOfResidence: text("country_of_residence").notNull(),
     city: text("city").notNull(),

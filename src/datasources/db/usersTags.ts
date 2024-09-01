@@ -1,9 +1,9 @@
 import { relations } from "drizzle-orm";
-import { primaryKey, pgTable, uuid } from "drizzle-orm/pg-core";
+import { primaryKey, sqliteTable } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { usersSchema, tagsSchema } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, uuid } from "./shared";
 
 export enum AllowedUserTags {
   "DONOR" = "DONOR",
@@ -12,10 +12,10 @@ export enum AllowedUserTags {
 }
 
 // USERS-TAGS
-export const usersTagsSchema = pgTable(
+export const usersTagsSchema = sqliteTable(
   "users_tags",
   {
-    id: uuid("id").notNull().defaultRandom().unique(),
+    id: uuid("id").notNull().unique(),
     tagId: uuid("tag_id")
       .references(() => tagsSchema.id)
       .notNull(),

@@ -1,9 +1,9 @@
 import { relations } from "drizzle-orm";
-import { index, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { purchaseOrdersSchema, ticketsSchema, usersSchema } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, uuid } from "./shared";
 
 export const userTicketsApprovalStatusEnum = [
   "approved",
@@ -18,11 +18,11 @@ export const userTicketsApprovalStatusEnum = [
 export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;
 
 // USER-TICKETS-TABLE
-export const userTicketsSchema = pgTable(
+export const userTicketsSchema = sqliteTable(
   "user_tickets",
   {
-    id: uuid("id").primaryKey().notNull().defaultRandom(),
-    publicId: uuid("public_id").notNull().defaultRandom(),
+    id: uuid("id").primaryKey().notNull(),
+    publicId: uuid("public_id").notNull(),
     userId: uuid("user_id").references(() => usersSchema.id),
     ticketTemplateId: uuid("ticket_template_id")
       .references(() => ticketsSchema.id)

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { timestamp, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import {
@@ -7,15 +7,15 @@ import {
   eventsToTagsSchema,
   ticketsSchema,
 } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, uuid } from "./shared";
 
 export const eventStatusEnum = ["active", "inactive"] as const;
 
 export const eventVisibilityEnum = ["public", "private", "unlisted"] as const;
 
 // EVENTS-TABLE
-export const eventsSchema = pgTable("events", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
+export const eventsSchema = sqliteTable("events", {
+  id: uuid("id").primaryKey().notNull(),
   name: text("name").notNull().unique(),
   description: text("description"),
   status: text("status", { enum: eventStatusEnum })
@@ -26,8 +26,12 @@ export const eventsSchema = pgTable("events", {
   })
     .notNull()
     .default("unlisted"),
-  startDateTime: timestamp("start_date_time").notNull(),
-  endDateTime: timestamp("end_date_time"),
+  startDateTime: integer("start_date_time", {
+    mode: "timestamp_ms",
+  }).notNull(),
+  endDateTime: integer("end_date_time", {
+    mode: "timestamp_ms",
+  }),
   timeZone: text("timezone"),
   geoLatitude: text("geo_latitude"),
   geoLongitude: text("geo_longitude"),

@@ -2,11 +2,17 @@
 name = "graphql-api"
 compatibility_date = "2024-06-03"
 main = "src/index.ts"
-compatibility_flags = [ "nodejs_compat" ]
+compatibility_flags = ["nodejs_compat"]
 
 
 [dev]
 port = 50123
+
+[[d1_databases]]
+binding = "D1"
+database_name = "prod-d1-tutorial"
+database_id = "<unique-ID-for-your-database>"
+
 
 [[services]]
 binding = "RPC_SERVICE_EMAIL"
@@ -32,7 +38,12 @@ binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
 [[hyperdrive]]
 binding = "HYPERDRIVE"
 id = "f0bc5f4533eb4557976b7d0b59d880ad"
-localConnectionString="postgresql://fake-user:fake-pasword@fake:5432/fake-db"
+localConnectionString = "postgresql://fake-user:fake-pasword@fake:5432/fake-db"
+
+[[d1_databases]]
+binding = "D1"
+database_name = "communityos-dev"
+database_id = "920c8d8b-ff04-4a52-bedd-9cc1a53fd2c0"
 
 # =====================================
 # =====================================
@@ -68,6 +79,10 @@ binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
 binding = "HYPERDRIVE"
 id = "faa163999e9f40c6a26b3612940bc5ba"
 
+[[env.production.d1_databases]]
+binding = "D1"
+database_name = "communityos-prod"
+database_id = "6c6bf3c3-996e-47d3-99da-d3b0a7baea94"
 
 # =====================================
 # =====================================
@@ -102,3 +117,8 @@ binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
 [[env.staging.hyperdrive]]
 binding = "HYPERDRIVE"
 id = "c693e76575c64a8eab15032d97ab938f"
+
+[[env.staging.d1_databases]]
+binding = "D1"
+database_name = "communityos-staging"
+database_id = "94f3ccf3-0598-4e68-bff9-9982196c6998"

@@ -5,7 +5,7 @@ import { buildHTTPExecutor } from "@graphql-tools/executor-http";
 import { ExecutionRequest } from "@graphql-tools/utils";
 import { initContextCache } from "@pothos/core";
 import { eq } from "drizzle-orm";
-import { PgTable } from "drizzle-orm/pg-core";
+import { SQLiteTable } from "drizzle-orm/sqlite-core";
 import { createSelectSchema } from "drizzle-zod";
 import { type ExecutionResult } from "graphql";
 import { createYoga } from "graphql-yoga";
@@ -210,7 +210,7 @@ export const executeGraphqlOperationAsSuperAdmin = async <
 async function insertOne<
   I extends ZodType<any, any, any>,
   S extends ZodType<any, any, any>,
-  D extends PgTable<any>,
+  D extends SQLiteTable<any>,
 >(
   insertZod: I,
   selectZod: S,
@@ -232,7 +232,7 @@ async function insertOne<
   return selectZod.parse(data);
 }
 
-async function findById<D extends PgTable<any>>(
+async function findById<D extends SQLiteTable<any>>(
   dbSchema: D,
   id: string | undefined,
 ) {

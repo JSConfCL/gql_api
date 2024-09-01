@@ -1,15 +1,15 @@
 import { relations } from "drizzle-orm";
-import { primaryKey, pgTable, uuid } from "drizzle-orm/pg-core";
+import { primaryKey, sqliteTable } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { eventsSchema, tagsSchema } from "~/datasources/db/schema";
-import { createdAndUpdatedAtFields } from "~/datasources/db/shared";
+import { createdAndUpdatedAtFields, uuid } from "~/datasources/db/shared";
 
 // EVENTS—TAGS-TABLE
-export const eventsToTagsSchema = pgTable(
+export const eventsToTagsSchema = sqliteTable(
   "events_tags",
   {
-    id: uuid("id").notNull().defaultRandom().unique(),
+    id: uuid("id").notNull().unique(),
     eventId: uuid("event_id")
       .references(() => eventsSchema.id)
       .notNull(),

@@ -1,15 +1,15 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { salariesSchema, workEmailSchema } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, uuid } from "./shared";
 
 const companiesStatusEnum = ["active", "inactive", "draft"] as const;
 
 // COMPANIES-TABLE
-export const companiesSchema = pgTable("companies", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
+export const companiesSchema = sqliteTable("companies", {
+  id: uuid("id").primaryKey().notNull(),
   name: text("name"),
   description: text("description"),
   domain: text("domain").notNull(),

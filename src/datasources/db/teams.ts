@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, uuid, text, integer } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -7,6 +7,7 @@ import { eventsSchema, userTeamsSchema } from "./schema";
 import {
   createdAndUpdatedAtFields,
   TypescriptEnumAsDBEnumOptions,
+  uuid,
 } from "./shared";
 
 export enum TeamStatusEnum {
@@ -16,8 +17,8 @@ export enum TeamStatusEnum {
   waiting_resolution = "waiting_resolution",
 }
 
-export const teamsSchema = pgTable("teams", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
+export const teamsSchema = sqliteTable("teams", {
+  id: uuid("id").primaryKey().notNull(),
   name: text("name").notNull(),
   eventId: uuid("event_id")
     .references(() => eventsSchema.id)

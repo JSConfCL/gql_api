@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable, uuid, text } from "drizzle-orm/pg-core";
+import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { galleriesSchema } from "~/datasources/db/schema";
@@ -7,6 +7,7 @@ import { galleriesSchema } from "~/datasources/db/schema";
 import {
   createdAndUpdatedAtFields,
   TypescriptEnumAsDBEnumOptions,
+  uuid,
 } from "./shared";
 
 export enum imageHostingEnum {
@@ -15,20 +16,19 @@ export enum imageHostingEnum {
 }
 
 // EVENTS—TAGS-TABLE
-export const imagesSchema = pgTable(
+export const imagesSchema = sqliteTable(
   "images",
   {
-    id: uuid("id").notNull().defaultRandom().unique(),
+    id: uuid("id").notNull().unique(),
     url: text("image_url").notNull(),
     hosting: text("hosting", {
       enum: TypescriptEnumAsDBEnumOptions(imageHostingEnum),
     }).notNull(),
     galleryId: uuid("gallery_id").references(() => galleriesSchema.id),
-    tags: text("tags")
+    tags: text("tags", { mode: "json" })
       .$type<string[]>()
-      .array()
       .notNull()
-      .default(sql`ARRAY[]::text[]`),
+      .default(sql`'[]'`),
     ...createdAndUpdatedAtFields,
   },
   (table) => ({

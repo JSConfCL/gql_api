@@ -1,12 +1,14 @@
 import { relations } from "drizzle-orm";
-import { pgTable, uuid } from "drizzle-orm/pg-core";
+import { sqliteTable } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+
+import { uuid } from "~/datasources/db/shared";
 
 import { sessionSchema } from "./schema";
 import { speakerSchema } from "./speaker";
 
-export const sessionToSpeakersSchema = pgTable("session_to_speakers", {
-  id: uuid("id").primaryKey().defaultRandom().unique(),
+export const sessionToSpeakersSchema = sqliteTable("session_to_speakers", {
+  id: uuid("id").primaryKey().unique(),
   sessionId: uuid("session_id")
     .notNull()
     .references(() => sessionSchema.id),

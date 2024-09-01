@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { sql } from "drizzle-orm";
-import { PgSelect } from "drizzle-orm/pg-core";
+import { SQLiteSelect } from "drizzle-orm/sqlite-core";
 
 import { ORM_TYPE } from "~/datasources/db";
 
@@ -21,7 +21,7 @@ export const paginationDBHelper = async <
 ) => {
   const safePageSize = Math.max(pagination.pageSize, 1);
   const safePage = Math.max(pagination.page, 0);
-  const query = select as unknown as PgSelect;
+  const query = select as unknown as SQLiteSelect;
   const offset = safePage * safePageSize;
   const subQuery = query.as("sub");
   const totalRecordsQuery = DB.select({

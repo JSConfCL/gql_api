@@ -1,10 +1,12 @@
-import { timestamp, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { eventsSchema } from "./schema";
 import {
   createdAndUpdatedAtFields,
   TypescriptEnumAsDBEnumOptions,
+  uuid,
+  timestamp,
 } from "./shared";
 
 export enum ScheduleStatus {
@@ -12,19 +14,15 @@ export enum ScheduleStatus {
   notActive = "not_active",
 }
 
-export const scheduleSchema = pgTable("schedule", {
-  id: uuid("id").primaryKey().defaultRandom().unique(),
+export const scheduleSchema = sqliteTable("schedule", {
+  id: uuid("id").primaryKey().unique(),
   eventId: uuid("event_id")
     .references(() => eventsSchema.id)
     .notNull(),
   title: text("title").notNull(),
   description: text("description"),
-  startTimestamp: timestamp("start_at", {
-    precision: 6,
-  }).notNull(),
-  endTimestamp: timestamp("end_at", {
-    precision: 6,
-  }).notNull(),
+  startTimestamp: timestamp("start_at").notNull(),
+  endTimestamp: timestamp("end_at").notNull(),
   status: text("status", {
     enum: TypescriptEnumAsDBEnumOptions(ScheduleStatus),
   }),

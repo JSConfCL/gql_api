@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import {
@@ -7,11 +7,16 @@ import {
   companiesSchema,
   confirmationTokenSchema,
 } from "./schema";
-import { createdAndUpdatedAtFields, statusEnumOptions } from "./shared";
+import {
+  createdAndUpdatedAtFields,
+  statusEnumOptions,
+  timestamp,
+  uuid,
+} from "./shared";
 
 // WORK-EMAILS-TABLE
-export const workEmailSchema = pgTable("work_email", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
+export const workEmailSchema = sqliteTable("work_email", {
+  id: uuid("id").primaryKey().notNull(),
   userId: uuid("user_id")
     .references(() => usersSchema.id)
     .notNull(),

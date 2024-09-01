@@ -1,19 +1,19 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, uuid, timestamp } from "drizzle-orm/pg-core";
+import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { scheduleSchema, sessionToSpeakersSchema } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, uuid, timestamp } from "./shared";
 
-export const sessionSchema = pgTable("sessions", {
-  id: uuid("id").primaryKey().defaultRandom().unique(),
+export const sessionSchema = sqliteTable("sessions", {
+  id: uuid("id").primaryKey().unique(),
   scheduleId: uuid("schedule_id")
     .references(() => scheduleSchema.id)
     .notNull(),
   title: text("title").notNull(),
   description: text("description"),
-  startTimestamp: timestamp("start_at", { precision: 6 }).notNull(),
-  endTimestamp: timestamp("end_at", { precision: 6 }).notNull(),
+  startTimestamp: timestamp("start_at").notNull(),
+  endTimestamp: timestamp("end_at").notNull(),
   ...createdAndUpdatedAtFields,
 });
 

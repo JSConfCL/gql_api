@@ -1,13 +1,13 @@
 import { relations } from "drizzle-orm";
-import { pgTable, uuid } from "drizzle-orm/pg-core";
+import { sqliteTable } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { pricesSchema, ticketsSchema } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, uuid } from "./shared";
 
 // TICKETS-TABLE
-export const ticketsPricesSchema = pgTable("tickets_prices", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
+export const ticketsPricesSchema = sqliteTable("tickets_prices", {
+  id: uuid("id").primaryKey().notNull(),
   ticketId: uuid("ticket_id")
     .notNull()
     .references(() => ticketsSchema.id),

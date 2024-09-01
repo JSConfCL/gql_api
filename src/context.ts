@@ -8,7 +8,6 @@ import { getDb } from "~/datasources/db";
 import { getMercadoPagoFetch } from "~/datasources/mercadopago";
 import { getSanityClient } from "~/datasources/sanity/client";
 import { getStripeClient } from "~/datasources/stripe/client";
-import { APP_ENV } from "~/env";
 import { Logger } from "~/logging";
 import { Context } from "~/types";
 
@@ -25,7 +24,7 @@ export const createGraphqlContext = async ({
   SANITY_SECRET_TOKEN,
   SUPABASE_JWT_DECODER,
   STRIPE_KEY,
-  HYPERDRIVE,
+  D1,
   MERCADOPAGO_KEY,
   RPC_SERVICE_EMAIL,
   logger,
@@ -72,6 +71,10 @@ export const createGraphqlContext = async ({
     throw new Error("Missing RESEND_API_KEY");
   }
 
+  if (!D1) {
+    throw new Error("Missing D1");
+  }
+
   if (
     !SANITY_PROJECT_ID ||
     !SANITY_DATASET ||
@@ -81,11 +84,11 @@ export const createGraphqlContext = async ({
     throw new Error("Missing Sanity Configuration");
   }
 
-  const DB_URL =
-    HYPERDRIVE?.connectionString?.startsWith("postgresql://fake-user:fake") &&
-    APP_ENV === "development"
-      ? NEON_URL
-      : HYPERDRIVE.connectionString;
+  // const DB_URL =
+  //   HYPERDRIVE?.connectionString?.startsWith("postgresql://fake-user:fake") &&
+  //   APP_ENV === "development"
+  //     ? NEON_URL
+  //     : HYPERDRIVE.connectionString;
 
   const GET_SANITY_CLIENT = () =>
     getSanityClient({
@@ -99,7 +102,7 @@ export const createGraphqlContext = async ({
   const GET_STRIPE_CLIENT = () => getStripeClient(STRIPE_KEY);
   const GET_MERCADOPAGO_CLIENT = getMercadoPagoFetch(MERCADOPAGO_KEY, logger);
   const DB = getDb({
-    neonUrl: DB_URL,
+    D1,
     logger,
   });
   const RESEND = new Resend(RESEND_API_KEY);

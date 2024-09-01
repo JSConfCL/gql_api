@@ -1,1 +1,0 @@
-ALTER TABLE "tickets" ADD COLUMN "max_tickets_per_user" integer;

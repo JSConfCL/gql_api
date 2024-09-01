@@ -1,12 +1,12 @@
 import { relations } from "drizzle-orm";
-import {} from "drizzle-orm/mysql-core";
-import { pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { teamsSchema, usersSchema } from "./schema";
 import {
   createdAndUpdatedAtFields,
   TypescriptEnumAsDBEnumOptions,
+  uuid,
 } from "./shared";
 
 export enum UserParticipationStatusEnum {
@@ -20,8 +20,8 @@ export enum UserTeamRoleEnum {
   member = "member",
 }
 
-export const userTeamsSchema = pgTable("user_teams", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
+export const userTeamsSchema = sqliteTable("user_teams", {
+  id: uuid("id").primaryKey().notNull(),
   userId: uuid("user_id")
     .references(() => usersSchema.id)
     .notNull(),

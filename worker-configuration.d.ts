@@ -16,7 +16,7 @@ export interface Env {
   GOOGLE_PHOTOS_IMPORT_QUEUE: Queue;
   RESEND_API_KEY: string;
   HIGHLIGHT_PROJECT_ID: string;
-  HYPERDRIVE: Hyperdrive;
+  D1: D1Database;
   PURCHASE_CALLBACK_URL: string;
   RPC_SERVICE_EMAIL: Service<WorkerEntrypoint>;
 }

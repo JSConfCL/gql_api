@@ -10,8 +10,21 @@ if (!process.env.NEON_URL) {
   throw new Error("NEON_URL is not defined");
 }
 
+if (!process.env.CLOUDFLARE_ACCOUNT_ID) {
+  throw new Error("CLOUDFLARE_ACCOUNT_ID is not defined");
+}
+
+if (!process.env.CLOUDFLARE_DATABASE_ID) {
+  throw new Error("CLOUDFLARE_DATABASE_ID is not defined");
+}
+
+if (!process.env.CLOUDFLARE_D1_TOKEN) {
+  throw new Error("CLOUDFLARE_D1_TOKEN is not defined");
+}
+
 export default defineConfig({
-  dialect: "postgresql",
+  dialect: "sqlite",
+  driver: "d1-http",
   schema: "./src/datasources/db/schema.ts",
   out: "./drizzle/migrations",
   breakpoints: true,
@@ -21,6 +34,8 @@ export default defineConfig({
   },
   verbose: true,
   dbCredentials: {
-    url: process.env.NEON_URL,
+    accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
+    databaseId: process.env.CLOUDFLARE_DATABASE_ID,
+    token: process.env.CLOUDFLARE_D1_TOKEN,
   },
 });

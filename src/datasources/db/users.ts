@@ -1,12 +1,5 @@
 import { relations } from "drizzle-orm";
-import {
-  boolean,
-  index,
-  jsonb,
-  pgTable,
-  text,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -20,6 +13,8 @@ import {
   createdAndUpdatedAtFields,
   GenderOptionsEnum,
   TypescriptEnumAsDBEnumOptions,
+  boolean,
+  uuid,
 } from "./shared";
 
 export enum UserStatusEnum {
@@ -38,10 +33,10 @@ export enum PronounsEnum {
 }
 
 // USERS
-export const usersSchema = pgTable(
+export const usersSchema = sqliteTable(
   "users",
   {
-    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    id: uuid("id").primaryKey().notNull(),
     externalId: text("externalId"),
     name: text("name"),
     lastName: text("lastName"),
@@ -61,14 +56,16 @@ export const usersSchema = pgTable(
     isEmailVerified: boolean("emailVerified").default(false).notNull(),
     imageUrl: text("imageUrl"),
     username: text("username").unique().notNull(),
-    publicMetadata: jsonb("publicMetadata"),
+    publicMetadata: text("publicMetadata", {
+      mode: "json",
+    }),
     ...createdAndUpdatedAtFields,
   },
   (table) => ({
     emailIndex: index("users_email_index").on(table.email),
-    nameIndex: index("users_name_index").using("gin", table.name),
-    lastNameIndex: index("users_last_name_index").using("gin", table.lastName),
-    userNameIndex: index("users_username_index").using("gin", table.username),
+    nameIndex: index("users_name_index").on(table.name),
+    lastNameIndex: index("users_last_name_index").on(table.lastName),
+    userNameIndex: index("users_username_index").on(table.username),
   }),
 );
 

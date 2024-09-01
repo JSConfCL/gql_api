@@ -1,1 +1,0 @@
-ALTER TABLE "speakers" ADD COLUMN "company" text;

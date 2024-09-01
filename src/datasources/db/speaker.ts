@@ -1,24 +1,23 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
 import { eventsSchema, sessionToSpeakersSchema } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, uuid } from "./shared";
 
-export const speakerSchema = pgTable("speakers", {
-  id: uuid("id").primaryKey().defaultRandom().unique(),
+export const speakerSchema = sqliteTable("speakers", {
+  id: uuid("id").primaryKey().unique(),
   name: text("name").notNull(),
   bio: text("bio"),
   rol: text("rol"),
   avatar: text("avatar"),
   eventId: uuid("event_id").references(() => eventsSchema.id),
   company: text("company"),
-  socials: text("social_links")
+  socials: text("social_links", { mode: "json" })
     .$type<string[]>()
-    .array()
     .notNull()
-    .default(sql`ARRAY[]::text[]`),
+    .default(sql`'[]'`),
   ...createdAndUpdatedAtFields,
 });
 

@@ -309,7 +309,7 @@ export const createPaymentIntent = async ({
   logger,
   transactionalEmailService,
 }: {
-  DB: Context["DB"];
+  DB: ORM_TYPE;
   purchaseOrderId: string;
   USER: USER;
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];

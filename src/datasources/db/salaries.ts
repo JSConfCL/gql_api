@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { companiesSchema } from "./companies";
@@ -7,6 +7,7 @@ import {
   createdAndUpdatedAtFields,
   GenderOptionsEnum,
   TypescriptEnumAsDBEnumOptions,
+  uuid,
 } from "./shared";
 import { usersSchema } from "./users";
 import { workEmailSchema } from "./workEmail";
@@ -16,8 +17,8 @@ const typeOfEmploymentEnum = ["fullTime", "partTime", "freelance"] as const;
 const workMetodologyEnum = ["remote", "office", "hybrid"] as const;
 
 // SALARIES-TABLE
-export const salariesSchema = pgTable("salaries", {
-  id: uuid("id").primaryKey().defaultRandom(),
+export const salariesSchema = sqliteTable("salaries", {
+  id: uuid("id").primaryKey(),
   userId: uuid("user_id")
     .references(() => usersSchema.id)
     .notNull(),

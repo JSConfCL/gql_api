@@ -1,15 +1,15 @@
 import { relations } from "drizzle-orm";
-import { primaryKey, pgTable, uuid } from "drizzle-orm/pg-core";
+import { primaryKey, sqliteTable } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { communitySchema, tagsSchema } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, uuid } from "./shared";
 
 // TAG—COMMUNITY
-export const tagsToCommunitiesSchema = pgTable(
+export const tagsToCommunitiesSchema = sqliteTable(
   "tags_communities",
   {
-    id: uuid("id").notNull().defaultRandom().unique(),
+    id: uuid("id").notNull().unique(),
     tagId: uuid("tag_id")
       .references(() => tagsSchema.id)
       .notNull(),

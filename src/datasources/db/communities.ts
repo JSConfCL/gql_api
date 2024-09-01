@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import {
@@ -7,13 +7,13 @@ import {
   tagsToCommunitiesSchema,
   usersToCommunitiesSchema,
 } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, uuid } from "./shared";
 
 export const communityStatusEnum = ["active", "inactive"] as const;
 
 // COMMUNITY-TABLE
-export const communitySchema = pgTable("communities", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
+export const communitySchema = sqliteTable("communities", {
+  id: uuid("id").primaryKey().notNull(),
   name: text("name").notNull(),
   slug: text("slug").unique(),
   description: text("description"),

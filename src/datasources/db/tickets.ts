@@ -1,17 +1,10 @@
 import { relations, sql } from "drizzle-orm";
-import {
-  boolean,
-  integer,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
 import { eventsSchema, userTicketsSchema } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { boolean, createdAndUpdatedAtFields, uuid } from "./shared";
 import { ticketsPricesSchema } from "./ticketPrice";
 
 export const ticketStatusEnum = ["active", "inactive"] as const;
@@ -19,18 +12,17 @@ export const ticketStatusEnum = ["active", "inactive"] as const;
 export const ticketVisibilityEnum = ["public", "private", "unlisted"] as const;
 
 // TICKETS-TABLE
-export const ticketsSchema = pgTable("tickets", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
+export const ticketsSchema = sqliteTable("tickets", {
+  id: uuid("id").primaryKey().notNull(),
   name: text("name").notNull().unique(),
   description: text("description"),
   status: text("status", { enum: ticketStatusEnum })
     .notNull()
     .default("inactive"),
-  tags: text("tags")
+  tags: text("tags", { mode: "json" })
     .$type<string[]>()
-    .array()
     .notNull()
-    .default(sql`ARRAY[]::text[]`),
+    .default(sql`'[]'`),
   externalLink: text("external_link"),
   maxTicketsPerUser: integer("max_tickets_per_user"),
   imageLink: text("image_link"),
@@ -39,8 +31,8 @@ export const ticketsSchema = pgTable("tickets", {
   })
     .notNull()
     .default("unlisted"),
-  startDateTime: timestamp("start_date_time").notNull(),
-  endDateTime: timestamp("end_date_time"),
+  startDateTime: integer("start_date_time", { mode: "timestamp_ms" }).notNull(),
+  endDateTime: integer("end_date_time", { mode: "timestamp_ms" }),
   requiresApproval: boolean("requires_approval").notNull().default(false),
   quantity: integer("quantity"),
   isUnlimited: boolean("is_unlimited").notNull().default(false),

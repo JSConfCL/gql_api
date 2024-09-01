@@ -1,35 +1,23 @@
 import { ExtractTablesWithRelations } from "drizzle-orm";
-import { PgTransaction } from "drizzle-orm/pg-core";
-import {
-  PostgresJsDatabase,
-  PostgresJsQueryResultHKT,
-  drizzle,
-} from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { drizzle, DrizzleD1Database } from "drizzle-orm/d1";
+import { SQLiteTransaction } from "drizzle-orm/sqlite-core";
 
 import { Logger } from "~/logging";
 
 import * as schema from "./schema";
 
-export type ORM_TYPE = PostgresJsDatabase<typeof schema>;
-
-export type TRANSACTION_HANDLER = PgTransaction<
-  PostgresJsQueryResultHKT,
+export type TRANSACTION_HANDLER = SQLiteTransaction<
+  "async",
+  D1Result<unknown>,
   typeof schema,
   ExtractTablesWithRelations<typeof schema>
 >;
 
-export const getDb = ({
-  neonUrl,
-  logger,
-}: {
-  neonUrl: string;
-  logger: Logger;
-}) => {
-  const client = postgres(neonUrl);
+export type ORM_TYPE = DrizzleD1Database<typeof schema> | TRANSACTION_HANDLER;
 
+export const getDb = ({ D1, logger }: { D1: D1Database; logger: Logger }) => {
   try {
-    const db = drizzle(client, {
+    const db = drizzle(D1, {
       schema,
     });
 

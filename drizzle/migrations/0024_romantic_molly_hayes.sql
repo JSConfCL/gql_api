@@ -1,2 +1,0 @@
-ALTER TABLE "user_tickets" ADD COLUMN "public_id" uuid DEFAULT gen_random_uuid() NOT NULL;--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "user_tickets_public_id_index" ON "user_tickets" USING btree ("public_id");
