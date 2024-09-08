@@ -26,6 +26,8 @@ import { ScheduleRef } from "~/schema/schedules/types";
 import {
   CommunityRef,
   EventRef,
+  PublicEventAttendanceRef,
+  PublicUserInfoRef,
   SanityAssetRef,
   TagRef,
   TicketRef,
@@ -37,6 +39,7 @@ import { SpeakerRef } from "~/schema/speakers/types";
 import { teamsFetcher } from "~/schema/teams/teamsFetcher";
 import { TeamRef } from "~/schema/teams/types";
 import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
+import { UserLoadable } from "~/schema/user/types";
 import {
   TicketApprovalStatus,
   TicketPaymentStatus,
@@ -373,3 +376,27 @@ export const EventLoadable = builder.loadableObject(EventRef, {
     }),
   }),
 });
+
+export const PublicEventAttendanceInfo = builder.objectType(
+  PublicEventAttendanceRef,
+  {
+    description:
+      "Representation of the public data for a user's event attendance, used usually for public profiles or 'shareable ticket' pages",
+    fields: (t) => ({
+      id: t.exposeID("publicId", { nullable: false }),
+      event: t.field({
+        type: EventLoadable,
+        resolve: (root) => root.event,
+      }),
+      userInfo: t.field({
+        type: PublicUserInfoRef,
+        nullable: false,
+        resolve: async ({ user }, args, ctx) => {
+          const foundUser = await UserLoadable.getDataloader(ctx).load(user.id);
+
+          return foundUser;
+        },
+      }),
+    }),
+  },
+);

@@ -1,10 +1,17 @@
 import { relations } from "drizzle-orm";
-import { timestamp, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import {
+  timestamp,
+  pgTable,
+  text,
+  uuid,
+  AnyPgColumn,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import {
   eventsToCommunitiesSchema,
   eventsToTagsSchema,
+  imagesSchema,
   ticketsSchema,
 } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
@@ -13,7 +20,6 @@ export const eventStatusEnum = ["active", "inactive"] as const;
 
 export const eventVisibilityEnum = ["public", "private", "unlisted"] as const;
 
-// EVENTS-TABLE
 export const eventsSchema = pgTable("events", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   name: text("name").notNull().unique(),
@@ -37,7 +43,23 @@ export const eventsSchema = pgTable("events", {
   meetingURL: text("meeting_url"),
   sanityEventId: text("sanity_event_id"),
   bannerImageSanityRef: text("banner_image_sanity_ref"),
-  logoId: text("logo_id"),
+  // This is an optional URL, that will be used to share to social media and enable white_labeling.
+  // For example:
+  // For a purchase_order, will be shared to <publicShareUrl>/po/:purchase_order_public_id
+  // For a user_ticket, will be shared to <publicShareUrl>/ticket/:user_ticket_public_id
+  // if not, it will default to https://tickets.communityos.io
+  publicShareUrl: text("public_share_url"),
+  // For the tickets.communitys.io designs, we need to consider the following images, 3rd parties could use them, but they are not required.
+  logoImage: uuid("logo_image").references((): AnyPgColumn => imagesSchema.id),
+  previewImage: uuid("preview_image").references(
+    (): AnyPgColumn => imagesSchema.id,
+  ),
+  bannerImage: uuid("banner_image").references(
+    (): AnyPgColumn => imagesSchema.id,
+  ),
+  mobileBannerImage: uuid("mobile_banner_image").references(
+    (): AnyPgColumn => imagesSchema.id,
+  ),
   ...createdAndUpdatedAtFields,
 });
 
