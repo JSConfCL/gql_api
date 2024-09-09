@@ -27,6 +27,9 @@ export type UserDataGraphqlSchema = z.infer<typeof selectUserDataSchema>;
 
 export const UserDataRef = builder.objectRef<UserDataGraphqlSchema>("UserData");
 
+export const PublicUserInfoRef =
+  builder.objectRef<UserGraphqlSchema>("PublicUserInfo");
+
 type CommunityGraphqlSchema = z.infer<typeof selectCommunitySchema>;
 
 export const CommunityRef =
@@ -47,6 +50,12 @@ export const UserTicketRef =
 
 export const PublicUserTicketRef =
   builder.objectRef<UserTicketGraphqlSchema>("PublicUserTicket");
+
+export const PublicEventAttendanceRef = builder.objectRef<{
+  publicId: string;
+  user: UserGraphqlSchema;
+  event: EventGraphqlSchema;
+}>("PublicEventAttendance");
 
 type TicketGraphqlSchema = z.infer<typeof selectTicketSchema>;
 

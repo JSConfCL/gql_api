@@ -10,6 +10,7 @@ import {
 } from "~/datasources/db/schema";
 import {
   CommunityRef,
+  PublicUserInfoRef,
   UserDataRef,
   UserRef,
   UserTicketRef,
@@ -201,6 +202,23 @@ builder.objectType(UserDataRef, {
     }),
     foodAllergies: t.exposeString("foodAllergies", { nullable: true }),
     emergencyPhoneNumber: t.exposeString("emergencyPhoneNumber", {
+      nullable: true,
+    }),
+  }),
+});
+
+builder.objectType(PublicUserInfoRef, {
+  description:
+    "Representation of a user's publicly accessible data, to be used in public contexts like shareable ticket UIs",
+  fields: (t) => ({
+    userName: t.exposeString("username"),
+    firstName: t.exposeString("name", {
+      nullable: true,
+    }),
+    lastName: t.exposeString("lastName", {
+      nullable: true,
+    }),
+    profilePicture: t.exposeString("imageUrl", {
       nullable: true,
     }),
   }),

@@ -1,11 +1,11 @@
 import { builder } from "~/builder";
-import { selectEventsSchema } from "~/datasources/db/schema";
+import { selectEventsSchema, selectUsersSchema } from "~/datasources/db/schema";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import {
   createPaginationInputType,
   createPaginationObjectType,
 } from "~/schema/pagination/types";
-import { EventRef } from "~/schema/shared/refs";
+import { EventRef, PublicEventAttendanceRef } from "~/schema/shared/refs";
 
 import { EventStatus, EventVisibility } from "./types";
 
@@ -104,6 +104,59 @@ builder.queryField("event", (t) =>
       }
 
       return selectEventsSchema.parse(event);
+    },
+  }),
+);
+
+const PublicEventAttendanceInfo = builder.inputType(
+  "PublicEventAttendanceInfo",
+  {
+    fields: (t) => ({
+      id: t.string({ required: true }),
+    }),
+  },
+);
+
+builder.queryField("publicEventAttendanceInfo", (t) =>
+  t.field({
+    description: "Get public event attendance info",
+    type: PublicEventAttendanceRef,
+    args: {
+      input: t.arg({ type: PublicEventAttendanceInfo, required: true }),
+    },
+    nullable: true,
+    resolve: async (root, args, { DB }) => {
+      const PO = await DB.query.purchaseOrdersSchema.findFirst({
+        where: (po, { eq }) => eq(po.publicId, args.input.id),
+        with: {
+          user: true,
+          userTickets: {
+            with: {
+              ticketTemplate: {
+                with: {
+                  event: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const event = PO?.userTickets?.[0]?.ticketTemplate?.event;
+      const user = PO?.user;
+
+      if (!event || !user) {
+        return null;
+      }
+
+      const cleanedUser = selectUsersSchema.parse(user);
+      const cleanedEvent = selectEventsSchema.parse(event);
+
+      return {
+        publicId: PO.publicId,
+        user: cleanedUser,
+        event: cleanedEvent,
+      };
     },
   }),
 );

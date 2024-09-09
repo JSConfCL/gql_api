@@ -225,6 +225,13 @@
       "when": 1724778824993,
       "tag": "0031_windy_jazinda",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1725839035256,
+      "tag": "0032_gorgeous_synch",
+      "breakpoints": true
     }
   ]
 }

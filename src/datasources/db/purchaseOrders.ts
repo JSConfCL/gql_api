@@ -32,6 +32,7 @@ export const purchaseOrdersSchema = pgTable("purchase_orders", {
   userId: uuid("user_id")
     .references(() => usersSchema.id)
     .notNull(),
+  publicId: uuid("public_id").notNull().unique().defaultRandom(),
   description: text("description"),
   idempotencyUUIDKey: uuid("idempotency_uuid_key")
     .notNull()
