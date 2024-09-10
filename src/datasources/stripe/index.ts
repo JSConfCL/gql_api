@@ -65,7 +65,7 @@ export const createOrUpdateStripeProductAndPrice = async ({
 
   try {
     // Try to retrieve the existing product
-    const existingProduct = await stripeClient.products.retrieve("8sd8da8asd");
+    await stripeClient.products.retrieve(item.id);
 
     // If the product exists, update it
     const updatedProduct = await stripeClient.products.update(item.id, {
