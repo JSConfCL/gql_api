@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 
-export const createStripeProductAndPrice = async ({
+export const createOrUpdateStripeProductAndPrice = async ({
   item,
 }: {
   item: {
@@ -15,18 +15,6 @@ export const createStripeProductAndPrice = async ({
   };
   getStripeClient: () => unknown;
   // eslint-disable-next-line @typescript-eslint/require-await
-}) => {
-  return {
-    id: faker.string.uuid(),
-    name: item.name,
-    description: item.description,
-    metadata: item.metadata,
-    default_price_data: {
-      currency: item.currency,
-      ...(Number.isInteger(item.unit_amount)
-        ? { unit_amount: item.unit_amount }
-        : { unit_amount_decimal: item.unit_amount.toString() }),
-    },
-    shippable: false,
-  };
+}): Promise<string> => {
+  return faker.string.uuid();
 };
