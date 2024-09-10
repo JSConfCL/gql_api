@@ -37,6 +37,12 @@ const getPurchaseOrderStatusFromStripeSession = (
 };
 
 const isIntegerLike = (numberInCents: number) => numberInCents % 100 === 0;
+
+/**
+ * Stripe expects the unit_amount to be an integer, and unit_amount_decimal to be a float
+ * if we want to use decimals. (sellin 29.99 USD), we need to use unit_amount_decimal
+ * instead of unit_amount.
+ */
 const getUnitAmount = (unitAmount: number) => {
   if (isIntegerLike(unitAmount)) {
     return { unit_amount: unitAmount };
@@ -45,7 +51,9 @@ const getUnitAmount = (unitAmount: number) => {
   return { unit_amount_decimal: unitAmount.toString() };
 };
 
-export const createStripeProductAndPrice = async ({
+const STRIPE_RESOURCE_MISSING_ERROR = "resource_missing";
+
+export const createOrUpdateStripeProductAndPrice = async ({
   item,
   getStripeClient,
 }: {
@@ -54,43 +62,110 @@ export const createStripeProductAndPrice = async ({
     currency: string;
     name: string;
     description?: string;
-    metadata?: {
-      [name: string]: string | number | null;
-    };
     unit_amount: number;
   };
   getStripeClient: () => Stripe;
-}) => {
+}): Promise<string> => {
   const stripeClient = getStripeClient();
-  // check if a number is a float or an integrer
-  const productData = await stripeClient.products.create({
-    id: item.id,
-    name: item.name,
-    active: true, // TODO: Adda way to disable tickets based on ticket status.
-    description: item.description,
-    metadata: item.metadata,
-    default_price_data: {
-      currency: item.currency,
-      // Stripe expects the unit_amount to be an integer, and unit_amount_decimal to be a float
-      // if we want to use decimals. (sellin 29.99 USD), we need to use unit_amount_decimal
-      // instead of unit_amount.
-      ...getUnitAmount(item.unit_amount),
-    },
-    shippable: false,
-  });
+  const updatedPriceData = {
+    currency: item.currency,
+    ...getUnitAmount(item.unit_amount),
+  };
 
-  const defaultPrice = productData.default_price;
+  const existingProduct = await retrieveExistingProduct(stripeClient, item.id);
 
-  if (!defaultPrice) {
-    throw new Error("Stripe product and price could not be created.");
+  if (existingProduct) {
+    const productNeedsUpdate =
+      existingProduct.name !== item.name ||
+      existingProduct.description !== item.description;
+
+    if (productNeedsUpdate) {
+      await stripeClient.products.update(item.id, {
+        name: item.name,
+        description: item.description,
+      });
+    }
+
+    const existingPrice = existingProduct.default_price;
+    const priceHasChanged =
+      !existingPrice ||
+      existingPrice.currency.toLowerCase() !== item.currency.toLowerCase() ||
+      (typeof updatedPriceData.unit_amount === "number" &&
+        existingPrice.unit_amount !== updatedPriceData.unit_amount) ||
+      (typeof updatedPriceData.unit_amount_decimal === "string" &&
+        existingPrice.unit_amount_decimal !==
+          updatedPriceData.unit_amount_decimal);
+
+    if (priceHasChanged) {
+      const newPrice = await stripeClient.prices.create({
+        product: item.id,
+        ...updatedPriceData,
+      });
+
+      await stripeClient.products.update(item.id, {
+        default_price: newPrice.id,
+      });
+
+      return newPrice.id;
+    }
+
+    return existingPrice.id;
+  } else {
+    const productData = await stripeClient.products.create({
+      id: item.id,
+      name: item.name,
+      // TODO: Add a way to disable tickets based on ticket status.
+      active: true,
+      description: item.description,
+      default_price_data: {
+        ...updatedPriceData,
+      },
+      shippable: false,
+    });
+
+    const defaultPrice = productData.default_price;
+
+    if (!defaultPrice) {
+      throw new Error("Stripe product and price could not be created.");
+    }
+
+    if (typeof defaultPrice === "string") {
+      return defaultPrice;
+    }
+
+    return defaultPrice.id;
   }
-
-  if (typeof defaultPrice === "string") {
-    return defaultPrice;
-  }
-
-  return defaultPrice.id;
 };
+
+type ExistingProduct = Omit<Stripe.Product, "default_price"> & {
+  default_price: Stripe.Price | null;
+};
+
+async function retrieveExistingProduct(
+  stripeClient: Stripe,
+  productId: string,
+) {
+  try {
+    const result = await stripeClient.products.retrieve(productId, {
+      expand: ["default_price"],
+    });
+
+    if (typeof result.default_price === "string") {
+      throw new Error("Stripe product price could not be retrieved.");
+    }
+
+    return result as ExistingProduct;
+  } catch (error) {
+    if (
+      error instanceof Stripe.errors.StripeError &&
+      error.code === STRIPE_RESOURCE_MISSING_ERROR
+    ) {
+      return null;
+    }
+
+    throw error;
+  }
+}
 
 export const createStripePayment = async ({
   items,
