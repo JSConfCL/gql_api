@@ -60,46 +60,49 @@ export const createOrUpdateStripeProductAndPrice = async ({
     unit_amount: number;
   };
   getStripeClient: () => Stripe;
-}) => {
+}): Promise<string> => {
   const stripeClient = getStripeClient();
 
   try {
     // Try to retrieve the existing product
-    const existingProduct = await stripeClient.products.retrieve(item.id);
+    const existingProduct = await stripeClient.products.retrieve("8sd8da8asd");
 
     // If the product exists, update it
-    if (existingProduct) {
-      const updatedProduct = await stripeClient.products.update(item.id, {
-        name: item.name,
-        description: item.description,
-        metadata: item.metadata,
+    const updatedProduct = await stripeClient.products.update(item.id, {
+      name: item.name,
+      description: item.description,
+      metadata: item.metadata,
+    });
+
+    // Check if we need to update the price
+    const existingPrice = updatedProduct.default_price as Stripe.Price;
+    const unitAmountOfItem = getUnitAmount(item.unit_amount);
+
+    if (
+      !existingPrice ||
+      existingPrice.currency !== item.currency ||
+      ("unit_amount" in unitAmountOfItem &&
+        existingPrice.unit_amount !== unitAmountOfItem.unit_amount) ||
+      ("unit_amount_decimal" in unitAmountOfItem &&
+        existingPrice.unit_amount_decimal !==
+          unitAmountOfItem.unit_amount_decimal)
+    ) {
+      // Create a new price
+      const newPrice = await stripeClient.prices.create({
+        product: item.id,
+        currency: item.currency,
+        ...unitAmountOfItem,
       });
 
-      // Check if we need to update the price
-      const existingPrice = updatedProduct.default_price as Stripe.Price;
+      // Update the product with the new default price
+      await stripeClient.products.update(item.id, {
+        default_price: newPrice.id,
+      });
 
-      if (
-        existingPrice &&
-        (existingPrice.currency !== item.currency ||
-          existingPrice.unit_amount !== item.unit_amount * 100)
-      ) {
-        // Create a new price
-        const newPrice = await stripeClient.prices.create({
-          product: item.id,
-          currency: item.currency,
-          ...getUnitAmount(item.unit_amount),
-        });
-
-        // Update the product with the new default price
-        await stripeClient.products.update(item.id, {
-          default_price: newPrice.id,
-        });
-
-        return newPrice.id;
-      }
-
-      return existingPrice?.id;
+      return newPrice.id;
     }
+
+    return existingPrice.id;
   } catch (error) {
     // If the product doesn't exist, create a new one
     if ((error as Stripe.errors.StripeError).code === "resource_missing") {
