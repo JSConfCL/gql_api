@@ -3,7 +3,7 @@ import Stripe from "stripe";
 
 import { TRANSACTION_HANDLER } from "~/datasources/db";
 import { selectTicketSchema, ticketsSchema } from "~/datasources/db/schema";
-import { createStripeProductAndPrice } from "~/datasources/stripe";
+import { createOrUpdateStripeProductAndPrice } from "~/datasources/stripe";
 import { Logger } from "~/logging";
 
 export const ensureProductsAreCreated = async ({
@@ -22,7 +22,7 @@ export const ensureProductsAreCreated = async ({
   logger: Logger;
 }) => {
   if (currencyCode === "USD") {
-    const stripeProductId = await createStripeProductAndPrice({
+    const stripeProductId = await createOrUpdateStripeProductAndPrice({
       item: {
         id: ticket.id,
         name: ticket.name,

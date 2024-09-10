@@ -45,7 +45,7 @@ const getUnitAmount = (unitAmount: number) => {
   return { unit_amount_decimal: unitAmount.toString() };
 };
 
-export const createStripeProductAndPrice = async ({
+export const createOrUpdateStripeProductAndPrice = async ({
   item,
   getStripeClient,
 }: {
@@ -62,34 +62,79 @@ export const createStripeProductAndPrice = async ({
   getStripeClient: () => Stripe;
 }) => {
   const stripeClient = getStripeClient();
-  // check if a number is a float or an integrer
-  const productData = await stripeClient.products.create({
-    id: item.id,
-    name: item.name,
-    active: true, // TODO: Adda way to disable tickets based on ticket status.
-    description: item.description,
-    metadata: item.metadata,
-    default_price_data: {
-      currency: item.currency,
-      // Stripe expects the unit_amount to be an integer, and unit_amount_decimal to be a float
-      // if we want to use decimals. (sellin 29.99 USD), we need to use unit_amount_decimal
-      // instead of unit_amount.
-      ...getUnitAmount(item.unit_amount),
-    },
-    shippable: false,
-  });
 
-  const defaultPrice = productData.default_price;
+  try {
+    // Try to retrieve the existing product
+    const existingProduct = await stripeClient.products.retrieve(item.id);
 
-  if (!defaultPrice) {
-    throw new Error("Stripe product and price could not be created.");
+    // If the product exists, update it
+    if (existingProduct) {
+      const updatedProduct = await stripeClient.products.update(item.id, {
+        name: item.name,
+        description: item.description,
+        metadata: item.metadata,
+      });
+
+      // Check if we need to update the price
+      const existingPrice = updatedProduct.default_price as Stripe.Price;
+
+      if (
+        existingPrice &&
+        (existingPrice.currency !== item.currency ||
+          existingPrice.unit_amount !== item.unit_amount * 100)
+      ) {
+        // Create a new price
+        const newPrice = await stripeClient.prices.create({
+          product: item.id,
+          currency: item.currency,
+          ...getUnitAmount(item.unit_amount),
+        });
+
+        // Update the product with the new default price
+        await stripeClient.products.update(item.id, {
+          default_price: newPrice.id,
+        });
+
+        return newPrice.id;
+      }
+
+      return existingPrice?.id;
+    }
+  } catch (error) {
+    // If the product doesn't exist, create a new one
+    if ((error as Stripe.errors.StripeError).code === "resource_missing") {
+      const productData = await stripeClient.products.create({
+        id: item.id,
+        name: item.name,
+        // TODO: Add a way to disable tickets based on ticket status.
+        active: true,
+        description: item.description,
+        metadata: item.metadata,
+        default_price_data: {
+          currency: item.currency,
+          // Stripe expects the unit_amount to be an integer, and unit_amount_decimal to be a float
+          // if we want to use decimals. (sellin 29.99 USD), we need to use unit_amount_decimal
+          // instead of unit_amount.
+          ...getUnitAmount(item.unit_amount),
+        },
+        shippable: false,
+      });
+
+      const defaultPrice = productData.default_price;
+
+      if (!defaultPrice) {
+        throw new Error("Stripe product and price could not be created.");
+      }
+
+      if (typeof defaultPrice === "string") {
+        return defaultPrice;
+      }
+
+      return defaultPrice.id;
+    } else {
+      throw error;
+    }
   }
-
-  if (typeof defaultPrice === "string") {
-    return defaultPrice;
-  }
-
-  return defaultPrice.id;
 };
 
 export const createStripePayment = async ({
