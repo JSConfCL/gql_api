@@ -529,6 +529,7 @@ export const createPaymentIntent = async ({
       paymentPlatformStatus,
       paymentPlatformExpirationDate,
       purchaseOrderPaymentStatus: "unpaid",
+      currencyId,
     })
     .where(eq(purchaseOrdersSchema.id, purchaseOrderId))
     .returning();
@@ -580,6 +581,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
   let poPaymentStatus: (typeof puchaseOrderPaymentStatusEnum)[number] =
     purchaseOrder.purchaseOrderPaymentStatus;
   let poStatus: (typeof purchaseOrderStatusEnum)[number] = purchaseOrder.status;
+  let totalPrice = purchaseOrder.totalPrice;
 
   if (purchaseOrder.paymentPlatform === "stripe") {
     const stripeStatus = await getStripePaymentStatus({
@@ -594,13 +596,15 @@ export const syncPurchaseOrderPaymentStatus = async ({
 
   if (purchaseOrder.paymentPlatform === "mercadopago") {
     const mercadoPagoStatus = await getMercadoPagoPayment({
-      paymentId: paymentPlatformReferenceID,
+      purchaseOrderId: purchaseOrder.id,
       getMercadoPagoClient: GET_MERCADOPAGO_CLIENT,
     });
 
     poPaymentStatus = mercadoPagoStatus.paymentStatus;
 
     poStatus = mercadoPagoStatus.status ?? poStatus;
+
+    totalPrice = mercadoPagoStatus.totalPaidAmount?.toString() ?? totalPrice;
   }
 
   if (
@@ -612,6 +616,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
       .set({
         purchaseOrderPaymentStatus: poPaymentStatus,
         status: poStatus,
+        totalPrice: totalPrice,
       })
       .where(eq(purchaseOrdersSchema.id, purchaseOrderId))
       .returning();
