@@ -194,6 +194,5 @@ export const getMercadoPagoPayment = async ({
   return {
     paymentStatus: getPaymentStatusFromMercadoPago(lastPaymentHistory?.status),
     status: getPurchasOrderStatusFromMercadoPago(lastPaymentHistory?.status),
-    totalPaidAmount: lastPaymentHistory?.transaction_amount,
   };
 };

@@ -171,7 +171,9 @@ const createMercadoPagoPaymentIntent = async ({
   for (const ticket of query) {
     if (!ticket.ticketTemplate.isFree) {
       for (const ticketPrice of ticket.ticketTemplate.ticketsPrices) {
-        pricesInCLP[ticket.id] = ticketPrice.price.price_in_cents;
+        if (ticketPrice.price.currency?.currency === "CLP") {
+          pricesInCLP[ticket.id] = ticketPrice.price.price_in_cents;
+        }
       }
     } else {
       pricesInCLP[ticket.id] = 0;
@@ -186,8 +188,6 @@ const createMercadoPagoPaymentIntent = async ({
       unit_price: number;
     }
   > = {};
-
-  logger.info("userTickets", userTickets);
 
   for (const ticket of userTickets) {
     if (!ticketsGroupedByTemplateId[ticket.ticketTemplate.id]) {
@@ -207,7 +207,12 @@ const createMercadoPagoPaymentIntent = async ({
     ticketsGroupedByTemplateId[ticket.ticketTemplate.id].quantity += 1;
   }
 
-  return await createMercadoPagoPayment({
+  const totalPrice = Object.values(ticketsGroupedByTemplateId).reduce(
+    (acc, ticket) => acc + ticket.unit_price * ticket.quantity,
+    0,
+  );
+
+  const intent = await createMercadoPagoPayment({
     eventId: "event-id",
     getMercadoPagoClient: GET_MERCADOPAGO_CLIENT,
     items: Object.entries(ticketsGroupedByTemplateId).map(([id, value]) => ({
@@ -224,6 +229,11 @@ const createMercadoPagoPaymentIntent = async ({
     paymentSuccessRedirectURL,
     paymentCancelRedirectURL,
   });
+
+  return {
+    ...intent,
+    totalPrice,
+  };
 };
 
 const createStripePaymentIntent = async ({
@@ -496,24 +506,28 @@ export const createPaymentIntent = async ({
 
     paymentPlatformExpirationDate = new Date(paymentLink.expires_at);
   } else if (currencyCode === "CLP") {
-    const { preference, expirationDate } = await createMercadoPagoPaymentIntent(
-      {
-        query,
-        userTickets,
-        purchaseOrderId,
-        USER,
-        paymentSuccessRedirectURL,
-        paymentCancelRedirectURL,
-        GET_MERCADOPAGO_CLIENT,
-        logger,
-      },
-    );
+    const {
+      preference,
+      expirationDate,
+      totalPrice: mpTotalPrice,
+    } = await createMercadoPagoPaymentIntent({
+      query,
+      userTickets,
+      purchaseOrderId,
+      USER,
+      paymentSuccessRedirectURL,
+      paymentCancelRedirectURL,
+      GET_MERCADOPAGO_CLIENT,
+      logger,
+    });
 
     paymentPlatform = "mercadopago";
 
     paymentPlatformPaymentLink = preference.init_point;
 
     paymentPlatformReferenceID = preference.id;
+
+    totalPrice = mpTotalPrice.toString();
 
     paymentPlatformStatus = "none";
 
@@ -581,7 +595,6 @@ export const syncPurchaseOrderPaymentStatus = async ({
   let poPaymentStatus: (typeof puchaseOrderPaymentStatusEnum)[number] =
     purchaseOrder.purchaseOrderPaymentStatus;
   let poStatus: (typeof purchaseOrderStatusEnum)[number] = purchaseOrder.status;
-  let totalPrice = purchaseOrder.totalPrice;
 
   if (purchaseOrder.paymentPlatform === "stripe") {
     const stripeStatus = await getStripePaymentStatus({
@@ -603,8 +616,6 @@ export const syncPurchaseOrderPaymentStatus = async ({
     poPaymentStatus = mercadoPagoStatus.paymentStatus;
 
     poStatus = mercadoPagoStatus.status ?? poStatus;
-
-    totalPrice = mercadoPagoStatus.totalPaidAmount?.toString() ?? totalPrice;
   }
 
   if (
@@ -616,7 +627,6 @@ export const syncPurchaseOrderPaymentStatus = async ({
       .set({
         purchaseOrderPaymentStatus: poPaymentStatus,
         status: poStatus,
-        totalPrice: totalPrice,
       })
       .where(eq(purchaseOrdersSchema.id, purchaseOrderId))
       .returning();
