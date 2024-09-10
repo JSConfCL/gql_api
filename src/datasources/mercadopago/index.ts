@@ -176,18 +176,23 @@ export const getMercadoPagoPreference = async ({
 };
 
 export const getMercadoPagoPayment = async ({
-  paymentId,
+  purchaseOrderId,
   getMercadoPagoClient,
 }: {
-  paymentId: string;
+  purchaseOrderId: string;
   getMercadoPagoClient: MercadoPagoFetch;
 }) => {
-  const payment = await getMercadoPagoClient<PaymentResponse>({
-    url: `/v1/payments/${paymentId}`,
+  const result = await getMercadoPagoClient<{ results: PaymentResponse[] }>({
+    url: `/v1/payments/search?external_reference=${purchaseOrderId}`,
   });
 
+  const lastPaymentHistory =
+    result.results.length > 0
+      ? result.results[result.results.length - 1]
+      : null;
+
   return {
-    paymentStatus: getPaymentStatusFromMercadoPago(payment.status),
-    status: getPurchasOrderStatusFromMercadoPago(payment.status),
+    paymentStatus: getPaymentStatusFromMercadoPago(lastPaymentHistory?.status),
+    status: getPurchasOrderStatusFromMercadoPago(lastPaymentHistory?.status),
   };
 };
