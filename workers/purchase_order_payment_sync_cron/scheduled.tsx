@@ -54,13 +54,16 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
     logger.info(
       `Syncing purchase order payment status for ${purchaseOrder.id}`,
     );
+
     await syncPurchaseOrderPaymentStatus({
       purchaseOrderId: purchaseOrder.id,
       DB,
       GET_STRIPE_CLIENT,
       GET_MERCADOPAGO_CLIENT,
       logger,
+      transactionalEmailService: null,
     });
+
     logger.info(`Synced purchase order payment status for ${purchaseOrder.id}`);
   }
 

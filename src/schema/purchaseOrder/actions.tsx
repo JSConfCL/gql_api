@@ -549,8 +549,8 @@ type SyncPurchaseOrderPaymentStatusArgs = {
   purchaseOrderId: string;
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
   GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
-  transactionalEmailService: Context["RPC_SERVICE_EMAIL"];
   logger: Logger;
+  transactionalEmailService: Context["RPC_SERVICE_EMAIL"] | null;
 };
 
 export const syncPurchaseOrderPaymentStatus = async ({
@@ -710,7 +710,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
       throw new Error("OC no encontrada");
     }
 
-    if (poPaymentStatus === "paid") {
+    if (poPaymentStatus === "paid" && transactionalEmailService) {
       await sendPurchaseOrderSuccessfulEmail({
         transactionalEmailService,
         logger,
