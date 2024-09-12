@@ -717,7 +717,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
           approvalStatus: "approved",
         })
         .where(eq(userTicketsSchema.purchaseOrderId, purchaseOrderId));
-      
+
       await sendPurchaseOrderSuccessfulEmail({
         transactionalEmailService,
         logger,
