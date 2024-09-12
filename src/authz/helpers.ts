@@ -35,6 +35,9 @@ const isOwnerOfPurchaseOrder = async ({
   const isOwner = await DB.query.purchaseOrdersSchema.findFirst({
     where: (po, { eq, and }) =>
       and(eq(po.id, purchaseOrderId), eq(po.userId, user.id)),
+    columns: {
+      id: true,
+    },
   });
 
   return Boolean(isOwner);
