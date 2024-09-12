@@ -11,6 +11,7 @@ import {
   selectPurchaseOrdersSchema,
   selectTicketSchema,
   selectUserTicketsSchema,
+  userTicketsSchema,
 } from "~/datasources/db/schema";
 import {
   createMercadoPagoPayment,
@@ -711,6 +712,12 @@ export const syncPurchaseOrderPaymentStatus = async ({
     }
 
     if (poPaymentStatus === "paid" && transactionalEmailService) {
+      await DB.update(userTicketsSchema)
+        .set({
+          approvalStatus: "approved",
+        })
+        .where(eq(userTicketsSchema.purchaseOrderId, purchaseOrderId));
+      
       await sendPurchaseOrderSuccessfulEmail({
         transactionalEmailService,
         logger,
