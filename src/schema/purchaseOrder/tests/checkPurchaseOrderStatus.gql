@@ -1,0 +1,13 @@
+mutation CheckPurchaseOrderStatus($input: CheckForPurchaseOrderInput!) {
+  checkPurchaseOrderStatus(input: $input) {
+    id
+    status
+    currency {
+      id
+      currency
+    }
+    paymentPlatform
+    purchasePaymentStatus
+    finalPrice
+  }
+}

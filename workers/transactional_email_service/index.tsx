@@ -11,7 +11,8 @@ import { createLogger } from "~/logging";
 import { ENV } from "~workers/transactional_email_service/types";
 
 import { EventInvitation } from "../../emails/templates/tickets/event-invitation";
-import { PurchaseOrderSuccessful } from "../../emails/templates/tickets/purchase-order-successful";
+import { PurchaseOrderSuccessful9punto5 } from "../../emails/templates/tickets/purchase-order-successful/9punto5";
+import { PurchaseOrderSuccessfulJSChile } from "../../emails/templates/tickets/purchase-order-successful/jschile";
 import { TicketConfirmation } from "../../emails/templates/tickets/ticket-confirmation";
 import { WaitlistAccepted } from "../../emails/templates/tickets/waitlist-accepted";
 import { WaitlistRejected } from "../../emails/templates/tickets/waitlist-rejected";
@@ -48,18 +49,38 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
   }
 
   async sendPurchaseOrderSuccessful({
-    purchaseOrderId,
     purchaseOrder,
     communityInfo,
     eventInfo,
   }: {
-    purchaseOrderId: string;
     purchaseOrder: {
+      id: string;
       user: {
-        name?: string | null;
+        name: string | null;
         username: string;
         email: string;
       };
+      currencyCode: string | undefined;
+      totalPrice: string | null;
+      userTickets: Array<{
+        publicId: string;
+        ticketTemplate: {
+          tags: string[];
+          event: {
+            name: string;
+            addressDescriptiveName: string | null;
+            address: string | null;
+            startDateTime: Date;
+            endDateTime: Date | null;
+            eventsToCommunities: Array<{
+              community: {
+                name: string;
+                logoImageSanityRef: string | null;
+              };
+            }>;
+          };
+        };
+      }>;
     };
     communityInfo: {
       name: string;
@@ -74,43 +95,90 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
     };
   }) {
     this.logger.info(
-      `About to send purchase order email for ID: ${purchaseOrderId}`,
+      `About to send purchase order email for ID: ${purchaseOrder.id}`,
     );
 
-    await sendTransactionalHTMLEmail(this.resend, this.logger, {
-      htmlContent: render(
-        <PurchaseOrderSuccessful
-          purchaseOrderId={purchaseOrderId}
-          community={{
-            name: communityInfo.name,
-            // communityURL: "https://cdn.com",
-            logoURL: communityInfo.logoImageSanityRef,
-          }}
-          eventName={eventInfo.name}
-          place={{
-            name: eventInfo.addressDescriptiveName,
-            address: eventInfo.address,
-          }}
-          date={{
-            start: eventInfo.startDateTime,
-            end: eventInfo.endDateTime,
-          }}
-        />,
-      ),
-      to: [
-        {
-          name: purchaseOrder.user.name ?? purchaseOrder.user.username,
-          email: purchaseOrder.user.email,
-        },
-      ],
-      from: {
-        name: "CommunityOS",
-        email: "contacto@communityos.io",
-      },
-      subject: "Tus tickets están listos 🎉",
-    });
+    if (communityInfo.name === "9punto5") {
+      const firstUserTicket = purchaseOrder.userTickets[0];
+      const firstTicketTemplate = firstUserTicket?.ticketTemplate;
 
-    this.logger.info(`Sent purchase order email for ID ${purchaseOrderId}`);
+      if (
+        purchaseOrder.currencyCode !== "CLP" &&
+        purchaseOrder.currencyCode !== "USD"
+      ) {
+        throw new Error(`Currency code is not supported`);
+      }
+
+      if (!firstUserTicket) {
+        throw new Error(`No user ticket found for purchase order`);
+      }
+
+      if (!firstTicketTemplate) {
+        throw new Error(`No ticket template found for user ticket`);
+      }
+
+      await sendTransactionalHTMLEmail(this.resend, this.logger, {
+        htmlContent: render(
+          <PurchaseOrderSuccessful9punto5
+            publicTicketId={firstUserTicket.publicId}
+            currencyCode={purchaseOrder.currencyCode}
+            total={Number(purchaseOrder.totalPrice)}
+            type={
+              firstTicketTemplate.tags.includes("CONFERENCE")
+                ? "CONFERENCE"
+                : "EXPERIENCE"
+            }
+          />,
+        ),
+        to: [
+          {
+            name: purchaseOrder.user.name ?? purchaseOrder.user.username,
+            email: purchaseOrder.user.email,
+          },
+        ],
+        from: {
+          name: "9punto5",
+          email: "tickets@updates.9punto5.cl",
+        },
+        replyTo: "tickets@9punto5.cl",
+        subject: "Tus tickets están listos 🎉 | 9punto5",
+      });
+    } else {
+      await sendTransactionalHTMLEmail(this.resend, this.logger, {
+        htmlContent: render(
+          <PurchaseOrderSuccessfulJSChile
+            purchaseOrderId={purchaseOrder.id}
+            community={{
+              name: communityInfo.name,
+              // communityURL: "https://cdn.com",
+              logoURL: communityInfo.logoImageSanityRef,
+            }}
+            eventName={eventInfo.name}
+            place={{
+              name: eventInfo.addressDescriptiveName,
+              address: eventInfo.address,
+            }}
+            date={{
+              start: eventInfo.startDateTime,
+              end: eventInfo.endDateTime,
+            }}
+          />,
+        ),
+        to: [
+          {
+            name: purchaseOrder.user.name ?? purchaseOrder.user.username,
+            email: purchaseOrder.user.email,
+          },
+        ],
+        from: {
+          name: "CommunityOS",
+          email: "contacto@communityos.io",
+        },
+        subject: "Tus tickets están listos 🎉",
+      });
+    }
+
+    this.logger.info(`Sent purchase order email for ID ${purchaseOrder.id}`);
   }
 
   async sendConfirmationYouAreOnTheWaitlist({

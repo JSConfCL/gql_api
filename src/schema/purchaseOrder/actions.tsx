@@ -49,42 +49,50 @@ const fetchPurchaseOrderInformation = async (
   });
 };
 
-const sendConfirmationEmail = async ({
-  transactionalEmailService,
-  logger,
-  DB,
-  purchaseOrderId,
-  email,
-}: {
-  DB: ORM_TYPE;
+type SendPurchaseOrderSuccessfulEmailArgs = {
   transactionalEmailService: Context["RPC_SERVICE_EMAIL"];
   logger: Logger;
-  purchaseOrderId: string;
-  email: string;
-}) => {
-  const information = await DB.query.purchaseOrdersSchema.findFirst({
-    where: (po, { eq }) => eq(po.id, purchaseOrderId),
-    with: {
-      user: true,
-      userTickets: {
-        with: {
-          ticketTemplate: {
-            with: {
-              event: {
-                with: {
-                  eventsToCommunities: true,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
+  purchaseOrder: {
+    id: string;
+    user: {
+      name: string | null;
+      username: string;
+      email: string;
+    };
+    totalPrice: string | null;
+    currency: {
+      currency: string;
+    } | null;
+    userTickets: Array<{
+      publicId: string;
+      ticketTemplate: {
+        tags: string[];
+        event: {
+          name: string;
+          addressDescriptiveName: string | null;
+          address: string | null;
+          startDateTime: Date;
+          endDateTime: Date | null;
+          eventsToCommunities: Array<{
+            community: {
+              name: string;
+              logoImageSanityRef: string | null;
+            };
+          }>;
+        };
+      };
+    }>;
+  };
+};
 
-  const eventInfo = information?.userTickets?.[0]?.ticketTemplate?.event;
+const sendPurchaseOrderSuccessfulEmail = async ({
+  transactionalEmailService,
+  logger,
+  purchaseOrder,
+}: SendPurchaseOrderSuccessfulEmailArgs) => {
+  const firstEventInfo = purchaseOrder.userTickets[0]?.ticketTemplate?.event;
 
-  if (!eventInfo) {
+  if (!firstEventInfo) {
     throw applicationError(
       "Event not found",
       ServiceErrors.FAILED_PRECONDITION,
@@ -92,9 +100,9 @@ const sendConfirmationEmail = async ({
     );
   }
 
-  const eventsToCommunities = eventInfo?.eventsToCommunities[0];
+  const firstCommunityInfo = firstEventInfo.eventsToCommunities[0].community;
 
-  if (!eventsToCommunities) {
+  if (!firstCommunityInfo) {
     throw applicationError(
       "Community relationship not found",
       ServiceErrors.FAILED_PRECONDITION,
@@ -102,42 +110,32 @@ const sendConfirmationEmail = async ({
     );
   }
 
-  const communityId = eventsToCommunities?.communityId;
-  const communityInfo = await DB.query.communitySchema.findFirst({
-    where: (c, { eq }) => eq(c.id, communityId),
-  });
-
-  if (!communityInfo) {
-    throw applicationError(
-      "Community not found",
-      ServiceErrors.FAILED_PRECONDITION,
-      logger,
-    );
-  }
-
   await transactionalEmailService.sendPurchaseOrderSuccessful({
-    purchaseOrderId,
     purchaseOrder: {
+      id: purchaseOrder.id,
       user: {
-        name: information?.user?.name,
-        username: information?.user?.username,
-        email: information?.user?.email,
+        name: purchaseOrder.user.name,
+        username: purchaseOrder.user.username,
+        email: purchaseOrder.user.email,
       },
+      currencyCode: purchaseOrder.currency?.currency,
+      totalPrice: purchaseOrder.totalPrice,
+      userTickets: purchaseOrder.userTickets,
     },
     communityInfo: {
-      name: communityInfo.name,
-      logoImageSanityRef: communityInfo.logoImageSanityRef,
+      name: firstCommunityInfo.name,
+      logoImageSanityRef: firstCommunityInfo.logoImageSanityRef,
     },
     eventInfo: {
-      name: eventInfo.name,
-      addressDescriptiveName: eventInfo.addressDescriptiveName,
-      address: eventInfo.address,
-      startDateTime: eventInfo.startDateTime,
-      endDateTime: eventInfo.endDateTime,
+      name: firstEventInfo.name,
+      addressDescriptiveName: firstEventInfo.addressDescriptiveName,
+      address: firstEventInfo.address,
+      startDateTime: firstEventInfo.startDateTime,
+      endDateTime: firstEventInfo.endDateTime,
     },
   });
 
-  logger.info(`Email sent to ${email}`);
+  logger.info(`Email sent to ${purchaseOrder.user.email}`);
 };
 
 const createMercadoPagoPaymentIntent = async ({
@@ -148,7 +146,6 @@ const createMercadoPagoPaymentIntent = async ({
   paymentSuccessRedirectURL,
   paymentCancelRedirectURL,
   GET_MERCADOPAGO_CLIENT,
-  logger,
 }: {
   query: AsyncReturnType<typeof fetchPurchaseOrderInformation>;
   userTickets: Array<
@@ -164,7 +161,6 @@ const createMercadoPagoPaymentIntent = async ({
     email: string;
     id: string;
   };
-  logger: Logger;
 }) => {
   const pricesInCLP: Record<string, number | undefined> = {};
 
@@ -317,7 +313,6 @@ export const createPaymentIntent = async ({
   paymentSuccessRedirectURL,
   paymentCancelRedirectURL,
   logger,
-  transactionalEmailService,
 }: {
   DB: Context["DB"];
   purchaseOrderId: string;
@@ -328,7 +323,6 @@ export const createPaymentIntent = async ({
   paymentCancelRedirectURL: string;
   currencyId: string;
   logger: Logger;
-  transactionalEmailService: Context["RPC_SERVICE_EMAIL"];
 }) => {
   if (!USER) {
     throw new GraphQLError("No autorizado");
@@ -417,14 +411,6 @@ export const createPaymentIntent = async ({
     });
 
     const userTicketsIds = userTickets.map((t) => t.id);
-
-    await sendConfirmationEmail({
-      DB,
-      transactionalEmailService,
-      logger,
-      purchaseOrderId,
-      email: USER.email,
-    });
 
     return {
       purchaseOrder: selectPurchaseOrdersSchema.parse(updatedPO),
@@ -518,7 +504,6 @@ export const createPaymentIntent = async ({
       paymentSuccessRedirectURL,
       paymentCancelRedirectURL,
       GET_MERCADOPAGO_CLIENT,
-      logger,
     });
 
     paymentPlatform = "mercadopago";
@@ -559,24 +544,109 @@ export const createPaymentIntent = async ({
   };
 };
 
+type SyncPurchaseOrderPaymentStatusArgs = {
+  DB: Context["DB"];
+  purchaseOrderId: string;
+  GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
+  GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
+  transactionalEmailService: Context["RPC_SERVICE_EMAIL"];
+  logger: Logger;
+};
+
 export const syncPurchaseOrderPaymentStatus = async ({
   DB,
   purchaseOrderId,
   GET_STRIPE_CLIENT,
   GET_MERCADOPAGO_CLIENT,
+  transactionalEmailService,
   logger,
-}: {
-  DB: Context["DB"];
-  purchaseOrderId: string;
-  GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
-  GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
-  logger: Logger;
-}) => {
+}: SyncPurchaseOrderPaymentStatusArgs) => {
   logger.info("Finding purchase order:", purchaseOrderId);
-  const purchaseOrder = await DB.query.purchaseOrdersSchema.findFirst({
-    where: (po, { eq, isNotNull }) =>
-      and(eq(po.id, purchaseOrderId), isNotNull(po.paymentPlatformReferenceID)),
-  });
+
+  const purchaseOrder = await DB.query.purchaseOrdersSchema
+    .findFirst({
+      where: (po, { eq, isNotNull }) =>
+        and(
+          eq(po.id, purchaseOrderId),
+          isNotNull(po.paymentPlatformReferenceID),
+        ),
+      with: {
+        currency: {
+          columns: {
+            currency: true,
+          },
+        },
+        user: {
+          columns: {
+            email: true,
+            name: true,
+            username: true,
+          },
+        },
+        userTickets: {
+          columns: {
+            id: true,
+            publicId: true,
+          },
+          with: {
+            ticketTemplate: {
+              columns: {
+                id: true,
+                tags: true,
+              },
+              with: {
+                event: {
+                  columns: {
+                    name: true,
+                    addressDescriptiveName: true,
+                    address: true,
+                    startDateTime: true,
+                    endDateTime: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+    .then(async (res) => {
+      if (!res) {
+        return null;
+      }
+
+      // We fetch the user tickets for the purchase order separately
+      // because if we use the "with" clause it fails
+      // (due to the "with" clause being too nested i think)
+      const userTickets = await DB.query.userTicketsSchema.findMany({
+        where: (t, { eq }) => eq(t.purchaseOrderId, purchaseOrderId),
+        with: {
+          ticketTemplate: {
+            with: {
+              event: {
+                with: {
+                  eventsToCommunities: {
+                    with: {
+                      community: {
+                        columns: {
+                          name: true,
+                          logoImageSanityRef: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return {
+        ...res,
+        userTickets,
+      };
+    });
 
   if (!purchaseOrder) {
     throw new Error("OC No encontrada");
@@ -622,18 +692,30 @@ export const syncPurchaseOrderPaymentStatus = async ({
     poPaymentStatus !== purchaseOrder.purchaseOrderPaymentStatus ||
     poStatus !== purchaseOrder.status
   ) {
+    logger.info(`Updating purchase order ${purchaseOrderId} status`, {
+      poPaymentStatus,
+      poStatus,
+    });
     // we update the purchase order with the new status, only if they are different from the current status
-    const updatedPurchaseOrder = await DB.update(purchaseOrdersSchema)
+    const updatedPO = await DB.update(purchaseOrdersSchema)
       .set({
         purchaseOrderPaymentStatus: poPaymentStatus,
         status: poStatus,
       })
       .where(eq(purchaseOrdersSchema.id, purchaseOrderId))
-      .returning();
-    const updatedPO = updatedPurchaseOrder[0];
+      .returning()
+      .then((res) => (res.length > 0 ? res[0] : null));
 
     if (!updatedPO) {
       throw new Error("OC no encontrada");
+    }
+
+    if (poPaymentStatus === "paid") {
+      await sendPurchaseOrderSuccessfulEmail({
+        transactionalEmailService,
+        logger,
+        purchaseOrder,
+      });
     }
 
     return updatedPO;

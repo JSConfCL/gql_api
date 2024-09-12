@@ -277,7 +277,6 @@ builder.mutationField("claimUserTicket", (t) =>
         PURCHASE_CALLBACK_URL,
         GET_MERCADOPAGO_CLIENT,
         logger,
-        RPC_SERVICE_EMAIL,
       },
     ) => {
       if (!USER) {
@@ -516,7 +515,6 @@ builder.mutationField("claimUserTicket", (t) =>
                 GET_MERCADOPAGO_CLIENT,
                 currencyId: generatePaymentLink.currencyId,
                 logger,
-                transactionalEmailService: RPC_SERVICE_EMAIL,
               });
               const tickets = await trx.query.userTicketsSchema.findMany({
                 where: (uts, { inArray }) => inArray(uts.id, ticketsIds),
