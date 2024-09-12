@@ -1,3 +1,4 @@
+import { th } from "date-fns/locale";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -43,6 +44,7 @@ export const updateUserProfileInfo = async (
         isEmailVerified: parsedProfileInfo.isEmailVerified,
         publicMetadata: parsedProfileInfo.publicMetadata ?? {},
         status: UserStatusEnum.active,
+        updatedAt: new Date(),
       })
       .returning();
     const createdUser = createdUsers?.[0];
@@ -53,7 +55,10 @@ export const updateUserProfileInfo = async (
     }
 
     return selectUsersSchema.parse(createdUser);
-  } else {
+  } else if (
+    !result.updatedAt ||
+    new Date(result.updatedAt).getTime() <= Date.now() - 1000 * 60 * 60 * 24 // 1 week
+  ) {
     logger.info("User found — updating user");
     // we update the user
     const updateData = allowedUserUpdateForAuth.parse({
@@ -80,4 +85,48 @@ export const updateUserProfileInfo = async (
 
     return selectUsersSchema.parse(updatedUser);
   }
+
+  return selectUsersSchema.parse(result);
+};
+
+export const upsertProfileInfo = async (
+  db: ORM_TYPE,
+  parsedProfileInfo: z.infer<typeof insertUsersSchema>,
+  logger: Logger,
+) => {
+  const email = parsedProfileInfo.email.trim().toLowerCase();
+  const upsertedUsers = await db
+    .insert(usersSchema)
+    .values({
+      externalId: parsedProfileInfo.externalId,
+      email,
+      username: parsedProfileInfo.username ?? getUsername(),
+      name: parsedProfileInfo.name,
+      imageUrl: parsedProfileInfo.imageUrl,
+      isEmailVerified: parsedProfileInfo.isEmailVerified,
+      publicMetadata: parsedProfileInfo.publicMetadata ?? {},
+      status: UserStatusEnum.active,
+    })
+    .onConflictDoUpdate({
+      target: [usersSchema.email],
+      set: {
+        externalId: parsedProfileInfo.externalId,
+        name: parsedProfileInfo.name,
+        imageUrl: parsedProfileInfo.imageUrl,
+        isEmailVerified: parsedProfileInfo.isEmailVerified,
+        publicMetadata: parsedProfileInfo.publicMetadata ?? {},
+      },
+    })
+    .returning();
+
+  const upsertedUser = upsertedUsers?.[0];
+
+  if (!upsertedUser) {
+    logger.error("Could not upsert user");
+    throw new Error("Could not upsert user");
+  }
+
+  logger.info("User updated", upsertedUser);
+
+  return selectUsersSchema.parse(upsertedUser);
 };
