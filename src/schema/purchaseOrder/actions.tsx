@@ -11,6 +11,7 @@ import {
   selectPurchaseOrdersSchema,
   selectTicketSchema,
   selectUserTicketsSchema,
+  userTicketsSchema,
 } from "~/datasources/db/schema";
 import {
   createMercadoPagoPayment,
@@ -634,6 +635,14 @@ export const syncPurchaseOrderPaymentStatus = async ({
 
     if (!updatedPO) {
       throw new Error("OC no encontrada");
+    }
+
+    if (poPaymentStatus === "paid") {
+      await DB.update(userTicketsSchema)
+        .set({
+          approvalStatus: "approved",
+        })
+        .where(and(eq(userTicketsSchema.purchaseOrderId, purchaseOrderId)));
     }
 
     return updatedPO;
