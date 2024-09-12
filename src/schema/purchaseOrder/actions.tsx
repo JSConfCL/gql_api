@@ -642,7 +642,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
         .set({
           approvalStatus: "approved",
         })
-        .where(and(eq(userTicketsSchema.purchaseOrderId, purchaseOrderId)));
+        .where(eq(userTicketsSchema.purchaseOrderId, purchaseOrderId));
     }
 
     return updatedPO;
