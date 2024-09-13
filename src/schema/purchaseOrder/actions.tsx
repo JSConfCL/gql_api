@@ -551,7 +551,7 @@ type SyncPurchaseOrderPaymentStatusArgs = {
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
   GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
   logger: Logger;
-  transactionalEmailService: Context["RPC_SERVICE_EMAIL"] | null;
+  transactionalEmailService: Context["RPC_SERVICE_EMAIL"];
 };
 
 export const syncPurchaseOrderPaymentStatus = async ({
@@ -711,7 +711,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
       throw new Error("OC no encontrada");
     }
 
-    if (poPaymentStatus === "paid" && transactionalEmailService) {
+    if (poPaymentStatus === "paid") {
       await DB.update(userTicketsSchema)
         .set({
           approvalStatus: "approved",
