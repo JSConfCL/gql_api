@@ -16,6 +16,9 @@ crons = ["* */1 * * *"]
 [define]
 _APP_ENV = "'development'"
 
+[[services]]
+binding = "RPC_SERVICE_EMAIL"
+service = "transactional-email-service"
 
 # =====================================
 # =====================================
@@ -27,6 +30,10 @@ logpush = true
 
 [env.production.vars]
 # Variables should go here
+
+[[env.production.services]]
+binding = "RPC_SERVICE_EMAIL"
+service = "transactional-email-service-production"
 
 [env.production.triggers]
 # Schedule cron triggers:
@@ -55,3 +62,7 @@ crons = ["* */1 * * *"]
 
 [env.staging.define]
 _APP_ENV = "'staging'"
+
+[[env.staging.services]]
+binding = "RPC_SERVICE_EMAIL"
+service = "transactional-email-service-staging"
