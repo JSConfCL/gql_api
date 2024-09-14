@@ -4,14 +4,12 @@ import {
   Head,
   Html,
   Img,
-  Link,
   Section,
   Tailwind,
   Text,
 } from "@react-email/components";
 import * as React from "react";
 
-import { assetURL } from "emails/templates/helpers";
 import { BebasNeueFont, RobotoFont } from "emails/templates/helpers/fonts";
 import { formatPrice } from "emails/templates/helpers/format-price";
 
@@ -81,7 +79,7 @@ export const PurchaseOrderSuccessful9punto5 = ({
         <Section className="text-sm font-light font-sans">
           <Img
             className="w-[128px] mx-auto py-8"
-            src={assetURL("/static/logos/9punto5-logo-2024.svg")}
+            src="https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/7f351cfc-47bd-4165-499a-433ebeb6b500/default"
             alt="9punto5 Logo"
           />
 
@@ -171,7 +169,7 @@ export const PurchaseOrderSuccessful9punto5 = ({
 
           <Img
             className="w-[128px] ml-auto -mt-20"
-            src={assetURL("/static/9punto5/9punto5-illustration-message.jpg")}
+            src="https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/9487099f-b0c5-43d4-0a46-22306f40a700/default"
             alt="9punto5 Illustration"
           />
         </Section>

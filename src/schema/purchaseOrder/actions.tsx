@@ -698,14 +698,14 @@ export const syncPurchaseOrderPaymentStatus = async ({
       poStatus,
     });
     // we update the purchase order with the new status, only if they are different from the current status
-    const updatedPO = await DB.update(purchaseOrdersSchema)
+    const updatedPurchaseOrder = await DB.update(purchaseOrdersSchema)
       .set({
         purchaseOrderPaymentStatus: poPaymentStatus,
         status: poStatus,
       })
       .where(eq(purchaseOrdersSchema.id, purchaseOrderId))
-      .returning()
-      .then((res) => (res.length > 0 ? res[0] : null));
+      .returning();
+    const updatedPO = updatedPurchaseOrder[0];
 
     if (!updatedPO) {
       throw new Error("OC no encontrada");
