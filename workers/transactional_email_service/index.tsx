@@ -12,7 +12,7 @@ import { ENV } from "~workers/transactional_email_service/types";
 
 import { EventInvitation } from "../../emails/templates/tickets/event-invitation";
 import { PurchaseOrderSuccessful9punto5 } from "../../emails/templates/tickets/purchase-order-successful/9punto5";
-import { PurchaseOrderSuccessfulJSChile } from "../../emails/templates/tickets/purchase-order-successful/jschile";
+import { PurchaseOrderSuccessful } from "../../emails/templates/tickets/purchase-order-successful/communityos";
 import { TicketConfirmation } from "../../emails/templates/tickets/ticket-confirmation";
 import { WaitlistAccepted } from "../../emails/templates/tickets/waitlist-accepted";
 import { WaitlistRejected } from "../../emails/templates/tickets/waitlist-rejected";
@@ -146,7 +146,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
     } else {
       await sendTransactionalHTMLEmail(this.resend, this.logger, {
         htmlContent: render(
-          <PurchaseOrderSuccessfulJSChile
+          <PurchaseOrderSuccessful
             purchaseOrderId={purchaseOrder.id}
             community={{
               name: communityInfo.name,

@@ -38,8 +38,7 @@ interface WorkEmailValidationEmailProps {
   };
 }
 
-export const PurchaseOrderSuccessfulJSChile = ({
-  purchaseOrderId,
+export const PurchaseOrderSuccessful = ({
   community = {
     name: "Javascript Chile",
     communityURL: "https://cdn.com",
@@ -168,4 +167,4 @@ export const PurchaseOrderSuccessfulJSChile = ({
   );
 };
 
-export default PurchaseOrderSuccessfulJSChile;
+export default PurchaseOrderSuccessful;
