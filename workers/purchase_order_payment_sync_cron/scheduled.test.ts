@@ -103,14 +103,14 @@ describe("Scheduled Cron Job for Purchase Order Payment Sync", () => {
 
     // Correctly mock getStripePaymentStatus
     vi.mocked(getStripePaymentStatus).mockResolvedValue({
-      paymentStatus: PurchaseOrderPaymentStatusEnum.Paid,
-      status: PurchaseOrderStatusEnum.Complete,
+      paymentStatus: PurchaseOrderPaymentStatusEnum.Unpaid,
+      status: PurchaseOrderStatusEnum.Open,
     });
   });
 
   it("should process unpaid purchase orders and clear expired ones", async () => {
     // Create test purchase orders
-    const [unpaidStripeOrder, unpaidMercadoPagoOrder, expiredOrder] =
+    const [unpaidStripeOrder, oldButPaidMercadoPagoOrder, expiredOrder] =
       await Promise.all([
         insertPurchaseOrder({
           userId: testUser.id,
@@ -119,6 +119,9 @@ describe("Scheduled Cron Job for Purchase Order Payment Sync", () => {
           purchaseOrderPaymentStatus: PurchaseOrderPaymentStatusEnum.Unpaid,
           paymentPlatform: "stripe",
           paymentPlatformReferenceID: "pi_mock_stripe",
+          paymentPlatformExpirationDate: new Date(
+            Date.now() + 24 * 60 * 60 * 1000,
+          ), // Tomorrow
         }),
         insertPurchaseOrder({
           userId: testUser.id,
@@ -127,6 +130,9 @@ describe("Scheduled Cron Job for Purchase Order Payment Sync", () => {
           purchaseOrderPaymentStatus: PurchaseOrderPaymentStatusEnum.Unpaid,
           paymentPlatform: "mercadopago",
           paymentPlatformReferenceID: "mp_mock_mercadopago",
+          paymentPlatformExpirationDate: new Date(
+            Date.now() - 24 * 60 * 60 * 1000,
+          ), // Yesterday
         }),
         insertPurchaseOrder({
           userId: testUser.id,
@@ -148,7 +154,7 @@ describe("Scheduled Cron Job for Purchase Order Payment Sync", () => {
       }),
       insertTicket({
         userId: testUser.id,
-        purchaseOrderId: unpaidMercadoPagoOrder.id,
+        purchaseOrderId: oldButPaidMercadoPagoOrder.id,
         ticketTemplateId: testTicketTemplate.id,
       }),
       insertTicket({
@@ -178,7 +184,7 @@ describe("Scheduled Cron Job for Purchase Order Payment Sync", () => {
           where: (po, { eq }) => eq(po.id, unpaidStripeOrder.id),
         }),
         testDB.query.purchaseOrdersSchema.findFirst({
-          where: (po, { eq }) => eq(po.id, unpaidMercadoPagoOrder.id),
+          where: (po, { eq }) => eq(po.id, oldButPaidMercadoPagoOrder.id),
         }),
         testDB.query.purchaseOrdersSchema.findFirst({
           where: (po, { eq }) => eq(po.id, expiredOrder.id),
@@ -186,10 +192,10 @@ describe("Scheduled Cron Job for Purchase Order Payment Sync", () => {
       ]);
 
     expect(updatedStripeOrder?.purchaseOrderPaymentStatus).toBe(
-      PurchaseOrderPaymentStatusEnum.Paid,
+      PurchaseOrderPaymentStatusEnum.Unpaid,
     );
 
-    expect(updatedStripeOrder?.status).toBe(PurchaseOrderStatusEnum.Complete);
+    expect(updatedStripeOrder?.status).toBe(PurchaseOrderStatusEnum.Open);
 
     expect(updatedMercadoPagoOrder?.purchaseOrderPaymentStatus).toBe(
       PurchaseOrderPaymentStatusEnum.Paid,
@@ -213,14 +219,14 @@ describe("Scheduled Cron Job for Purchase Order Payment Sync", () => {
       }),
       testDB.query.userTicketsSchema.findFirst({
         where: (ticket, { eq }) =>
-          eq(ticket.purchaseOrderId, unpaidMercadoPagoOrder.id),
+          eq(ticket.purchaseOrderId, oldButPaidMercadoPagoOrder.id),
       }),
       testDB.query.userTicketsSchema.findFirst({
         where: (ticket, { eq }) => eq(ticket.purchaseOrderId, expiredOrder.id),
       }),
     ]);
 
-    expect(updatedStripeTicket?.approvalStatus).toBe("approved");
+    expect(updatedStripeTicket?.approvalStatus).toBe("pending");
 
     expect(updatedMercadoPagoTicket?.approvalStatus).toBe("approved");
 
