@@ -1,9 +1,9 @@
-import { eq } from "drizzle-orm";
+import { and, count, eq, inArray } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
 import {
-  insertUserTicketsSchema,
+  InsertUserTicketSchema,
   selectPurchaseOrdersSchema,
   selectUserTicketsSchema,
   userTicketsSchema,
@@ -256,7 +256,7 @@ builder.mutationField("redeemUserTicket", (t) =>
 
 builder.mutationField("claimUserTicket", (t) =>
   t.field({
-    description: "Attempt to claim a certain ammount of tickets",
+    description: "Attempt to claim a certain amount of tickets",
     type: RedeemUserTicketResponse,
     args: {
       input: t.arg({
@@ -300,6 +300,7 @@ builder.mutationField("claimUserTicket", (t) =>
         );
       }
 
+      // Aggregate purchase order items by ticket ID
       const purchaseOrderByTickets: Record<
         string,
         {
@@ -344,22 +345,17 @@ builder.mutationField("claimUserTicket", (t) =>
               purchaseOrderByTickets,
               logger,
             });
-            const createdPurchaseOrder = await createInitialPurchaseOrder({
-              DB: trx,
-              userId: USER.id,
-              logger,
-            });
 
-            let claimedTickets: Array<typeof insertUserTicketsSchema._type> =
-              [];
+            const ticketTemplatesIds = Object.keys(purchaseOrderByTickets);
 
-            // TODO: Measure and consider parallelizing this.
-            for (const { quantity, ticketId } of Object.values(
-              purchaseOrderByTickets,
-            )) {
-              // We pull the ticket template to see if it exists.
-              const ticketTemplate = await trx.query.ticketsSchema.findFirst({
-                where: (t, { eq }) => eq(t.id, ticketId),
+            const [createdPurchaseOrder, ticketTemplates] = await Promise.all([
+              createInitialPurchaseOrder({
+                DB: trx,
+                userId: USER.id,
+                logger,
+              }),
+              trx.query.ticketsSchema.findMany({
+                where: (t, { inArray }) => inArray(t.id, ticketTemplatesIds),
                 with: {
                   event: true,
                   ticketsPrices: {
@@ -368,27 +364,30 @@ builder.mutationField("claimUserTicket", (t) =>
                     },
                   },
                 },
-              });
+              }),
+            ]);
 
-              // If the ticket template does not exist, we throw an error.
-              if (!ticketTemplate) {
-                throw applicationError(
-                  `Ticket template with id ${ticketId} not found`,
-                  ServiceErrors.NOT_FOUND,
-                  logger,
-                );
-              }
+            const notFoundTicketTemplatesIds = ticketTemplatesIds.filter(
+              (ticketId) => !ticketTemplates.find((t) => t.id === ticketId),
+            );
 
-              const requiresPayment =
-                ticketTemplate.ticketsPrices &&
-                ticketTemplate.ticketsPrices.length > 0 &&
-                ticketTemplate.ticketsPrices.some(
-                  (tp) =>
-                    tp?.price?.price_in_cents !== null &&
-                    tp?.price?.price_in_cents > 0,
-                );
+            if (notFoundTicketTemplatesIds.length > 0) {
+              throw applicationError(
+                `Tickets with ids ${notFoundTicketTemplatesIds.join(
+                  ", ",
+                )} not found`,
+                ServiceErrors.NOT_FOUND,
+                logger,
+              );
+            }
 
+            const claimedTickets: InsertUserTicketSchema[] = [];
+
+            // Process each ticket template
+            for (const ticketTemplate of ticketTemplates) {
               const { event } = ticketTemplate;
+              const quantityToPurchase =
+                purchaseOrderByTickets[ticketTemplate.id].quantity;
 
               // If the event is not active, we throw an error.
               if (event.status === "inactive") {
@@ -399,92 +398,92 @@ builder.mutationField("claimUserTicket", (t) =>
                 );
               }
 
-              // If the ticket template has a quantity field,  means there's a
-              // limit to the amount of tickets that can be created. So we check
-              // if we have enough tickets to fulfill the purchase order.
-              if (ticketTemplate.quantity) {
-                // We pull the tickets that are already reserved or in-process to
-                // see if we have enough to fulfill the purchase order
-                const tickets = await trx.query.userTicketsSchema.findMany({
-                  where: (uts, { eq, and, notInArray }) =>
-                    and(
-                      eq(uts.ticketTemplateId, ticketId),
-                      notInArray(uts.approvalStatus, ["rejected", "cancelled"]),
-                    ),
-                  columns: {
-                    id: true,
-                  },
-                });
-
-                // If we would be going over the limit of tickets, we throw an
-                // error.
-                if (tickets.length + quantity > ticketTemplate.quantity) {
-                  throw new Error(
-                    `Not enough tickets for ticket template with id ${ticketId}`,
-                  );
-                }
-              }
-
               const isApproved =
                 ticketTemplate.isFree && !ticketTemplate.requiresApproval;
 
-              // If no errors were thrown, we can proceed to reserve the
-              // tickets.
-              const newTickets = new Array(quantity)
+              const newTickets = new Array(quantityToPurchase)
                 .fill(false)
                 .map(() => {
-                  const result = insertUserTicketsSchema.safeParse({
+                  const next: InsertUserTicketSchema = {
                     userId: USER.id,
                     purchaseOrderId: createdPurchaseOrder.id,
                     ticketTemplateId: ticketTemplate.id,
-                    paymentStatus: requiresPayment ? "unpaid" : "not_required",
                     approvalStatus: isApproved ? "approved" : "pending",
-                  });
+                  };
 
-                  if (result.success) {
-                    return result.data;
-                  }
+                  return next;
+                });
 
-                  logger.error("Could not parse user ticket", result.error);
-                })
-                .filter(Boolean);
+              claimedTickets.push(...newTickets);
+            }
 
-              logger.info(
-                `Creating ${newTickets.length} user tickets for ticket template with id ${ticketId}`,
-                { newTickets },
+            for (const ticketTemplateId of ticketTemplatesIds) {
+              const newTickets = claimedTickets.filter(
+                (ticket) => ticket.ticketTemplateId === ticketTemplateId,
               );
 
-              if (newTickets.length === 0) {
-                throw new Error("Could not create user tickets");
-              }
+              logger.info(
+                `Creating ${newTickets.length} user tickets for ticket template with id ${ticketTemplateId}`,
+              );
+            }
 
-              const createdUserTickets = await trx
-                .insert(userTicketsSchema)
-                .values(newTickets)
-                .returning()
-                .execute();
+            // Bulk insert claimed tickets
+            const createdUserTickets = await trx
+              .insert(userTicketsSchema)
+              .values(claimedTickets)
+              .returning()
+              .execute();
+
+            // Bulk query for existing ticket counts
+            const finalTicketsCount = await trx
+              .select({
+                ticketTemplateId: userTicketsSchema.ticketTemplateId,
+                count: count(userTicketsSchema.id),
+              })
+              .from(userTicketsSchema)
+              .where(
+                and(
+                  inArray(
+                    userTicketsSchema.ticketTemplateId,
+                    ticketTemplates.map((t) => t.id),
+                  ),
+                  inArray(userTicketsSchema.approvalStatus, [
+                    "approved",
+                    "pending",
+                  ]),
+                ),
+              )
+              .groupBy(userTicketsSchema.ticketTemplateId);
+
+            for (const ticketTemplate of ticketTemplates) {
+              const existingCount =
+                finalTicketsCount.find(
+                  (count) => count.ticketTemplateId === ticketTemplate.id,
+                )?.count || 0;
+
+              const limitAlreadyReached = ticketTemplate.quantity
+                ? existingCount >= ticketTemplate.quantity
+                : false;
+
+              logger.info(
+                `Ticket template with id ${
+                  ticketTemplate.id
+                } has ${existingCount} tickets ${
+                  limitAlreadyReached ? "and has reached its limit" : ""
+                }
+                `,
+              );
 
               //  if the ticket has a quantity field, we  do a last check to see
               //  if we have enough gone over the limit of tickets.
-              const finalTickets = await trx.query.userTicketsSchema.findMany({
-                where: (uts, { eq, and, inArray }) =>
-                  and(
-                    eq(uts.ticketTemplateId, ticketId),
-                    inArray(uts.approvalStatus, ["approved", "pending"]),
-                  ),
-              });
-
-              if (ticketTemplate.quantity) {
-                if (finalTickets.length > ticketTemplate.quantity) {
-                  throw new Error(
-                    `We have gone over the limit of tickets for ticket template with id ${ticketId}`,
-                  );
-                }
+              if (limitAlreadyReached) {
+                throw new Error(
+                  `We have gone over the limit of tickets for ticket template with id ${ticketTemplate.id}`,
+                );
               }
-
-              claimedTickets = [...claimedTickets, ...createdUserTickets];
             }
 
+            // Fetch the created purchase order
             const foundPurchaseOrder =
               await trx.query.purchaseOrdersSchema.findFirst({
                 where: (po, { eq }) => eq(po.id, createdPurchaseOrder.id),
@@ -497,6 +496,7 @@ builder.mutationField("claimUserTicket", (t) =>
             const selectedPurchaseOrder =
               selectPurchaseOrdersSchema.parse(foundPurchaseOrder);
 
+            // Generate payment link if requested
             if (generatePaymentLink) {
               logger.info("Extracting redirect URLs for purchase order");
               const { paymentSuccessRedirectURL, paymentCancelRedirectURL } =
@@ -518,17 +518,17 @@ builder.mutationField("claimUserTicket", (t) =>
                 logger,
                 transactionalEmailService: RPC_SERVICE_EMAIL,
               });
-              const tickets = await trx.query.userTicketsSchema.findMany({
-                where: (uts, { inArray }) => inArray(uts.id, ticketsIds),
-              });
 
               return {
-                selectedPurchaseOrder: purchaseOrder,
-                claimedTickets: tickets,
+                purchaseOrder,
+                ticketsIds,
               };
             }
 
-            return { selectedPurchaseOrder, claimedTickets };
+            return {
+              purchaseOrder: selectedPurchaseOrder,
+              ticketsIds: createdUserTickets.map((ticket) => ticket.id),
+            };
           } catch (e) {
             logger.error((e as Error).message);
 
@@ -544,17 +544,11 @@ builder.mutationField("claimUserTicket", (t) =>
           }
         });
 
-        const { claimedTickets, selectedPurchaseOrder } = transactionResults;
-        const ticketsIds = claimedTickets.flatMap((t) => (t.id ? [t.id] : []));
-
-        return {
-          purchaseOrder: selectedPurchaseOrder,
-          ticketsIds,
-        };
+        return transactionResults;
       } catch (e: unknown) {
-        if (transactionError) {
-          logger.error("Error claiming usertickets", transactionError);
+        logger.error("Error claiming user tickets", e);
 
+        if (transactionError) {
           return {
             error: true as const,
             errorMessage: (transactionError as GraphQLError).message,
