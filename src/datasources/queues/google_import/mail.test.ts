@@ -21,7 +21,7 @@ const googleMediaType = {
   },
 };
 
-describe("Test email library", () => {
+describe("Test email library on Google Import", () => {
   describe("enqueueEmail", () => {
     it("Should enqueue an email", async () => {
       const spy = vi.fn().mockImplementation(() => {
