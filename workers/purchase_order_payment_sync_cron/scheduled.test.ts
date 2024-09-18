@@ -27,19 +27,21 @@ vi.mock("~/datasources/db");
 
 type MercadoPagoModule = typeof import("~/datasources/mercadopago");
 
-vi.mock(import("~/datasources/mercadopago"), async (importOriginal) => {
-  const mod = await importOriginal<MercadoPagoModule>();
+vi.mock("~/datasources/mercadopago", async () => {
+  const actual = await vi.importActual<MercadoPagoModule>(
+    "~/datasources/mercadopago",
+  );
 
   return {
-    ...mod,
+    ...actual,
     getMercadoPagoPayment: vi.fn(),
   };
 });
 
 type StripeModule = typeof import("~/datasources/stripe");
 
-vi.mock(import("~/datasources/stripe"), async (importOriginal) => {
-  const actual = await importOriginal<StripeModule>();
+vi.mock("~/datasources/stripe", async () => {
+  const actual = await vi.importActual<StripeModule>("~/datasources/stripe");
 
   return {
     ...actual,
