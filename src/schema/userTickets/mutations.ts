@@ -163,11 +163,11 @@ builder.mutationField("approvalUserTicket", (t) =>
           throw new GraphQLError("Unauthorized!");
         }
 
-        if (ticket.approvalStatus === "approved") {
+        if (ticket.approvalStatus === UserTicketApprovalStatus.Approved) {
           throw new GraphQLError("Ticket already approved");
         }
 
-        if (ticket.approvalStatus !== "pending") {
+        if (ticket.approvalStatus !== UserTicketApprovalStatus.Pending) {
           throw new GraphQLError("Ticket cannot be approved");
         }
 
@@ -443,7 +443,9 @@ builder.mutationField("claimUserTicket", (t) =>
                     purchaseOrderId: createdPurchaseOrder.id,
                     ticketTemplateId: ticketTemplate.id,
                     paymentStatus: requiresPayment ? "unpaid" : "not_required",
-                    approvalStatus: isApproved ? "approved" : "pending",
+                    approvalStatus: isApproved
+                      ? UserTicketApprovalStatus.Approved
+                      : UserTicketApprovalStatus.Pending,
                   });
 
                   if (result.success) {
@@ -603,7 +605,7 @@ builder.mutationField("acceptGiftedTicket", (t) =>
         throw new GraphQLError("Could not find ticket to accept");
       }
 
-      if (ticket.approvalStatus !== "gifted") {
+      if (ticket.approvalStatus !== UserTicketApprovalStatus.Gifted) {
         throw new GraphQLError("Ticket is not a gifted ticket");
       }
 

@@ -4,6 +4,7 @@ import { builder } from "~/builder";
 import {
   insertUserTicketsSchema,
   selectUserTicketsSchema,
+  UserTicketApprovalStatus,
   userTicketsSchema,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
@@ -140,7 +141,9 @@ builder.mutationField("giftTicketsToUsers", (t) =>
             userId,
             ticketTemplateId,
             purchaseOrderId: purchaseOrder.id,
-            approvalStatus: autoApproveTickets ? "approved" : "gifted",
+            approvalStatus: autoApproveTickets
+              ? UserTicketApprovalStatus.Approved
+              : UserTicketApprovalStatus.Gifted,
           });
 
           ticketsToInsert.push(parsedData);
