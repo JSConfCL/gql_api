@@ -79,7 +79,7 @@ export class CanCreateEvent extends PreExecutionRule {
   }
 }
 
-export class isCommunityCollaborator extends PreExecutionRule {
+export class IsCommunityCollaborator extends PreExecutionRule {
   public async execute(
     { USER, DB }: GraphqlContext,
     fieldArgs: { input: { communityId: string } },
@@ -101,7 +101,7 @@ export class isCommunityCollaborator extends PreExecutionRule {
   }
 }
 
-export class isCommunityAdmin extends PreExecutionRule {
+export class IsCommunityAdmin extends PreExecutionRule {
   public async execute(
     { USER, DB }: GraphqlContext,
     fieldArgs: { input: { communityId: string } },
@@ -110,8 +110,8 @@ export class isCommunityAdmin extends PreExecutionRule {
       return false;
     }
 
-    const isCommunityAdmin = await authHelpers.isCommuntiyAdmin({
-      user: USER,
+    const isCommunityAdmin = await authHelpers.isCommunityAdmin({
+      userId: USER.id,
       communityId: fieldArgs.input.communityId,
       DB,
     });
@@ -120,7 +120,7 @@ export class isCommunityAdmin extends PreExecutionRule {
   }
 }
 
-export class isEventAdmin extends PreExecutionRule {
+export class IsEventAdmin extends PreExecutionRule {
   public async execute(
     { USER, DB }: GraphqlContext,
     fieldArgs: { input: { eventId: string } },
@@ -142,7 +142,7 @@ export class isEventAdmin extends PreExecutionRule {
   }
 }
 
-export class canApproveTicket extends PreExecutionRule {
+export class CanApproveTicket extends PreExecutionRule {
   public async execute(
     { USER, DB }: GraphqlContext,
     fieldArgs: { userTicketId: string },

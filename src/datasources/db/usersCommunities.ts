@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 import { communitySchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
@@ -38,3 +39,11 @@ export const selectUsersToCommunitiesSchema = createSelectSchema(
 export const insertUsersToCommunitiesSchema = createInsertSchema(
   usersToCommunitiesSchema,
 );
+
+export type SelectUsersToCommunitiesSchema = z.infer<
+  typeof selectUsersToCommunitiesSchema
+>;
+
+export type InsertUsersToCommunitiesSchema = z.infer<
+  typeof insertUsersToCommunitiesSchema
+>;
