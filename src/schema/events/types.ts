@@ -4,6 +4,7 @@ import { authHelpers } from "~/authz/helpers";
 import { builder } from "~/builder";
 import {
   ScheduleStatus,
+  UserTicketApprovalStatus,
   selectCommunitySchema,
   selectGalleriesSchema,
   selectScheduleSchema,
@@ -366,7 +367,10 @@ export const EventLoadable = builder.loadableObject(EventRef, {
             eventIds: [root.id],
             userIds: [USER.id],
             paymentStatus: paymentStatus ? [paymentStatus] : undefined,
-            approvalStatus: ["approved", "not_required"],
+            approvalStatus: [
+              UserTicketApprovalStatus.Approved,
+              UserTicketApprovalStatus.NotRequired,
+            ],
             redemptionStatus: redemptionStatus ? [redemptionStatus] : undefined,
           },
         });

@@ -6,6 +6,10 @@ import {
   UserTeamRoleEnum,
 } from "~/datasources/db/userTeams";
 import {
+  UserTicketApprovalStatus,
+  UserTicketRedemptionStatus,
+} from "~/datasources/db/userTickets";
+import {
   EventStatus,
   EventVisibility,
   ParticipationStatus,
@@ -155,34 +159,34 @@ describe("Event", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: "approved",
+      approvalStatus: UserTicketApprovalStatus.Approved,
     });
 
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: "cancelled",
+      approvalStatus: UserTicketApprovalStatus.Cancelled,
     });
 
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: "pending",
+      approvalStatus: UserTicketApprovalStatus.Pending,
     });
     const ticket2 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: "not_required",
+      approvalStatus: UserTicketApprovalStatus.NotRequired,
     });
 
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user2.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: "approved",
+      approvalStatus: UserTicketApprovalStatus.Approved,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -236,7 +240,7 @@ describe("Event", () => {
           createdAt: toISODate(ticket1.createdAt),
         },
       ],
-    } as EventQuery["event"]);
+    } as unknown as EventQuery["event"]);
   });
 
   it("Should get an event community", async () => {
@@ -540,7 +544,7 @@ describe("Events", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: "approved",
+      approvalStatus: UserTicketApprovalStatus.Approved,
     });
 
     const purchaseOrder2 = await insertPurchaseOrder();
@@ -549,7 +553,7 @@ describe("Events", () => {
       ticketTemplateId: ticketTemplate2.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder2.id,
-      approvalStatus: "cancelled",
+      approvalStatus: UserTicketApprovalStatus.Cancelled,
     });
 
     await insertEvent({
@@ -778,7 +782,7 @@ describe("Event tickets filter", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: TicketApprovalStatus.Approved,
+      approvalStatus: UserTicketApprovalStatus.Approved,
     });
 
     await insertTicket({
@@ -833,7 +837,7 @@ describe("Event tickets filter", () => {
           createdAt: toISODate(ticket1.createdAt),
         },
       ],
-    } as EventQuery["event"]);
+    } as unknown as EventQuery["event"]);
   });
 
   it("Should filter event ticket by approval status", async () => {
@@ -864,14 +868,14 @@ describe("Event tickets filter", () => {
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      approvalStatus: TicketApprovalStatus.Approved,
+      approvalStatus: UserTicketApprovalStatus.Approved,
       purchaseOrderId: purchaseOrder.id,
     });
 
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      approvalStatus: TicketApprovalStatus.Pending,
+      approvalStatus: UserTicketApprovalStatus.Pending,
       purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
@@ -921,7 +925,7 @@ describe("Event tickets filter", () => {
           createdAt: toISODate(ticket1.createdAt),
         },
       ],
-    } as EventQuery["event"]);
+    } as unknown as EventQuery["event"]);
   });
 
   it("Should filter event ticket by payment status", async () => {
@@ -956,7 +960,7 @@ describe("Event tickets filter", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: TicketApprovalStatus.Approved,
+      approvalStatus: UserTicketApprovalStatus.Approved,
       createdAt: date1,
     });
 
@@ -965,7 +969,7 @@ describe("Event tickets filter", () => {
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: TicketApprovalStatus.Approved,
+      approvalStatus: UserTicketApprovalStatus.Approved,
       createdAt: date2,
     });
     const response = await executeGraphqlOperationAsUser<
@@ -1022,7 +1026,7 @@ describe("Event tickets filter", () => {
           createdAt: toISODate(ticket1.createdAt),
         },
       ],
-    } as EventQuery["event"]);
+    } as unknown as EventQuery["event"]);
   });
 
   it("Should filter event ticket by redemption status", async () => {
@@ -1053,17 +1057,17 @@ describe("Event tickets filter", () => {
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      redemptionStatus: TicketRedemptionStatus.Redeemed,
+      redemptionStatus: UserTicketRedemptionStatus.Redeemed,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: TicketApprovalStatus.Approved,
+      approvalStatus: UserTicketApprovalStatus.Approved,
     });
 
     await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      redemptionStatus: TicketRedemptionStatus.Pending,
+      redemptionStatus: UserTicketRedemptionStatus.Pending,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: TicketApprovalStatus.Approved,
+      approvalStatus: UserTicketApprovalStatus.Approved,
     });
     const response = await executeGraphqlOperationAsUser<
       EventQuery,
@@ -1112,6 +1116,6 @@ describe("Event tickets filter", () => {
           createdAt: toISODate(ticket1.createdAt),
         },
       ],
-    } as EventQuery["event"]);
+    } as unknown as EventQuery["event"]);
   });
 });

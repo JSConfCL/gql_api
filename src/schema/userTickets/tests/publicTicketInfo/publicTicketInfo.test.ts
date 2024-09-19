@@ -1,5 +1,6 @@
 import { assert, describe, it } from "vitest";
 
+import { UserTicketApprovalStatus } from "~/datasources/db/userTickets";
 import {
   executeGraphqlOperation,
   insertTicket,
@@ -18,7 +19,7 @@ describe("public user ticket information", () => {
     const ticketTemplate = await insertTicketTemplate();
     const user = await insertUser();
     const ticket = await insertTicket({
-      approvalStatus: "approved",
+      approvalStatus: UserTicketApprovalStatus.Approved,
       ticketTemplateId: ticketTemplate.id,
       userId: user.id,
     });
@@ -49,7 +50,7 @@ describe("public user ticket information", () => {
       const ticketTemplate = await insertTicketTemplate();
       const user = await insertUser();
       const ticket = await insertTicket({
-        approvalStatus: "pending",
+        approvalStatus: UserTicketApprovalStatus.Pending,
         ticketTemplateId: ticketTemplate.id,
         userId: user.id,
       });

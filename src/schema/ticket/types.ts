@@ -1,5 +1,8 @@
 import { builder } from "~/builder";
-import { selectAllowedCurrencySchema } from "~/datasources/db/schema";
+import {
+  selectAllowedCurrencySchema,
+  UserTicketApprovalStatus,
+} from "~/datasources/db/schema";
 import { EventLoadable } from "~/schema/events/types";
 import { AllowedCurrencyRef, PriceRef, TicketRef } from "~/schema/shared/refs";
 
@@ -89,11 +92,11 @@ export const TicketLoadable = builder.loadableObject(TicketRef, {
             and(
               eq(ut.ticketTemplateId, root.id),
               inArray(ut.approvalStatus, [
-                "approved",
-                "gift_accepted",
-                "not_required",
-                "pending",
-                "gifted",
+                UserTicketApprovalStatus.Approved,
+                UserTicketApprovalStatus.GiftAccepted,
+                UserTicketApprovalStatus.NotRequired,
+                UserTicketApprovalStatus.Pending,
+                UserTicketApprovalStatus.Gifted,
               ]),
             ),
         });

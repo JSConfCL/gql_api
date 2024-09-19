@@ -1,21 +1,40 @@
 import { relations } from "drizzle-orm";
 import { index, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 import { purchaseOrdersSchema, ticketsSchema, usersSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 
+export enum UserTicketApprovalStatus {
+  Approved = "approved",
+  Pending = "pending",
+  GiftAccepted = "gift_accepted",
+  Gifted = "gifted",
+  NotRequired = "not_required",
+  Rejected = "rejected",
+  Cancelled = "cancelled",
+}
+
 export const userTicketsApprovalStatusEnum = [
-  "approved",
-  "pending",
-  "gift_accepted",
-  "gifted",
-  "not_required",
-  "rejected",
-  "cancelled",
+  UserTicketApprovalStatus.Approved,
+  UserTicketApprovalStatus.Pending,
+  UserTicketApprovalStatus.GiftAccepted,
+  UserTicketApprovalStatus.Gifted,
+  UserTicketApprovalStatus.NotRequired,
+  UserTicketApprovalStatus.Rejected,
+  UserTicketApprovalStatus.Cancelled,
 ] as const;
 
-export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;
+export enum UserTicketRedemptionStatus {
+  Redeemed = "redeemed",
+  Pending = "pending",
+}
+
+export const userTicketsRedemptionStatusEnum = [
+  UserTicketRedemptionStatus.Redeemed,
+  UserTicketRedemptionStatus.Pending,
+] as const;
 
 // USER-TICKETS-TABLE
 export const userTicketsSchema = pgTable(
@@ -33,12 +52,15 @@ export const userTicketsSchema = pgTable(
     approvalStatus: text("approval_status", {
       enum: userTicketsApprovalStatusEnum,
     })
-      .default("pending")
+      .default(UserTicketApprovalStatus.Pending)
       .notNull(),
     redemptionStatus: text("redemption_status", {
-      enum: userTicketsRedemptionStatusEnum,
+      enum: [
+        UserTicketRedemptionStatus.Redeemed,
+        UserTicketRedemptionStatus.Pending,
+      ],
     })
-      .default("pending")
+      .default(UserTicketRedemptionStatus.Pending)
       .notNull(),
     ...createdAndUpdatedAtFields,
   },
@@ -69,3 +91,7 @@ export const insertUserTicketsSchema = createInsertSchema(userTicketsSchema);
 export const approveUserTicketsSchema = selectUserTicketsSchema.pick({
   approvalStatus: true,
 });
+
+export type InsertUserTicketSchema = z.infer<typeof insertUserTicketsSchema>;
+
+export type SelectUserTicketSchema = z.infer<typeof selectUserTicketsSchema>;

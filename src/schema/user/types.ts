@@ -7,6 +7,7 @@ import {
   selectTeamsSchema,
   selectUsersSchema,
   selectUserTicketsSchema,
+  UserTicketApprovalStatus,
 } from "~/datasources/db/schema";
 import {
   CommunityRef,
@@ -132,7 +133,12 @@ export const UserLoadable = builder.loadableObject(UserRef, {
             userIds: [root.id],
             approvalStatus: ctx.USER?.isSuperAdmin
               ? undefined
-              : ["approved", "gifted", "gift_accepted", "not_required"],
+              : [
+                  UserTicketApprovalStatus.Approved,
+                  UserTicketApprovalStatus.Gifted,
+                  UserTicketApprovalStatus.GiftAccepted,
+                  UserTicketApprovalStatus.NotRequired,
+                ],
           },
         });
 

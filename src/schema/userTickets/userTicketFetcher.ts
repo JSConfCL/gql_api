@@ -8,8 +8,8 @@ import {
 } from "~/datasources/db/purchaseOrders";
 import { ticketsSchema } from "~/datasources/db/tickets";
 import {
-  userTicketsApprovalStatusEnum,
-  userTicketsRedemptionStatusEnum,
+  UserTicketApprovalStatus,
+  UserTicketRedemptionStatus,
   userTicketsSchema,
 } from "~/datasources/db/userTickets";
 import {
@@ -24,9 +24,9 @@ export type UserTicketSearch = {
   userTicketIds?: string[];
   ticketIds?: string[];
   eventName?: string;
-  approvalStatus?: (typeof userTicketsApprovalStatusEnum)[number][];
+  approvalStatus?: UserTicketApprovalStatus[];
   paymentStatus?: (typeof puchaseOrderPaymentStatusEnum)[number][];
-  redemptionStatus?: (typeof userTicketsRedemptionStatusEnum)[number][];
+  redemptionStatus?: UserTicketRedemptionStatus[];
 };
 
 const getSearchUserTicketsQuery = (

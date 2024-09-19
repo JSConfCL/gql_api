@@ -1,5 +1,6 @@
 import { describe, assert, it } from "vitest";
 
+import { UserTicketApprovalStatus } from "~/datasources/db/userTickets";
 import {
   FetchWaitlist,
   FetchWaitlistQuery,
@@ -33,7 +34,7 @@ describe("Should get my ticket for a waitlist", () => {
     const userTicket = await insertTicket({
       ticketTemplateId: ticket.id,
       purchaseOrderId: purchaseOrder.id,
-      approvalStatus: "pending",
+      approvalStatus: UserTicketApprovalStatus.Pending,
     });
 
     await insertEventToCommunity({

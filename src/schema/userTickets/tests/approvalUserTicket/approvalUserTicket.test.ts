@@ -1,6 +1,7 @@
 import { v4 } from "uuid";
 import { it, describe, assert } from "vitest";
 
+import { UserTicketApprovalStatus } from "~/datasources/db/userTickets";
 import {
   executeGraphqlOperationAsUser,
   insertEvent,
@@ -148,7 +149,7 @@ describe("Approval user ticket", () => {
     const ticket1 = await insertTicket({
       ticketTemplateId: ticketTemplate1.id,
       userId: user1.id,
-      approvalStatus: "approved",
+      approvalStatus: UserTicketApprovalStatus.Approved,
       purchaseOrderId: purchaseOrder.id,
     });
     const response = await executeGraphqlOperationAsUser<
