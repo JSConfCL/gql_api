@@ -123,7 +123,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
             currencyCode={purchaseOrder.currencyCode}
             total={Number(purchaseOrder.totalPrice)}
             type={
-              firstTicketTemplate.tags.includes("CONFERENCE")
+              firstTicketTemplate.tags.includes("conferencia_95")
                 ? "CONFERENCE"
                 : "EXPERIENCE"
             }
