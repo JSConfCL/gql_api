@@ -5,8 +5,8 @@ import {
   Html,
   Img,
   Section,
-  Tailwind,
   Text,
+  Tailwind,
 } from "@react-email/components";
 import * as React from "react";
 
@@ -76,8 +76,8 @@ export const PurchaseOrderSuccessful9punto5 = ({
       <Container className="bg-white px-8">
         <Section className="text-sm font-light font-sans">
           <Img
-            className="w-[128px] mx-auto py-8"
-            src="https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/663ad351-14fc-4e40-6921-ba6b142be400/public"
+            className="p-4 w-[140px] h-[80px] mx-auto"
+            src="https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/4feaf3f3-217e-4ac4-ed48-2f4f38c60600/public"
             alt="9punto5 Logo"
           />
 
