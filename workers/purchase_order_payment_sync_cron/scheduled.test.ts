@@ -21,6 +21,7 @@ import {
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 
 import { scheduled } from "./scheduled";
+import type WorkerEntrypoint from "../transactional_email_service";
 
 // Mock external dependencies
 vi.mock("~/datasources/db");
@@ -64,10 +65,15 @@ describe("Scheduled Cron Job for Purchase Order Payment Sync", () => {
     error: vi.fn(),
   } as unknown as Logger;
 
+  const mockRpcServiceEmail = {
+    sendPurchaseOrderSuccessful: vi.fn(),
+  } as unknown as Service<WorkerEntrypoint>;
+
   const mockEnv = {
     DB_URL: "test_db_url",
     STRIPE_KEY: "test_stripe_key",
     MERCADOPAGO_KEY: "test_mercadopago_key",
+    RPC_SERVICE_EMAIL: mockRpcServiceEmail,
   } as const;
 
   beforeEach(async () => {
