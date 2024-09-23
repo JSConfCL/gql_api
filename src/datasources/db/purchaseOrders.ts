@@ -67,6 +67,10 @@ export const purchaseOrdersRelations = relations(
       fields: [purchaseOrdersSchema.userId],
       references: [usersSchema.id],
     }),
+    currency: one(allowedCurrencySchema, {
+      fields: [purchaseOrdersSchema.currencyId],
+      references: [allowedCurrencySchema.id],
+    }),
   }),
 );
 

@@ -237,27 +237,200 @@ export const PoppinsFont = () => (
   </>
 );
 
+const roboto = [
+  /* latin-ext */
+  {
+    fontStyle: "normal",
+    fontWeight: 100,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOkCnqEu92Fr1MmgVxGIzIXKMnyrYk.woff2",
+  },
+  /* latin */
+  {
+    fontStyle: "normal",
+    fontWeight: 100,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOkCnqEu92Fr1MmgVxIIzIXKMny.woff2",
+  },
+  /* latin-ext */
+  {
+    fontStyle: "normal",
+    fontWeight: 300,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmSU5fChc4AMP6lbBP.woff2",
+  },
+  /* latin */
+  {
+    fontStyle: "normal",
+    fontWeight: 300,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmSU5fBBc4AMP6lQ.woff2",
+  },
+  /* latin-ext */
+  {
+    fontStyle: "normal",
+    fontWeight: 400,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu7GxKKTU1Kvnz.woff2",
+  },
+  /* latin */
+  {
+    fontStyle: "normal",
+    fontWeight: 400,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2",
+  },
+  /* latin-ext */
+  {
+    fontStyle: "normal",
+    fontWeight: 500,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmEU9fChc4AMP6lbBP.woff2",
+  },
+  /* latin */
+  {
+    fontStyle: "normal",
+    fontWeight: 500,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmEU9fBBc4AMP6lQ.woff2",
+  },
+  /* latin-ext */
+  {
+    fontStyle: "normal",
+    fontWeight: 700,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmWUlfChc4AMP6lbBP.woff2",
+  },
+  /* latin */
+  {
+    fontStyle: "normal",
+    fontWeight: 700,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmWUlfBBc4AMP6lQ.woff2",
+  },
+  /* latin-ext */
+  {
+    fontStyle: "normal",
+    fontWeight: 900,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmYUtfChc4AMP6lbBP.woff2",
+  },
+  /* latin */
+  {
+    fontStyle: "normal",
+    fontWeight: 900,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmYUtfBBc4AMP6lQ.woff2",
+  },
+  /* latin-ext */
+  {
+    fontStyle: "italic",
+    fontWeight: 100,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOiCnqEu92Fr1Mu51QrEz4dL-vwnYh2eg.woff2",
+  },
+  /* latin */
+  {
+    fontStyle: "italic",
+    fontWeight: 100,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOiCnqEu92Fr1Mu51QrEzAdL-vwnYg.woff2",
+  },
+  /* latin-ext */
+  {
+    fontStyle: "italic",
+    fontWeight: 300,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOjCnqEu92Fr1Mu51TjASc0CsTYl4BOQ3o.woff2",
+  },
+  /* latin */
+  {
+    fontStyle: "italic",
+    fontWeight: 300,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOjCnqEu92Fr1Mu51TjASc6CsTYl4BO.woff2",
+  },
+  /* latin-ext */
+  {
+    fontStyle: "italic",
+    fontWeight: 400,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOkCnqEu92Fr1Mu51xGIzIXKMnyrYk.woff2",
+  },
+  /* latin */
+  {
+    fontStyle: "italic",
+    fontWeight: 400,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOkCnqEu92Fr1Mu51xIIzIXKMny.woff2",
+  },
+  /* latin-ext */
+  {
+    fontStyle: "italic",
+    fontWeight: 500,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOjCnqEu92Fr1Mu51S7ACc0CsTYl4BOQ3o.woff2",
+  },
+  /* latin */
+  {
+    fontStyle: "italic",
+    fontWeight: 500,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOjCnqEu92Fr1Mu51S7ACc6CsTYl4BO.woff2",
+  },
+  /* latin-ext */
+  {
+    fontStyle: "italic",
+    fontWeight: 700,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOjCnqEu92Fr1Mu51TzBic0CsTYl4BOQ3o.woff2",
+  },
+  /* latin */
+  {
+    fontStyle: "italic",
+    fontWeight: 700,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOjCnqEu92Fr1Mu51TzBic6CsTYl4BO.woff2",
+  },
+  /* latin-ext */
+  {
+    fontStyle: "italic",
+    fontWeight: 900,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOjCnqEu92Fr1Mu51TLBCc0CsTYl4BOQ3o.woff2",
+  },
+  /* latin */
+  {
+    fontStyle: "italic",
+    fontWeight: 900,
+    src: "https://fonts.gstatic.com/s/roboto/v30/KFOjCnqEu92Fr1Mu51TLBCc6CsTYl4BO.woff2",
+  },
+];
+
 export const RobotoFont = () => (
   <>
-    <Font
-      fontFamily="Roboto"
-      fallbackFontFamily="Verdana"
-      webFont={{
-        url: "https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2",
-        format: "woff2",
-      }}
-      fontWeight={400}
-      fontStyle="normal"
-    />
-    <Font
-      fontFamily="Roboto"
-      fallbackFontFamily="Verdana"
-      webFont={{
-        url: "https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2",
-        format: "woff2",
-      }}
-      fontWeight={800}
-      fontStyle="bold"
-    />
+    {roboto.map((font, index) => (
+      <Font
+        key={index}
+        fontFamily="Roboto"
+        fallbackFontFamily={["Arial", "sans-serif"]}
+        webFont={{
+          url: font.src,
+          format: "woff2",
+        }}
+        fontWeight={font.fontWeight}
+        fontStyle={font.fontStyle}
+      />
+    ))}
+  </>
+);
+
+const bebasNeue = [
+  /* latin-ext */
+  {
+    fontStyle: "normal",
+    fontWeight: 400,
+    src: "https://fonts.gstatic.com/s/bebasneue/v9/JTUSjIg69CK48gW7PXoo9Wdhyzbi.woff2",
+  },
+  /* latin */
+  {
+    fontStyle: "normal",
+    fontWeight: 400,
+    src: "https://fonts.gstatic.com/s/bebasneue/v9/JTUSjIg69CK48gW7PXoo9Wlhyw.woff2",
+  },
+];
+
+export const BebasNeueFont = () => (
+  <>
+    {bebasNeue.map((font, index) => (
+      <Font
+        key={index}
+        fontFamily="Bebas Neue"
+        fallbackFontFamily="Verdana"
+        webFont={{
+          url: font.src,
+          format: "woff2",
+        }}
+        fontWeight={font.fontWeight}
+        fontStyle={font.fontStyle}
+      />
+    ))}
   </>
 );
