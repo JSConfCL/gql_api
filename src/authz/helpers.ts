@@ -1,13 +1,20 @@
+import { and, eq, sql } from "drizzle-orm";
+
 import { ORM_TYPE } from "~/datasources/db";
-import { USER } from "~/datasources/db/schema";
+import {
+  eventsToCommunitiesSchema,
+  SelectUsersToCommunitiesSchema,
+  USER,
+  usersToCommunitiesSchema,
+} from "~/datasources/db/schema";
 import { Context } from "~/types";
 
-const isCommuntiyAdmin = async ({
-  user,
+export const isCommunityAdmin = async ({
+  userId,
   communityId,
   DB,
 }: {
-  user: USER;
+  userId: string;
   communityId: string;
   DB: ORM_TYPE;
 }) => {
@@ -15,7 +22,7 @@ const isCommuntiyAdmin = async ({
     where: (utc, { eq, and }) =>
       and(
         eq(utc.communityId, communityId),
-        eq(utc.userId, user.id),
+        eq(utc.userId, userId),
         eq(utc.role, "admin"),
       ),
   });
@@ -23,7 +30,38 @@ const isCommuntiyAdmin = async ({
   return Boolean(isCommunityAdmin);
 };
 
-const isOwnerOfPurchaseOrder = async ({
+export async function isAdminOfEventCommunity({
+  DB,
+  eventId,
+  userId,
+}: {
+  DB: ORM_TYPE;
+  eventId: string;
+  userId: string;
+}): Promise<boolean> {
+  const roleName: SelectUsersToCommunitiesSchema["role"] = "admin";
+
+  const result = await DB.select({
+    isAdmin: sql<boolean>`CASE WHEN ${usersToCommunitiesSchema.role} = ${roleName} THEN TRUE ELSE FALSE END`,
+  })
+    .from(eventsToCommunitiesSchema)
+    .leftJoin(
+      usersToCommunitiesSchema,
+      and(
+        eq(
+          usersToCommunitiesSchema.communityId,
+          eventsToCommunitiesSchema.communityId,
+        ),
+        eq(usersToCommunitiesSchema.userId, userId),
+      ),
+    )
+    .where(eq(eventsToCommunitiesSchema.eventId, eventId))
+    .execute();
+
+  return result.length > 0 && result[0].isAdmin;
+}
+
+export const isOwnerOfPurchaseOrder = async ({
   user,
   purchaseOrderId,
   DB,
@@ -66,7 +104,8 @@ export const areUsersOnSameTeam = async (root: USER, ctx: Context) => {
 };
 
 export const authHelpers = {
-  isCommuntiyAdmin,
+  isCommunityAdmin,
   isOwnerOfPurchaseOrder,
   isSuperAdminOrSelf,
+  isAdminOfEventCommunity,
 };

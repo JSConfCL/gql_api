@@ -288,26 +288,16 @@ export const EventLoadable = builder.loadableObject(EventRef, {
 
             visibilityCheck = ["public", "private", "unlisted"];
           } else {
-            const eventCommunity =
-              await DB.query.eventsToCommunitiesSchema.findFirst({
-                where: (etc, { eq }) => eq(etc.eventId, root.id),
-                with: {
-                  community: true,
-                },
-              });
+            const isAdmin = await authHelpers.isAdminOfEventCommunity({
+              userId: USER.id,
+              eventId: root.id,
+              DB,
+            });
 
-            if (eventCommunity) {
-              const isAdmin = await authHelpers.isCommuntiyAdmin({
-                user: USER,
-                communityId: eventCommunity.communityId,
-                DB,
-              });
+            if (isAdmin) {
+              statusCheck = ["active", "inactive"];
 
-              if (isAdmin) {
-                statusCheck = ["active", "inactive"];
-
-                visibilityCheck = ["public", "private", "unlisted"];
-              }
+              visibilityCheck = ["public", "private", "unlisted"];
             }
           }
         }
