@@ -61,14 +61,12 @@ const TicketTemplate = ({ children }: React.PropsWithChildren) => {
 };
 
 type Props = {
-  publicTicketId: string;
   currencyCode: string;
   total: number;
   type: "CONFERENCE" | "EXPERIENCE";
 };
 
 export const PurchaseOrderSuccessful9punto5 = ({
-  publicTicketId = "",
   currencyCode = "USD",
   total = 0,
   type = "EXPERIENCE",
@@ -79,7 +77,7 @@ export const PurchaseOrderSuccessful9punto5 = ({
         <Section className="text-sm font-light font-sans">
           <Img
             className="w-[128px] mx-auto py-8"
-            src="https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/7f351cfc-47bd-4165-499a-433ebeb6b500/default"
+            src="https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/663ad351-14fc-4e40-6921-ba6b142be400/public"
             alt="9punto5 Logo"
           />
 
@@ -141,7 +139,7 @@ export const PurchaseOrderSuccessful9punto5 = ({
             <tr>
               <td align="center" role="presentation">
                 <a
-                  href={`https://9punto5.cl/entradas/${publicTicketId}`}
+                  href="https://9punto5.cl/mi-perfil"
                   target="_blank"
                   style={{
                     color: "#ffffff",
@@ -169,7 +167,7 @@ export const PurchaseOrderSuccessful9punto5 = ({
 
           <Img
             className="w-[128px] ml-auto -mt-20"
-            src="https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/9487099f-b0c5-43d4-0a46-22306f40a700/default"
+            src="https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/bf01a23a-f47b-4503-0555-cb7ac38f9500/public"
             alt="9punto5 Illustration"
           />
         </Section>
