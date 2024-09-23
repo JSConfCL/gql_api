@@ -1,4 +1,4 @@
-import { and, eq, lt } from "drizzle-orm";
+import { and, eq, inArray, lt } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import { AsyncReturnType } from "type-fest";
 
@@ -737,6 +737,7 @@ export const clearExpiredPurchaseOrders = async ({
   DB: Context["DB"];
 }) => {
   const currentDateonISO = new Date();
+
   // Actualiza todas las OCs que no se han pagado y su tiempo de expiración venció.
   const expiredOrders = await DB.update(purchaseOrdersSchema)
     .set({
@@ -753,6 +754,20 @@ export const clearExpiredPurchaseOrders = async ({
       ),
     )
     .returning();
+
+  if (expiredOrders.length > 0) {
+    await DB.update(userTicketsSchema)
+      .set({
+        approvalStatus: "cancelled",
+      })
+      .where(
+        inArray(
+          userTicketsSchema.purchaseOrderId,
+          expiredOrders.map((po) => po.id),
+        ),
+      )
+      .returning();
+  }
 
   return expiredOrders;
 };

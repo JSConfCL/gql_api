@@ -137,11 +137,7 @@ builder.mutationField("updateUserRoleInCommunity", (t) =>
         }
 
         if (
-          !(await canUpdateUserRoleInCommunity(
-            ctx.USER?.id,
-            communityId,
-            ctx.DB,
-          ))
+          !(await canUpdateUserRoleInCommunity(ctx.USER, communityId, ctx.DB))
         ) {
           throw new Error("Not authorized");
         }

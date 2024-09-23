@@ -103,7 +103,7 @@ builder.mutationFields((t) => ({
         throw new GraphQLError("User not found");
       }
 
-      if (!(await canCreateEvent(ctx.USER.id, communityId, ctx.DB))) {
+      if (!(await canCreateEvent(ctx.USER, communityId, ctx.DB))) {
         throw new GraphQLError("FORBIDDEN");
       }
 
@@ -181,7 +181,7 @@ builder.mutationFields((t) => ({
           throw new Error("User not found");
         }
 
-        if (!(await canEditEvent(ctx.USER.id, eventId, ctx.DB))) {
+        if (!(await canEditEvent(ctx.USER, eventId, ctx.DB))) {
           throw new Error("FORBIDDEN");
         }
 

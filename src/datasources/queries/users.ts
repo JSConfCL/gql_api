@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { ORM_TYPE } from "~/datasources/db";
@@ -20,64 +19,55 @@ export const findUserByID = async (db: ORM_TYPE, id: string) => {
   return result ? selectUsersSchema.parse(result) : null;
 };
 
-export const updateUserProfileInfo = async (
+export const upsertUserProfileInfo = async (
   db: ORM_TYPE,
   parsedProfileInfo: z.infer<typeof insertUsersSchema>,
   logger: Logger,
 ) => {
-  const result = await db.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.email, parsedProfileInfo.email.toLowerCase()),
-  });
+  logger.info(
+    `Upserting user profile info for ${parsedProfileInfo.email} (externalId: ${
+      parsedProfileInfo.externalId || "N/A"
+    })`,
+  );
 
-  if (!result) {
-    logger.info("User not found — creating new user");
-    // we create the user
-    const createdUsers = await db
+  const { email, externalId, name, imageUrl, isEmailVerified, publicMetadata } =
+    parsedProfileInfo;
+  const lowercaseEmail = email.trim().toLowerCase();
+
+  const upsertData: z.infer<typeof allowedUserUpdateForAuth> = {
+    externalId,
+    name,
+    imageUrl,
+    isEmailVerified,
+    publicMetadata: publicMetadata ?? {},
+    status: UserStatusEnum.active,
+  };
+
+  try {
+    const result = await db
       .insert(usersSchema)
       .values({
-        externalId: parsedProfileInfo.externalId,
-        email: parsedProfileInfo.email.trim().toLowerCase(),
+        ...upsertData,
+        email: lowercaseEmail,
         username: parsedProfileInfo.username ?? getUsername(),
-        name: parsedProfileInfo.name,
-        imageUrl: parsedProfileInfo.imageUrl,
-        isEmailVerified: parsedProfileInfo.isEmailVerified,
-        publicMetadata: parsedProfileInfo.publicMetadata ?? {},
-        status: UserStatusEnum.active,
+      })
+      .onConflictDoUpdate({
+        target: usersSchema.email,
+        set: allowedUserUpdateForAuth.parse(upsertData),
       })
       .returning();
-    const createdUser = createdUsers?.[0];
 
-    if (!createdUser) {
-      logger.error("Could not create user");
-      throw new Error("Could not create user");
-    }
-
-    return selectUsersSchema.parse(createdUser);
-  } else {
-    logger.info("User found — updating user");
-    // we update the user
-    const updateData = allowedUserUpdateForAuth.parse({
-      externalId: parsedProfileInfo.externalId,
-      name: parsedProfileInfo.name,
-      imageUrl: parsedProfileInfo.imageUrl,
-      isEmailVerified: parsedProfileInfo.isEmailVerified,
-      publicMetadata: parsedProfileInfo.publicMetadata ?? {},
-      status: UserStatusEnum.active,
-    });
-    const updatedUsers = await db
-      .update(usersSchema)
-      .set(updateData)
-      .where(eq(usersSchema.email, parsedProfileInfo.email))
-      .returning();
-    const updatedUser = updatedUsers?.[0];
+    const updatedUser = result[0];
 
     if (!updatedUser) {
-      logger.error("Could not update user");
-      throw new Error("Could not update user");
+      throw new Error("User operation failed");
     }
 
-    logger.info("User updated");
+    logger.info(result.length > 1 ? "User updated" : "New user created");
 
     return selectUsersSchema.parse(updatedUser);
+  } catch (error) {
+    logger.error("Error in user operation", { error });
+    throw new Error("User operation failed");
   }
 };

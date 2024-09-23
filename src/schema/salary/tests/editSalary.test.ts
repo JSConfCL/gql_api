@@ -62,7 +62,7 @@ const createSalary = async () => {
   };
 };
 
-describe("Salary creation", () => {
+describe("Salary edition", () => {
   describe("User has a valid token", () => {
     describe("Should update a salary", () => {
       it("For a user with a correct code", async () => {

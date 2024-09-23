@@ -1,8 +1,9 @@
 import { inArray } from "drizzle-orm";
 import { z } from "zod";
 
+import { isAdminOfEventCommunity, isCommunityAdmin } from "~/authz/helpers";
 import { ORM_TYPE } from "~/datasources/db";
-import { selectUsersSchema } from "~/datasources/db/users";
+import { selectUsersSchema, USER } from "~/datasources/db/users";
 import { EventStatus } from "~/generated/types";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
 
@@ -28,13 +29,17 @@ export async function isEventActive(
 
 export async function hasUserRoleInEvent(
   eventId: string,
-  userId: string,
+  user: Pick<USER, "id" | "isSuperAdmin">,
   role: UserRoleEvent,
   DB: ORM_TYPE,
 ): Promise<boolean> {
   const hasRoleInEvent = await DB.query.eventsToUsersSchema.findFirst({
     where: (utc, { eq, and }) =>
-      and(eq(utc.eventId, eventId), eq(utc.userId, userId), eq(utc.role, role)),
+      and(
+        eq(utc.eventId, eventId),
+        eq(utc.userId, user.id),
+        eq(utc.role, role),
+      ),
   });
 
   return Boolean(hasRoleInEvent);
@@ -42,7 +47,7 @@ export async function hasUserRoleInEvent(
 
 export async function hasUserRoleInCommunity(
   communityId: string,
-  userId: string,
+  user: Pick<USER, "id" | "isSuperAdmin">,
   role: UserRoleCommunity,
   DB: ORM_TYPE,
 ): Promise<boolean> {
@@ -50,7 +55,7 @@ export async function hasUserRoleInCommunity(
     where: (utc, { eq, and }) =>
       and(
         eq(utc.communityId, communityId),
-        eq(utc.userId, userId),
+        eq(utc.userId, user.id),
         eq(utc.role, role),
       ),
   });
@@ -59,20 +64,16 @@ export async function hasUserRoleInCommunity(
 }
 
 export async function canCreateEvent(
-  userId: string,
+  user: Pick<USER, "id" | "isSuperAdmin">,
   communityId: string,
   DB: ORM_TYPE,
 ): Promise<boolean> {
-  const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
-  });
-
-  if (user?.isSuperAdmin) {
+  if (user.isSuperAdmin) {
     return true;
   }
 
   const communityAdmin = await isCommunityAdmin({
-    userId,
+    userId: user.id,
     communityId,
     DB,
   });
@@ -81,30 +82,17 @@ export async function canCreateEvent(
 }
 
 export async function canEditEvent(
-  userId: string,
+  user: Pick<USER, "id" | "isSuperAdmin">,
   eventId: string,
   DB: ORM_TYPE,
 ): Promise<boolean> {
-  const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
-  });
-
-  if (user?.isSuperAdmin) {
+  if (user.isSuperAdmin) {
     return true;
   }
 
-  const eventsToCommunities =
-    await DB.query.eventsToCommunitiesSchema.findFirst({
-      where: (utc, { eq }) => eq(utc.eventId, eventId),
-    });
-
-  if (!eventsToCommunities) {
-    return false;
-  }
-
-  const communityAdmin = await isCommunityAdmin({
-    userId,
-    communityId: eventsToCommunities.communityId,
+  const communityAdmin = await isAdminOfEventCommunity({
+    userId: user.id,
+    eventId: eventId,
     DB,
   });
 
@@ -116,15 +104,11 @@ export function isSameUser(userId: string, targetUserId: string): boolean {
 }
 
 export async function canCancelUserTicket(
-  userId: string,
+  user: Pick<USER, "id" | "isSuperAdmin">,
   userTicketId: string,
   DB: ORM_TYPE,
 ): Promise<boolean> {
-  const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
-  });
-
-  if (user?.isSuperAdmin) {
+  if (user.isSuperAdmin) {
     return true;
   }
 
@@ -139,21 +123,13 @@ export async function canCancelUserTicket(
     return false;
   }
 
-  if (userId === userTicket.userId) {
+  if (user.id === userTicket.userId) {
     return true;
   }
 
-  const community = await DB.query.eventsToCommunitiesSchema.findFirst({
-    where: (utc, { eq }) => eq(utc.eventId, userTicket?.ticketTemplate.eventId),
-  });
-
-  if (!community) {
-    return false;
-  }
-
-  const communityAdmin = await isCommunityAdmin({
-    userId,
-    communityId: community.id,
+  const communityAdmin = await isAdminOfEventCommunity({
+    userId: user.id,
+    eventId: userTicket.ticketTemplate.eventId,
     DB,
   });
 
@@ -161,15 +137,11 @@ export async function canCancelUserTicket(
 }
 
 export async function canApproveTicket(
-  userId: string,
+  user: Pick<USER, "id" | "isSuperAdmin">,
   userTicketId: string,
   DB: ORM_TYPE,
 ): Promise<boolean> {
-  const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
-  });
-
-  if (user?.isSuperAdmin) {
+  if (user.isSuperAdmin) {
     return true;
   }
 
@@ -188,7 +160,7 @@ export async function canApproveTicket(
     where: (utc, { eq, and }) =>
       and(
         eq(utc.eventId, userTicket?.ticketTemplate.eventId),
-        eq(utc.userId, userId),
+        eq(utc.userId, user.id),
         eq(utc.role, "admin"),
       ),
   });
@@ -197,20 +169,16 @@ export async function canApproveTicket(
 }
 
 export async function canUpdateUserRoleInCommunity(
-  userId: string,
+  user: Pick<USER, "id" | "isSuperAdmin">,
   communityId: string,
   DB: ORM_TYPE,
 ): Promise<boolean> {
-  const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
-  });
-
-  if (user?.isSuperAdmin) {
+  if (user.isSuperAdmin) {
     return true;
   }
 
   const communityAdmin = await isCommunityAdmin({
-    userId,
+    userId: user.id,
     communityId,
     DB,
   });
@@ -252,15 +220,11 @@ export async function canCreateTicket({
 }
 
 export async function canEditTicket(
-  userId: string,
+  user: Pick<USER, "id" | "isSuperAdmin">,
   ticketId: string,
   DB: ORM_TYPE,
 ): Promise<boolean> {
-  const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
-  });
-
-  if (user?.isSuperAdmin) {
+  if (user.isSuperAdmin) {
     return true;
   }
 
@@ -272,17 +236,9 @@ export async function canEditTicket(
     return false;
   }
 
-  const eventToCommunity = await DB.query.eventsToCommunitiesSchema.findFirst({
-    where: (utc, { eq }) => eq(utc.eventId, ticket?.eventId),
-  });
-
-  if (!eventToCommunity) {
-    return false;
-  }
-
-  const communityAdmin = await isCommunityAdmin({
-    userId,
-    communityId: eventToCommunity?.communityId,
+  const communityAdmin = await isAdminOfEventCommunity({
+    userId: user.id,
+    eventId: ticket?.eventId,
     DB,
   });
 
@@ -290,15 +246,11 @@ export async function canEditTicket(
 }
 
 export async function canRedeemUserTicket(
-  userId: string,
+  user: Pick<USER, "id" | "isSuperAdmin">,
   ticketId: string,
   DB: ORM_TYPE,
 ): Promise<boolean> {
-  const user = await DB.query.usersSchema.findFirst({
-    where: (u, { eq }) => eq(u.id, userId),
-  });
-
-  if (user?.isSuperAdmin) {
+  if (user.isSuperAdmin) {
     return true;
   }
 
@@ -325,7 +277,7 @@ export async function canRedeemUserTicket(
     await DB.query.usersToCommunitiesSchema.findFirst({
       where: (utc, { eq, and }) =>
         and(
-          eq(utc.userId, userId),
+          eq(utc.userId, user.id),
           eq(utc.communityId, eventToCommunity?.communityId),
           inArray(utc.role, ["admin", "collaborator"]),
         ),
@@ -334,7 +286,7 @@ export async function canRedeemUserTicket(
     await DB.query.eventsToUsersSchema.findFirst({
       where: (utc, { eq, and }) =>
         and(
-          eq(utc.userId, userId),
+          eq(utc.userId, user.id),
           eq(utc.eventId, userTicket?.ticketTemplate.eventId),
           inArray(utc.role, ["admin", "collaborator"]),
         ),
@@ -354,14 +306,10 @@ export function canCreateCommunity(
 }
 
 export async function canEditCommunity(
-  user: z.infer<typeof selectUsersSchema> | null,
+  user: z.infer<typeof selectUsersSchema>,
   communityId: string,
   DB: ORM_TYPE,
 ): Promise<boolean> {
-  if (!user) {
-    return false;
-  }
-
   if (user.isSuperAdmin) {
     return true;
   }
@@ -374,24 +322,3 @@ export async function canEditCommunity(
 
   return Boolean(communityAdmin);
 }
-
-const isCommunityAdmin = async ({
-  userId,
-  communityId,
-  DB,
-}: {
-  userId: string;
-  communityId: string;
-  DB: ORM_TYPE;
-}) => {
-  const isCommunityAdmin = await DB.query.usersToCommunitiesSchema.findFirst({
-    where: (utc, { eq, and }) =>
-      and(
-        eq(utc.userId, userId),
-        eq(utc.role, "admin"),
-        eq(utc.communityId, communityId),
-      ),
-  });
-
-  return Boolean(isCommunityAdmin);
-};

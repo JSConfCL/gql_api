@@ -48,6 +48,7 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   const getUnpaidPurchaseOrders = await DB.query.purchaseOrdersSchema.findMany({
     where: (po, { eq, and, isNotNull }) =>
       and(
+        eq(po.status, "open"),
         eq(po.purchaseOrderPaymentStatus, "unpaid"),
         isNotNull(po.paymentPlatformReferenceID),
       ),

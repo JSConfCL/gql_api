@@ -99,7 +99,7 @@ builder.mutationField("cancelUserTicket", (t) =>
           throw new GraphQLError("User not found");
         }
 
-        if (!(await canCancelUserTicket(ctx.USER?.id, userTicketId, ctx.DB))) {
+        if (!(await canCancelUserTicket(ctx.USER, userTicketId, ctx.DB))) {
           throw new GraphQLError("You can't cancel this ticket");
         }
 
@@ -146,7 +146,7 @@ builder.mutationField("approvalUserTicket", (t) =>
           throw new GraphQLError("User not found");
         }
 
-        if (!(await canApproveTicket(USER.id, userTicketId, DB))) {
+        if (!(await canApproveTicket(USER, userTicketId, DB))) {
           throw new GraphQLError("Unauthorized!");
         }
 
@@ -211,7 +211,7 @@ builder.mutationField("redeemUserTicket", (t) =>
           throw new GraphQLError("User not found");
         }
 
-        if (!(await canRedeemUserTicket(USER?.id, userTicketId, DB))) {
+        if (!(await canRedeemUserTicket(USER, userTicketId, DB))) {
           throw new GraphQLError("No tienes permisos para redimir este ticket");
         }
 
