@@ -120,7 +120,6 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
       await sendTransactionalHTMLEmail(this.resend, this.logger, {
         htmlContent: render(
           <PurchaseOrderSuccessful9punto5
-            publicTicketId={firstUserTicket.publicId}
             currencyCode={purchaseOrder.currencyCode}
             total={Number(purchaseOrder.totalPrice)}
             type={
