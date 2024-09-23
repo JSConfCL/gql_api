@@ -40,6 +40,7 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   const getUnpaidPurchaseOrders = await DB.query.purchaseOrdersSchema.findMany({
     where: (po, { eq, and, isNotNull }) =>
       and(
+        eq(po.status, "open"),
         eq(po.purchaseOrderPaymentStatus, "unpaid"),
         isNotNull(po.paymentPlatformReferenceID),
       ),
@@ -54,6 +55,7 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
     logger.info(
       `Syncing purchase order payment status for ${purchaseOrder.id}`,
     );
+
     await syncPurchaseOrderPaymentStatus({
       purchaseOrderId: purchaseOrder.id,
       DB,
@@ -61,6 +63,7 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
       GET_MERCADOPAGO_CLIENT,
       logger,
     });
+
     logger.info(`Synced purchase order payment status for ${purchaseOrder.id}`);
   }
 
