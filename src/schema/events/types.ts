@@ -155,7 +155,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
     logoImage: t.field({
       type: ImageRef,
       nullable: true,
-      resolve: async ({ logoImage }, args, { DB, logger }) => {
+      resolve: async ({ logoImage }, args, { DB }) => {
         if (!logoImage) {
           return null;
         }
@@ -174,7 +174,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
     previewImage: t.field({
       type: ImageRef,
       nullable: true,
-      resolve: async ({ previewImage }, args, { DB, logger }) => {
+      resolve: async ({ previewImage }, args, { DB }) => {
         if (!previewImage) {
           return null;
         }
@@ -245,6 +245,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
         return teams.map((t) => selectTeamsSchema.parse(t));
       },
     }),
+    publicShareURL: t.exposeString("publicShareURL", { nullable: true }),
     meetingURL: t.exposeString("meetingURL", { nullable: true }),
     latitude: t.exposeString("geoLatitude", { nullable: true }),
     longitude: t.exposeString("geoLongitude", { nullable: true }),
