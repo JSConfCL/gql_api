@@ -11,7 +11,7 @@ export type CheckPurchaseOrderStatusMutationVariables = Types.Exact<{
 }>;
 
 
-export type CheckPurchaseOrderStatusMutation = { __typename?: 'Mutation', checkPurchaseOrderStatus: { __typename?: 'PurchaseOrder', id: string, status: Types.PurchaseOrderStatusEnum | null, paymentPlatform: string | null, purchasePaymentStatus: Types.PurchaseOrderPaymentStatusEnum | null, finalPrice: number | null, currency: { __typename?: 'AllowedCurrency', currency: string } | null } };
+export type CheckPurchaseOrderStatusMutation = { __typename?: 'Mutation', checkPurchaseOrderStatus: { __typename?: 'PurchaseOrder', id: string, status: Types.PurchaseOrderStatusEnum | null, paymentPlatform: string | null, purchasePaymentStatus: Types.PurchaseOrderPaymentStatusEnum | null, finalPrice: number | null, currency: { __typename?: 'AllowedCurrency', id: string, currency: string } | null } };
 
 
 export const CheckPurchaseOrderStatus = gql`
@@ -20,12 +20,12 @@ export const CheckPurchaseOrderStatus = gql`
     id
     status
     currency {
+      id
       currency
     }
     paymentPlatform
     purchasePaymentStatus
     finalPrice
-    status
   }
 }
     `;

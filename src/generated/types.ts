@@ -162,6 +162,7 @@ export type EnqueueGoogleAlbumImportInput = {
 export type Event = {
   __typename?: "Event";
   address?: Maybe<Scalars["String"]["output"]>;
+  bannerImage?: Maybe<Image>;
   bannerImageSanityRef?: Maybe<Scalars["String"]["output"]>;
   community?: Maybe<Community>;
   description?: Maybe<Scalars["String"]["output"]>;
@@ -172,7 +173,9 @@ export type Event = {
   latitude?: Maybe<Scalars["String"]["output"]>;
   longitude?: Maybe<Scalars["String"]["output"]>;
   meetingURL?: Maybe<Scalars["String"]["output"]>;
+  mobileBannerImage?: Maybe<Image>;
   name: Scalars["String"]["output"];
+  previewImage?: Maybe<Image>;
   schedules: Array<Schedule>;
   speakers: Array<Speaker>;
   startDateTime: Scalars["DateTime"]["output"];
