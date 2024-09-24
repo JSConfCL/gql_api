@@ -155,6 +155,7 @@ type Event {
   id: ID!
   images: [SanityAssetRef!]!
   latitude: String
+  logoImage: Image
   longitude: String
   meetingURL: String
   mobileBannerImage: Image
