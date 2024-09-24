@@ -146,6 +146,7 @@ Representation of an Event (Events and Users, is what tickets are linked to)
 """
 type Event {
   address: String
+  bannerImage: Image
   bannerImageSanityRef: String
   community: Community
   description: String
@@ -156,7 +157,9 @@ type Event {
   latitude: String
   longitude: String
   meetingURL: String
+  mobileBannerImage: Image
   name: String!
+  previewImage: Image
   schedules: [Schedule!]!
   speakers: [Speaker!]!
   startDateTime: DateTime!

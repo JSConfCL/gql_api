@@ -6,6 +6,7 @@ import {
   ScheduleStatus,
   selectCommunitySchema,
   selectGalleriesSchema,
+  selectImagesSchema,
   selectScheduleSchema,
   selectSpeakerSchema,
   selectTagsSchema,
@@ -21,6 +22,7 @@ import {
 import { getImagesBySanityEventId } from "~/datasources/sanity/images";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import { GalleryRef } from "~/schema/gallery/types";
+import { ImageRef } from "~/schema/image/types";
 import { schedulesFetcher } from "~/schema/schedules/schedulesFetcher";
 import { ScheduleRef } from "~/schema/schedules/types";
 import {
@@ -148,6 +150,63 @@ export const EventLoadable = builder.loadableObject(EventRef, {
           client,
           sanityEventId,
         });
+      },
+    }),
+    previewImage: t.field({
+      type: ImageRef,
+      nullable: true,
+      resolve: async ({ previewImage }, args, { DB, logger }) => {
+        if (!previewImage) {
+          return null;
+        }
+
+        const image = await DB.query.imagesSchema.findFirst({
+          where: (i, { eq }) => eq(i.id, previewImage),
+        });
+
+        if (!image) {
+          return null;
+        }
+
+        return selectImagesSchema.parse(image);
+      },
+    }),
+    bannerImage: t.field({
+      type: ImageRef,
+      nullable: true,
+      resolve: async ({ bannerImage }, args, { DB }) => {
+        if (!bannerImage) {
+          return null;
+        }
+
+        const image = await DB.query.imagesSchema.findFirst({
+          where: (i, { eq }) => eq(i.id, bannerImage),
+        });
+
+        if (!image) {
+          return null;
+        }
+
+        return selectImagesSchema.parse(image);
+      },
+    }),
+    mobileBannerImage: t.field({
+      type: ImageRef,
+      nullable: true,
+      resolve: async ({ mobileBannerImage }, args, { DB }) => {
+        if (!mobileBannerImage) {
+          return null;
+        }
+
+        const image = await DB.query.imagesSchema.findFirst({
+          where: (i, { eq }) => eq(i.id, mobileBannerImage),
+        });
+
+        if (!image) {
+          return null;
+        }
+
+        return selectImagesSchema.parse(image);
       },
     }),
     teams: t.field({
