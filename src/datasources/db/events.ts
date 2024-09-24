@@ -48,7 +48,7 @@ export const eventsSchema = pgTable("events", {
   // For a purchase_order, will be shared to <publicShareUrl>/po/:purchase_order_public_id
   // For a user_ticket, will be shared to <publicShareUrl>/ticket/:user_ticket_public_id
   // if not, it will default to https://tickets.communityos.io
-  publicShareUrl: text("public_share_url"),
+  publicShareURL: text("public_share_url"),
   // For the tickets.communitys.io designs, we need to consider the following images, 3rd parties could use them, but they are not required.
   logoImage: uuid("logo_image").references((): AnyPgColumn => imagesSchema.id),
   previewImage: uuid("preview_image").references(

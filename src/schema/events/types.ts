@@ -245,6 +245,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
         return teams.map((t) => selectTeamsSchema.parse(t));
       },
     }),
+    publicShareURL: t.exposeString("publicShareURL", { nullable: true }),
     meetingURL: t.exposeString("meetingURL", { nullable: true }),
     latitude: t.exposeString("geoLatitude", { nullable: true }),
     longitude: t.exposeString("geoLongitude", { nullable: true }),
