@@ -152,6 +152,25 @@ export const EventLoadable = builder.loadableObject(EventRef, {
         });
       },
     }),
+    logoImage: t.field({
+      type: ImageRef,
+      nullable: true,
+      resolve: async ({ logoImage }, args, { DB, logger }) => {
+        if (!logoImage) {
+          return null;
+        }
+
+        const image = await DB.query.imagesSchema.findFirst({
+          where: (i, { eq }) => eq(i.id, logoImage),
+        });
+
+        if (!image) {
+          return null;
+        }
+
+        return selectImagesSchema.parse(image);
+      },
+    }),
     previewImage: t.field({
       type: ImageRef,
       nullable: true,

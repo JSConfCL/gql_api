@@ -171,6 +171,7 @@ export type Event = {
   id: Scalars["ID"]["output"];
   images: Array<SanityAssetRef>;
   latitude?: Maybe<Scalars["String"]["output"]>;
+  logoImage?: Maybe<Image>;
   longitude?: Maybe<Scalars["String"]["output"]>;
   meetingURL?: Maybe<Scalars["String"]["output"]>;
   mobileBannerImage?: Maybe<Image>;
