@@ -125,6 +125,13 @@ export const PurchaseOrderLoadable = builder.loadableObject(PurchaseOrderRef, {
         return root.purchaseOrder.createdAt;
       },
     }),
+    publicId: t.field({
+      type: "String",
+      nullable: true,
+      resolve: (root) => {
+        return root.purchaseOrder.publicId;
+      },
+    }),
     tickets: t.field({
       type: [UserTicketRef],
       resolve: async (root, s, { DB }) => {
