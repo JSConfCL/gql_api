@@ -462,7 +462,7 @@ builder.mutationField("claimUserTicket", (t) =>
                 )?.count || 0;
 
               const limitAlreadyReached = ticketTemplate.quantity
-                ? existingCount >= ticketTemplate.quantity
+                ? existingCount > ticketTemplate.quantity
                 : false;
 
               logger.info(
