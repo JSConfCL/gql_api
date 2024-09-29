@@ -8,10 +8,13 @@ import {
 } from "~/schema/purchaseOrder/actions";
 import { ensureKeys } from "~workers/utils";
 
+import type WorkerEntrypoint from "../transactional_email_service";
+
 type ENV = {
   DB_URL: string;
   STRIPE_KEY: string;
   MERCADOPAGO_KEY: string;
+  RPC_SERVICE_EMAIL: Service<WorkerEntrypoint>;
 };
 
 // Este cron hace lo siguiente
@@ -23,7 +26,12 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   event,
   env,
 ) => {
-  ensureKeys(env, ["DB_URL", "STRIPE_KEY", "MERCADOPAGO_KEY"]);
+  ensureKeys(env, [
+    "DB_URL",
+    "STRIPE_KEY",
+    "MERCADOPAGO_KEY",
+    "RPC_SERVICE_EMAIL",
+  ]);
   const logger = createLogger("purchase_order_payment_sync_cron");
   const DB = getDb({
     neonUrl: env.DB_URL,
@@ -40,6 +48,7 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
   const getUnpaidPurchaseOrders = await DB.query.purchaseOrdersSchema.findMany({
     where: (po, { eq, and, isNotNull }) =>
       and(
+        eq(po.status, "open"),
         eq(po.purchaseOrderPaymentStatus, "unpaid"),
         isNotNull(po.paymentPlatformReferenceID),
       ),
@@ -54,13 +63,16 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
     logger.info(
       `Syncing purchase order payment status for ${purchaseOrder.id}`,
     );
+
     await syncPurchaseOrderPaymentStatus({
       purchaseOrderId: purchaseOrder.id,
       DB,
       GET_STRIPE_CLIENT,
       GET_MERCADOPAGO_CLIENT,
       logger,
+      transactionalEmailService: env.RPC_SERVICE_EMAIL,
     });
+
     logger.info(`Synced purchase order payment status for ${purchaseOrder.id}`);
   }
 

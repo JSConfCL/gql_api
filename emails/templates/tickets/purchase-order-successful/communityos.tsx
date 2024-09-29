@@ -39,7 +39,6 @@ interface WorkEmailValidationEmailProps {
 }
 
 export const PurchaseOrderSuccessful = ({
-  purchaseOrderId,
   community = {
     name: "Javascript Chile",
     communityURL: "https://cdn.com",

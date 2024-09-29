@@ -6,6 +6,7 @@ import {
   ScheduleStatus,
   selectCommunitySchema,
   selectGalleriesSchema,
+  selectImagesSchema,
   selectScheduleSchema,
   selectSpeakerSchema,
   selectTagsSchema,
@@ -21,6 +22,7 @@ import {
 import { getImagesBySanityEventId } from "~/datasources/sanity/images";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import { GalleryRef } from "~/schema/gallery/types";
+import { ImageRef } from "~/schema/image/types";
 import { schedulesFetcher } from "~/schema/schedules/schedulesFetcher";
 import { ScheduleRef } from "~/schema/schedules/types";
 import {
@@ -150,6 +152,82 @@ export const EventLoadable = builder.loadableObject(EventRef, {
         });
       },
     }),
+    logoImage: t.field({
+      type: ImageRef,
+      nullable: true,
+      resolve: async ({ logoImage }, args, { DB }) => {
+        if (!logoImage) {
+          return null;
+        }
+
+        const image = await DB.query.imagesSchema.findFirst({
+          where: (i, { eq }) => eq(i.id, logoImage),
+        });
+
+        if (!image) {
+          return null;
+        }
+
+        return selectImagesSchema.parse(image);
+      },
+    }),
+    previewImage: t.field({
+      type: ImageRef,
+      nullable: true,
+      resolve: async ({ previewImage }, args, { DB }) => {
+        if (!previewImage) {
+          return null;
+        }
+
+        const image = await DB.query.imagesSchema.findFirst({
+          where: (i, { eq }) => eq(i.id, previewImage),
+        });
+
+        if (!image) {
+          return null;
+        }
+
+        return selectImagesSchema.parse(image);
+      },
+    }),
+    bannerImage: t.field({
+      type: ImageRef,
+      nullable: true,
+      resolve: async ({ bannerImage }, args, { DB }) => {
+        if (!bannerImage) {
+          return null;
+        }
+
+        const image = await DB.query.imagesSchema.findFirst({
+          where: (i, { eq }) => eq(i.id, bannerImage),
+        });
+
+        if (!image) {
+          return null;
+        }
+
+        return selectImagesSchema.parse(image);
+      },
+    }),
+    mobileBannerImage: t.field({
+      type: ImageRef,
+      nullable: true,
+      resolve: async ({ mobileBannerImage }, args, { DB }) => {
+        if (!mobileBannerImage) {
+          return null;
+        }
+
+        const image = await DB.query.imagesSchema.findFirst({
+          where: (i, { eq }) => eq(i.id, mobileBannerImage),
+        });
+
+        if (!image) {
+          return null;
+        }
+
+        return selectImagesSchema.parse(image);
+      },
+    }),
     teams: t.field({
       type: [TeamRef],
       resolve: async (root, args, ctx) => {
@@ -167,6 +245,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
         return teams.map((t) => selectTeamsSchema.parse(t));
       },
     }),
+    publicShareURL: t.exposeString("publicShareURL", { nullable: true }),
     meetingURL: t.exposeString("meetingURL", { nullable: true }),
     latitude: t.exposeString("geoLatitude", { nullable: true }),
     longitude: t.exposeString("geoLongitude", { nullable: true }),
@@ -288,26 +367,16 @@ export const EventLoadable = builder.loadableObject(EventRef, {
 
             visibilityCheck = ["public", "private", "unlisted"];
           } else {
-            const eventCommunity =
-              await DB.query.eventsToCommunitiesSchema.findFirst({
-                where: (etc, { eq }) => eq(etc.eventId, root.id),
-                with: {
-                  community: true,
-                },
-              });
+            const isAdmin = await authHelpers.isAdminOfEventCommunity({
+              userId: USER.id,
+              eventId: root.id,
+              DB,
+            });
 
-            if (eventCommunity) {
-              const isAdmin = await authHelpers.isCommuntiyAdmin({
-                user: USER,
-                communityId: eventCommunity.communityId,
-                DB,
-              });
+            if (isAdmin) {
+              statusCheck = ["active", "inactive"];
 
-              if (isAdmin) {
-                statusCheck = ["active", "inactive"];
-
-                visibilityCheck = ["public", "private", "unlisted"];
-              }
+              visibilityCheck = ["public", "private", "unlisted"];
             }
           }
         }

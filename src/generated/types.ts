@@ -162,6 +162,7 @@ export type EnqueueGoogleAlbumImportInput = {
 export type Event = {
   __typename?: "Event";
   address?: Maybe<Scalars["String"]["output"]>;
+  bannerImage?: Maybe<Image>;
   bannerImageSanityRef?: Maybe<Scalars["String"]["output"]>;
   community?: Maybe<Community>;
   description?: Maybe<Scalars["String"]["output"]>;
@@ -170,9 +171,12 @@ export type Event = {
   id: Scalars["ID"]["output"];
   images: Array<SanityAssetRef>;
   latitude?: Maybe<Scalars["String"]["output"]>;
+  logoImage?: Maybe<Image>;
   longitude?: Maybe<Scalars["String"]["output"]>;
   meetingURL?: Maybe<Scalars["String"]["output"]>;
+  mobileBannerImage?: Maybe<Image>;
   name: Scalars["String"]["output"];
+  previewImage?: Maybe<Image>;
   schedules: Array<Schedule>;
   speakers: Array<Speaker>;
   startDateTime: Scalars["DateTime"]["output"];
@@ -650,6 +654,18 @@ export enum PronounsEnum {
   TheyThem = "theyThem",
 }
 
+/** Representation of the public data for a user's event attendance, used usually for public profiles or 'shareable ticket' pages */
+export type PublicEventAttendance = {
+  __typename?: "PublicEventAttendance";
+  event: Event;
+  id: Scalars["ID"]["output"];
+  userInfo: PublicUserInfo;
+};
+
+export type PublicEventAttendanceInfo = {
+  id: Scalars["String"]["input"];
+};
+
 /** Representation of a payment log entry */
 export type PublicFinanceEntryRef = {
   __typename?: "PublicFinanceEntryRef";
@@ -663,6 +679,15 @@ export type PublicFinanceEntryRef = {
 
 export type PublicTicketInput = {
   publicTicketId: Scalars["String"]["input"];
+};
+
+/** Representation of a user's publicly accessible data, to be used in public contexts like shareable ticket UIs */
+export type PublicUserInfo = {
+  __typename?: "PublicUserInfo";
+  firstName?: Maybe<Scalars["String"]["output"]>;
+  lastName?: Maybe<Scalars["String"]["output"]>;
+  profilePicture?: Maybe<Scalars["String"]["output"]>;
+  userName: Scalars["String"]["output"];
 };
 
 /** Representation of the public information of a User ticket */
@@ -730,6 +755,8 @@ export type Query = {
   myPurchaseOrders: PaginatedPurchaseOrder;
   /** Get a list of tickets for the current user */
   myTickets: PaginatedUserTicket;
+  /** Get public event attendance info */
+  publicEventAttendanceInfo?: Maybe<PublicEventAttendance>;
   /** Get a list of user tickets */
   publicTicketInfo: PublicUserTicket;
   /** Get a list of salaries associated to the user */
@@ -800,6 +827,10 @@ export type QueryMyPurchaseOrdersArgs = {
 
 export type QueryMyTicketsArgs = {
   input: PaginatedInputMyTicketsSearchValues;
+};
+
+export type QueryPublicEventAttendanceInfoArgs = {
+  input: PublicEventAttendanceInfo;
 };
 
 export type QueryPublicTicketInfoArgs = {

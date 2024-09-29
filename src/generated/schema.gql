@@ -146,6 +146,7 @@ Representation of an Event (Events and Users, is what tickets are linked to)
 """
 type Event {
   address: String
+  bannerImage: Image
   bannerImageSanityRef: String
   community: Community
   description: String
@@ -154,9 +155,12 @@ type Event {
   id: ID!
   images: [SanityAssetRef!]!
   latitude: String
+  logoImage: Image
   longitude: String
   meetingURL: String
+  mobileBannerImage: Image
   name: String!
+  previewImage: Image
   schedules: [Schedule!]!
   speakers: [Speaker!]!
   startDateTime: DateTime!
@@ -606,6 +610,19 @@ enum PronounsEnum {
 }
 
 """
+Representation of the public data for a user's event attendance, used usually for public profiles or 'shareable ticket' pages
+"""
+type PublicEventAttendance {
+  event: Event!
+  id: ID!
+  userInfo: PublicUserInfo!
+}
+
+input PublicEventAttendanceInfo {
+  id: String!
+}
+
+"""
 Representation of a payment log entry
 """
 type PublicFinanceEntryRef {
@@ -619,6 +636,16 @@ type PublicFinanceEntryRef {
 
 input PublicTicketInput {
   publicTicketId: String!
+}
+
+"""
+Representation of a user's publicly accessible data, to be used in public contexts like shareable ticket UIs
+"""
+type PublicUserInfo {
+  firstName: String
+  lastName: String
+  profilePicture: String
+  userName: String!
 }
 
 """
@@ -723,6 +750,13 @@ type Query {
   Get a list of tickets for the current user
   """
   myTickets(input: PaginatedInputMyTicketsSearchValues!): PaginatedUserTicket!
+
+  """
+  Get public event attendance info
+  """
+  publicEventAttendanceInfo(
+    input: PublicEventAttendanceInfo!
+  ): PublicEventAttendance
 
   """
   Get a list of user tickets

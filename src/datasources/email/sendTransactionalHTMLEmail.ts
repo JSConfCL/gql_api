@@ -4,6 +4,8 @@ import type { Resend } from "resend";
 import { APP_ENV } from "~/env";
 import { Logger } from "~/logging";
 
+type CreateEmailOptions = Parameters<Resend["emails"]["send"]>[0];
+
 const numOfAttempts = 5; // Maximum number of retries
 const delay = 1000; // Initial delay in milliseconds
 
@@ -16,6 +18,7 @@ export type ResendEmailArgs = {
     name: string;
     value: string;
   }[];
+  replyTo?: string;
 };
 
 const getEmails = (
@@ -40,14 +43,16 @@ const sendEmailFunction = async (
     logger.info("Using batch send");
     const resendArgsArray = resendArgs.map((args) => {
       const { from, htmlContent, subject, to, tags } = args;
-
-      return {
+      const next: CreateEmailOptions = {
         to: getEmails(to),
         from: `${from.name} <${from.email}>`,
         subject,
         html: htmlContent,
         tags,
+        reply_to: args.replyTo,
       };
+
+      return next;
     });
 
     const resendResponse = await resend.batch.send(resendArgsArray);
@@ -61,6 +66,7 @@ const sendEmailFunction = async (
       to: getEmails(to),
       from: `${from.name} <${from.email}>`,
       subject,
+      reply_to: resendArgs.replyTo,
       html: htmlContent,
       tags,
     });

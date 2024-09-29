@@ -41,7 +41,6 @@ builder.mutationField("payForPurchaseOrder", (t) =>
         USER,
         PURCHASE_CALLBACK_URL,
         GET_MERCADOPAGO_CLIENT,
-        RPC_SERVICE_EMAIL,
         logger,
       },
     ) => {
@@ -67,7 +66,6 @@ builder.mutationField("payForPurchaseOrder", (t) =>
         GET_MERCADOPAGO_CLIENT,
         currencyId: currencyID,
         logger,
-        transactionalEmailService: RPC_SERVICE_EMAIL,
       });
 
       // 4. We return the payment link.
@@ -107,7 +105,14 @@ builder.mutationField("checkPurchaseOrderStatus", (t) =>
     resolve: async (
       parent,
       { input },
-      { DB, GET_STRIPE_CLIENT, GET_MERCADOPAGO_CLIENT, USER, logger },
+      {
+        DB,
+        GET_STRIPE_CLIENT,
+        GET_MERCADOPAGO_CLIENT,
+        USER,
+        logger,
+        RPC_SERVICE_EMAIL,
+      },
     ) => {
       if (!USER) {
         throw new Error("User is required");
@@ -130,6 +135,7 @@ builder.mutationField("checkPurchaseOrderStatus", (t) =>
         GET_STRIPE_CLIENT,
         GET_MERCADOPAGO_CLIENT,
         logger,
+        transactionalEmailService: RPC_SERVICE_EMAIL,
       });
 
       const tickets = await DB.query.userTicketsSchema.findMany({
