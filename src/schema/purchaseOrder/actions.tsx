@@ -56,6 +56,7 @@ type SendPurchaseOrderSuccessfulEmailArgs = {
   purchaseOrder: {
     id: string;
     user: {
+      id: string;
       name: string | null;
       username: string;
       email: string;
@@ -74,8 +75,12 @@ type SendPurchaseOrderSuccessfulEmailArgs = {
           address: string | null;
           startDateTime: Date;
           endDateTime: Date | null;
+          logoImageReference: {
+            url: string;
+          } | null;
           eventsToCommunities: Array<{
             community: {
+              slug: string | null;
               name: string;
               logoImageSanityRef: string | null;
             };
@@ -115,6 +120,7 @@ const sendPurchaseOrderSuccessfulEmail = async ({
     purchaseOrder: {
       id: purchaseOrder.id,
       user: {
+        id: purchaseOrder.user.id,
         name: purchaseOrder.user.name,
         username: purchaseOrder.user.username,
         email: purchaseOrder.user.email,
@@ -124,6 +130,7 @@ const sendPurchaseOrderSuccessfulEmail = async ({
       userTickets: purchaseOrder.userTickets,
     },
     communityInfo: {
+      slug: firstCommunityInfo.slug,
       name: firstCommunityInfo.name,
       logoImageSanityRef: firstCommunityInfo.logoImageSanityRef,
     },
@@ -133,6 +140,7 @@ const sendPurchaseOrderSuccessfulEmail = async ({
       address: firstEventInfo.address,
       startDateTime: firstEventInfo.startDateTime,
       endDateTime: firstEventInfo.endDateTime,
+      eventLogoCloudflareImageURL: firstEventInfo.logoImageReference?.url,
     },
   });
 
@@ -579,6 +587,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
         },
         user: {
           columns: {
+            id: true,
             email: true,
             name: true,
             username: true,
@@ -626,11 +635,13 @@ export const syncPurchaseOrderPaymentStatus = async ({
             with: {
               event: {
                 with: {
+                  logoImageReference: true,
                   eventsToCommunities: {
                     with: {
                       community: {
                         columns: {
                           name: true,
+                          slug: true,
                           logoImageSanityRef: true,
                         },
                       },

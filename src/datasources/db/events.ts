@@ -63,10 +63,14 @@ export const eventsSchema = pgTable("events", {
   ...createdAndUpdatedAtFields,
 });
 
-export const eventsRelations = relations(eventsSchema, ({ many }) => ({
+export const eventsRelations = relations(eventsSchema, ({ many, one }) => ({
   eventsToCommunities: many(eventsToCommunitiesSchema),
   eventsToTags: many(eventsToTagsSchema),
   eventsToTickets: many(ticketsSchema),
+  logoImageReference: one(imagesSchema, {
+    fields: [eventsSchema.logoImage],
+    references: [imagesSchema.id],
+  }),
 }));
 
 export const selectEventsSchema = createSelectSchema(eventsSchema);
