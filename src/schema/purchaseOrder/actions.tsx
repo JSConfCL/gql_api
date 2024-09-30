@@ -75,8 +75,12 @@ type SendPurchaseOrderSuccessfulEmailArgs = {
           address: string | null;
           startDateTime: Date;
           endDateTime: Date | null;
+          logoImageReference: {
+            url: string;
+          } | null;
           eventsToCommunities: Array<{
             community: {
+              slug: string | null;
               name: string;
               logoImageSanityRef: string | null;
             };
@@ -126,6 +130,7 @@ const sendPurchaseOrderSuccessfulEmail = async ({
       userTickets: purchaseOrder.userTickets,
     },
     communityInfo: {
+      slug: firstCommunityInfo.slug,
       name: firstCommunityInfo.name,
       logoImageSanityRef: firstCommunityInfo.logoImageSanityRef,
     },
@@ -135,6 +140,7 @@ const sendPurchaseOrderSuccessfulEmail = async ({
       address: firstEventInfo.address,
       startDateTime: firstEventInfo.startDateTime,
       endDateTime: firstEventInfo.endDateTime,
+      eventLogoCloudflareImageURL: firstEventInfo.logoImageReference?.url,
     },
   });
 
@@ -629,11 +635,13 @@ export const syncPurchaseOrderPaymentStatus = async ({
             with: {
               event: {
                 with: {
+                  logoImageReference: true,
                   eventsToCommunities: {
                     with: {
                       community: {
                         columns: {
                           name: true,
+                          slug: true,
                           logoImageSanityRef: true,
                         },
                       },

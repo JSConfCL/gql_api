@@ -86,6 +86,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
     };
     communityInfo: {
       name: string;
+      slug: string | null;
       logoImageSanityRef: string | null;
     };
     eventInfo: {
@@ -94,6 +95,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
       address: string | null;
       startDateTime: Date;
       endDateTime: Date | null;
+      eventLogoCloudflareImageURL?: string;
     };
   }) {
     this.logger.info(
@@ -144,7 +146,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
         replyTo: "tickets@9punto5.cl",
         subject: "Tus tickets están listos 🎉 | 9punto5",
       });
-    } else if (communityInfo.name === "JSConf CL") {
+    } else if (communityInfo.slug?.toLowerCase() === "jscl") {
       await sendTransactionalHTMLEmail(this.resend, this.logger, {
         htmlContent: render(
           <JSConfCLTicketConfirmation
@@ -152,7 +154,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
             userID={purchaseOrder.user.id}
             userName={purchaseOrder.user.name ?? purchaseOrder.user.username}
             userEmail={purchaseOrder.user.email}
-            eventLogoCloudflareImageURL={`https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/7b1c5de6-bd8e-47e2-9fd0-43ce2efc3700`}
+            eventLogoCloudflareImageURL={eventInfo.eventLogoCloudflareImageURL}
           />,
         ),
         to: [

@@ -20,7 +20,7 @@ interface EmailProps {
   eventName: string;
   userID: string;
   userName?: string;
-  eventLogoCloudflareImageURL: string;
+  eventLogoCloudflareImageURL?: string;
   userEmail: string;
 }
 
@@ -36,14 +36,16 @@ export const JSConfCLTicketConfirmation = ({
       <Container className="px-10 py-10 w-full max-w-3xl font-light">
         <Section className="">
           <Preview>Tu ticket para {eventName}</Preview>
-          <Row className="h-20 mb-14">
-            <Column>
-              <Img
-                src={`${eventLogoCloudflareImageURL}/w=300,fit=scale-down`}
-                className="w-full max-w-[200px]"
-              />
-            </Column>
-          </Row>
+          {eventLogoCloudflareImageURL && (
+            <Row className="h-20 mb-14">
+              <Column>
+                <Img
+                  src={`${eventLogoCloudflareImageURL}/w=300,fit=scale-down`}
+                  className="w-full max-w-[200px]"
+                />
+              </Column>
+            </Row>
+          )}
 
           <Text className="text-2xl mb-6">
             {userName ? `Hola ${userName},` : "Hola,"}
