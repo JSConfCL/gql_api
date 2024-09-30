@@ -56,6 +56,7 @@ type SendPurchaseOrderSuccessfulEmailArgs = {
   purchaseOrder: {
     id: string;
     user: {
+      id: string;
       name: string | null;
       username: string;
       email: string;
@@ -115,6 +116,7 @@ const sendPurchaseOrderSuccessfulEmail = async ({
     purchaseOrder: {
       id: purchaseOrder.id,
       user: {
+        id: purchaseOrder.user.id,
         name: purchaseOrder.user.name,
         username: purchaseOrder.user.username,
         email: purchaseOrder.user.email,
@@ -579,6 +581,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
         },
         user: {
           columns: {
+            id: true,
             email: true,
             name: true,
             username: true,

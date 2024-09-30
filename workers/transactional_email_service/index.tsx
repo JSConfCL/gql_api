@@ -3,6 +3,7 @@ import { WorkerEntrypoint } from "cloudflare:workers";
 import * as React from "react";
 import { Resend } from "resend";
 
+import { JSConfCLTicketConfirmation } from "emails/templates/tickets/purchase-order-successful/jsconfcl";
 import {
   ResendEmailArgs,
   sendTransactionalHTMLEmail,
@@ -56,6 +57,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
     purchaseOrder: {
       id: string;
       user: {
+        id: string;
         name: string | null;
         username: string;
         email: string;
@@ -141,6 +143,29 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
         },
         replyTo: "tickets@9punto5.cl",
         subject: "Tus tickets están listos 🎉 | 9punto5",
+      });
+    } else if (communityInfo.name === "JSConf CL") {
+      await sendTransactionalHTMLEmail(this.resend, this.logger, {
+        htmlContent: render(
+          <JSConfCLTicketConfirmation
+            eventName={eventInfo.name}
+            userID={purchaseOrder.user.id}
+            userName={purchaseOrder.user.name ?? purchaseOrder.user.username}
+            userEmail={purchaseOrder.user.email}
+            eventLogoCloudflareImageURL={`https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/7b1c5de6-bd8e-47e2-9fd0-43ce2efc3700`}
+          />,
+        ),
+        to: [
+          {
+            name: purchaseOrder.user.name ?? purchaseOrder.user.username,
+            email: purchaseOrder.user.email,
+          },
+        ],
+        from: {
+          name: "JSConf Chile",
+          email: "contacto@jsconf.cl",
+        },
+        subject: "Tu ticket para JSConf Chile 2024",
       });
     } else {
       await sendTransactionalHTMLEmail(this.resend, this.logger, {
