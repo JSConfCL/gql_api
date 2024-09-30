@@ -2,8 +2,8 @@
 name = "graphql-api"
 compatibility_date = "2024-06-03"
 main = "src/index.ts"
-compatibility_flags = [ "nodejs_compat" ]
-
+compatibility_flags = ["nodejs_compat"]
+observability = { enabled = true }
 
 [dev]
 port = 50123
@@ -32,7 +32,7 @@ binding = "GOOGLE_PHOTOS_IMPORT_QUEUE"
 [[hyperdrive]]
 binding = "HYPERDRIVE"
 id = "f0bc5f4533eb4557976b7d0b59d880ad"
-localConnectionString="postgresql://fake-user:fake-pasword@fake:5432/fake-db"
+localConnectionString = "postgresql://fake-user:fake-pasword@fake:5432/fake-db"
 
 # =====================================
 # =====================================
@@ -42,6 +42,8 @@ localConnectionString="postgresql://fake-user:fake-pasword@fake:5432/fake-db"
 [env.production]
 route = "api.jschile.org/*"
 logpush = true
+observability = { enabled = true }
+
 
 [[env.production.services]]
 binding = "RPC_SERVICE_EMAIL"
@@ -77,6 +79,7 @@ id = "faa163999e9f40c6a26b3612940bc5ba"
 [env.staging]
 route = "api.jsconf.dev/*"
 logpush = true
+observability = { enabled = true }
 
 [[env.staging.services]]
 binding = "RPC_SERVICE_EMAIL"
