@@ -6,6 +6,8 @@ import {
   insertUserTicketsSchema,
   selectPurchaseOrdersSchema,
   selectUserTicketsSchema,
+  UserTicketApprovalStatus,
+  UserTicketRedemptionStatus,
   userTicketsSchema,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
@@ -110,7 +112,7 @@ builder.mutationField("cancelUserTicket", (t) =>
         ticket = (
           await ctx.DB.update(userTicketsSchema)
             .set({
-              approvalStatus: "cancelled",
+              approvalStatus: UserTicketApprovalStatus.Cancelled,
               deletedAt: new Date(),
             })
             .where(eq(userTicketsSchema.id, userTicketId))
@@ -161,11 +163,11 @@ builder.mutationField("approvalUserTicket", (t) =>
           throw new GraphQLError("Unauthorized!");
         }
 
-        if (ticket.approvalStatus === "approved") {
+        if (ticket.approvalStatus === UserTicketApprovalStatus.Approved) {
           throw new GraphQLError("Ticket already approved");
         }
 
-        if (ticket.approvalStatus !== "pending") {
+        if (ticket.approvalStatus !== UserTicketApprovalStatus.Pending) {
           throw new GraphQLError("Ticket cannot be approved");
         }
 
@@ -176,7 +178,7 @@ builder.mutationField("approvalUserTicket", (t) =>
         const updatedTicket = (
           await DB.update(userTicketsSchema)
             .set({
-              approvalStatus: "approved",
+              approvalStatus: UserTicketApprovalStatus.Approved,
             })
             .where(eq(userTicketsSchema.id, userTicketId))
             .returning()
@@ -223,22 +225,22 @@ builder.mutationField("redeemUserTicket", (t) =>
           throw new GraphQLError("Unauthorized!");
         }
 
-        if (ticket.approvalStatus === "cancelled") {
+        if (ticket.approvalStatus === UserTicketApprovalStatus.Cancelled) {
           throw new GraphQLError("No es posible redimir un ticket cancelado");
         }
 
-        if (ticket.approvalStatus === "rejected") {
+        if (ticket.approvalStatus === UserTicketApprovalStatus.Rejected) {
           throw new GraphQLError("No es posible redimir un ticket rechazado");
         }
 
-        if (ticket.redemptionStatus === "redeemed") {
+        if (ticket.redemptionStatus === UserTicketRedemptionStatus.Redeemed) {
           return selectUserTicketsSchema.parse(ticket);
         }
 
         const updatedTicket = (
           await DB.update(userTicketsSchema)
             .set({
-              redemptionStatus: "redeemed",
+              redemptionStatus: UserTicketRedemptionStatus.Redeemed,
             })
             .where(eq(userTicketsSchema.id, userTicketId))
             .returning()
@@ -408,7 +410,10 @@ builder.mutationField("claimUserTicket", (t) =>
                   where: (uts, { eq, and, notInArray }) =>
                     and(
                       eq(uts.ticketTemplateId, ticketId),
-                      notInArray(uts.approvalStatus, ["rejected", "cancelled"]),
+                      notInArray(uts.approvalStatus, [
+                        UserTicketApprovalStatus.Rejected,
+                        UserTicketApprovalStatus.Cancelled,
+                      ]),
                     ),
                   columns: {
                     id: true,
@@ -437,7 +442,9 @@ builder.mutationField("claimUserTicket", (t) =>
                     purchaseOrderId: createdPurchaseOrder.id,
                     ticketTemplateId: ticketTemplate.id,
                     paymentStatus: requiresPayment ? "unpaid" : "not_required",
-                    approvalStatus: isApproved ? "approved" : "pending",
+                    approvalStatus: isApproved
+                      ? UserTicketApprovalStatus.Approved
+                      : UserTicketApprovalStatus.Pending,
                   });
 
                   if (result.success) {
@@ -469,7 +476,10 @@ builder.mutationField("claimUserTicket", (t) =>
                 where: (uts, { eq, and, inArray }) =>
                   and(
                     eq(uts.ticketTemplateId, ticketId),
-                    inArray(uts.approvalStatus, ["approved", "pending"]),
+                    inArray(uts.approvalStatus, [
+                      UserTicketApprovalStatus.Approved,
+                      UserTicketApprovalStatus.Pending,
+                    ]),
                   ),
               });
 
@@ -593,14 +603,14 @@ builder.mutationField("acceptGiftedTicket", (t) =>
         throw new GraphQLError("Could not find ticket to accept");
       }
 
-      if (ticket.approvalStatus !== "gifted") {
+      if (ticket.approvalStatus !== UserTicketApprovalStatus.Gifted) {
         throw new GraphQLError("Ticket is not a gifted ticket");
       }
 
       const updatedTicket = (
         await DB.update(userTicketsSchema)
           .set({
-            approvalStatus: "approved",
+            approvalStatus: UserTicketApprovalStatus.Approved,
           })
           .where(eq(userTicketsSchema.id, userTicketId))
           .returning()

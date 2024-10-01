@@ -1,5 +1,6 @@
 import { it, describe, assert } from "vitest";
 
+import { UserTicketApprovalStatus } from "~/datasources/db/userTickets";
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -359,7 +360,7 @@ describe("Redeem user ticket", () => {
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "rejected",
+        approvalStatus: UserTicketApprovalStatus.Rejected,
       });
       const response = await executeGraphqlOperationAsUser<
         RedeemUserTicketMutation,
@@ -409,7 +410,7 @@ describe("Redeem user ticket", () => {
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "cancelled",
+        approvalStatus: UserTicketApprovalStatus.Cancelled,
       });
       const response = await executeGraphqlOperationAsUser<
         RedeemUserTicketMutation,

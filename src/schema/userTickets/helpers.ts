@@ -6,6 +6,7 @@ import { USER } from "~/datasources/db/users";
 import { UserParticipationStatusEnum } from "~/datasources/db/userTeams";
 import {
   approveUserTicketsSchema,
+  UserTicketApprovalStatus,
   userTicketsSchema,
 } from "~/datasources/db/userTickets";
 import { applicationError, ServiceErrors } from "~/errors";
@@ -167,7 +168,7 @@ export const validateUserDataAndApproveUserTickets = async ({
     search: {
       userIds: [userId],
       eventIds: [eventId],
-      approvalStatus: ["gifted"],
+      approvalStatus: [UserTicketApprovalStatus.Gifted],
     },
   });
 
@@ -277,7 +278,7 @@ const bulkApproveUserTickets = async ({
   const updated = await DB.update(userTicketsSchema)
     .set(
       approveUserTicketsSchema.parse({
-        approvalStatus: "approved",
+        approvalStatus: UserTicketApprovalStatus.Approved,
       }),
     )
     .where(inArray(userTicketsSchema.id, userTicketIds))

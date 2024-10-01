@@ -3,7 +3,7 @@ import { it, describe, assert } from "vitest";
 
 import { TeamStatusEnum } from "~/datasources/db/teams";
 import { UserParticipationStatusEnum } from "~/datasources/db/userTeams";
-import { userTicketsApprovalStatusEnum } from "~/datasources/db/userTickets";
+import { UserTicketApprovalStatus } from "~/datasources/db/userTickets";
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -25,7 +25,7 @@ import {
 } from "./triggerUserTicketApprovalReview.generated";
 
 const prepareTickets = async (
-  status: (typeof userTicketsApprovalStatusEnum)[number] = "gifted",
+  status: UserTicketApprovalStatus = UserTicketApprovalStatus.Gifted,
   isTeamOnly = false,
 ) => {
   const community1 = await insertCommunity();
@@ -54,7 +54,10 @@ const prepareTickets = async (
 describe("triggerUserTicketApprovalReview mutation", () => {
   describe("It should approve tickets", () => {
     it("If data is complete for non-team tickets", async () => {
-      const { event, user } = await prepareTickets("gifted", false);
+      const { event, user } = await prepareTickets(
+        UserTicketApprovalStatus.Gifted,
+        false,
+      );
 
       await insertUserData({
         userId: user.id,
@@ -83,7 +86,10 @@ describe("triggerUserTicketApprovalReview mutation", () => {
     });
 
     it("If data is complete for team tickets", async () => {
-      const { event, user } = await prepareTickets("gifted", true);
+      const { event, user } = await prepareTickets(
+        UserTicketApprovalStatus.Gifted,
+        true,
+      );
       const team = await insertTeam({
         eventId: event.id,
         teamStatus: TeamStatusEnum.accepted,
@@ -126,7 +132,9 @@ describe("triggerUserTicketApprovalReview mutation", () => {
 
   describe("It should not approve tickets", () => {
     it("If ticket is not gifted", async () => {
-      const { event, user } = await prepareTickets("cancelled");
+      const { event, user } = await prepareTickets(
+        UserTicketApprovalStatus.Cancelled,
+      );
 
       await insertUserData({
         userId: user.id,
@@ -155,7 +163,10 @@ describe("triggerUserTicketApprovalReview mutation", () => {
     });
 
     it("If data is incomplete for non-team tickets", async () => {
-      const { event, user } = await prepareTickets("gifted", false);
+      const { event, user } = await prepareTickets(
+        UserTicketApprovalStatus.Gifted,
+        false,
+      );
 
       await insertUserData({
         userId: user.id,
@@ -181,7 +192,10 @@ describe("triggerUserTicketApprovalReview mutation", () => {
     });
 
     it("If data is incomplete for team tickets", async () => {
-      const { event, user } = await prepareTickets("gifted", true);
+      const { event, user } = await prepareTickets(
+        UserTicketApprovalStatus.Gifted,
+        true,
+      );
       const team = await insertTeam({
         eventId: event.id,
         teamStatus: TeamStatusEnum.accepted,
@@ -219,7 +233,10 @@ describe("triggerUserTicketApprovalReview mutation", () => {
     });
 
     it("If team is not accepted for team tickets", async () => {
-      const { event, user } = await prepareTickets("gifted", true);
+      const { event, user } = await prepareTickets(
+        UserTicketApprovalStatus.Gifted,
+        true,
+      );
       const team = await insertTeam({
         eventId: event.id,
         teamStatus: TeamStatusEnum.not_accepted,

@@ -5,6 +5,7 @@ import { AsyncReturnType } from "type-fest";
 import { ORM_TYPE } from "~/datasources/db";
 import {
   USER,
+  UserTicketApprovalStatus,
   puchaseOrderPaymentStatusEnum,
   purchaseOrderStatusEnum,
   purchaseOrdersSchema,
@@ -725,7 +726,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
     if (poPaymentStatus === "paid") {
       await DB.update(userTicketsSchema)
         .set({
-          approvalStatus: "approved",
+          approvalStatus: UserTicketApprovalStatus.Approved,
         })
         .where(eq(userTicketsSchema.purchaseOrderId, purchaseOrderId));
 

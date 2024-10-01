@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { it, describe, assert } from "vitest";
 
-import { userTicketsApprovalStatusEnum } from "~/datasources/db/userTickets";
+import { UserTicketApprovalStatus } from "~/datasources/db/userTickets";
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -20,7 +20,7 @@ import {
 } from "./acceptGiftedTicket.generated";
 
 const prepareTickets = async (
-  status: (typeof userTicketsApprovalStatusEnum)[number] = "gifted",
+  status: UserTicketApprovalStatus = UserTicketApprovalStatus.Gifted,
 ) => {
   const community1 = await insertCommunity();
   const event1 = await insertEvent();
@@ -115,7 +115,9 @@ describe("Redeem user ticket", () => {
     });
 
     it("If tickets is not in a gifted state", async () => {
-      const { ticket, user } = await prepareTickets("gift_accepted");
+      const { ticket, user } = await prepareTickets(
+        UserTicketApprovalStatus.GiftAccepted,
+      );
       const response = await executeGraphqlOperationAsUser<
         AcceptGiftedTicketMutation,
         AcceptGiftedTicketMutationVariables

@@ -15,7 +15,10 @@ import { ZodType, z } from "zod";
 import { Env } from "worker-configuration";
 import * as rules from "~/authz";
 import {
+  InsertUserTicketSchema,
   PronounsEnum,
+  UserTicketApprovalStatus,
+  UserTicketRedemptionStatus,
   allowedCurrencySchema,
   communitySchema,
   companiesSchema,
@@ -507,10 +510,7 @@ export const insertPurchaseOrder = async (
 };
 
 export const insertTicket = async (
-  partialInput?: Omit<
-    z.infer<typeof insertUserTicketsSchema>,
-    "id" | "purchaseOrderId"
-  > & {
+  partialInput?: Omit<InsertUserTicketSchema, "id" | "purchaseOrderId"> & {
     id?: string;
     purchaseOrderId?: string;
   },
@@ -523,11 +523,11 @@ export const insertTicket = async (
     ticketTemplateId:
       partialInput?.ticketTemplateId ?? (await insertTicketTemplate()).id,
     approvalStatus:
-      partialInput?.approvalStatus ?? TicketApprovalStatus.Pending,
+      partialInput?.approvalStatus ?? UserTicketApprovalStatus.Pending,
     redemptionStatus:
-      partialInput?.redemptionStatus ?? TicketRedemptionStatus.Pending,
+      partialInput?.redemptionStatus ?? UserTicketRedemptionStatus.Pending,
     ...CRUDDates(partialInput),
-  } satisfies z.infer<typeof insertUserTicketsSchema>;
+  } satisfies InsertUserTicketSchema;
 
   return insertOne(
     insertUserTicketsSchema,

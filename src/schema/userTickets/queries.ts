@@ -2,7 +2,7 @@ import { builder } from "~/builder";
 import {
   selectUserTicketsSchema,
   USER,
-  userTicketsApprovalStatusEnum,
+  UserTicketApprovalStatus,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import {
@@ -42,10 +42,7 @@ const MyTicketsSearchValues = builder.inputType("MyTicketsSearchValues", {
 const PaginatedUserTicketsRef = createPaginationObjectType(UserTicketRef);
 
 const getQueryApprovalStatus = (
-  approvalStatus:
-    | (typeof userTicketsApprovalStatusEnum)[number][]
-    | null
-    | undefined,
+  approvalStatus: UserTicketApprovalStatus[] | null | undefined,
   user: USER,
 ) => {
   if (approvalStatus) {
@@ -61,9 +58,12 @@ const getQueryApprovalStatus = (
   }
 };
 
-const normalUserAllowedAppovalStatus = new Set<
-  (typeof userTicketsApprovalStatusEnum)[number]
->(["approved", "not_required", "gifted", "gift_accepted"]);
+const normalUserAllowedAppovalStatus = new Set<UserTicketApprovalStatus>([
+  UserTicketApprovalStatus.Approved,
+  UserTicketApprovalStatus.NotRequired,
+  UserTicketApprovalStatus.Gifted,
+  UserTicketApprovalStatus.GiftAccepted,
+]);
 
 builder.queryFields((t) => ({
   myTickets: t.field({
@@ -214,7 +214,10 @@ builder.queryField("publicTicketInfo", (t) =>
           DB,
           search: {
             publicIds: [publicTicketId],
-            approvalStatus: ["approved", "gift_accepted"],
+            approvalStatus: [
+              UserTicketApprovalStatus.Approved,
+              UserTicketApprovalStatus.GiftAccepted,
+            ],
           },
           pagination: {
             page: 0,

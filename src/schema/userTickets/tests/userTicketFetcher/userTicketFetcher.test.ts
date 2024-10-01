@@ -1,5 +1,9 @@
 import { assert, describe, it } from "vitest";
 
+import {
+  UserTicketApprovalStatus,
+  UserTicketRedemptionStatus,
+} from "~/datasources/db/userTickets";
 import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 import {
   insertEvent,
@@ -39,9 +43,9 @@ describe("Search for user tickets", () => {
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "approved",
+        approvalStatus: UserTicketApprovalStatus.Approved,
         createdAt: new Date("2021-01-01"),
-        redemptionStatus: "redeemed",
+        redemptionStatus: UserTicketRedemptionStatus.Redeemed,
       });
       const response = await userTicketFetcher.searchUserTickets({
         DB: testDB,
@@ -61,18 +65,18 @@ describe("Search for user tickets", () => {
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "approved",
+        approvalStatus: UserTicketApprovalStatus.Approved,
         createdAt: new Date("2022-01-01"),
-        redemptionStatus: "redeemed",
+        redemptionStatus: UserTicketRedemptionStatus.Redeemed,
       });
 
       await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
         userId: user2.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "approved",
+        approvalStatus: UserTicketApprovalStatus.Approved,
         createdAt: new Date(),
-        redemptionStatus: "redeemed",
+        redemptionStatus: UserTicketRedemptionStatus.Redeemed,
       });
       const response = await userTicketFetcher.searchUserTickets({
         DB: testDB,
@@ -97,18 +101,18 @@ describe("Search for user tickets", () => {
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "approved",
+        approvalStatus: UserTicketApprovalStatus.Approved,
         createdAt: new Date("2021-01-01"),
-        redemptionStatus: "redeemed",
+        redemptionStatus: UserTicketRedemptionStatus.Redeemed,
       });
 
       await insertTicket({
         ticketTemplateId: ticketTemplate2.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "approved",
+        approvalStatus: UserTicketApprovalStatus.Approved,
         createdAt: new Date("2022-01-01"),
-        redemptionStatus: "redeemed",
+        redemptionStatus: UserTicketRedemptionStatus.Redeemed,
       });
       const response = await userTicketFetcher.searchUserTickets({
         DB: testDB,
@@ -129,18 +133,18 @@ describe("Search for user tickets", () => {
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "approved",
+        approvalStatus: UserTicketApprovalStatus.Approved,
         createdAt: new Date("2021-01-01"),
-        redemptionStatus: "redeemed",
+        redemptionStatus: UserTicketRedemptionStatus.Redeemed,
       });
 
       const ticket2 = await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "approved",
+        approvalStatus: UserTicketApprovalStatus.Approved,
         createdAt: new Date("2022-01-01"),
-        redemptionStatus: "redeemed",
+        redemptionStatus: UserTicketRedemptionStatus.Redeemed,
       });
       const response = await userTicketFetcher.searchUserTickets({
         DB: testDB,
@@ -163,23 +167,23 @@ describe("Search for user tickets", () => {
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "approved",
+        approvalStatus: UserTicketApprovalStatus.Approved,
         createdAt: new Date("2021-01-01"),
-        redemptionStatus: "redeemed",
+        redemptionStatus: UserTicketRedemptionStatus.Redeemed,
       });
 
       await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "pending",
+        approvalStatus: UserTicketApprovalStatus.Pending,
         createdAt: new Date("2022-01-01"),
-        redemptionStatus: "redeemed",
+        redemptionStatus: UserTicketRedemptionStatus.Redeemed,
       });
       const response = await userTicketFetcher.searchUserTickets({
         DB: testDB,
         search: {
-          approvalStatus: ["approved"],
+          approvalStatus: [UserTicketApprovalStatus.Approved],
         },
       });
 
@@ -195,23 +199,23 @@ describe("Search for user tickets", () => {
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "approved",
+        approvalStatus: UserTicketApprovalStatus.Approved,
         createdAt: new Date("2021-01-01"),
-        redemptionStatus: "redeemed",
+        redemptionStatus: UserTicketRedemptionStatus.Redeemed,
       });
 
       await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "approved",
+        approvalStatus: UserTicketApprovalStatus.Approved,
         createdAt: new Date("2022-01-01"),
-        redemptionStatus: "pending",
+        redemptionStatus: UserTicketRedemptionStatus.Pending,
       });
       const response = await userTicketFetcher.searchUserTickets({
         DB: testDB,
         search: {
-          redemptionStatus: ["redeemed"],
+          redemptionStatus: [UserTicketRedemptionStatus.Redeemed],
         },
       });
 
@@ -227,25 +231,25 @@ describe("Search for user tickets", () => {
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "approved",
+        approvalStatus: UserTicketApprovalStatus.Approved,
         createdAt: new Date("2021-01-01"),
-        redemptionStatus: "redeemed",
+        redemptionStatus: UserTicketRedemptionStatus.Redeemed,
       });
 
       await insertTicket({
         ticketTemplateId: ticketTemplate1.id,
         userId: user1.id,
         purchaseOrderId: purchaseOrder.id,
-        approvalStatus: "approved",
+        approvalStatus: UserTicketApprovalStatus.Approved,
         createdAt: new Date("2022-01-01"),
-        redemptionStatus: "pending",
+        redemptionStatus: UserTicketRedemptionStatus.Pending,
       });
       const response = await userTicketFetcher.searchUserTickets({
         DB: testDB,
         search: {
           paymentStatus: ["paid"],
-          approvalStatus: ["approved"],
-          redemptionStatus: ["redeemed"],
+          approvalStatus: [UserTicketApprovalStatus.Approved],
+          redemptionStatus: [UserTicketRedemptionStatus.Redeemed],
         },
       });
 

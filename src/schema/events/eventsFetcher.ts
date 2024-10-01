@@ -17,6 +17,7 @@ import {
   userTicketsSchema,
   ticketsSchema,
   eventsToCommunitiesSchema,
+  UserTicketApprovalStatus,
 } from "~/datasources/db/schema";
 import {
   PaginationOptionsType,
@@ -95,7 +96,10 @@ const getSearchEventsQuery = (
         .where(
           and(
             inArray(userTicketsSchema.ticketTemplateId, subquery),
-            eq(userTicketsSchema.approvalStatus, "approved"),
+            eq(
+              userTicketsSchema.approvalStatus,
+              UserTicketApprovalStatus.Approved,
+            ),
             eq(userTicketsSchema.userId, userId),
           ),
         ),
