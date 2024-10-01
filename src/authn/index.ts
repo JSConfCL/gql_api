@@ -1,5 +1,4 @@
 import { decode, verify } from "@tsndr/cloudflare-worker-jwt";
-import slugify from "slugify";
 
 import { TokenPayload } from "~/authn/types";
 import { ORM_TYPE } from "~/datasources/db";
