@@ -1,4 +1,5 @@
 import { decode, verify } from "@tsndr/cloudflare-worker-jwt";
+import slugify from "slugify";
 
 import { TokenPayload } from "~/authn/types";
 import { ORM_TYPE } from "~/datasources/db";
@@ -130,7 +131,7 @@ export const upsertUserFromRequest = async ({
     imageUrl: avatar_url ? avatar_url : picture ? picture : "",
     externalId: sub,
     name,
-    username: user_name ?? getUsername(),
+    username: user_name ?? getUsername(payload.email),
     publicMetadata: payload,
   });
 

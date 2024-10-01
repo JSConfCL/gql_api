@@ -30,13 +30,11 @@ export const upsertUserProfileInfo = async (
     })`,
   );
 
-  const { email, externalId, name, imageUrl, isEmailVerified, publicMetadata } =
+  const { email, imageUrl, isEmailVerified, publicMetadata } =
     parsedProfileInfo;
   const lowercaseEmail = email.trim().toLowerCase();
 
   const upsertData: z.infer<typeof allowedUserUpdateForAuth> = {
-    externalId,
-    name,
     imageUrl,
     isEmailVerified,
     publicMetadata: publicMetadata ?? {},
@@ -49,7 +47,7 @@ export const upsertUserProfileInfo = async (
       .values({
         ...upsertData,
         email: lowercaseEmail,
-        username: parsedProfileInfo.username ?? getUsername(),
+        username: parsedProfileInfo.username ?? getUsername(email),
       })
       .onConflictDoUpdate({
         target: usersSchema.email,
