@@ -29,8 +29,8 @@ export const TicketGiftSent9punto5 = ({
       <Text>¡Hola {senderName}!</Text>
 
       <Text>
-        Tu regalo de entrada para {recipientName} ({recipientEmail}) ha sido
-        enviado con éxito. Aquí están los detalles:
+        Tu entrada para {recipientName} ({recipientEmail}) ha sido enviada con
+        éxito. Aquí están los detalles:
       </Text>
 
       <Text className="font-bold">
@@ -44,18 +44,19 @@ export const TicketGiftSent9punto5 = ({
       )}
 
       <Text>
-        Hemos notificado a {recipientName} sobre este regalo y le hemos
-        proporcionado un enlace para confirmar su asistencia ingresando a{" "}
-        https://9punto5.cl
+        Hemos notificado a {recipientName} y le hemos proporcionado un enlace
+        para confirmar su asistencia ingresando a https://9punto5.cl
       </Text>
 
       <Text>
         {recipientName} tendrá hasta el{" "}
         <strong>{format(expirationDate, "dd 'de' MMMM 'a las' HH:mm")}</strong>{" "}
-        para aceptar el regalo.
+        para aceptar la invitación.
       </Text>
 
-      <Text className="text-base">¡Gracias por tu generoso regalo!</Text>
+      <Text className="text-base">
+        Si tienes alguna pregunta, no dudes en contactarnos.
+      </Text>
 
       <Text className="text-base font-bold">Equipo 9punto5</Text>
     </TicketTemplate9punto5>

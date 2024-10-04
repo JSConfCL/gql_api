@@ -461,7 +461,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
         email: "tickets@updates.9punto5.cl",
       },
       replyTo: "tickets@9punto5.cl",
-      subject: `Tienes un regalo de ${senderName} para ${
+      subject: `Te han enviado una entrada para ${
         ticketType === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"
       } 9.5`,
     });
@@ -511,9 +511,9 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
         name: "9punto5",
         email: "tickets@updates.9punto5.cl",
       },
-      subject: `Tienes un regalo de ${senderName} para ${
+      subject: `La entrada ${
         ticketType === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"
-      } 9.5`,
+      } 9.5 para ${recipientName} ha sido enviada`,
     });
   }
 
@@ -554,7 +554,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
         name: "9punto5",
         email: "tickets@updates.9punto5.cl",
       },
-      subject: `${recipientName} aceptó tu regalo para ${
+      subject: `${recipientName} aceptó tu entrada ${
         ticketType === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"
       } 9.5`,
     });

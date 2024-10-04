@@ -30,7 +30,7 @@ export const TicketGiftReceived9punto5 = ({
 
       <Text>
         Tenemos una gran noticia para ti. <strong>{senderName}</strong> te ha
-        regalado una entrada para:
+        enviado una entrada para:
       </Text>
 
       <Text className="font-bold">
@@ -106,7 +106,7 @@ export const TicketGiftReceived9punto5 = ({
                 padding: "10px 20px",
               }}
             >
-              ACEPTAR REGALO
+              ACEPTAR ENTRADA
             </a>
           </td>
         </tr>
@@ -115,18 +115,12 @@ export const TicketGiftReceived9punto5 = ({
       <Text className="text-sm">
         Importante: Tienes hasta el{" "}
         <strong>{format(expirationDate, "dd 'de' MMMM 'a las' HH:mm")}</strong>{" "}
-        para aceptar el regalo.
+        para aceptar la entrada.
       </Text>
 
       <Text className="text-base">¡Nos vemos en Valdivia!</Text>
 
       <Text className="text-base font-bold">Equipo 9punto5</Text>
-
-      <Img
-        className="w-[128px] ml-auto -mt-20"
-        src="https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/bf01a23a-f47b-4503-0555-cb7ac38f9500/public"
-        alt="9punto5 Illustration"
-      />
     </TicketTemplate9punto5>
   );
 };

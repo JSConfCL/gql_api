@@ -22,7 +22,7 @@ export const TicketGiftAcceptedByReceiver9punto5 = ({
 
       <Text>
         ¡Buenas noticias! {recipientName} ({recipientEmail}) ha aceptado tu
-        regalo de entrada para:
+        entrada para:
       </Text>
 
       <Text className="font-bold">
