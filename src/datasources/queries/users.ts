@@ -48,10 +48,13 @@ export const upsertUserProfileInfo = async (
         ...upsertData,
         email: lowercaseEmail,
         username: parsedProfileInfo.username ?? getUsername(email),
+        name: parsedProfileInfo.name,
       })
       .onConflictDoUpdate({
         target: usersSchema.email,
-        set: allowedUserUpdateForAuth.parse(upsertData),
+        set: allowedUserUpdateForAuth.parse({
+          ...upsertData,
+        }),
       })
       .returning();
 
