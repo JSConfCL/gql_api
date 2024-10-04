@@ -1,5 +1,5 @@
-mutation AcceptGiftedTicket($userTicketId: String!) {
-  acceptGiftedTicket(userTicketId: $userTicketId) {
+mutation AcceptGiftedTicket($giftId: String!) {
+  acceptGiftedTicket(giftId: $giftId) {
     id
     paymentStatus
     approvalStatus

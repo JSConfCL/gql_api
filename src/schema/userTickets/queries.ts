@@ -9,7 +9,11 @@ import {
   createPaginationInputType,
   createPaginationObjectType,
 } from "~/schema/pagination/types";
-import { PublicUserTicketRef, UserTicketRef } from "~/schema/shared/refs";
+import {
+  PublicUserTicketRef,
+  UserTicketGiftRef,
+  UserTicketRef,
+} from "~/schema/shared/refs";
 import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 
 import {
@@ -102,6 +106,42 @@ builder.queryFields((t) => ({
         data: results,
         pagination,
       };
+    },
+  }),
+  myReceivedTicketGifts: t.field({
+    description: "Get a list of user ticket gifts received by the current user",
+    type: [UserTicketGiftRef],
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, args, { DB, USER }) => {
+      if (!USER) {
+        throw new Error("User not found");
+      }
+
+      const results = await DB.query.userTicketGiftsSchema.findMany({
+        where: (utg, { eq }) => eq(utg.receiverUserId, USER.id),
+      });
+
+      return results;
+    },
+  }),
+  mySentTicketGifts: t.field({
+    description: "Get a list of user ticket gifts sent by the current user",
+    type: [UserTicketGiftRef],
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, args, { DB, USER }) => {
+      if (!USER) {
+        throw new Error("User not found");
+      }
+
+      const results = await DB.query.userTicketGiftsSchema.findMany({
+        where: (utg, { eq }) => eq(utg.gifterUserId, USER.id),
+      });
+
+      return results;
     },
   }),
 }));

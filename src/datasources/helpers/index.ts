@@ -1,5 +1,9 @@
 const unMinutoEnMilisegundos = 60000;
 
+export const someDaysIntoTheFuture = (days: number) => {
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+};
+
 export const someMinutesIntoTheFuture = (minutes: number) => {
   return new Date(Date.now() + minutes * unMinutoEnMilisegundos);
 };

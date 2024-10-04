@@ -232,6 +232,13 @@
       "when": 1725839035256,
       "tag": "0032_gorgeous_synch",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1728009672065,
+      "tag": "0033_careless_kang",
+      "breakpoints": true
     }
   ]
 }

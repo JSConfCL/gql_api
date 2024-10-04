@@ -8,6 +8,17 @@ mutation ClaimUserTicket($input: TicketClaimInput!) {
         paymentStatus
         approvalStatus
         redemptionStatus
+        giftAttempts {
+          id
+          gifter {
+            email
+            name
+          }
+          receiver {
+            email
+            name
+          }
+        }
       }
     }
     ... on RedeemUserTicketError {

@@ -4,6 +4,8 @@ import {
   puchaseOrderPaymentStatusEnum,
   userTicketsRedemptionStatusEnum,
   selectUsersSchema,
+  UserTicketGiftStatus,
+  selectUserTicketsSchema,
 } from "~/datasources/db/schema";
 import {
   PurchaseOrderLoadable,
@@ -13,6 +15,7 @@ import {
   UserRef,
   UserTicketRef,
   PublicUserTicketRef,
+  UserTicketGiftRef,
 } from "~/schema/shared/refs";
 import { TicketLoadable } from "~/schema/ticket/types";
 import { UserLoadable } from "~/schema/user/types";
@@ -105,6 +108,28 @@ builder.objectType(UserTicketRef, {
       nullable: false,
       resolve: (root) => new Date(root.createdAt),
     }),
+    giftAttempts: t.field({
+      type: [UserTicketGiftRef],
+      resolve: async (root, args, context) => {
+        const canRequest =
+          context.USER?.id === root.userId || context.USER?.isSuperAdmin;
+
+        if (!canRequest) {
+          return [];
+        }
+
+        if (!root.userId) {
+          return [];
+        }
+
+        const userTicketGifts =
+          await context.DB.query.userTicketGiftsSchema.findMany({
+            where: (utg, { eq }) => eq(utg.userTicketId, root.id),
+          });
+
+        return userTicketGifts;
+      },
+    }),
   }),
 });
 
@@ -190,3 +215,78 @@ export const RedeemUserTicketError = builder.objectType(
     }),
   },
 );
+
+export const GiftAttemptStatusEnum = builder.enumType(UserTicketGiftStatus, {
+  name: "GiftAttemptStatus",
+});
+
+const GiftTicketUserInfo = builder.objectRef<{
+  email: string;
+  name: string | null;
+}>("GiftTicketUserInfo");
+
+builder.objectType(GiftTicketUserInfo, {
+  fields: (t) => ({
+    email: t.exposeString("email"),
+    name: t.exposeString("name", {
+      nullable: true,
+    }),
+  }),
+});
+
+builder.objectType(UserTicketGiftRef, {
+  description: "Representation of a user ticket gift",
+  fields: (t) => ({
+    id: t.exposeID("id"),
+    gifter: t.field({
+      type: GiftTicketUserInfo,
+      resolve: async (root, args, { DB }) => {
+        const user = await DB.query.usersSchema.findFirst({
+          where: (u, { eq }) => eq(u.id, root.gifterUserId),
+        });
+
+        if (!user) {
+          throw new Error("User not found");
+        }
+
+        return {
+          email: user.email,
+          name: user.name,
+        };
+      },
+    }),
+    receiver: t.field({
+      type: GiftTicketUserInfo,
+      resolve: async (root, args, { DB }) => {
+        const user = await DB.query.usersSchema.findFirst({
+          where: (u, { eq }) => eq(u.id, root.receiverUserId),
+        });
+
+        if (!user) {
+          throw new Error("User not found");
+        }
+
+        return {
+          email: user.email,
+          name: user.name,
+        };
+      },
+    }),
+    status: t.expose("status", { type: GiftAttemptStatusEnum }),
+    expirationDate: t.expose("expirationDate", { type: "DateTime" }),
+    userTicket: t.field({
+      type: UserTicketRef,
+      resolve: async (root, args, { DB }) => {
+        const userTicket = await DB.query.userTicketsSchema.findFirst({
+          where: (ut, { eq }) => eq(ut.id, root.userTicketId),
+        });
+
+        if (!userTicket) {
+          throw new Error("User ticket not found");
+        }
+
+        return selectUserTicketsSchema.parse(userTicket);
+      },
+    }),
+  }),
+});

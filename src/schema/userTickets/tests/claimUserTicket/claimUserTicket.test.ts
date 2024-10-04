@@ -102,10 +102,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
+                  giftInfo: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
+                  giftInfo: [],
                 },
               ],
             },
@@ -144,10 +146,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
+                  giftInfo: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
+                  giftInfo: [],
                 },
               ],
             },
@@ -186,10 +190,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
+                  giftInfo: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
+                  giftInfo: [],
                 },
               ],
             },
@@ -228,10 +234,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
+                  giftInfo: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
+                  giftInfo: [],
                 },
               ],
             },
@@ -250,8 +258,8 @@ describe("Claim a user ticket", () => {
     });
   });
 
-  describe("Should prevent claiming when going over the limit", () => {
-    it("For a MEMBER user", async () => {
+  describe("Should handle quantity limits", () => {
+    it("Should not allow claiming more tickets than the max per user", async () => {
       const maxTicketsPerUser = 2;
       const event = await insertEvent({
         status: "active",
@@ -284,10 +292,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
+                  giftInfo: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
+                  giftInfo: [],
                 },
               ],
             },
@@ -310,116 +320,8 @@ describe("Claim a user ticket", () => {
         );
       }
     });
-  });
 
-  describe("Should fail to create user tickets for a ticket in a waitlist state", () => {
-    it("For a MEMBER user", async () => {
-      const event = await insertEvent();
-      const ticketTemplate = await insertTicketTemplate({
-        tags: ["waitlist"],
-        eventId: event.id,
-      });
-
-      const { user } = await createCommunityEventUserAndTicketTemplate({
-        event,
-        ticketTemplate,
-      });
-
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 2,
-                },
-              ],
-            },
-          },
-        },
-        user,
-      );
-
-      assert.equal(response.errors, undefined);
-
-      assert.equal(
-        response.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
-
-      if (
-        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.equal(
-          response.data?.claimUserTicket.errorMessage,
-          `Ticket ${ticketTemplate.id} is a waitlist ticket. Cannot claim waitlist tickets`,
-        );
-      }
-    });
-  });
-
-  describe("Should NOT allow claiming", () => {
-    it("If the event is Inactive", async () => {
-      const createdEvent = await insertEvent({
-        status: "inactive",
-      });
-      const { community, user, ticketTemplate, event } =
-        await createCommunityEventUserAndTicketTemplate({
-          event: createdEvent,
-        });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 2,
-                },
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                },
-              ],
-            },
-          },
-        },
-        user,
-      );
-
-      assert.equal(response.errors, undefined);
-
-      assert.equal(
-        response.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
-
-      if (
-        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.equal(
-          response.data?.claimUserTicket.errorMessage,
-          `Event ${event.id} is not active. Cannot claim tickets for an inactive event.`,
-        );
-      }
-    });
-
-    it("If we would be going over ticket quantity", async () => {
+    it("Should not allow claiming more tickets than available", async () => {
       const createdEvent = await insertEvent({
         status: "active",
       });
@@ -450,10 +352,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 10,
+                  giftInfo: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
+                  giftInfo: [],
                 },
               ],
             },
@@ -474,7 +378,298 @@ describe("Claim a user ticket", () => {
       ) {
         assert.equal(
           response.data?.claimUserTicket.errorMessage,
-          `Not enough tickets for ticket template with id ${ticketTemplate.id}`,
+          `We have gone over the limit of tickets for ticket template with id ${ticketTemplate.id}`,
+        );
+      }
+    });
+
+    it("Should allow claiming up to the available quantity", async () => {
+      const { community, user, ticketTemplate } =
+        await createCommunityEventUserAndTicketTemplate({
+          ticketTemplate: await insertTicketTemplate({
+            quantity: 5,
+            isFree: true,
+            isUnlimited: false,
+          }),
+        });
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 5,
+                  giftInfo: [],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+
+      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
+        assert.equal(response.data.claimUserTicket.tickets.length, 5);
+      }
+    });
+  });
+
+  describe("Should handle gifting scenarios", () => {
+    it("Should handle gifting scenarios", async () => {
+      const createdEvent = await insertEvent({
+        status: "active",
+      });
+      const createdTicketTemplate = await insertTicketTemplate({
+        eventId: createdEvent.id,
+        quantity: 10,
+      });
+      const { community, user, ticketTemplate } =
+        await createCommunityEventUserAndTicketTemplate({
+          event: createdEvent,
+          ticketTemplate: createdTicketTemplate,
+        });
+      const giftRecipient = await insertUser();
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 2,
+                  giftInfo: [
+                    {
+                      name: "John Doe",
+                      email: giftRecipient.email,
+                      message: "Enjoy the event!",
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+
+      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
+        assert.equal(response.data.claimUserTicket.tickets.length, 2);
+
+        assert.equal(
+          response.data.claimUserTicket.tickets[0].giftAttempts.length,
+          1,
+        );
+
+        assert.equal(
+          response.data.claimUserTicket.tickets[0].giftAttempts[0].receiver
+            .email,
+          giftRecipient.email,
+        );
+      }
+    });
+
+    it("Should not allow gifting to self", async () => {
+      const createdEvent = await insertEvent({
+        status: "active",
+      });
+      const createdTicketTemplate = await insertTicketTemplate({
+        eventId: createdEvent.id,
+        quantity: 10,
+      });
+      const { community, user, ticketTemplate } =
+        await createCommunityEventUserAndTicketTemplate({
+          event: createdEvent,
+          ticketTemplate: createdTicketTemplate,
+        });
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 1,
+                  giftInfo: [
+                    {
+                      name: "Para mi",
+                      email: user.email,
+                      message: "Self-gift",
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(
+        response.data?.claimUserTicket?.__typename,
+        "RedeemUserTicketError",
+      );
+
+      if (
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
+      ) {
+        assert.equal(
+          response.data.claimUserTicket.errorMessage,
+          "Cannot gift to yourself",
+        );
+      }
+    });
+  });
+
+  describe("Should fail to create user tickets for a ticket in a waitlist state", () => {
+    it("For a MEMBER user", async () => {
+      const event = await insertEvent();
+      const ticketTemplate = await insertTicketTemplate({
+        tags: ["waitlist"],
+        eventId: event.id,
+      });
+
+      const { user } = await createCommunityEventUserAndTicketTemplate({
+        event,
+        ticketTemplate,
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 2,
+                  giftInfo: [],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(
+        response.data?.claimUserTicket?.__typename,
+        "RedeemUserTicketError",
+      );
+
+      if (
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
+      ) {
+        assert.equal(
+          response.data?.claimUserTicket.errorMessage,
+          `Ticket ${ticketTemplate.id} is a waitlist ticket. Cannot claim waitlist tickets`,
+        );
+      }
+    });
+  });
+
+  describe("Should NOT allow claiming", () => {
+    it("if the event is Inactive", async () => {
+      const createdEvent = await insertEvent({
+        status: "inactive",
+      });
+      const { community, user, ticketTemplate, event } =
+        await createCommunityEventUserAndTicketTemplate({
+          event: createdEvent,
+        });
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 2,
+                  giftInfo: [],
+                },
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 1,
+                  giftInfo: [],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(
+        response.data?.claimUserTicket?.__typename,
+        "RedeemUserTicketError",
+      );
+
+      if (
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
+      ) {
+        assert.equal(
+          response.data?.claimUserTicket.errorMessage,
+          `Event ${event.id} is not active. Cannot claim tickets for an inactive event.`,
         );
       }
     });

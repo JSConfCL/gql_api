@@ -1,33 +1,47 @@
 import { Img, Text } from "@react-email/components";
+import { format, setDefaultOptions } from "date-fns";
+import { es } from "date-fns/locale";
 import * as React from "react";
 
 import { TicketTemplate9punto5 } from "emails/templates/helpers/9punto5";
-import { formatPrice } from "emails/templates/helpers/format-price";
+
+setDefaultOptions({ locale: es });
 
 type Props = {
-  currencyCode: string;
-  total: number;
-  type: "CONFERENCE" | "EXPERIENCE";
+  giftId: string;
+  recipientName: string;
+  senderName: string;
+  ticketType: "CONFERENCE" | "EXPERIENCE";
+  giftMessage?: string | null;
+  expirationDate: Date;
 };
 
-export const PurchaseOrderSuccessful9punto5 = ({
-  currencyCode = "USD",
-  total = 0,
-  type = "EXPERIENCE",
+export const TicketGiftReceived9punto5 = ({
+  giftId,
+  recipientName = "Juan",
+  senderName = "Pedro",
+  ticketType = "CONFERENCE",
+  giftMessage = "Mensaje de regalo",
+  expirationDate,
 }: Props) => {
   return (
     <TicketTemplate9punto5>
-      <Text>¡Hola!</Text>
+      <Text>¡Hola {recipientName}!</Text>
 
-      <Text>Confirmamos la compra de tu entrada:</Text>
-
-      <Text className="font-bold">
-        {type === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"} 9.5 |{" "}
-        {currencyCode} $
-        {formatPrice(total, { mode: currencyCode as "CLP" | "USD" })}
+      <Text>
+        Tenemos una gran noticia para ti. <strong>{senderName}</strong> te ha
+        regalado una entrada para:
       </Text>
 
-      {type === "EXPERIENCE" && (
+      <Text className="font-bold">
+        {ticketType === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"} 9.5
+      </Text>
+
+      {giftMessage && (
+        <Text className="italic bg-light p-4 rounded">"{giftMessage}"</Text>
+      )}
+
+      {ticketType === "EXPERIENCE" && (
         <>
           <Text className="font-normal my-0">GREEN CARPET - 7 NOV</Text>
           <Text className="font-normal my-0">20:00 HORAS</Text>
@@ -53,13 +67,16 @@ export const PurchaseOrderSuccessful9punto5 = ({
 
       <Text>Incluye kit de bienvenida 2024 y coffee breaks.</Text>
 
-      <Text className="mb-0">Además considera que pronto podrás agregar:</Text>
+      <Text className="mb-0">Además, pronto podrás agregar:</Text>
       <ul className="list-disc pl-5 ml-0">
         <li>Estadía para 3 noches en hotel Villa del Río</li>
         <li>Almuerzo para los 3 días</li>
       </ul>
 
-      <Text>Puedes ver tu entrada y novedades ingresando a tu perfil:</Text>
+      <Text>
+        Para confirmar tu asistencia y ver los detalles de tu entrada, por favor
+        ingresa a tu perfil:
+      </Text>
 
       <table
         border={0}
@@ -71,7 +88,9 @@ export const PurchaseOrderSuccessful9punto5 = ({
         <tr>
           <td align="center" role="presentation">
             <a
-              href="https://9punto5.cl/mi-perfil"
+              href={`https://9punto5.cl/mi-perfil?action=${encodeURIComponent(
+                "accept-gift",
+              )}&giftId=${encodeURIComponent(giftId)}`}
               target="_blank"
               style={{
                 color: "#ffffff",
@@ -87,13 +106,19 @@ export const PurchaseOrderSuccessful9punto5 = ({
                 padding: "10px 20px",
               }}
             >
-              IR A MI PERFIL
+              ACEPTAR REGALO
             </a>
           </td>
         </tr>
       </table>
 
-      <Text className="text-base">Nos vemos en Valdivia,</Text>
+      <Text className="text-sm">
+        Importante: Tienes hasta el{" "}
+        <strong>{format(expirationDate, "dd 'de' MMMM 'a las' HH:mm")}</strong>{" "}
+        para aceptar el regalo.
+      </Text>
+
+      <Text className="text-base">¡Nos vemos en Valdivia!</Text>
 
       <Text className="text-base font-bold">Equipo 9punto5</Text>
 
@@ -106,4 +131,4 @@ export const PurchaseOrderSuccessful9punto5 = ({
   );
 };
 
-export default PurchaseOrderSuccessful9punto5;
+export default TicketGiftReceived9punto5;

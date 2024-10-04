@@ -2,12 +2,13 @@ import { inArray } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
 import { TeamStatusEnum } from "~/datasources/db/teams";
-import { USER } from "~/datasources/db/users";
+import { InsertUserSchema, USER, usersSchema } from "~/datasources/db/users";
 import { UserParticipationStatusEnum } from "~/datasources/db/userTeams";
 import {
   approveUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/userTickets";
+import { getUsername } from "~/datasources/queries/utils/createUsername";
 import { applicationError, ServiceErrors } from "~/errors";
 import { Logger } from "~/logging";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
@@ -32,12 +33,21 @@ export const assertCanStartTicketClaimingForEvent = async ({
   logger: Logger;
 }) => {
   const ticketIds = Object.keys(purchaseOrderByTickets);
-  const events = await eventsFetcher.searchEvents({
-    DB,
-    search: {
-      ticketIds,
-    },
-  });
+  const [events, tickets] = await Promise.all([
+    eventsFetcher.searchEvents({
+      DB,
+      search: {
+        ticketIds,
+      },
+    }),
+
+    ticketsFetcher.searchTickets({
+      DB,
+      search: {
+        ticketIds,
+      },
+    }),
+  ]);
 
   if (events.length > 1) {
     throw applicationError(
@@ -72,13 +82,6 @@ export const assertCanStartTicketClaimingForEvent = async ({
       logger,
     );
   }
-
-  const tickets = await ticketsFetcher.searchTickets({
-    DB,
-    search: {
-      ticketIds,
-    },
-  });
 
   if (tickets.length !== ticketIds.length) {
     throw applicationError(
@@ -284,4 +287,72 @@ const bulkApproveUserTickets = async ({
     .returning();
 
   return updated;
+};
+
+export const getUsersFromPurchaseGiftsInfo = async ({
+  DB,
+  giftsInfo,
+}: {
+  DB: ORM_TYPE;
+  giftsInfo: {
+    name: string;
+    email: string;
+  }[];
+}) => {
+  // Fetch existing users in a single query
+  const existingUsers = await DB.query.usersSchema.findMany({
+    where: (users, { inArray }) =>
+      inArray(
+        users.email,
+        giftsInfo.map((gi) => gi.email),
+      ),
+    columns: { id: true, email: true, name: true },
+  });
+
+  const emailToUser = new Map<
+    string,
+    { id: string; name: string | null; email: string }
+  >(
+    existingUsers.map((u) => [
+      u.email,
+      {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+      },
+    ]),
+  );
+
+  // Prepare new users to be inserted
+  const newUserInserts = giftsInfo
+    .filter((recipient) => !emailToUser.has(recipient.email))
+    .map((recipient) => {
+      const next: InsertUserSchema = {
+        email: recipient.email,
+        name: recipient.name,
+        username: getUsername(recipient.email),
+      };
+
+      return next;
+    });
+
+  if (newUserInserts.length > 0) {
+    const insertedUsers = await DB.insert(usersSchema)
+      .values(newUserInserts)
+      .returning({
+        id: usersSchema.id,
+        email: usersSchema.email,
+        name: usersSchema.name,
+      });
+
+    insertedUsers.forEach((user) =>
+      emailToUser.set(user.email, {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      }),
+    );
+  }
+
+  return emailToUser;
 };

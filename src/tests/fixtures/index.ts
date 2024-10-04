@@ -40,6 +40,7 @@ import {
   insertTicketSchema,
   insertUserDataSchema,
   insertUserTeamsSchema,
+  insertUserTicketGiftSchema,
   insertUserTicketsSchema,
   insertUsersSchema,
   insertUsersToCommunitiesSchema,
@@ -67,6 +68,7 @@ import {
   selectTicketSchema,
   selectUserDataSchema,
   selectUserTeamsSchema,
+  selectUserTicketGiftSchema,
   selectUserTicketsSchema,
   selectUsersSchema,
   selectUsersToCommunitiesSchema,
@@ -80,6 +82,7 @@ import {
   ticketsSchema,
   userDataSchema,
   userTeamsSchema,
+  userTicketGiftsSchema,
   userTicketsSchema,
   usersSchema,
   usersTagsSchema,
@@ -513,11 +516,12 @@ export const insertTicket = async (
   > & {
     id?: string;
     purchaseOrderId?: string;
+    userId: string;
   },
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
-    userId: partialInput?.userId,
+    userId: partialInput?.userId ?? (await insertUser()).id,
     purchaseOrderId:
       partialInput?.purchaseOrderId ?? (await insertPurchaseOrder()).id,
     ticketTemplateId:
@@ -811,6 +815,27 @@ export const insertSalary = async (
     insertSalariesSchema,
     selectSalariesSchema,
     salariesSchema,
+    possibleInput,
+  );
+};
+
+export const insertUserTicketGift = async (
+  partialInput: z.infer<typeof insertUserTicketGiftSchema>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    userTicketId: partialInput?.userTicketId,
+    gifterUserId: partialInput?.gifterUserId,
+    receiverUserId: partialInput?.receiverUserId,
+    expirationDate: partialInput?.expirationDate,
+    status: partialInput?.status,
+    ...CRUDDates(partialInput),
+  } satisfies z.infer<typeof insertUserTicketGiftSchema>;
+
+  return insertOne(
+    insertUserTicketGiftSchema,
+    selectUserTicketGiftSchema,
+    userTicketGiftsSchema,
     possibleInput,
   );
 };

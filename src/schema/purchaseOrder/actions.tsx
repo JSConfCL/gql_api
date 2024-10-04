@@ -4,6 +4,7 @@ import { AsyncReturnType } from "type-fest";
 
 import { ORM_TYPE } from "~/datasources/db";
 import {
+  InsertUserTicketGiftSchema,
   USER,
   puchaseOrderPaymentStatusEnum,
   purchaseOrderStatusEnum,
@@ -11,8 +12,10 @@ import {
   selectPurchaseOrdersSchema,
   selectTicketSchema,
   selectUserTicketsSchema,
+  userTicketGiftsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
+import { someDaysIntoTheFuture } from "~/datasources/helpers";
 import {
   createMercadoPagoPayment,
   getMercadoPagoPayment,
@@ -593,31 +596,6 @@ export const syncPurchaseOrderPaymentStatus = async ({
             username: true,
           },
         },
-        userTickets: {
-          columns: {
-            id: true,
-            publicId: true,
-          },
-          with: {
-            ticketTemplate: {
-              columns: {
-                id: true,
-                tags: true,
-              },
-              with: {
-                event: {
-                  columns: {
-                    name: true,
-                    addressDescriptiveName: true,
-                    address: true,
-                    startDateTime: true,
-                    endDateTime: true,
-                  },
-                },
-              },
-            },
-          },
-        },
       },
     })
     .then(async (res) => {
@@ -647,6 +625,21 @@ export const syncPurchaseOrderPaymentStatus = async ({
                       },
                     },
                   },
+                },
+              },
+            },
+          },
+          giftAttempts: {
+            columns: {
+              id: true,
+              giftMessage: true,
+            },
+            with: {
+              receiverUser: {
+                columns: {
+                  email: true,
+                  name: true,
+                  username: true,
                 },
               },
             },
@@ -723,11 +716,63 @@ export const syncPurchaseOrderPaymentStatus = async ({
     }
 
     if (poPaymentStatus === "paid") {
-      await DB.update(userTicketsSchema)
-        .set({
-          approvalStatus: "approved",
-        })
-        .where(eq(userTicketsSchema.purchaseOrderId, purchaseOrderId));
+      for (const userTicket of purchaseOrder.userTickets) {
+        const hasGifts = userTicket.giftAttempts.length > 0;
+
+        if (hasGifts) {
+          await DB.update(userTicketsSchema)
+            .set({
+              approvalStatus: "gifted",
+            })
+            .where(eq(userTicketsSchema.id, userTicket.id));
+        } else {
+          await DB.update(userTicketsSchema)
+            .set({
+              approvalStatus: "approved",
+            })
+            .where(eq(userTicketsSchema.id, userTicket.id));
+        }
+
+        const expirationDate = someDaysIntoTheFuture(7);
+
+        for (const giftAttempt of userTicket.giftAttempts) {
+          await transactionalEmailService.sendTicketGiftReceived({
+            giftMessage: giftAttempt.giftMessage,
+            recipientEmail: giftAttempt.receiverUser.email,
+            recipientName: giftAttempt.receiverUser.name ?? "",
+            senderName: purchaseOrder.user.name ?? "",
+            ticketType: userTicket.ticketTemplate.tags.includes("conference")
+              ? "CONFERENCE"
+              : "EXPERIENCE",
+            giftId: giftAttempt.id,
+            expirationDate: expirationDate,
+          });
+
+          await transactionalEmailService.sendTicketGiftSent({
+            giftMessage: giftAttempt.giftMessage,
+            recipientEmail: giftAttempt.receiverUser.email,
+            recipientName: giftAttempt.receiverUser.name ?? "",
+            senderName: purchaseOrder.user.name ?? "",
+            ticketType: userTicket.ticketTemplate.tags.includes("conference")
+              ? "CONFERENCE"
+              : "EXPERIENCE",
+            expirationDate: expirationDate,
+          });
+        }
+
+        const updateGiftValues: Partial<InsertUserTicketGiftSchema> = {
+          expirationDate: expirationDate,
+        };
+
+        await DB.update(userTicketGiftsSchema)
+          .set(updateGiftValues)
+          .where(
+            inArray(
+              userTicketGiftsSchema.id,
+              userTicket.giftAttempts.map((ga) => ga.id),
+            ),
+          );
+      }
 
       await sendPurchaseOrderSuccessfulEmail({
         transactionalEmailService,
