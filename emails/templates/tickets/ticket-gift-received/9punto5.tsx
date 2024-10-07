@@ -1,4 +1,4 @@
-import { Img, Text } from "@react-email/components";
+import { Text } from "@react-email/components";
 import { format, setDefaultOptions } from "date-fns";
 import { es } from "date-fns/locale";
 import * as React from "react";
@@ -114,7 +114,9 @@ export const TicketGiftReceived9punto5 = ({
 
       <Text className="text-sm">
         Importante: Tienes hasta el{" "}
-        <strong>{format(expirationDate, "dd 'de' MMMM 'a las' HH:mm")}</strong>{" "}
+        <strong>
+          {format(expirationDate, "dd 'de' MMMM 'a las' HH:mm")} hs
+        </strong>{" "}
         para aceptar la entrada.
       </Text>
 

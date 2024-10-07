@@ -50,7 +50,9 @@ export const TicketGiftSent9punto5 = ({
 
       <Text>
         {recipientName} tendrá hasta el{" "}
-        <strong>{format(expirationDate, "dd 'de' MMMM 'a las' HH:mm")}</strong>{" "}
+        <strong>
+          {format(expirationDate, "dd 'de' MMMM 'a las' HH:mm")} hs
+        </strong>{" "}
         para aceptar la invitación.
       </Text>
 
