@@ -740,8 +740,10 @@ export const syncPurchaseOrderPaymentStatus = async ({
           await transactionalEmailService.sendGiftTicketConfirmations({
             giftMessage: giftAttempt.giftMessage,
             recipientEmail: giftAttempt.recipientUser.email,
-            recipientName: giftAttempt.recipientUser.name ?? "",
-            senderName: purchaseOrder.user.name ?? "",
+            recipientName:
+              giftAttempt.recipientUser.name ??
+              giftAttempt.recipientUser.username,
+            senderName: purchaseOrder.user.name ?? purchaseOrder.user.username,
             ticketTags: userTicket.ticketTemplate.tags,
             giftId: giftAttempt.id,
             expirationDate: expirationDate,
