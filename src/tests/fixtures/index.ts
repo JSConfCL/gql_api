@@ -105,6 +105,7 @@ import {
 } from "~/generated/types";
 import { createLogger } from "~/logging";
 import { schema } from "~/schema";
+import { cleanEmail } from "~/schema/user/userHelpers";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 import { MOCKED_RPC_SERVICE_EMAIL } from "~/tests/fixtures/mocks";
 import { Context } from "~/types";
@@ -261,7 +262,7 @@ export const insertUser = async (
     externalId: partialInput?.externalId ?? faker.string.uuid(),
     username: partialInput?.username ?? faker.internet.userName(),
     bio: partialInput?.bio ?? faker.lorem.paragraph(),
-    email: partialInput?.email ?? faker.internet.email(),
+    email: cleanEmail(partialInput?.email ?? faker.internet.email()),
     name: partialInput?.name,
     isSuperAdmin: partialInput?.isSuperAdmin,
     isEmailVerified: partialInput?.isEmailVerified,
