@@ -255,11 +255,11 @@ builder.objectType(UserTicketGiftRef, {
         };
       },
     }),
-    receiver: t.field({
+    recipient: t.field({
       type: GiftTicketUserInfo,
       resolve: async (root, args, { DB }) => {
         const user = await DB.query.usersSchema.findFirst({
-          where: (u, { eq }) => eq(u.id, root.receiverUserId),
+          where: (u, { eq }) => eq(u.id, root.recipientUserId),
         });
 
         if (!user) {

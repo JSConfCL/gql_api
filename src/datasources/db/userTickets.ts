@@ -87,7 +87,7 @@ export const userTicketGiftsSchema = pgTable(
     gifterUserId: uuid("gifter_user_id")
       .references(() => usersSchema.id)
       .notNull(),
-    receiverUserId: uuid("receiver_user_id")
+    recipientUserId: uuid("recipient_user_id")
       .references(() => usersSchema.id)
       .notNull(),
     status: text("status", {
@@ -113,8 +113,8 @@ export const userTicketGiftsSchema = pgTable(
     gifterUserIdIndex: index("user_ticket_gifts_gifter_user_id_index").on(
       table.gifterUserId,
     ),
-    receiverUserIdIndex: index("user_ticket_gifts_receiver_user_id_index").on(
-      table.receiverUserId,
+    recipientUserIdIndex: index("user_ticket_gifts_recipient_user_id_index").on(
+      table.recipientUserId,
     ),
   }),
 );
@@ -150,8 +150,8 @@ export const userTicketGiftsRelations = relations(
       fields: [userTicketGiftsSchema.gifterUserId],
       references: [usersSchema.id],
     }),
-    receiverUser: one(usersSchema, {
-      fields: [userTicketGiftsSchema.receiverUserId],
+    recipientUser: one(usersSchema, {
+      fields: [userTicketGiftsSchema.recipientUserId],
       references: [usersSchema.id],
     }),
   }),

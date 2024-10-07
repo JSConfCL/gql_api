@@ -15,7 +15,6 @@ import {
   userTicketGiftsSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
-import { someDaysIntoTheFuture } from "~/datasources/helpers";
 import {
   createMercadoPagoPayment,
   getMercadoPagoPayment,
@@ -28,6 +27,8 @@ import { applicationError, ServiceErrors } from "~/errors";
 import { Logger } from "~/logging";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
 import { Context } from "~/types";
+
+import { getExpirationDateForGift } from "../userTickets/helpers";
 
 const fetchPurchaseOrderInformation = async (
   purchaseOrderId: string,
@@ -635,7 +636,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
               giftMessage: true,
             },
             with: {
-              receiverUser: {
+              recipientUser: {
                 columns: {
                   email: true,
                   name: true,
@@ -733,30 +734,18 @@ export const syncPurchaseOrderPaymentStatus = async ({
             .where(eq(userTicketsSchema.id, userTicket.id));
         }
 
-        const expirationDate = someDaysIntoTheFuture(7);
+        const expirationDate = getExpirationDateForGift();
 
         for (const giftAttempt of userTicket.giftAttempts) {
-          await transactionalEmailService.sendTicketGiftReceived({
+          await transactionalEmailService.sendGiftTicketConfirmations({
             giftMessage: giftAttempt.giftMessage,
-            recipientEmail: giftAttempt.receiverUser.email,
-            recipientName: giftAttempt.receiverUser.name ?? "",
+            recipientEmail: giftAttempt.recipientUser.email,
+            recipientName: giftAttempt.recipientUser.name ?? "",
             senderName: purchaseOrder.user.name ?? "",
-            ticketType: userTicket.ticketTemplate.tags.includes("conference")
-              ? "CONFERENCE"
-              : "EXPERIENCE",
+            ticketTags: userTicket.ticketTemplate.tags,
             giftId: giftAttempt.id,
             expirationDate: expirationDate,
-          });
-
-          await transactionalEmailService.sendTicketGiftSent({
-            giftMessage: giftAttempt.giftMessage,
-            recipientEmail: giftAttempt.receiverUser.email,
-            recipientName: giftAttempt.receiverUser.name ?? "",
-            senderName: purchaseOrder.user.name ?? "",
-            ticketType: userTicket.ticketTemplate.tags.includes("conference")
-              ? "CONFERENCE"
-              : "EXPERIENCE",
-            expirationDate: expirationDate,
+            senderEmail: purchaseOrder.user.email,
           });
         }
 

@@ -120,7 +120,7 @@ builder.queryFields((t) => ({
       }
 
       const results = await DB.query.userTicketGiftsSchema.findMany({
-        where: (utg, { eq }) => eq(utg.receiverUserId, USER.id),
+        where: (utg, { eq }) => eq(utg.recipientUserId, USER.id),
       });
 
       return results;

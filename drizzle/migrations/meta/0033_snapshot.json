@@ -1,5 +1,5 @@
 {
-  "id": "89c491ed-5ad0-49e4-beec-29bccbfa1610",
+  "id": "eac2fe9c-8c28-4ede-b95e-3a826d24f977",
   "prevId": "27492e6d-592d-42b1-9998-27c5736ead28",
   "version": "7",
   "dialect": "postgresql",
@@ -2721,8 +2721,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "receiver_user_id": {
-          "name": "receiver_user_id",
+        "recipient_user_id": {
+          "name": "recipient_user_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -2804,11 +2804,11 @@
           "method": "btree",
           "with": {}
         },
-        "user_ticket_gifts_receiver_user_id_index": {
-          "name": "user_ticket_gifts_receiver_user_id_index",
+        "user_ticket_gifts_recipient_user_id_index": {
+          "name": "user_ticket_gifts_recipient_user_id_index",
           "columns": [
             {
-              "expression": "receiver_user_id",
+              "expression": "recipient_user_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2839,11 +2839,11 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "user_ticket_gifts_receiver_user_id_users_id_fk": {
-          "name": "user_ticket_gifts_receiver_user_id_users_id_fk",
+        "user_ticket_gifts_recipient_user_id_users_id_fk": {
+          "name": "user_ticket_gifts_recipient_user_id_users_id_fk",
           "tableFrom": "user_ticket_gifts",
           "tableTo": "users",
-          "columnsFrom": ["receiver_user_id"],
+          "columnsFrom": ["recipient_user_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"

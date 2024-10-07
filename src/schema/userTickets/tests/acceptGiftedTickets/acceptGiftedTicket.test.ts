@@ -4,7 +4,6 @@ import {
   UserTicketGiftStatus,
   userTicketsApprovalStatusEnum,
 } from "~/datasources/db/userTickets";
-import { someDaysIntoTheFuture } from "~/datasources/helpers";
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -22,6 +21,7 @@ import {
   AcceptGiftedTicketMutation,
   AcceptGiftedTicketMutationVariables,
 } from "./acceptGiftedTicket.generated";
+import { getExpirationDateForGift } from "../../helpers";
 
 const prepareTickets = async (
   status: (typeof userTicketsApprovalStatusEnum)[number] = "gifted",
@@ -34,7 +34,7 @@ const prepareTickets = async (
     communityId: community1.id,
   });
   const gifterUser = await insertUser();
-  const receiverUser = await insertUser();
+  const recipientUser = await insertUser();
   const ticketTemplate1 = await insertTicketTemplate({
     eventId: event1.id,
   });
@@ -48,21 +48,26 @@ const prepareTickets = async (
   const ticketGift1 = await insertUserTicketGift({
     userTicketId: ticket1.id,
     gifterUserId: gifterUser.id,
-    receiverUserId: receiverUser.id,
+    recipientUserId: recipientUser.id,
     status:
       status === "gifted"
         ? UserTicketGiftStatus.Pending
         : UserTicketGiftStatus.Accepted,
-    expirationDate: someDaysIntoTheFuture(1),
+    expirationDate: getExpirationDateForGift(),
   });
 
-  return { ticket: ticket1, gifterUser, receiverUser, ticketGift: ticketGift1 };
+  return {
+    ticket: ticket1,
+    gifterUser,
+    recipientUser,
+    ticketGift: ticketGift1,
+  };
 };
 
 describe("Accept user ticket gift", () => {
   describe("Should work", () => {
     it("If ticket is in a gifted status and user is ticket owner", async () => {
-      const { receiverUser, ticketGift } = await prepareTickets();
+      const { recipientUser, ticketGift } = await prepareTickets();
       const response = await executeGraphqlOperationAsUser<
         AcceptGiftedTicketMutation,
         AcceptGiftedTicketMutationVariables
@@ -73,7 +78,7 @@ describe("Accept user ticket gift", () => {
             giftId: ticketGift.id,
           },
         },
-        receiverUser,
+        recipientUser,
       );
 
       assert.equal(response.errors, undefined);
@@ -109,7 +114,7 @@ describe("Accept user ticket gift", () => {
     });
 
     it("if ticket does not exist", async () => {
-      const { receiverUser } = await prepareTickets();
+      const { recipientUser } = await prepareTickets();
       const response = await executeGraphqlOperationAsUser<
         AcceptGiftedTicketMutation,
         AcceptGiftedTicketMutationVariables
@@ -120,14 +125,14 @@ describe("Accept user ticket gift", () => {
             giftId: "non-existent-id",
           },
         },
-        receiverUser,
+        recipientUser,
       );
 
       assert.equal(response.errors?.[0].message, "Unexpected error.");
     });
 
     it("If tickets is not in a gifted state", async () => {
-      const { receiverUser, ticketGift } =
+      const { recipientUser, ticketGift } =
         await prepareTickets("gift_accepted");
       const response = await executeGraphqlOperationAsUser<
         AcceptGiftedTicketMutation,
@@ -139,7 +144,7 @@ describe("Accept user ticket gift", () => {
             giftId: ticketGift.id,
           },
         },
-        receiverUser,
+        recipientUser,
       );
 
       assert.equal(

@@ -14,7 +14,7 @@ mutation ClaimUserTicket($input: TicketClaimInput!) {
             email
             name
           }
-          receiver {
+          recipient {
             email
             name
           }

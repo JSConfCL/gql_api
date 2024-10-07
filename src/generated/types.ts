@@ -319,7 +319,7 @@ export enum GiftAttemptStatus {
 
 export type GiftInfoInput = {
   email: Scalars["String"]["input"];
-  message: Scalars["String"]["input"];
+  message?: InputMaybe<Scalars["String"]["input"]>;
   name: Scalars["String"]["input"];
 };
 
@@ -392,6 +392,7 @@ export type Mutation = {
   editTicket: Ticket;
   /** Enqueue images to import */
   enqueueGoogleAlbumImport: Scalars["Boolean"]["output"];
+  giftMyTicketToUser: UserTicketGift;
   /** Gift tickets to users, allowing multiple tickets per user, and conditionally notify them */
   giftTicketsToUsers: Array<UserTicket>;
   /** Create a purchase order */
@@ -496,6 +497,11 @@ export type MutationEditTicketArgs = {
 
 export type MutationEnqueueGoogleAlbumImportArgs = {
   input: EnqueueGoogleAlbumImportInput;
+};
+
+export type MutationGiftMyTicketToUserArgs = {
+  input: GiftInfoInput;
+  ticketId: Scalars["String"]["input"];
 };
 
 export type MutationGiftTicketsToUsersArgs = {
@@ -737,7 +743,7 @@ export type PurchaseOrder = {
 };
 
 export type PurchaseOrderInput = {
-  giftInfo: Array<GiftInfoInput>;
+  giftInfo?: InputMaybe<Array<GiftInfoInput>>;
   quantity: Scalars["Int"]["input"];
   ticketId: Scalars["String"]["input"];
 };
@@ -1295,7 +1301,7 @@ export type UserTicketGift = {
   expirationDate: Scalars["DateTime"]["output"];
   gifter: GiftTicketUserInfo;
   id: Scalars["ID"]["output"];
-  receiver: GiftTicketUserInfo;
+  recipient: GiftTicketUserInfo;
   status: GiftAttemptStatus;
   userTicket: UserTicket;
 };

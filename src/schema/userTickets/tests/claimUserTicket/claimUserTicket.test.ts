@@ -492,7 +492,7 @@ describe("Claim a user ticket", () => {
         );
 
         assert.equal(
-          response.data.claimUserTicket.tickets[0].giftAttempts[0].receiver
+          response.data.claimUserTicket.tickets[0].giftAttempts[0].recipient
             .email,
           giftRecipient.email,
         );

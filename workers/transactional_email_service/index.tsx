@@ -32,6 +32,10 @@ type ReceiverType = {
 const DEFAULT_CLOUDFLARE_LOGO_URL =
   "https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/6cdd148e-b931-4b7a-f983-d75d388aff00";
 
+const get9unto5TicketType = (ticketTags: string[]) => {
+  return ticketTags.includes("conferencia_95") ? "CONFERENCE" : "EXPERIENCE";
+};
+
 export default class EmailService extends WorkerEntrypoint<ENV> {
   logger = createLogger("EmailService");
 
@@ -124,16 +128,14 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
         throw new Error(`No ticket template found for user ticket`);
       }
 
+      const ticketType = get9unto5TicketType(firstTicketTemplate.tags);
+
       await sendTransactionalHTMLEmail(this.resend, this.logger, {
         htmlContent: render(
           <PurchaseOrderSuccessful9punto5
             currencyCode={purchaseOrder.currencyCode}
             total={Number(purchaseOrder.totalPrice)}
-            type={
-              firstTicketTemplate.tags.includes("conferencia_95")
-                ? "CONFERENCE"
-                : "EXPERIENCE"
-            }
+            type={ticketType}
           />,
         ),
         to: [
@@ -418,27 +420,34 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
     await sendTransactionalHTMLEmail(this.resend, this.logger, resendArgs);
   }
 
-  async sendTicketGiftReceived({
+  async sendGiftTicketConfirmations({
     giftId,
     recipientName,
-    senderName,
-    ticketType,
-    giftMessage,
     recipientEmail,
+    senderName,
+    senderEmail,
+    ticketTags,
+    giftMessage,
     expirationDate,
   }: {
     giftId: string;
     recipientName: string;
-    senderName: string;
-    ticketType: "CONFERENCE" | "EXPERIENCE";
-    giftMessage: string | null;
     recipientEmail: string;
+    senderName: string;
+    senderEmail: string;
+    ticketTags: string[];
+    giftMessage: string | null;
     expirationDate: Date;
   }) {
-    this.logger.info(`About to send TicketGiftReceived`, {
+    this.logger.info(`Sending gift ticket notifications`, {
       giftId,
+      recipientEmail,
+      senderEmail,
     });
 
+    const ticketType = get9unto5TicketType(ticketTags);
+
+    // Send email to gift recipient
     await sendTransactionalHTMLEmail(this.resend, this.logger, {
       htmlContent: render(
         <TicketGiftReceived9punto5
@@ -450,46 +459,15 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
           expirationDate={expirationDate}
         />,
       ),
-      to: [
-        {
-          name: recipientName,
-          email: recipientEmail,
-        },
-      ],
-      from: {
-        name: "9punto5",
-        email: "tickets@updates.9punto5.cl",
-      },
+      to: [{ name: recipientName, email: recipientEmail }],
+      from: { name: "9punto5", email: "tickets@updates.9punto5.cl" },
       replyTo: "tickets@9punto5.cl",
       subject: `Te han enviado una entrada para ${
         ticketType === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"
       } 9.5`,
     });
-  }
 
-  async sendTicketGiftSent({
-    recipientName,
-    recipientEmail,
-    senderName,
-    ticketType,
-    giftMessage,
-    expirationDate,
-  }: {
-    recipientName: string;
-    recipientEmail: string;
-    senderName: string;
-    ticketType: "CONFERENCE" | "EXPERIENCE";
-    giftMessage: string | null;
-    expirationDate: Date;
-  }) {
-    this.logger.info(`About to send TicketGiftSent`, {
-      recipientName,
-      recipientEmail,
-      senderName,
-      ticketType,
-      giftMessage,
-    });
-
+    // Send confirmation email to gift sender
     await sendTransactionalHTMLEmail(this.resend, this.logger, {
       htmlContent: render(
         <TicketGiftSent9punto5
@@ -501,39 +479,35 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
           expirationDate={expirationDate}
         />,
       ),
-      to: [
-        {
-          name: recipientName,
-          email: recipientEmail,
-        },
-      ],
-      from: {
-        name: "9punto5",
-        email: "tickets@updates.9punto5.cl",
-      },
+      to: [{ name: senderName, email: senderEmail }],
+      from: { name: "9punto5", email: "tickets@updates.9punto5.cl" },
       subject: `La entrada ${
         ticketType === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"
       } 9.5 para ${recipientName} ha sido enviada`,
     });
+
+    this.logger.info(`Gift ticket notifications sent successfully`, { giftId });
   }
 
-  async sendTicketGiftAcceptedByReceiver({
+  async sendGiftAcceptanceNotificationToGifter({
     recipientName,
     recipientEmail,
     senderName,
-    ticketType,
+    ticketTags,
   }: {
     recipientName: string;
     recipientEmail: string;
     senderName: string;
-    ticketType: "CONFERENCE" | "EXPERIENCE";
+    ticketTags: string[];
   }) {
     this.logger.info(`About to send TicketGiftAcceptedByReceiver`, {
       recipientName,
       recipientEmail,
       senderName,
-      ticketType,
+      ticketTags,
     });
+
+    const ticketType = get9unto5TicketType(ticketTags);
 
     await sendTransactionalHTMLEmail(this.resend, this.logger, {
       htmlContent: render(

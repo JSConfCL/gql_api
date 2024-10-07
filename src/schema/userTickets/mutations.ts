@@ -18,10 +18,11 @@ import {
 } from "~/schema/purchaseOrder/helpers";
 import { PurchaseOrderRef } from "~/schema/purchaseOrder/types";
 import { isValidUUID } from "~/schema/shared/helpers";
-import { UserTicketRef } from "~/schema/shared/refs";
+import { UserTicketGiftRef, UserTicketRef } from "~/schema/shared/refs";
 import {
   assertCanStartTicketClaimingForEvent,
-  getUsersFromPurchaseGiftsInfo,
+  getExpirationDateForGift,
+  getOrCreateGiftRecipients,
   validateUserDataAndApproveUserTickets,
 } from "~/schema/userTickets/helpers";
 import {
@@ -48,7 +49,7 @@ const GiftInfoInput = builder.inputType("GiftInfoInput", {
       required: true,
     }),
     message: t.string({
-      required: true,
+      required: false,
     }),
   }),
 });
@@ -63,7 +64,7 @@ const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {
     }),
     giftInfo: t.field({
       type: [GiftInfoInput],
-      required: true,
+      required: false,
     }),
   }),
 });
@@ -361,10 +362,16 @@ builder.mutationField("claimUserTicket", (t) =>
 
         purchaseOrderByTickets[item.ticketId].quantity += item.quantity;
 
-        purchaseOrderByTickets[item.ticketId].giftInfo.push(...item.giftInfo);
+        purchaseOrderByTickets[item.ticketId].giftInfo.push(
+          ...(item.giftInfo as GiftInfoInput[] | []),
+        );
       }
 
       for (const ticket of purchaseOrder) {
+        if (!ticket.giftInfo) {
+          continue;
+        }
+
         if (ticket.giftInfo.length > ticket.quantity) {
           return {
             error: true as const,
@@ -398,9 +405,9 @@ builder.mutationField("claimUserTicket", (t) =>
 
             const ticketTemplatesIds = Object.keys(purchaseOrderByTickets);
 
-            const emailsToUsersData = await getUsersFromPurchaseGiftsInfo({
+            const emailsToUsersData = await getOrCreateGiftRecipients({
               DB: trx,
-              giftsInfo: purchaseOrder.flatMap((p) => p.giftInfo),
+              giftsInfo: purchaseOrder.flatMap((p) => p.giftInfo || []),
             });
 
             const [createdPurchaseOrder, ticketTemplates] = await Promise.all([
@@ -462,7 +469,7 @@ builder.mutationField("claimUserTicket", (t) =>
               for (let i = 0; i < quantityToPurchase; i++) {
                 const isGift = i < giftInfoForTicket.length;
                 const giftInfo = isGift ? giftInfoForTicket[i] : null;
-                const receiverUser = giftInfo
+                const recipientUser = giftInfo
                   ? emailsToUsersData.get(giftInfo.email)
                   : null;
 
@@ -474,7 +481,7 @@ builder.mutationField("claimUserTicket", (t) =>
                   );
                 }
 
-                if (!receiverUser && giftInfo) {
+                if (!recipientUser && giftInfo) {
                   throw applicationError(
                     `User for email ${giftInfo.email} not found`,
                     ServiceErrors.NOT_FOUND,
@@ -525,13 +532,13 @@ builder.mutationField("claimUserTicket", (t) =>
 
               giftInfo.forEach((giftInfo, index) => {
                 const userTicket = userTickets[index];
-                const receiverUser = emailsToUsersData.get(giftInfo.email);
+                const recipientUser = emailsToUsersData.get(giftInfo.email);
 
-                if (receiverUser) {
+                if (recipientUser) {
                   giftAttempts.push({
                     userTicketId: userTicket.id,
                     gifterUserId: USER.id,
-                    receiverUserId: receiverUser.id,
+                    recipientUserId: recipientUser.id,
                     status: UserTicketGiftStatus.Pending,
                     giftMessage: giftInfo.message || null,
                     // Temporary, this will be updated
@@ -685,6 +692,87 @@ builder.mutationField("claimUserTicket", (t) =>
   }),
 );
 
+builder.mutationField("giftMyTicketToUser", (t) =>
+  t.field({
+    type: UserTicketGiftRef,
+    args: {
+      ticketId: t.arg.string({ required: true }),
+      input: t.arg({ type: GiftInfoInput, required: true }),
+    },
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (
+      root,
+      { ticketId, input },
+      { DB, USER, RPC_SERVICE_EMAIL },
+    ) => {
+      if (!USER) {
+        throw new GraphQLError("User not found");
+      }
+
+      const { email, name, message } = input;
+
+      const userTicket = await DB.query.userTicketsSchema.findFirst({
+        where: (t, { eq, and }) =>
+          and(eq(t.id, ticketId), eq(t.userId, USER.id)),
+        with: {
+          ticketTemplate: {
+            columns: {
+              tags: true,
+            },
+          },
+        },
+      });
+
+      if (!userTicket) {
+        throw new GraphQLError("Ticket not found");
+      }
+
+      const recipientUser = await getOrCreateGiftRecipients({
+        DB: DB,
+        giftsInfo: [{ email, name }],
+      }).then((result) => {
+        if (!result) {
+          return null;
+        }
+
+        return result.get(email);
+      });
+
+      if (!recipientUser) {
+        throw new GraphQLError("Receiver user not found");
+      }
+
+      const userTicketGift: InsertUserTicketGiftSchema = {
+        userTicketId: userTicket.id,
+        gifterUserId: USER.id,
+        recipientUserId: recipientUser.id,
+        status: UserTicketGiftStatus.Pending,
+        expirationDate: getExpirationDateForGift(),
+        giftMessage: message ?? null,
+      };
+
+      const createdUserTicketGift = await DB.insert(userTicketGiftsSchema)
+        .values(userTicketGift)
+        .returning();
+
+      await RPC_SERVICE_EMAIL.sendGiftTicketConfirmations({
+        giftId: createdUserTicketGift[0].id,
+        giftMessage: userTicketGift.giftMessage ?? null,
+        expirationDate: userTicketGift.expirationDate,
+        recipientName: recipientUser.name ?? recipientUser.username,
+        recipientEmail: recipientUser.email,
+        senderName: USER.name ?? USER.username,
+        ticketTags: userTicket.ticketTemplate.tags,
+        senderEmail: USER.email,
+      });
+
+      return createdUserTicketGift[0];
+    },
+  }),
+);
+
 builder.mutationField("acceptGiftedTicket", (t) =>
   t.field({
     type: UserTicketRef,
@@ -704,7 +792,7 @@ builder.mutationField("acceptGiftedTicket", (t) =>
       // find the ticket gift
       const ticketGift = await DB.query.userTicketGiftsSchema.findFirst({
         where: (t, { eq, and }) =>
-          and(eq(t.id, giftId), eq(t.receiverUserId, USER.id)),
+          and(eq(t.id, giftId), eq(t.recipientUserId, USER.id)),
         columns: {
           id: true,
           status: true,
@@ -765,16 +853,12 @@ builder.mutationField("acceptGiftedTicket", (t) =>
         })
         .where(eq(userTicketGiftsSchema.id, ticketGift.id));
 
-      await RPC_SERVICE_EMAIL.sendTicketGiftAcceptedByReceiver({
+      await RPC_SERVICE_EMAIL.sendGiftAcceptanceNotificationToGifter({
         recipientName: USER.name ?? USER.username,
         recipientEmail: USER.email,
         senderName:
           ticketGift.gifterUser.name ?? ticketGift.gifterUser.username,
-        ticketType: ticketGift.userTicket.ticketTemplate.tags.includes(
-          "conference",
-        )
-          ? "CONFERENCE"
-          : "EXPERIENCE",
+        ticketTags: ticketGift.userTicket.ticketTemplate.tags,
       });
 
       return updatedTicket;

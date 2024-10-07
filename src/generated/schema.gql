@@ -302,7 +302,7 @@ enum GiftAttemptStatus {
 
 input GiftInfoInput {
   email: String!
-  message: String!
+  message: String
   name: String!
 }
 
@@ -431,6 +431,7 @@ type Mutation {
   Enqueue images to import
   """
   enqueueGoogleAlbumImport(input: EnqueueGoogleAlbumImportInput!): Boolean!
+  giftMyTicketToUser(input: GiftInfoInput!, ticketId: String!): UserTicketGift!
 
   """
   Gift tickets to users, allowing multiple tickets per user, and conditionally notify them
@@ -696,7 +697,7 @@ type PurchaseOrder {
 }
 
 input PurchaseOrderInput {
-  giftInfo: [GiftInfoInput!]!
+  giftInfo: [GiftInfoInput!]
   quantity: Int!
   ticketId: String!
 }
@@ -1280,7 +1281,7 @@ type UserTicketGift {
   expirationDate: DateTime!
   gifter: GiftTicketUserInfo!
   id: ID!
-  receiver: GiftTicketUserInfo!
+  recipient: GiftTicketUserInfo!
   status: GiftAttemptStatus!
   userTicket: UserTicket!
 }

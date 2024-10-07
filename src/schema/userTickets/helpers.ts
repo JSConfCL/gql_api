@@ -1,3 +1,4 @@
+import { addDays, endOfDay } from "date-fns";
 import { inArray } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
@@ -289,7 +290,7 @@ const bulkApproveUserTickets = async ({
   return updated;
 };
 
-export const getUsersFromPurchaseGiftsInfo = async ({
+export const getOrCreateGiftRecipients = async ({
   DB,
   giftsInfo,
 }: {
@@ -306,12 +307,17 @@ export const getUsersFromPurchaseGiftsInfo = async ({
         users.email,
         giftsInfo.map((gi) => gi.email),
       ),
-    columns: { id: true, email: true, name: true },
+    columns: { id: true, email: true, name: true, username: true },
   });
 
   const emailToUser = new Map<
     string,
-    { id: string; name: string | null; email: string }
+    {
+      id: string;
+      name: string | null;
+      email: string;
+      username: string;
+    }
   >(
     existingUsers.map((u) => [
       u.email,
@@ -319,6 +325,7 @@ export const getUsersFromPurchaseGiftsInfo = async ({
         id: u.id,
         name: u.name,
         email: u.email,
+        username: u.username,
       },
     ]),
   );
@@ -343,6 +350,7 @@ export const getUsersFromPurchaseGiftsInfo = async ({
         id: usersSchema.id,
         email: usersSchema.email,
         name: usersSchema.name,
+        username: usersSchema.username,
       });
 
     insertedUsers.forEach((user) =>
@@ -350,9 +358,21 @@ export const getUsersFromPurchaseGiftsInfo = async ({
         id: user.id,
         name: user.name,
         email: user.email,
+        username: user.username,
       }),
     );
   }
 
   return emailToUser;
+};
+
+/**
+ * Returns the expiration date for a gift.
+ * The expiration date is at least 7 days from the current date with the end at 23:59:59 of the 7th day.
+ */
+export const getExpirationDateForGift = () => {
+  const minDays = 7;
+  const expirationDate = endOfDay(addDays(new Date(), minDays));
+
+  return expirationDate;
 };

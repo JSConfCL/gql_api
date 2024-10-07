@@ -826,7 +826,7 @@ export const insertUserTicketGift = async (
     id: partialInput?.id ?? faker.string.uuid(),
     userTicketId: partialInput?.userTicketId,
     gifterUserId: partialInput?.gifterUserId,
-    receiverUserId: partialInput?.receiverUserId,
+    recipientUserId: partialInput?.recipientUserId,
     expirationDate: partialInput?.expirationDate,
     status: partialInput?.status,
     ...CRUDDates(partialInput),
