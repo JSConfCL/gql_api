@@ -474,7 +474,7 @@ describe("Claim a user ticket", () => {
       ) {
         assert.equal(
           response.data?.claimUserTicket.errorMessage,
-          `Not enough tickets for ticket template with id ${ticketTemplate.id}`,
+          `We have gone over the limit of tickets for ticket template with id ${ticketTemplate.id}`,
         );
       }
     });

@@ -32,12 +32,21 @@ export const assertCanStartTicketClaimingForEvent = async ({
   logger: Logger;
 }) => {
   const ticketIds = Object.keys(purchaseOrderByTickets);
-  const events = await eventsFetcher.searchEvents({
-    DB,
-    search: {
-      ticketIds,
-    },
-  });
+  const [events, tickets] = await Promise.all([
+    eventsFetcher.searchEvents({
+      DB,
+      search: {
+        ticketIds,
+      },
+    }),
+
+    ticketsFetcher.searchTickets({
+      DB,
+      search: {
+        ticketIds,
+      },
+    }),
+  ]);
 
   if (events.length > 1) {
     throw applicationError(
@@ -72,13 +81,6 @@ export const assertCanStartTicketClaimingForEvent = async ({
       logger,
     );
   }
-
-  const tickets = await ticketsFetcher.searchTickets({
-    DB,
-    search: {
-      ticketIds,
-    },
-  });
 
   if (tickets.length !== ticketIds.length) {
     throw applicationError(
