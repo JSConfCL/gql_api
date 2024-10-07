@@ -718,14 +718,43 @@ export const syncPurchaseOrderPaymentStatus = async ({
 
     if (poPaymentStatus === "paid") {
       for (const userTicket of purchaseOrder.userTickets) {
-        const hasGifts = userTicket.giftAttempts.length > 0;
-
-        if (hasGifts) {
+        if (userTicket.giftAttempts.length > 0) {
           await DB.update(userTicketsSchema)
             .set({
               approvalStatus: "gifted",
             })
             .where(eq(userTicketsSchema.id, userTicket.id));
+
+          const expirationDate = getExpirationDateForGift();
+
+          for (const giftAttempt of userTicket.giftAttempts) {
+            await transactionalEmailService.sendGiftTicketConfirmations({
+              giftMessage: giftAttempt.giftMessage,
+              recipientEmail: giftAttempt.recipientUser.email,
+              recipientName:
+                giftAttempt.recipientUser.name ??
+                giftAttempt.recipientUser.username,
+              senderName:
+                purchaseOrder.user.name ?? purchaseOrder.user.username,
+              ticketTags: userTicket.ticketTemplate.tags,
+              giftId: giftAttempt.id,
+              expirationDate: expirationDate,
+              senderEmail: purchaseOrder.user.email,
+            });
+          }
+
+          const updateGiftValues: Partial<InsertUserTicketGiftSchema> = {
+            expirationDate: expirationDate,
+          };
+
+          await DB.update(userTicketGiftsSchema)
+            .set(updateGiftValues)
+            .where(
+              inArray(
+                userTicketGiftsSchema.id,
+                userTicket.giftAttempts.map((ga) => ga.id),
+              ),
+            );
         } else {
           await DB.update(userTicketsSchema)
             .set({
@@ -733,36 +762,6 @@ export const syncPurchaseOrderPaymentStatus = async ({
             })
             .where(eq(userTicketsSchema.id, userTicket.id));
         }
-
-        const expirationDate = getExpirationDateForGift();
-
-        for (const giftAttempt of userTicket.giftAttempts) {
-          await transactionalEmailService.sendGiftTicketConfirmations({
-            giftMessage: giftAttempt.giftMessage,
-            recipientEmail: giftAttempt.recipientUser.email,
-            recipientName:
-              giftAttempt.recipientUser.name ??
-              giftAttempt.recipientUser.username,
-            senderName: purchaseOrder.user.name ?? purchaseOrder.user.username,
-            ticketTags: userTicket.ticketTemplate.tags,
-            giftId: giftAttempt.id,
-            expirationDate: expirationDate,
-            senderEmail: purchaseOrder.user.email,
-          });
-        }
-
-        const updateGiftValues: Partial<InsertUserTicketGiftSchema> = {
-          expirationDate: expirationDate,
-        };
-
-        await DB.update(userTicketGiftsSchema)
-          .set(updateGiftValues)
-          .where(
-            inArray(
-              userTicketGiftsSchema.id,
-              userTicket.giftAttempts.map((ga) => ga.id),
-            ),
-          );
       }
 
       await sendPurchaseOrderSuccessfulEmail({
