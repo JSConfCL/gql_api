@@ -96,12 +96,6 @@ export const PurchaseOrderSuccessful9punto5 = ({
       <Text className="text-base">Nos vemos en Valdivia,</Text>
 
       <Text className="text-base font-bold">Equipo 9punto5</Text>
-
-      <Img
-        className="w-[128px] ml-auto -mt-20"
-        src="https://imagedelivery.net/dqFoxiedZNoncKJ9uqxz0g/bf01a23a-f47b-4503-0555-cb7ac38f9500/public"
-        alt="9punto5 Illustration"
-      />
     </TicketTemplate9punto5>
   );
 };
