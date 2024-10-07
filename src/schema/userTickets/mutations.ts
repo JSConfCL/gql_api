@@ -364,10 +364,12 @@ builder.mutationField("claimUserTicket", (t) =>
         purchaseOrderByTickets[item.ticketId].quantity += item.quantity;
 
         purchaseOrderByTickets[item.ticketId].giftInfo.push(
-          ...(item.giftInfo as GiftInfoInput[] | []).map((gift) => ({
-            ...gift,
-            email: cleanEmail(gift.email),
-          })),
+          ...((item.giftInfo as GiftInfoInput[] | null | undefined) || []).map(
+            (gift) => ({
+              ...gift,
+              email: cleanEmail(gift.email),
+            }),
+          ),
         );
       }
 
