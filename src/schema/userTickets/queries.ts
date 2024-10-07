@@ -22,6 +22,10 @@ import {
   TicketRedemptionStatus,
 } from "./types";
 
+const SearchTicketGiftTypeEnum = builder.enumType("TicketGiftType", {
+  values: ["SENT", "RECEIVED", "ALL"] as const,
+});
+
 const MyTicketsSearchValues = builder.inputType("MyTicketsSearchValues", {
   fields: (t) => ({
     eventId: t.field({
@@ -108,9 +112,16 @@ builder.queryFields((t) => ({
       };
     },
   }),
-  myReceivedTicketGifts: t.field({
-    description: "Get a list of user ticket gifts received by the current user",
+  myTicketGifts: t.field({
+    description:
+      "Get a list of user ticket gifts sent or received by the current user",
     type: [UserTicketGiftRef],
+    args: {
+      type: t.arg({
+        type: SearchTicketGiftTypeEnum,
+        defaultValue: "ALL",
+      }),
+    },
     authz: {
       rules: ["IsAuthenticated"],
     },
@@ -120,25 +131,22 @@ builder.queryFields((t) => ({
       }
 
       const results = await DB.query.userTicketGiftsSchema.findMany({
-        where: (utg, { eq }) => eq(utg.recipientUserId, USER.id),
-      });
+        where: (utg, { eq, or }) => {
+          if (args.type === "ALL") {
+            return or(
+              eq(utg.gifterUserId, USER.id),
+              eq(utg.recipientUserId, USER.id),
+            );
+          }
 
-      return results;
-    },
-  }),
-  mySentTicketGifts: t.field({
-    description: "Get a list of user ticket gifts sent by the current user",
-    type: [UserTicketGiftRef],
-    authz: {
-      rules: ["IsAuthenticated"],
-    },
-    resolve: async (root, args, { DB, USER }) => {
-      if (!USER) {
-        throw new Error("User not found");
-      }
+          if (args.type === "SENT") {
+            return eq(utg.gifterUserId, USER.id);
+          }
 
-      const results = await DB.query.userTicketGiftsSchema.findMany({
-        where: (utg, { eq }) => eq(utg.gifterUserId, USER.id),
+          if (args.type === "RECEIVED") {
+            return eq(utg.recipientUserId, USER.id);
+          }
+        },
       });
 
       return results;
