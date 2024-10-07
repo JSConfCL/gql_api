@@ -449,7 +449,6 @@ builder.mutationField("claimUserTicket", (t) =>
             }
 
             const claimedTickets: InsertUserTicketSchema[] = [];
-            // const giftAttempts: InsertUserTicketGiftSchema[] = [];
 
             // Process each ticket template
             for (const ticketTemplate of ticketTemplates) {
