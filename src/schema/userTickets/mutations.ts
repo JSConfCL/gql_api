@@ -33,6 +33,7 @@ import {
 
 import { RedeemUserTicketError } from "./types";
 import { createPaymentIntent } from "../purchaseOrder/actions";
+import { cleanEmail } from "../user/userHelpers";
 
 type GiftInfoInput = {
   email: string;
@@ -363,16 +364,17 @@ builder.mutationField("claimUserTicket", (t) =>
         purchaseOrderByTickets[item.ticketId].quantity += item.quantity;
 
         purchaseOrderByTickets[item.ticketId].giftInfo.push(
-          ...(item.giftInfo as GiftInfoInput[] | []),
+          ...(item.giftInfo as GiftInfoInput[] | []).map((gift) => ({
+            ...gift,
+            email: cleanEmail(gift.email),
+          })),
         );
       }
 
       for (const ticket of purchaseOrder) {
-        if (!ticket.giftInfo) {
-          continue;
-        }
+        const order = purchaseOrderByTickets[ticket.ticketId];
 
-        if (ticket.giftInfo.length > ticket.quantity) {
+        if (order.giftInfo.length > ticket.quantity) {
           return {
             error: true as const,
             errorMessage:
@@ -380,9 +382,8 @@ builder.mutationField("claimUserTicket", (t) =>
           };
         }
 
-        const isGiftingToSelf = ticket.giftInfo.some(
-          (gift) =>
-            gift.email.toLowerCase().trim() === USER.email.toLowerCase().trim(),
+        const isGiftingToSelf = order.giftInfo.some(
+          (gift) => gift.email === USER.email,
         );
 
         if (isGiftingToSelf) {
@@ -407,7 +408,9 @@ builder.mutationField("claimUserTicket", (t) =>
 
             const emailsToUsersData = await getOrCreateGiftRecipients({
               DB: trx,
-              giftsInfo: purchaseOrder.flatMap((p) => p.giftInfo || []),
+              giftRecipients: purchaseOrder.flatMap((p) => {
+                return purchaseOrderByTickets[p.ticketId].giftInfo;
+              }),
             });
 
             const [createdPurchaseOrder, ticketTemplates] = await Promise.all([
@@ -712,6 +715,7 @@ builder.mutationField("giftMyTicketToUser", (t) =>
       }
 
       const { email, name, message } = input;
+      const cleanedEmail = cleanEmail(email);
 
       const userTicket = await DB.query.userTicketsSchema.findFirst({
         where: (t, { eq, and }) =>
@@ -731,13 +735,13 @@ builder.mutationField("giftMyTicketToUser", (t) =>
 
       const recipientUser = await getOrCreateGiftRecipients({
         DB: DB,
-        giftsInfo: [{ email, name }],
+        giftRecipients: [{ email: cleanedEmail, name }],
       }).then((result) => {
         if (!result) {
           return null;
         }
 
-        return result.get(email);
+        return result.get(cleanedEmail);
       });
 
       if (!recipientUser) {

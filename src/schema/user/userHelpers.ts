@@ -10,6 +10,10 @@ import {
 import { Logger } from "~/logging";
 import { usersFetcher } from "~/schema/user/userFetcher";
 
+export const cleanEmail = (email: string) => {
+  return email.trim().toLowerCase();
+};
+
 export const createUserIfNotExists = async ({
   DB,
   logger,
@@ -24,7 +28,7 @@ export const createUserIfNotExists = async ({
   const result = await usersFetcher.searchUsers({
     DB,
     search: {
-      email: email.trim().toLowerCase(),
+      email: cleanEmail(email),
     },
   });
 
@@ -40,7 +44,7 @@ export const createUserIfNotExists = async ({
         if (key === "id") {
           return;
         } else if (key === "email") {
-          cleanedUserFields[key] = email.trim().toLowerCase();
+          cleanedUserFields[key] = cleanEmail(value as string);
         } else if (key && value) {
           cleanedUserFields[key] = value;
         }

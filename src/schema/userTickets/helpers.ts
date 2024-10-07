@@ -290,78 +290,57 @@ const bulkApproveUserTickets = async ({
   return updated;
 };
 
+type GetOrCreateGiftRecipientsOptions = {
+  DB: ORM_TYPE;
+  giftRecipients: {
+    email: string;
+    name: string;
+  }[];
+};
+
+type GetOrCreateGiftRecipientsItem = {
+  id: string;
+  email: string;
+  name: string | null;
+  username: string;
+};
+
 export const getOrCreateGiftRecipients = async ({
   DB,
-  giftsInfo,
-}: {
-  DB: ORM_TYPE;
-  giftsInfo: {
-    name: string;
-    email: string;
-  }[];
-}) => {
-  // Fetch existing users in a single query
-  const existingUsers = await DB.query.usersSchema.findMany({
-    where: (users, { inArray }) =>
-      inArray(
-        users.email,
-        giftsInfo.map((gi) => gi.email),
-      ),
-    columns: { id: true, email: true, name: true, username: true },
-  });
-
-  const emailToUser = new Map<
-    string,
-    {
-      id: string;
-      name: string | null;
-      email: string;
-      username: string;
-    }
-  >(
-    existingUsers.map((u) => [
-      u.email,
-      {
-        id: u.id,
-        name: u.name,
-        email: u.email,
-        username: u.username,
-      },
-    ]),
-  );
-
-  // Prepare new users to be inserted
-  const newUserInserts = giftsInfo
-    .filter((recipient) => !emailToUser.has(recipient.email))
-    .map((recipient) => {
-      const next: InsertUserSchema = {
+  giftRecipients,
+}: GetOrCreateGiftRecipientsOptions): Promise<
+  Map<string, GetOrCreateGiftRecipientsItem>
+> => {
+  // Insert users that don't exist
+  // We use onConflictDoNothing to avoid errors
+  // if the user already exists or if is being created by another process
+  await DB.insert(usersSchema)
+    .values(
+      giftRecipients.map((recipient) => ({
         email: recipient.email,
         name: recipient.name,
         username: getUsername(recipient.email),
-      };
-
-      return next;
+      })),
+    )
+    .onConflictDoNothing()
+    .returning({
+      id: usersSchema.id,
+      email: usersSchema.email,
+      name: usersSchema.name,
+      username: usersSchema.username,
     });
 
-  if (newUserInserts.length > 0) {
-    const insertedUsers = await DB.insert(usersSchema)
-      .values(newUserInserts)
-      .returning({
-        id: usersSchema.id,
-        email: usersSchema.email,
-        name: usersSchema.name,
-        username: usersSchema.username,
-      });
+  const users = await DB.query.usersSchema.findMany({
+    where: (t, { inArray }) =>
+      inArray(
+        t.email,
+        giftRecipients.map((r) => r.email),
+      ),
+  });
 
-    insertedUsers.forEach((user) =>
-      emailToUser.set(user.email, {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        username: user.username,
-      }),
-    );
-  }
+  const emailToUser = new Map<string, GetOrCreateGiftRecipientsItem>(
+    users.map((user) => [user.email, user]),
+  );
 
   return emailToUser;
 };
