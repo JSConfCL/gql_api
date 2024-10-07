@@ -311,6 +311,10 @@ export const getOrCreateGiftRecipients = async ({
 }: GetOrCreateGiftRecipientsOptions): Promise<
   Map<string, GetOrCreateGiftRecipientsItem>
 > => {
+  if (giftRecipients.length === 0) {
+    return new Map();
+  }
+
   // Insert users that don't exist
   // We use onConflictDoNothing to avoid errors
   // if the user already exists or if is being created by another process
