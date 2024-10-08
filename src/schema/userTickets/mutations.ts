@@ -10,6 +10,7 @@ import {
   selectUserTicketsSchema,
   userTicketGiftsSchema,
   userTicketsSchema,
+  userTicketsApprovalStatusEnum,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import {
@@ -734,6 +735,13 @@ builder.mutationField("giftMyTicketToUser", (t) =>
         throw new GraphQLError("Ticket not found");
       }
 
+      const validApprovalStatus: (typeof userTicketsApprovalStatusEnum)[number][] =
+        ["approved", "not_required", "gift_accepted"];
+
+      if (!validApprovalStatus.includes(userTicket.approvalStatus)) {
+        throw new GraphQLError("Ticket is not giftable");
+      }
+
       const recipientUser = await getOrCreateGiftRecipients({
         DB: DB,
         giftRecipients: [{ email: cleanedEmail, name }],
@@ -758,12 +766,29 @@ builder.mutationField("giftMyTicketToUser", (t) =>
         giftMessage: message ?? null,
       };
 
-      const createdUserTicketGift = await DB.insert(userTicketGiftsSchema)
-        .values(userTicketGift)
-        .returning();
+      const createdUserTicketGift = await DB.transaction(async (trx) => {
+        await trx
+          .update(userTicketsSchema)
+          .set({
+            approvalStatus: "gifted",
+            userId: recipientUser.id,
+          })
+          .where(eq(userTicketsSchema.id, userTicket.id));
+
+        const result = await trx
+          .insert(userTicketGiftsSchema)
+          .values(userTicketGift)
+          .returning();
+
+        return result[0];
+      });
+
+      if (!createdUserTicketGift) {
+        throw new GraphQLError("Could not create user ticket gift");
+      }
 
       await RPC_SERVICE_EMAIL.sendGiftTicketConfirmations({
-        giftId: createdUserTicketGift[0].id,
+        giftId: createdUserTicketGift.id,
         giftMessage: userTicketGift.giftMessage ?? null,
         expirationDate: userTicketGift.expirationDate,
         recipientName: recipientUser.name ?? recipientUser.username,
@@ -773,7 +798,7 @@ builder.mutationField("giftMyTicketToUser", (t) =>
         senderEmail: USER.email,
       });
 
-      return createdUserTicketGift[0];
+      return createdUserTicketGift;
     },
   }),
 );

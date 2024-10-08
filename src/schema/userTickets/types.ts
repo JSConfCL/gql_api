@@ -273,7 +273,14 @@ builder.objectType(UserTicketGiftRef, {
       },
     }),
     status: t.expose("status", { type: GiftAttemptStatusEnum }),
-    expirationDate: t.expose("expirationDate", { type: "DateTime" }),
+    expirationDate: t.expose("expirationDate", {
+      type: "DateTime",
+      nullable: false,
+    }),
+    giftMessage: t.expose("giftMessage", {
+      type: "String",
+      nullable: true,
+    }),
     userTicket: t.field({
       type: UserTicketRef,
       resolve: async (root, args, { DB }) => {

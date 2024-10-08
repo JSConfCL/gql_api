@@ -770,14 +770,9 @@ type Query {
   ): PaginatedPurchaseOrder!
 
   """
-  Get a list of user ticket gifts received by the current user
+  Get a list of user ticket gifts sent or received by the current user
   """
-  myReceivedTicketGifts: [UserTicketGift!]!
-
-  """
-  Get a list of user ticket gifts sent by the current user
-  """
-  mySentTicketGifts: [UserTicketGift!]!
+  myTicketGifts(type: TicketGiftType = ALL): [UserTicketGift!]!
 
   """
   Get a list of tickets for the current user
@@ -1143,6 +1138,12 @@ input TicketEditInput {
   visibility: TicketTemplateVisibility
 }
 
+enum TicketGiftType {
+  ALL
+  RECEIVED
+  SENT
+}
+
 enum TicketPaymentStatus {
   not_required
   paid
@@ -1279,6 +1280,7 @@ Representation of a user ticket gift
 """
 type UserTicketGift {
   expirationDate: DateTime!
+  giftMessage: String
   gifter: GiftTicketUserInfo!
   id: ID!
   recipient: GiftTicketUserInfo!

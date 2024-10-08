@@ -782,10 +782,8 @@ export type Query = {
   me: User;
   /** Get a list of purchase orders for the authenticated user */
   myPurchaseOrders: PaginatedPurchaseOrder;
-  /** Get a list of user ticket gifts received by the current user */
-  myReceivedTicketGifts: Array<UserTicketGift>;
-  /** Get a list of user ticket gifts sent by the current user */
-  mySentTicketGifts: Array<UserTicketGift>;
+  /** Get a list of user ticket gifts sent or received by the current user */
+  myTicketGifts: Array<UserTicketGift>;
   /** Get a list of tickets for the current user */
   myTickets: PaginatedUserTicket;
   /** Get public event attendance info */
@@ -856,6 +854,10 @@ export type QueryGetWaitlistArgs = {
 
 export type QueryMyPurchaseOrdersArgs = {
   input: PaginatedInputMyPurchaseOrdersInput;
+};
+
+export type QueryMyTicketGiftsArgs = {
+  type?: InputMaybe<TicketGiftType>;
 };
 
 export type QueryMyTicketsArgs = {
@@ -1165,6 +1167,12 @@ export type TicketEditInput = {
   visibility?: InputMaybe<TicketTemplateVisibility>;
 };
 
+export enum TicketGiftType {
+  All = "ALL",
+  Received = "RECEIVED",
+  Sent = "SENT",
+}
+
 export enum TicketPaymentStatus {
   NotRequired = "not_required",
   Paid = "paid",
@@ -1299,6 +1307,7 @@ export type UserTicket = {
 export type UserTicketGift = {
   __typename?: "UserTicketGift";
   expirationDate: Scalars["DateTime"]["output"];
+  giftMessage?: Maybe<Scalars["String"]["output"]>;
   gifter: GiftTicketUserInfo;
   id: Scalars["ID"]["output"];
   recipient: GiftTicketUserInfo;
