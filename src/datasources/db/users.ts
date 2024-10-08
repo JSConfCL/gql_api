@@ -88,6 +88,8 @@ export const selectUsersSchema = createSelectSchema(usersSchema);
 
 export const insertUsersSchema = createInsertSchema(usersSchema);
 
+export type InsertUserSchema = z.infer<typeof insertUsersSchema>;
+
 export const updateUsersSchema = insertUsersSchema
   .pick({
     name: true,

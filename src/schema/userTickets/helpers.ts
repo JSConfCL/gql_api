@@ -1,13 +1,15 @@
+import { addDays, endOfDay } from "date-fns";
 import { inArray } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
 import { TeamStatusEnum } from "~/datasources/db/teams";
-import { USER } from "~/datasources/db/users";
+import { InsertUserSchema, USER, usersSchema } from "~/datasources/db/users";
 import { UserParticipationStatusEnum } from "~/datasources/db/userTeams";
 import {
   approveUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/userTickets";
+import { getUsername } from "~/datasources/queries/utils/createUsername";
 import { applicationError, ServiceErrors } from "~/errors";
 import { Logger } from "~/logging";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
@@ -32,12 +34,21 @@ export const assertCanStartTicketClaimingForEvent = async ({
   logger: Logger;
 }) => {
   const ticketIds = Object.keys(purchaseOrderByTickets);
-  const events = await eventsFetcher.searchEvents({
-    DB,
-    search: {
-      ticketIds,
-    },
-  });
+  const [events, tickets] = await Promise.all([
+    eventsFetcher.searchEvents({
+      DB,
+      search: {
+        ticketIds,
+      },
+    }),
+
+    ticketsFetcher.searchTickets({
+      DB,
+      search: {
+        ticketIds,
+      },
+    }),
+  ]);
 
   if (events.length > 1) {
     throw applicationError(
@@ -72,13 +83,6 @@ export const assertCanStartTicketClaimingForEvent = async ({
       logger,
     );
   }
-
-  const tickets = await ticketsFetcher.searchTickets({
-    DB,
-    search: {
-      ticketIds,
-    },
-  });
 
   if (tickets.length !== ticketIds.length) {
     throw applicationError(
@@ -284,4 +288,74 @@ const bulkApproveUserTickets = async ({
     .returning();
 
   return updated;
+};
+
+type GetOrCreateGiftRecipientsOptions = {
+  DB: ORM_TYPE;
+  giftRecipients: {
+    email: string;
+    name: string;
+  }[];
+};
+
+type GetOrCreateGiftRecipientsItem = {
+  id: string;
+  email: string;
+  name: string | null;
+  username: string;
+};
+
+export const getOrCreateGiftRecipients = async ({
+  DB,
+  giftRecipients,
+}: GetOrCreateGiftRecipientsOptions): Promise<
+  Map<string, GetOrCreateGiftRecipientsItem>
+> => {
+  if (giftRecipients.length === 0) {
+    return new Map();
+  }
+
+  // Insert users that don't exist
+  // We use onConflictDoNothing to avoid errors
+  // if the user already exists or if is being created by another process
+  await DB.insert(usersSchema)
+    .values(
+      giftRecipients.map((recipient) => ({
+        email: recipient.email,
+        name: recipient.name,
+        username: getUsername(recipient.email),
+      })),
+    )
+    .onConflictDoNothing()
+    .returning({
+      id: usersSchema.id,
+      email: usersSchema.email,
+      name: usersSchema.name,
+      username: usersSchema.username,
+    });
+
+  const users = await DB.query.usersSchema.findMany({
+    where: (t, { inArray }) =>
+      inArray(
+        t.email,
+        giftRecipients.map((r) => r.email),
+      ),
+  });
+
+  const emailToUser = new Map<string, GetOrCreateGiftRecipientsItem>(
+    users.map((user) => [user.email, user]),
+  );
+
+  return emailToUser;
+};
+
+/**
+ * Returns the expiration date for a gift.
+ * The expiration date is at least 7 days from the current date with the end at 23:59:59 of the 7th day.
+ */
+export const getExpirationDateForGift = () => {
+  const minDays = 7;
+  const expirationDate = endOfDay(addDays(new Date(), minDays));
+
+  return expirationDate;
 };

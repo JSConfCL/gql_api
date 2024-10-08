@@ -9,7 +9,11 @@ import {
   createPaginationInputType,
   createPaginationObjectType,
 } from "~/schema/pagination/types";
-import { PublicUserTicketRef, UserTicketRef } from "~/schema/shared/refs";
+import {
+  PublicUserTicketRef,
+  UserTicketGiftRef,
+  UserTicketRef,
+} from "~/schema/shared/refs";
 import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 
 import {
@@ -17,6 +21,10 @@ import {
   TicketPaymentStatus,
   TicketRedemptionStatus,
 } from "./types";
+
+const SearchTicketGiftTypeEnum = builder.enumType("TicketGiftType", {
+  values: ["SENT", "RECEIVED", "ALL"] as const,
+});
 
 const MyTicketsSearchValues = builder.inputType("MyTicketsSearchValues", {
   fields: (t) => ({
@@ -102,6 +110,46 @@ builder.queryFields((t) => ({
         data: results,
         pagination,
       };
+    },
+  }),
+  myTicketGifts: t.field({
+    description:
+      "Get a list of user ticket gifts sent or received by the current user",
+    type: [UserTicketGiftRef],
+    args: {
+      type: t.arg({
+        type: SearchTicketGiftTypeEnum,
+        defaultValue: "ALL",
+      }),
+    },
+    authz: {
+      rules: ["IsAuthenticated"],
+    },
+    resolve: async (root, args, { DB, USER }) => {
+      if (!USER) {
+        throw new Error("User not found");
+      }
+
+      const results = await DB.query.userTicketGiftsSchema.findMany({
+        where: (utg, { eq, or }) => {
+          if (args.type === "ALL") {
+            return or(
+              eq(utg.gifterUserId, USER.id),
+              eq(utg.recipientUserId, USER.id),
+            );
+          }
+
+          if (args.type === "SENT") {
+            return eq(utg.gifterUserId, USER.id);
+          }
+
+          if (args.type === "RECEIVED") {
+            return eq(utg.recipientUserId, USER.id);
+          }
+        },
+      });
+
+      return results;
     },
   }),
 }));

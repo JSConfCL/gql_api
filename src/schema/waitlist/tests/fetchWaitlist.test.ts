@@ -34,6 +34,7 @@ describe("Should get my ticket for a waitlist", () => {
       ticketTemplateId: ticket.id,
       purchaseOrderId: purchaseOrder.id,
       approvalStatus: "pending",
+      userId: user1.id,
     });
 
     await insertEventToCommunity({

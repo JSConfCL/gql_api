@@ -40,6 +40,7 @@ import {
   insertTicketSchema,
   insertUserDataSchema,
   insertUserTeamsSchema,
+  insertUserTicketGiftSchema,
   insertUserTicketsSchema,
   insertUsersSchema,
   insertUsersToCommunitiesSchema,
@@ -67,6 +68,7 @@ import {
   selectTicketSchema,
   selectUserDataSchema,
   selectUserTeamsSchema,
+  selectUserTicketGiftSchema,
   selectUserTicketsSchema,
   selectUsersSchema,
   selectUsersToCommunitiesSchema,
@@ -80,6 +82,7 @@ import {
   ticketsSchema,
   userDataSchema,
   userTeamsSchema,
+  userTicketGiftsSchema,
   userTicketsSchema,
   usersSchema,
   usersTagsSchema,
@@ -102,6 +105,7 @@ import {
 } from "~/generated/types";
 import { createLogger } from "~/logging";
 import { schema } from "~/schema";
+import { cleanEmail } from "~/schema/user/userHelpers";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 import { MOCKED_RPC_SERVICE_EMAIL } from "~/tests/fixtures/mocks";
 import { Context } from "~/types";
@@ -258,7 +262,7 @@ export const insertUser = async (
     externalId: partialInput?.externalId ?? faker.string.uuid(),
     username: partialInput?.username ?? faker.internet.userName(),
     bio: partialInput?.bio ?? faker.lorem.paragraph(),
-    email: partialInput?.email ?? faker.internet.email(),
+    email: cleanEmail(partialInput?.email ?? faker.internet.email()),
     name: partialInput?.name,
     isSuperAdmin: partialInput?.isSuperAdmin,
     isEmailVerified: partialInput?.isEmailVerified,
@@ -513,11 +517,12 @@ export const insertTicket = async (
   > & {
     id?: string;
     purchaseOrderId?: string;
+    userId: string;
   },
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
-    userId: partialInput?.userId,
+    userId: partialInput?.userId ?? (await insertUser()).id,
     purchaseOrderId:
       partialInput?.purchaseOrderId ?? (await insertPurchaseOrder()).id,
     ticketTemplateId:
@@ -811,6 +816,27 @@ export const insertSalary = async (
     insertSalariesSchema,
     selectSalariesSchema,
     salariesSchema,
+    possibleInput,
+  );
+};
+
+export const insertUserTicketGift = async (
+  partialInput: z.infer<typeof insertUserTicketGiftSchema>,
+) => {
+  const possibleInput = {
+    id: partialInput?.id ?? faker.string.uuid(),
+    userTicketId: partialInput?.userTicketId,
+    gifterUserId: partialInput?.gifterUserId,
+    recipientUserId: partialInput?.recipientUserId,
+    expirationDate: partialInput?.expirationDate,
+    status: partialInput?.status,
+    ...CRUDDates(partialInput),
+  } satisfies z.infer<typeof insertUserTicketGiftSchema>;
+
+  return insertOne(
+    insertUserTicketGiftSchema,
+    selectUserTicketGiftSchema,
+    userTicketGiftsSchema,
     possibleInput,
   );
 };
