@@ -1,4 +1,8 @@
+import { and, eq, getTableColumns, inArray, or, SQL } from "drizzle-orm";
+
 import { builder } from "~/builder";
+import { userTicketsSchema } from "~/datasources/db/userTickets";
+import { userTicketTransfersSchema } from "~/datasources/db/userTicketsTransfers";
 import { UserTicketTransferRef } from "~/schema/shared/refs";
 
 const SearchTicketTransferTypeEnum = builder.enumType("TicketTransferType", {
@@ -24,24 +28,46 @@ builder.queryFields((t) => ({
         throw new Error("User not found");
       }
 
-      const results = await DB.query.userTicketTransfersSchema.findMany({
-        where: (utg, { eq, or }) => {
-          if (args.type === "ALL") {
-            return or(
-              eq(utg.senderUserId, USER.id),
-              eq(utg.recipientUserId, USER.id),
-            );
-          }
+      let transferTypeWheres;
 
-          if (args.type === "SENT") {
-            return eq(utg.senderUserId, USER.id);
-          }
+      if (args.type === "SENT") {
+        transferTypeWheres = eq(
+          userTicketTransfersSchema.senderUserId,
+          USER.id,
+        );
+      } else if (args.type === "RECEIVED") {
+        transferTypeWheres = eq(
+          userTicketTransfersSchema.recipientUserId,
+          USER.id,
+        );
+      } else if (args.type === "ALL") {
+        transferTypeWheres = or(
+          eq(userTicketTransfersSchema.senderUserId, USER.id),
+          eq(userTicketTransfersSchema.recipientUserId, USER.id),
+        );
+      }
 
-          if (args.type === "RECEIVED") {
-            return eq(utg.recipientUserId, USER.id);
-          }
-        },
-      });
+      const results = await DB.select({
+        ...getTableColumns(userTicketTransfersSchema),
+      })
+        .from(userTicketTransfersSchema)
+        .innerJoin(
+          userTicketsSchema,
+          and(
+            eq(userTicketTransfersSchema.userTicketId, userTicketsSchema.id),
+            // we ensure that the user cannot see tickets that where rejected
+            // or are pending of payment for example
+            inArray(userTicketsSchema.approvalStatus, [
+              "approved",
+              "not_required",
+              "gifted",
+              "gift_accepted",
+              "transfer_pending",
+              "transfer_accepted",
+            ]),
+            transferTypeWheres,
+          ),
+        );
 
       return results;
     },
