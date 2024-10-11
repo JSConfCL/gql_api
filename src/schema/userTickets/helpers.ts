@@ -1,15 +1,13 @@
-import { addDays, endOfDay } from "date-fns";
 import { inArray } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
 import { TeamStatusEnum } from "~/datasources/db/teams";
-import { InsertUserSchema, USER, usersSchema } from "~/datasources/db/users";
+import { USER } from "~/datasources/db/users";
 import { UserParticipationStatusEnum } from "~/datasources/db/userTeams";
 import {
   approveUserTicketsSchema,
   userTicketsSchema,
 } from "~/datasources/db/userTickets";
-import { getUsername } from "~/datasources/queries/utils/createUsername";
 import { applicationError, ServiceErrors } from "~/errors";
 import { Logger } from "~/logging";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
