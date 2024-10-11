@@ -40,7 +40,7 @@ import {
   insertTicketSchema,
   insertUserDataSchema,
   insertUserTeamsSchema,
-  insertUserTicketGiftSchema,
+  insertUserTicketTransferSchema,
   insertUserTicketsSchema,
   insertUsersSchema,
   insertUsersToCommunitiesSchema,
@@ -68,7 +68,7 @@ import {
   selectTicketSchema,
   selectUserDataSchema,
   selectUserTeamsSchema,
-  selectUserTicketGiftSchema,
+  selectUserTicketTransferSchema,
   selectUserTicketsSchema,
   selectUsersSchema,
   selectUsersToCommunitiesSchema,
@@ -82,7 +82,7 @@ import {
   ticketsSchema,
   userDataSchema,
   userTeamsSchema,
-  userTicketGiftsSchema,
+  userTicketTransfersSchema,
   userTicketsSchema,
   usersSchema,
   usersTagsSchema,
@@ -820,23 +820,23 @@ export const insertSalary = async (
   );
 };
 
-export const insertUserTicketGift = async (
-  partialInput: z.infer<typeof insertUserTicketGiftSchema>,
+export const insertUserTicketTransfer = async (
+  partialInput: z.infer<typeof insertUserTicketTransferSchema>,
 ) => {
   const possibleInput = {
     id: partialInput?.id ?? faker.string.uuid(),
     userTicketId: partialInput?.userTicketId,
-    gifterUserId: partialInput?.gifterUserId,
+    senderUserId: partialInput?.senderUserId,
     recipientUserId: partialInput?.recipientUserId,
     expirationDate: partialInput?.expirationDate,
     status: partialInput?.status,
     ...CRUDDates(partialInput),
-  } satisfies z.infer<typeof insertUserTicketGiftSchema>;
+  } satisfies z.infer<typeof insertUserTicketTransferSchema>;
 
   return insertOne(
-    insertUserTicketGiftSchema,
-    selectUserTicketGiftSchema,
-    userTicketGiftsSchema,
+    insertUserTicketTransferSchema,
+    selectUserTicketTransferSchema,
+    userTicketTransfersSchema,
     possibleInput,
   );
 };

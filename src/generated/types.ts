@@ -309,26 +309,6 @@ export type GeneratePaymentLinkInput = {
   currencyId: Scalars["String"]["input"];
 };
 
-export enum GiftAttemptStatus {
-  Accepted = "Accepted",
-  Cancelled = "Cancelled",
-  Expired = "Expired",
-  Pending = "Pending",
-  Rejected = "Rejected",
-}
-
-export type GiftInfoInput = {
-  email: Scalars["String"]["input"];
-  message?: InputMaybe<Scalars["String"]["input"]>;
-  name: Scalars["String"]["input"];
-};
-
-export type GiftTicketUserInfo = {
-  __typename?: "GiftTicketUserInfo";
-  email: Scalars["String"]["output"];
-  name?: Maybe<Scalars["String"]["output"]>;
-};
-
 export type GiftTicketsToUserInput = {
   allowMultipleTicketsPerUsers: Scalars["Boolean"]["input"];
   autoApproveTickets: Scalars["Boolean"]["input"];
@@ -353,9 +333,9 @@ export enum ImageHostingEnum {
 
 export type Mutation = {
   __typename?: "Mutation";
-  acceptGiftedTicket: UserTicket;
   /** Accept the user's invitation to a team */
   acceptTeamInvitation: TeamRef;
+  acceptTransferredTicket: UserTicket;
   /** Try to add a person to a team */
   addPersonToTeam: AddUserToTeamResponseRef;
   /** Apply to a waitlist */
@@ -366,7 +346,7 @@ export type Mutation = {
   cancelUserTicket: UserTicket;
   /** Check the status of a purchase order */
   checkPurchaseOrderStatus: PurchaseOrder;
-  /** Attempt to claim and/or gift tickets */
+  /** Attempt to claim and/or transfer tickets */
   claimUserTicket: RedeemUserTicketResponse;
   /** Create an community */
   createCommunity: Community;
@@ -392,7 +372,6 @@ export type Mutation = {
   editTicket: Ticket;
   /** Enqueue images to import */
   enqueueGoogleAlbumImport: Scalars["Boolean"]["output"];
-  giftMyTicketToUser: UserTicketGift;
   /** Gift tickets to users, allowing multiple tickets per user, and conditionally notify them */
   giftTicketsToUsers: Array<UserTicket>;
   /** Create a purchase order */
@@ -403,6 +382,7 @@ export type Mutation = {
   rejectTeamInvitation: TeamRef;
   /** Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position */
   startWorkEmailValidation: WorkEmail;
+  transferMyTicketToUser: UserTicketTransfer;
   triggerUserTicketApprovalReview: Array<UserTicket>;
   /** Update a company */
   updateCompany: Company;
@@ -419,12 +399,12 @@ export type Mutation = {
   validateWorkEmail: WorkEmail;
 };
 
-export type MutationAcceptGiftedTicketArgs = {
-  giftId: Scalars["String"]["input"];
-};
-
 export type MutationAcceptTeamInvitationArgs = {
   input: AcceptTeamInvitationInput;
+};
+
+export type MutationAcceptTransferredTicketArgs = {
+  transferId: Scalars["String"]["input"];
 };
 
 export type MutationAddPersonToTeamArgs = {
@@ -499,11 +479,6 @@ export type MutationEnqueueGoogleAlbumImportArgs = {
   input: EnqueueGoogleAlbumImportInput;
 };
 
-export type MutationGiftMyTicketToUserArgs = {
-  input: GiftInfoInput;
-  ticketId: Scalars["String"]["input"];
-};
-
 export type MutationGiftTicketsToUsersArgs = {
   input: GiftTicketsToUserInput;
 };
@@ -522,6 +497,11 @@ export type MutationRejectTeamInvitationArgs = {
 
 export type MutationStartWorkEmailValidationArgs = {
   email: Scalars["String"]["input"];
+};
+
+export type MutationTransferMyTicketToUserArgs = {
+  input: UserTicketTransferInfoInput;
+  ticketId: Scalars["String"]["input"];
 };
 
 export type MutationTriggerUserTicketApprovalReviewArgs = {
@@ -743,9 +723,9 @@ export type PurchaseOrder = {
 };
 
 export type PurchaseOrderInput = {
-  giftInfo?: InputMaybe<Array<GiftInfoInput>>;
   quantity: Scalars["Int"]["input"];
   ticketId: Scalars["String"]["input"];
+  transfersInfo?: InputMaybe<Array<UserTicketTransferInfoInput>>;
 };
 
 export enum PurchaseOrderPaymentStatusEnum {
@@ -782,8 +762,8 @@ export type Query = {
   me: User;
   /** Get a list of purchase orders for the authenticated user */
   myPurchaseOrders: PaginatedPurchaseOrder;
-  /** Get a list of user ticket gifts sent or received by the current user */
-  myTicketGifts: Array<UserTicketGift>;
+  /** Get a list of user ticket transfers sent or received by the current user */
+  myTicketTransfers: Array<UserTicketTransfer>;
   /** Get a list of tickets for the current user */
   myTickets: PaginatedUserTicket;
   /** Get public event attendance info */
@@ -856,8 +836,8 @@ export type QueryMyPurchaseOrdersArgs = {
   input: PaginatedInputMyPurchaseOrdersInput;
 };
 
-export type QueryMyTicketGiftsArgs = {
-  type?: InputMaybe<TicketGiftType>;
+export type QueryMyTicketTransfersArgs = {
+  type?: InputMaybe<TicketTransferType>;
 };
 
 export type QueryMyTicketsArgs = {
@@ -1167,12 +1147,6 @@ export type TicketEditInput = {
   visibility?: InputMaybe<TicketTemplateVisibility>;
 };
 
-export enum TicketGiftType {
-  All = "ALL",
-  Received = "RECEIVED",
-  Sent = "SENT",
-}
-
 export enum TicketPaymentStatus {
   NotRequired = "not_required",
   Paid = "paid",
@@ -1194,6 +1168,26 @@ export enum TicketTemplateVisibility {
   Public = "public",
   Unlisted = "unlisted",
 }
+
+export enum TicketTransferAttemptStatus {
+  Accepted = "Accepted",
+  Cancelled = "Cancelled",
+  Expired = "Expired",
+  Pending = "Pending",
+  Rejected = "Rejected",
+}
+
+export enum TicketTransferType {
+  All = "ALL",
+  Received = "RECEIVED",
+  Sent = "SENT",
+}
+
+export type TicketTransferUserInfo = {
+  __typename?: "TicketTransferUserInfo";
+  email: Scalars["String"]["output"];
+  name?: Maybe<Scalars["String"]["output"]>;
+};
 
 export enum TypeOfEmployment {
   Freelance = "freelance",
@@ -1293,26 +1287,32 @@ export type UserTicket = {
   __typename?: "UserTicket";
   approvalStatus: TicketApprovalStatus;
   createdAt: Scalars["DateTime"]["output"];
-  giftAttempts: Array<UserTicketGift>;
   id: Scalars["ID"]["output"];
   paymentStatus?: Maybe<PurchaseOrderPaymentStatusEnum>;
   publicId: Scalars["String"]["output"];
   purchaseOrder?: Maybe<PurchaseOrder>;
   redemptionStatus: TicketRedemptionStatus;
   ticketTemplate: Ticket;
+  transferAttempts: Array<UserTicketTransfer>;
   user?: Maybe<User>;
 };
 
-/** Representation of a user ticket gift */
-export type UserTicketGift = {
-  __typename?: "UserTicketGift";
+/** Representation of a user ticket transfer */
+export type UserTicketTransfer = {
+  __typename?: "UserTicketTransfer";
   expirationDate: Scalars["DateTime"]["output"];
-  giftMessage?: Maybe<Scalars["String"]["output"]>;
-  gifter: GiftTicketUserInfo;
   id: Scalars["ID"]["output"];
-  recipient: GiftTicketUserInfo;
-  status: GiftAttemptStatus;
+  recipient: TicketTransferUserInfo;
+  sender: TicketTransferUserInfo;
+  status: TicketTransferAttemptStatus;
+  transferMessage?: Maybe<Scalars["String"]["output"]>;
   userTicket: UserTicket;
+};
+
+export type UserTicketTransferInfoInput = {
+  email: Scalars["String"]["input"];
+  message?: InputMaybe<Scalars["String"]["input"]>;
+  name: Scalars["String"]["input"];
 };
 
 /** Representation of a user in a team */

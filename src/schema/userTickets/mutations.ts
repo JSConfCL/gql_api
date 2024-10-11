@@ -4,13 +4,12 @@ import { GraphQLError } from "graphql";
 import { builder } from "~/builder";
 import {
   InsertUserTicketSchema,
-  UserTicketGiftStatus,
-  InsertUserTicketGiftSchema,
+  UserTicketTransferStatus,
+  InsertUserTicketTransferSchema,
   selectPurchaseOrdersSchema,
   selectUserTicketsSchema,
-  userTicketGiftsSchema,
+  userTicketTransfersSchema,
   userTicketsSchema,
-  userTicketsApprovalStatusEnum,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import {
@@ -19,11 +18,9 @@ import {
 } from "~/schema/purchaseOrder/helpers";
 import { PurchaseOrderRef } from "~/schema/purchaseOrder/types";
 import { isValidUUID } from "~/schema/shared/helpers";
-import { UserTicketGiftRef, UserTicketRef } from "~/schema/shared/refs";
+import { UserTicketRef } from "~/schema/shared/refs";
 import {
   assertCanStartTicketClaimingForEvent,
-  getExpirationDateForGift,
-  getOrCreateGiftRecipients,
   validateUserDataAndApproveUserTickets,
 } from "~/schema/userTickets/helpers";
 import {
@@ -35,26 +32,8 @@ import {
 import { RedeemUserTicketError } from "./types";
 import { createPaymentIntent } from "../purchaseOrder/actions";
 import { cleanEmail } from "../user/userHelpers";
-
-type GiftInfoInput = {
-  email: string;
-  name: string;
-  message: string | null;
-};
-
-const GiftInfoInput = builder.inputType("GiftInfoInput", {
-  fields: (t) => ({
-    email: t.string({
-      required: true,
-    }),
-    name: t.string({
-      required: true,
-    }),
-    message: t.string({
-      required: false,
-    }),
-  }),
-});
+import { getOrCreateTransferRecipients } from "../userTicketsTransfers/helpers";
+import { UserTicketTransferInfoInputRef } from "../userTicketsTransfers/mutations";
 
 const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {
   fields: (t) => ({
@@ -64,8 +43,8 @@ const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {
     quantity: t.int({
       required: true,
     }),
-    giftInfo: t.field({
-      type: [GiftInfoInput],
+    transfersInfo: t.field({
+      type: [UserTicketTransferInfoInputRef],
       required: false,
     }),
   }),
@@ -287,7 +266,7 @@ builder.mutationField("redeemUserTicket", (t) =>
 
 builder.mutationField("claimUserTicket", (t) =>
   t.field({
-    description: "Attempt to claim and/or gift tickets",
+    description: "Attempt to claim and/or transfer tickets",
     type: RedeemUserTicketResponse,
     args: {
       input: t.arg({ type: TicketClaimInput, required: true }),
@@ -333,7 +312,11 @@ builder.mutationField("claimUserTicket", (t) =>
         {
           ticketId: string;
           quantity: number;
-          giftInfo: GiftInfoInput[];
+          transfersInfo: {
+            email: string;
+            name: string;
+            message: string | null;
+          }[];
         }
       > = {};
 
@@ -358,41 +341,40 @@ builder.mutationField("claimUserTicket", (t) =>
           purchaseOrderByTickets[item.ticketId] = {
             ticketId: item.ticketId,
             quantity: 0,
-            giftInfo: [],
+            transfersInfo: [],
           };
         }
 
         purchaseOrderByTickets[item.ticketId].quantity += item.quantity;
 
-        purchaseOrderByTickets[item.ticketId].giftInfo.push(
-          ...((item.giftInfo as GiftInfoInput[] | null | undefined) || []).map(
-            (gift) => ({
-              ...gift,
-              email: cleanEmail(gift.email),
-            }),
-          ),
+        purchaseOrderByTickets[item.ticketId].transfersInfo.push(
+          ...(item.transfersInfo || []).map((transfer) => ({
+            name: transfer.name,
+            email: cleanEmail(transfer.email),
+            message: transfer.message || null,
+          })),
         );
       }
 
       for (const ticket of purchaseOrder) {
         const order = purchaseOrderByTickets[ticket.ticketId];
 
-        if (order.giftInfo.length > ticket.quantity) {
+        if (order.transfersInfo.length > ticket.quantity) {
           return {
             error: true as const,
             errorMessage:
-              "No se puede regalar más tickets de los que se han comprado",
+              "No se puede transferir más tickets de los que se han comprado",
           };
         }
 
-        const isGiftingToSelf = order.giftInfo.some(
-          (gift) => gift.email === USER.email,
+        const isTransferringToSelf = order.transfersInfo.some(
+          (transfer) => transfer.email === USER.email,
         );
 
-        if (isGiftingToSelf) {
+        if (isTransferringToSelf) {
           return {
             error: true as const,
-            errorMessage: "Cannot gift to yourself",
+            errorMessage: "Cannot transfer to yourself",
           };
         }
       }
@@ -409,10 +391,10 @@ builder.mutationField("claimUserTicket", (t) =>
 
             const ticketTemplatesIds = Object.keys(purchaseOrderByTickets);
 
-            const emailsToUsersData = await getOrCreateGiftRecipients({
+            const emailsToUsersData = await getOrCreateTransferRecipients({
               DB: trx,
-              giftRecipients: purchaseOrder.flatMap((p) => {
-                return purchaseOrderByTickets[p.ticketId].giftInfo;
+              transferRecipients: purchaseOrder.flatMap((p) => {
+                return purchaseOrderByTickets[p.ticketId].transfersInfo;
               }),
             });
 
@@ -456,8 +438,8 @@ builder.mutationField("claimUserTicket", (t) =>
               const { event } = ticketTemplate;
               const quantityToPurchase =
                 purchaseOrderByTickets[ticketTemplate.id].quantity;
-              const giftInfoForTicket =
-                purchaseOrderByTickets[ticketTemplate.id].giftInfo;
+              const ticketTransfers =
+                purchaseOrderByTickets[ticketTemplate.id].transfersInfo;
 
               // If the event is not active, we throw an error.
               if (event.status === "inactive") {
@@ -472,23 +454,23 @@ builder.mutationField("claimUserTicket", (t) =>
                 ticketTemplate.isFree && !ticketTemplate.requiresApproval;
 
               for (let i = 0; i < quantityToPurchase; i++) {
-                const isGift = i < giftInfoForTicket.length;
-                const giftInfo = isGift ? giftInfoForTicket[i] : null;
-                const recipientUser = giftInfo
-                  ? emailsToUsersData.get(giftInfo.email)
+                const isTransfer = i < ticketTransfers.length;
+                const transferInfo = isTransfer ? ticketTransfers[i] : null;
+                const recipientUser = transferInfo
+                  ? emailsToUsersData.get(transferInfo.email)
                   : null;
 
-                if (isGift && !giftInfo) {
+                if (isTransfer && !transferInfo) {
                   throw applicationError(
-                    `Gift info is required for ticket ${i + 1}`,
+                    `Transfer info is required for ticket ${i + 1}`,
                     ServiceErrors.INVALID_ARGUMENT,
                     logger,
                   );
                 }
 
-                if (!recipientUser && giftInfo) {
+                if (!recipientUser && transferInfo) {
                   throw applicationError(
-                    `User for email ${giftInfo.email} not found`,
+                    `User for email ${transferInfo.email} not found`,
                     ServiceErrors.NOT_FOUND,
                     logger,
                   );
@@ -527,25 +509,26 @@ builder.mutationField("claimUserTicket", (t) =>
               {} as Record<string, typeof createdUserTickets>,
             );
 
-            // Prepare gift attempts
-            const giftAttempts: InsertUserTicketGiftSchema[] = [];
+            // Prepare transfer attempts
+            const transfersAttempts: InsertUserTicketTransferSchema[] = [];
 
             for (const item of purchaseOrder) {
               const userTickets =
                 ticketTemplateToUserTickets[item.ticketId] || [];
-              const giftInfo = purchaseOrderByTickets[item.ticketId].giftInfo;
+              const transfersInto =
+                purchaseOrderByTickets[item.ticketId].transfersInfo;
 
-              giftInfo.forEach((giftInfo, index) => {
+              transfersInto.forEach((transferInfo, index) => {
                 const userTicket = userTickets[index];
-                const recipientUser = emailsToUsersData.get(giftInfo.email);
+                const recipientUser = emailsToUsersData.get(transferInfo.email);
 
                 if (recipientUser) {
-                  giftAttempts.push({
+                  transfersAttempts.push({
                     userTicketId: userTicket.id,
-                    gifterUserId: USER.id,
+                    senderUserId: USER.id,
                     recipientUserId: recipientUser.id,
-                    status: UserTicketGiftStatus.Pending,
-                    giftMessage: giftInfo.message || null,
+                    status: UserTicketTransferStatus.Pending,
+                    transferMessage: transferInfo.message || null,
                     // Temporary, this will be updated
                     // when the payment is done
                     expirationDate: new Date(),
@@ -553,7 +536,7 @@ builder.mutationField("claimUserTicket", (t) =>
                   });
                 } else {
                   throw applicationError(
-                    `User for email ${giftInfo.email} not found`,
+                    `User for email ${transferInfo.email} not found`,
                     ServiceErrors.INTERNAL_SERVER_ERROR,
                     logger,
                   );
@@ -561,9 +544,11 @@ builder.mutationField("claimUserTicket", (t) =>
               });
             }
 
-            // Insert gift attempts if any
-            if (giftAttempts.length > 0) {
-              await trx.insert(userTicketGiftsSchema).values(giftAttempts);
+            // Insert transfer attempts if any
+            if (transfersAttempts.length > 0) {
+              await trx
+                .insert(userTicketTransfersSchema)
+                .values(transfersAttempts);
             }
 
             // Bulk query for existing ticket counts
@@ -693,205 +678,6 @@ builder.mutationField("claimUserTicket", (t) =>
           e instanceof Error ? e.message : "Unknown error",
         );
       }
-    },
-  }),
-);
-
-builder.mutationField("giftMyTicketToUser", (t) =>
-  t.field({
-    type: UserTicketGiftRef,
-    args: {
-      ticketId: t.arg.string({ required: true }),
-      input: t.arg({ type: GiftInfoInput, required: true }),
-    },
-    authz: {
-      rules: ["IsAuthenticated"],
-    },
-    resolve: async (
-      root,
-      { ticketId, input },
-      { DB, USER, RPC_SERVICE_EMAIL },
-    ) => {
-      if (!USER) {
-        throw new GraphQLError("User not found");
-      }
-
-      const { email, name, message } = input;
-      const cleanedEmail = cleanEmail(email);
-
-      const userTicket = await DB.query.userTicketsSchema.findFirst({
-        where: (t, { eq, and }) =>
-          and(eq(t.id, ticketId), eq(t.userId, USER.id)),
-        with: {
-          ticketTemplate: {
-            columns: {
-              tags: true,
-            },
-          },
-        },
-      });
-
-      if (!userTicket) {
-        throw new GraphQLError("Ticket not found");
-      }
-
-      const validApprovalStatus: (typeof userTicketsApprovalStatusEnum)[number][] =
-        ["approved", "not_required", "gift_accepted"];
-
-      if (!validApprovalStatus.includes(userTicket.approvalStatus)) {
-        throw new GraphQLError("Ticket is not giftable");
-      }
-
-      const recipientUser = await getOrCreateGiftRecipients({
-        DB: DB,
-        giftRecipients: [{ email: cleanedEmail, name }],
-      }).then((result) => {
-        if (!result) {
-          return null;
-        }
-
-        return result.get(cleanedEmail);
-      });
-
-      if (!recipientUser) {
-        throw new GraphQLError("Receiver user not found");
-      }
-
-      const userTicketGift: InsertUserTicketGiftSchema = {
-        userTicketId: userTicket.id,
-        gifterUserId: USER.id,
-        recipientUserId: recipientUser.id,
-        status: UserTicketGiftStatus.Pending,
-        expirationDate: getExpirationDateForGift(),
-        giftMessage: message ?? null,
-      };
-
-      const createdUserTicketGift = await DB.transaction(async (trx) => {
-        await trx
-          .update(userTicketsSchema)
-          .set({
-            approvalStatus: "gifted",
-            userId: recipientUser.id,
-          })
-          .where(eq(userTicketsSchema.id, userTicket.id));
-
-        const result = await trx
-          .insert(userTicketGiftsSchema)
-          .values(userTicketGift)
-          .returning();
-
-        return result[0];
-      });
-
-      if (!createdUserTicketGift) {
-        throw new GraphQLError("Could not create user ticket gift");
-      }
-
-      await RPC_SERVICE_EMAIL.sendGiftTicketConfirmations({
-        giftId: createdUserTicketGift.id,
-        giftMessage: userTicketGift.giftMessage ?? null,
-        expirationDate: userTicketGift.expirationDate,
-        recipientName: recipientUser.name ?? recipientUser.username,
-        recipientEmail: recipientUser.email,
-        senderName: USER.name ?? USER.username,
-        ticketTags: userTicket.ticketTemplate.tags,
-        senderEmail: USER.email,
-      });
-
-      return createdUserTicketGift;
-    },
-  }),
-);
-
-builder.mutationField("acceptGiftedTicket", (t) =>
-  t.field({
-    type: UserTicketRef,
-    args: {
-      giftId: t.arg.string({
-        required: true,
-      }),
-    },
-    authz: {
-      rules: ["IsAuthenticated"],
-    },
-    resolve: async (root, { giftId }, { DB, USER, RPC_SERVICE_EMAIL }) => {
-      if (!USER) {
-        throw new GraphQLError("User not found");
-      }
-
-      // find the ticket gift
-      const ticketGift = await DB.query.userTicketGiftsSchema.findFirst({
-        where: (t, { eq, and }) =>
-          and(eq(t.id, giftId), eq(t.recipientUserId, USER.id)),
-        columns: {
-          id: true,
-          status: true,
-          expirationDate: true,
-          userTicketId: true,
-          gifterUserId: true,
-        },
-        with: {
-          gifterUser: {
-            columns: {
-              name: true,
-              email: true,
-              username: true,
-            },
-          },
-          userTicket: {
-            with: {
-              ticketTemplate: {
-                columns: {
-                  tags: true,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      if (!ticketGift) {
-        throw new GraphQLError("Could not find ticket to accept");
-      }
-
-      if (ticketGift.status !== UserTicketGiftStatus.Pending) {
-        throw new GraphQLError("Ticket is not a gifted ticket");
-      }
-
-      if (ticketGift.expirationDate <= new Date()) {
-        await DB.update(userTicketGiftsSchema)
-          .set({
-            status: UserTicketGiftStatus.Expired,
-          })
-          .where(eq(userTicketGiftsSchema.id, ticketGift.id));
-
-        throw new GraphQLError("Gift attempt has expired");
-      }
-
-      const updatedTicket = await DB.update(userTicketsSchema)
-        .set({
-          approvalStatus: "gift_accepted",
-          userId: USER.id,
-        })
-        .where(eq(userTicketsSchema.id, ticketGift.userTicketId))
-        .returning()
-        .then((t) => t?.[0]);
-
-      await DB.update(userTicketGiftsSchema)
-        .set({
-          status: UserTicketGiftStatus.Accepted,
-        })
-        .where(eq(userTicketGiftsSchema.id, ticketGift.id));
-
-      await RPC_SERVICE_EMAIL.sendGiftAcceptanceNotificationToGifter({
-        recipientName: USER.name ?? USER.username,
-        recipientEmail: USER.email,
-        senderName:
-          ticketGift.gifterUser.name ?? ticketGift.gifterUser.username,
-        ticketTags: ticketGift.userTicket.ticketTemplate.tags,
-      });
-
-      return updatedTicket;
     },
   }),
 );

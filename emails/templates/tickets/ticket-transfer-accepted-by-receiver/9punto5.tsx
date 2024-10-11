@@ -10,7 +10,7 @@ type Props = {
   ticketType: "CONFERENCE" | "EXPERIENCE";
 };
 
-export const TicketGiftAcceptedByReceiver9punto5 = ({
+export const TicketTransferAcceptedByReceiver9punto5 = ({
   recipientName = "Juan",
   recipientEmail = "juan@example.com",
   senderName = "Pedro",
@@ -46,4 +46,4 @@ export const TicketGiftAcceptedByReceiver9punto5 = ({
   );
 };
 
-export default TicketGiftAcceptedByReceiver9punto5;
+export default TicketTransferAcceptedByReceiver9punto5;

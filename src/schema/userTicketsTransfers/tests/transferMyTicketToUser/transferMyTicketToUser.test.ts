@@ -1,7 +1,6 @@
-import { addDays, differenceInSeconds, endOfDay } from "date-fns";
+import { differenceInSeconds } from "date-fns";
 import { AsyncReturnType } from "type-fest";
-import { v4 } from "uuid";
-import { assert, describe, it, expect } from "vitest";
+import { assert, describe, it } from "vitest";
 
 import {
   executeGraphqlOperationAsUser,
@@ -13,17 +12,16 @@ import {
   insertTicketPrice,
   insertTicketTemplate,
   insertUser,
-  insertUserToCommunity,
   insertTicket,
 } from "~/tests/fixtures";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 
 import {
-  GiftMyTicketToUser,
-  GiftMyTicketToUserMutation,
-  GiftMyTicketToUserMutationVariables,
-} from "./giftMyTicketToUser.generated";
-import { getExpirationDateForGift } from "../../helpers";
+  TransferMyTicketToUser,
+  TransferMyTicketToUserMutation,
+  TransferMyTicketToUserMutationVariables,
+} from "./transferMyTicketToUser.generated";
+import { getExpirationDateForTicketTransfer } from "../../helpers";
 
 const createTestSetup = async ({
   community,
@@ -94,18 +92,18 @@ const createTestSetup = async ({
   };
 };
 
-describe("Gift My Ticket To User", () => {
-  describe("Successful gifting scenarios", () => {
-    it("Should successfully gift a ticket to an existing user", async () => {
+describe("Transfer My Ticket To User", () => {
+  describe("Successful transfer scenarios", () => {
+    it("Should successfully transfer a ticket to an existing user", async () => {
       const { user, userTicket } = await createTestSetup();
       const recipientUser = await insertUser();
 
       const response = await executeGraphqlOperationAsUser<
-        GiftMyTicketToUserMutation,
-        GiftMyTicketToUserMutationVariables
+        TransferMyTicketToUserMutation,
+        TransferMyTicketToUserMutationVariables
       >(
         {
-          document: GiftMyTicketToUser,
+          document: TransferMyTicketToUser,
           variables: {
             ticketId: userTicket.id,
             input: {
@@ -120,12 +118,15 @@ describe("Gift My Ticket To User", () => {
 
       assert.equal(response.errors, undefined);
 
-      assert.equal(response.data?.giftMyTicketToUser.status, "Pending");
-
-      assert.equal(response.data?.giftMyTicketToUser.gifter.email, user.email);
+      assert.equal(response.data?.transferMyTicketToUser.status, "Pending");
 
       assert.equal(
-        response.data?.giftMyTicketToUser.recipient.email,
+        response.data?.transferMyTicketToUser.sender.email,
+        user.email,
+      );
+
+      assert.equal(
+        response.data?.transferMyTicketToUser.recipient.email,
         recipientUser.email,
       );
 
@@ -140,17 +141,17 @@ describe("Gift My Ticket To User", () => {
       assert.equal(updatedUserTicket?.userId, recipientUser.id);
     });
 
-    it("Should successfully gift a ticket to a non-existent user (creating a new user)", async () => {
+    it("Should successfully transfer a ticket to a non-existent user (creating a new user)", async () => {
       const { user, userTicket } = await createTestSetup();
       const newEmail = "newuser@example.com";
       const newName = "New User";
 
       const response = await executeGraphqlOperationAsUser<
-        GiftMyTicketToUserMutation,
-        GiftMyTicketToUserMutationVariables
+        TransferMyTicketToUserMutation,
+        TransferMyTicketToUserMutationVariables
       >(
         {
-          document: GiftMyTicketToUser,
+          document: TransferMyTicketToUser,
           variables: {
             ticketId: userTicket.id,
             input: {
@@ -164,11 +165,17 @@ describe("Gift My Ticket To User", () => {
 
       assert.equal(response.errors, undefined);
 
-      assert.equal(response.data?.giftMyTicketToUser.status, "Pending");
+      assert.equal(response.data?.transferMyTicketToUser.status, "Pending");
 
-      assert.equal(response.data?.giftMyTicketToUser.gifter.email, user.email);
+      assert.equal(
+        response.data?.transferMyTicketToUser.sender.email,
+        user.email,
+      );
 
-      assert.equal(response.data?.giftMyTicketToUser.recipient.email, newEmail);
+      assert.equal(
+        response.data?.transferMyTicketToUser.recipient.email,
+        newEmail,
+      );
 
       // Verify new user creation and database changes
       const DB = await getTestDB();
@@ -189,16 +196,16 @@ describe("Gift My Ticket To User", () => {
       assert.equal(updatedUserTicket?.userId, newUser?.id);
     });
 
-    it("Should handle gifting without a message", async () => {
+    it("Should handle transfer without a message", async () => {
       const { user, userTicket } = await createTestSetup();
       const recipientUser = await insertUser();
 
       const response = await executeGraphqlOperationAsUser<
-        GiftMyTicketToUserMutation,
-        GiftMyTicketToUserMutationVariables
+        TransferMyTicketToUserMutation,
+        TransferMyTicketToUserMutationVariables
       >(
         {
-          document: GiftMyTicketToUser,
+          document: TransferMyTicketToUser,
           variables: {
             ticketId: userTicket.id,
             input: {
@@ -212,23 +219,23 @@ describe("Gift My Ticket To User", () => {
 
       assert.equal(response.errors, undefined);
 
-      assert.equal(response.data?.giftMyTicketToUser.status, "Pending");
+      assert.equal(response.data?.transferMyTicketToUser.status, "Pending");
 
-      assert.equal(response.data?.giftMyTicketToUser.giftMessage, null);
+      assert.equal(response.data?.transferMyTicketToUser.transferMessage, null);
     });
   });
 
   describe("Error handling scenarios", () => {
-    it("Should throw an error when gifting a non-existent ticket", async () => {
+    it("Should throw an error when transferring a non-existent ticket", async () => {
       const { user } = await createTestSetup();
       const recipientUser = await insertUser();
 
       const response = await executeGraphqlOperationAsUser<
-        GiftMyTicketToUserMutation,
-        GiftMyTicketToUserMutationVariables
+        TransferMyTicketToUserMutation,
+        TransferMyTicketToUserMutationVariables
       >(
         {
-          document: GiftMyTicketToUser,
+          document: TransferMyTicketToUser,
           variables: {
             ticketId: "00000000-0000-4000-8000-000000000000",
             input: {
@@ -243,7 +250,7 @@ describe("Gift My Ticket To User", () => {
       assert.equal(response.errors?.[0].message, "Ticket not found");
     });
 
-    it("Should throw an error when gifting a ticket with invalid approval status", async () => {
+    it("Should throw an error when transferring a ticket with invalid approval status", async () => {
       const { user } = await createTestSetup();
       const recipientUser = await insertUser();
       const invalidTicket = await insertTicket({
@@ -253,11 +260,11 @@ describe("Gift My Ticket To User", () => {
       });
 
       const response = await executeGraphqlOperationAsUser<
-        GiftMyTicketToUserMutation,
-        GiftMyTicketToUserMutationVariables
+        TransferMyTicketToUserMutation,
+        TransferMyTicketToUserMutationVariables
       >(
         {
-          document: GiftMyTicketToUser,
+          document: TransferMyTicketToUser,
           variables: {
             ticketId: invalidTicket.id,
             input: {
@@ -269,7 +276,7 @@ describe("Gift My Ticket To User", () => {
         user,
       );
 
-      assert.equal(response.errors?.[0].message, "Ticket is not giftable");
+      assert.equal(response.errors?.[0].message, "Ticket is not transferable");
 
       // Verify that the ticket status hasn't changed
       const DB = await getTestDB();
@@ -282,17 +289,17 @@ describe("Gift My Ticket To User", () => {
   });
 
   describe("Edge cases", () => {
-    it("Should handle multiple gift attempts for the same ticket", async () => {
+    it("Should handle multiple transfer attempts for the same ticket", async () => {
       const { user, userTicket } = await createTestSetup();
       const recipientUser1 = await insertUser();
       const recipientUser2 = await insertUser();
 
       const response1 = await executeGraphqlOperationAsUser<
-        GiftMyTicketToUserMutation,
-        GiftMyTicketToUserMutationVariables
+        TransferMyTicketToUserMutation,
+        TransferMyTicketToUserMutationVariables
       >(
         {
-          document: GiftMyTicketToUser,
+          document: TransferMyTicketToUser,
           variables: {
             ticketId: userTicket.id,
             input: {
@@ -304,15 +311,15 @@ describe("Gift My Ticket To User", () => {
         user,
       );
 
-      assert.equal(response1.data?.giftMyTicketToUser.status, "Pending");
+      assert.equal(response1.data?.transferMyTicketToUser.status, "Pending");
 
-      // Attempt to gift the same ticket again
+      // Attempt to transfer the same ticket again
       const response = await executeGraphqlOperationAsUser<
-        GiftMyTicketToUserMutation,
-        GiftMyTicketToUserMutationVariables
+        TransferMyTicketToUserMutation,
+        TransferMyTicketToUserMutationVariables
       >(
         {
-          document: GiftMyTicketToUser,
+          document: TransferMyTicketToUser,
           variables: {
             ticketId: userTicket.id,
             input: {
@@ -340,11 +347,11 @@ describe("Gift My Ticket To User", () => {
       const recipientUser = await insertUser();
 
       const response = await executeGraphqlOperationAsUser<
-        GiftMyTicketToUserMutation,
-        GiftMyTicketToUserMutationVariables
+        TransferMyTicketToUserMutation,
+        TransferMyTicketToUserMutationVariables
       >(
         {
-          document: GiftMyTicketToUser,
+          document: TransferMyTicketToUser,
           variables: {
             ticketId: userTicket.id,
             input: {
@@ -358,9 +365,9 @@ describe("Gift My Ticket To User", () => {
 
       assert.equal(response.errors, undefined);
 
-      const expectedExpirationDate = getExpirationDateForGift();
+      const expectedExpirationDate = getExpirationDateForTicketTransfer();
       const actualExpirationDate = new Date(
-        response.data?.giftMyTicketToUser.expirationDate ?? "",
+        response.data?.transferMyTicketToUser.expirationDate ?? "",
       );
 
       const diffInSeconds = differenceInSeconds(

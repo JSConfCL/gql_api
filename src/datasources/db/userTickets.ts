@@ -1,17 +1,11 @@
 import { relations } from "drizzle-orm";
-import {
-  pgTable,
-  uuid,
-  text,
-  timestamp,
-  index,
-  boolean,
-} from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, index } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
 import { purchaseOrdersSchema, ticketsSchema, usersSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
+import { userTicketTransfersSchema } from "./userTicketsTransfers";
 
 export const userTicketsApprovalStatusEnum = [
   "approved",
@@ -24,14 +18,6 @@ export const userTicketsApprovalStatusEnum = [
 ] as const;
 
 export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;
-
-export enum UserTicketGiftStatus {
-  Pending = "pending",
-  Accepted = "accepted",
-  Rejected = "rejected",
-  Cancelled = "cancelled",
-  Expired = "expired",
-}
 
 // USER-TICKETS-TABLE
 export const userTicketsSchema = pgTable(
@@ -77,48 +63,6 @@ export const userTicketsSchema = pgTable(
   }),
 );
 
-export const userTicketGiftsSchema = pgTable(
-  "user_ticket_gifts",
-  {
-    id: uuid("id").primaryKey().notNull().defaultRandom(),
-    userTicketId: uuid("user_ticket_id")
-      .references(() => userTicketsSchema.id)
-      .notNull(),
-    gifterUserId: uuid("gifter_user_id")
-      .references(() => usersSchema.id)
-      .notNull(),
-    recipientUserId: uuid("recipient_user_id")
-      .references(() => usersSchema.id)
-      .notNull(),
-    status: text("status", {
-      enum: [
-        UserTicketGiftStatus.Pending,
-        UserTicketGiftStatus.Accepted,
-        UserTicketGiftStatus.Rejected,
-        UserTicketGiftStatus.Cancelled,
-        UserTicketGiftStatus.Expired,
-      ],
-    })
-      .default(UserTicketGiftStatus.Pending)
-      .notNull(),
-    giftMessage: text("gift_message"),
-    expirationDate: timestamp("expiration_date").notNull(),
-    isReturn: boolean("is_return").default(false).notNull(),
-    ...createdAndUpdatedAtFields,
-  },
-  (table) => ({
-    userTicketIdIndex: index("user_ticket_gifts_user_ticket_id_index").on(
-      table.userTicketId,
-    ),
-    gifterUserIdIndex: index("user_ticket_gifts_gifter_user_id_index").on(
-      table.gifterUserId,
-    ),
-    recipientUserIdIndex: index("user_ticket_gifts_recipient_user_id_index").on(
-      table.recipientUserId,
-    ),
-  }),
-);
-
 // Relations
 export const userTicketsRelations = relations(
   userTicketsSchema,
@@ -135,25 +79,7 @@ export const userTicketsRelations = relations(
       fields: [userTicketsSchema.userId],
       references: [usersSchema.id],
     }),
-    giftAttempts: many(userTicketGiftsSchema),
-  }),
-);
-
-export const userTicketGiftsRelations = relations(
-  userTicketGiftsSchema,
-  ({ one }) => ({
-    userTicket: one(userTicketsSchema, {
-      fields: [userTicketGiftsSchema.userTicketId],
-      references: [userTicketsSchema.id],
-    }),
-    gifterUser: one(usersSchema, {
-      fields: [userTicketGiftsSchema.gifterUserId],
-      references: [usersSchema.id],
-    }),
-    recipientUser: one(usersSchema, {
-      fields: [userTicketGiftsSchema.recipientUserId],
-      references: [usersSchema.id],
-    }),
+    transferAttempts: many(userTicketTransfersSchema),
   }),
 );
 
@@ -170,19 +96,3 @@ export type SelectUserTicketSchema = z.infer<typeof selectUserTicketsSchema>;
 export type InsertUserTicketSchema = z.infer<typeof insertUserTicketsSchema>;
 
 export type ApproveUserTicketsSchema = z.infer<typeof approveUserTicketsSchema>;
-
-export const selectUserTicketGiftSchema = createSelectSchema(
-  userTicketGiftsSchema,
-);
-
-export type SelectUserTicketGiftSchema = z.infer<
-  typeof selectUserTicketGiftSchema
->;
-
-export const insertUserTicketGiftSchema = createInsertSchema(
-  userTicketGiftsSchema,
-);
-
-export type InsertUserTicketGiftSchema = z.infer<
-  typeof insertUserTicketGiftSchema
->;

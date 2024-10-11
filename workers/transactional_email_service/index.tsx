@@ -4,9 +4,9 @@ import * as React from "react";
 import { Resend } from "resend";
 
 import { JSConfCLTicketConfirmation } from "emails/templates/tickets/purchase-order-successful/jsconfcl";
-import { TicketGiftAcceptedByReceiver9punto5 } from "emails/templates/tickets/ticket-gift-accepted-by-receiver/9punto5";
-import { TicketGiftReceived9punto5 } from "emails/templates/tickets/ticket-gift-received/9punto5";
-import { TicketGiftSent9punto5 } from "emails/templates/tickets/ticket-gift-sent/9punto5";
+import { TicketTransferAcceptedByReceiver9punto5 } from "emails/templates/tickets/ticket-transfer-accepted-by-receiver/9punto5";
+import { TicketTransferReceived9punto5 } from "emails/templates/tickets/ticket-transfer-received/9punto5";
+import { TicketTransferSent9punto5 } from "emails/templates/tickets/ticket-transfer-sent/9punto5";
 import {
   ResendEmailArgs,
   sendTransactionalHTMLEmail,
@@ -420,42 +420,42 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
     await sendTransactionalHTMLEmail(this.resend, this.logger, resendArgs);
   }
 
-  async sendGiftTicketConfirmations({
-    giftId,
+  async sendTransferTicketConfirmations({
+    transferId,
     recipientName,
     recipientEmail,
     senderName,
     senderEmail,
     ticketTags,
-    giftMessage,
+    transferMessage,
     expirationDate,
   }: {
-    giftId: string;
+    transferId: string;
     recipientName: string;
     recipientEmail: string;
     senderName: string;
     senderEmail: string;
     ticketTags: string[];
-    giftMessage: string | null;
+    transferMessage: string | null;
     expirationDate: Date;
   }) {
-    this.logger.info(`Sending gift ticket notifications`, {
-      giftId,
+    this.logger.info(`Sending transfer ticket notifications`, {
+      transferId,
       recipientEmail,
       senderEmail,
     });
 
     const ticketType = get9unto5TicketType(ticketTags);
 
-    // Send email to gift recipient
+    // Send email to transfer recipient
     await sendTransactionalHTMLEmail(this.resend, this.logger, {
       htmlContent: render(
-        <TicketGiftReceived9punto5
+        <TicketTransferReceived9punto5
           ticketType={ticketType}
           recipientName={recipientName}
           senderName={senderName}
-          giftMessage={giftMessage}
-          giftId={giftId}
+          transferMessage={transferMessage}
+          transferId={transferId}
           expirationDate={expirationDate}
         />,
       ),
@@ -467,14 +467,14 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
       } 9.5`,
     });
 
-    // Send confirmation email to gift sender
+    // Send confirmation email to transfer sender
     await sendTransactionalHTMLEmail(this.resend, this.logger, {
       htmlContent: render(
-        <TicketGiftSent9punto5
+        <TicketTransferSent9punto5
           ticketType={ticketType}
           recipientName={recipientName}
           senderName={senderName}
-          giftMessage={giftMessage}
+          transferMessage={transferMessage}
           recipientEmail={recipientEmail}
           expirationDate={expirationDate}
         />,
@@ -486,10 +486,12 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
       } 9.5 para ${recipientName} ha sido enviada`,
     });
 
-    this.logger.info(`Gift ticket notifications sent successfully`, { giftId });
+    this.logger.info(`Transfer ticket notifications sent successfully`, {
+      transferId,
+    });
   }
 
-  async sendGiftAcceptanceNotificationToGifter({
+  async sendTransferAcceptanceNotificationToSender({
     recipientName,
     recipientEmail,
     senderName,
@@ -500,7 +502,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
     senderName: string;
     ticketTags: string[];
   }) {
-    this.logger.info(`About to send TicketGiftAcceptedByReceiver`, {
+    this.logger.info(`About to send TicketTransferAcceptedByReceiver`, {
       recipientName,
       recipientEmail,
       senderName,
@@ -511,7 +513,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
 
     await sendTransactionalHTMLEmail(this.resend, this.logger, {
       htmlContent: render(
-        <TicketGiftAcceptedByReceiver9punto5
+        <TicketTransferAcceptedByReceiver9punto5
           ticketType={ticketType}
           recipientName={recipientName}
           senderName={senderName}

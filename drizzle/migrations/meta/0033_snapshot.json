@@ -1,5 +1,5 @@
 {
-  "id": "eac2fe9c-8c28-4ede-b95e-3a826d24f977",
+  "id": "367c89dd-b074-4fda-9aae-f94987912aa4",
   "prevId": "27492e6d-592d-42b1-9998-27c5736ead28",
   "version": "7",
   "dialect": "postgresql",
@@ -2698,160 +2698,6 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.user_ticket_gifts": {
-      "name": "user_ticket_gifts",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "user_ticket_id": {
-          "name": "user_ticket_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "gifter_user_id": {
-          "name": "gifter_user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "recipient_user_id": {
-          "name": "recipient_user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'pending'"
-        },
-        "gift_message": {
-          "name": "gift_message",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "expiration_date": {
-          "name": "expiration_date",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_return": {
-          "name": "is_return",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (6)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp (6)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp (6)",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "user_ticket_gifts_user_ticket_id_index": {
-          "name": "user_ticket_gifts_user_ticket_id_index",
-          "columns": [
-            {
-              "expression": "user_ticket_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "user_ticket_gifts_gifter_user_id_index": {
-          "name": "user_ticket_gifts_gifter_user_id_index",
-          "columns": [
-            {
-              "expression": "gifter_user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "user_ticket_gifts_recipient_user_id_index": {
-          "name": "user_ticket_gifts_recipient_user_id_index",
-          "columns": [
-            {
-              "expression": "recipient_user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "user_ticket_gifts_user_ticket_id_user_tickets_id_fk": {
-          "name": "user_ticket_gifts_user_ticket_id_user_tickets_id_fk",
-          "tableFrom": "user_ticket_gifts",
-          "tableTo": "user_tickets",
-          "columnsFrom": ["user_ticket_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "user_ticket_gifts_gifter_user_id_users_id_fk": {
-          "name": "user_ticket_gifts_gifter_user_id_users_id_fk",
-          "tableFrom": "user_ticket_gifts",
-          "tableTo": "users",
-          "columnsFrom": ["gifter_user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "user_ticket_gifts_recipient_user_id_users_id_fk": {
-          "name": "user_ticket_gifts_recipient_user_id_users_id_fk",
-          "tableFrom": "user_ticket_gifts",
-          "tableTo": "users",
-          "columnsFrom": ["recipient_user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
     "public.user_tickets": {
       "name": "user_tickets",
       "schema": "",
@@ -3131,6 +2977,160 @@
           "columns": ["id"]
         }
       }
+    },
+    "public.user_ticket_transfers": {
+      "name": "user_ticket_transfers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_ticket_id": {
+          "name": "user_ticket_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sender_user_id": {
+          "name": "sender_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipient_user_id": {
+          "name": "recipient_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "transfer_message": {
+          "name": "transfer_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expiration_date": {
+          "name": "expiration_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_return": {
+          "name": "is_return",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "user_ticket_transfers_user_ticket_id_index": {
+          "name": "user_ticket_transfers_user_ticket_id_index",
+          "columns": [
+            {
+              "expression": "user_ticket_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "user_ticket_transfers_sender_user_id_index": {
+          "name": "user_ticket_transfers_sender_user_id_index",
+          "columns": [
+            {
+              "expression": "sender_user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "user_ticket_transfers_recipient_user_id_index": {
+          "name": "user_ticket_transfers_recipient_user_id_index",
+          "columns": [
+            {
+              "expression": "recipient_user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "user_ticket_transfers_user_ticket_id_user_tickets_id_fk": {
+          "name": "user_ticket_transfers_user_ticket_id_user_tickets_id_fk",
+          "tableFrom": "user_ticket_transfers",
+          "tableTo": "user_tickets",
+          "columnsFrom": ["user_ticket_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "user_ticket_transfers_sender_user_id_users_id_fk": {
+          "name": "user_ticket_transfers_sender_user_id_users_id_fk",
+          "tableFrom": "user_ticket_transfers",
+          "tableTo": "users",
+          "columnsFrom": ["sender_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_ticket_transfers_recipient_user_id_users_id_fk": {
+          "name": "user_ticket_transfers_recipient_user_id_users_id_fk",
+          "tableFrom": "user_ticket_transfers",
+          "tableTo": "users",
+          "columnsFrom": ["recipient_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     },
     "public.work_email": {
       "name": "work_email",

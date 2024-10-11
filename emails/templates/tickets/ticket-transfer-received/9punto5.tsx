@@ -8,20 +8,20 @@ import { TicketTemplate9punto5 } from "emails/templates/helpers/9punto5";
 setDefaultOptions({ locale: es });
 
 type Props = {
-  giftId: string;
+  transferId: string;
   recipientName: string;
   senderName: string;
   ticketType: "CONFERENCE" | "EXPERIENCE";
-  giftMessage?: string | null;
+  transferMessage?: string | null;
   expirationDate: Date;
 };
 
-export const TicketGiftReceived9punto5 = ({
-  giftId,
+export const TicketTransferReceived9punto5 = ({
+  transferId,
   recipientName = "Juan",
   senderName = "Pedro",
   ticketType = "CONFERENCE",
-  giftMessage = "Mensaje de regalo",
+  transferMessage = "Mensaje de regalo",
   expirationDate,
 }: Props) => {
   return (
@@ -37,8 +37,8 @@ export const TicketGiftReceived9punto5 = ({
         {ticketType === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"} 9.5
       </Text>
 
-      {giftMessage && (
-        <Text className="italic bg-light p-4 rounded">"{giftMessage}"</Text>
+      {transferMessage && (
+        <Text className="italic bg-light p-4 rounded">"{transferMessage}"</Text>
       )}
 
       {ticketType === "EXPERIENCE" && (
@@ -89,8 +89,8 @@ export const TicketGiftReceived9punto5 = ({
           <td align="center" role="presentation">
             <a
               href={`https://9punto5.cl/mi-perfil?action=${encodeURIComponent(
-                "accept-gift",
-              )}&giftId=${encodeURIComponent(giftId)}`}
+                "accept-transfer",
+              )}&transferId=${encodeURIComponent(transferId)}`}
               target="_blank"
               style={{
                 color: "#ffffff",
@@ -127,4 +127,4 @@ export const TicketGiftReceived9punto5 = ({
   );
 };
 
-export default TicketGiftReceived9punto5;
+export default TicketTransferReceived9punto5;

@@ -102,12 +102,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
               ],
             },
@@ -146,12 +146,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
               ],
             },
@@ -190,12 +190,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
               ],
             },
@@ -234,12 +234,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
               ],
             },
@@ -292,12 +292,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
               ],
             },
@@ -352,12 +352,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 10,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
               ],
             },
@@ -411,7 +411,7 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 5,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
               ],
             },
@@ -430,8 +430,8 @@ describe("Claim a user ticket", () => {
     });
   });
 
-  describe("Should handle gifting scenarios", () => {
-    it("Should handle gifting scenarios", async () => {
+  describe("Should handle transferring scenarios", () => {
+    it("Should handle transferring to another user", async () => {
       const createdEvent = await insertEvent({
         status: "active",
       });
@@ -444,7 +444,7 @@ describe("Claim a user ticket", () => {
           event: createdEvent,
           ticketTemplate: createdTicketTemplate,
         });
-      const giftRecipient = await insertUser();
+      const transferRecipient = await insertUser();
 
       await insertUserToCommunity({
         communityId: community.id,
@@ -464,10 +464,10 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  giftInfo: [
+                  transfersInfo: [
                     {
                       name: "John Doe",
-                      email: giftRecipient.email,
+                      email: transferRecipient.email,
                       message: "Enjoy the event!",
                     },
                   ],
@@ -487,19 +487,19 @@ describe("Claim a user ticket", () => {
         assert.equal(response.data.claimUserTicket.tickets.length, 2);
 
         assert.equal(
-          response.data.claimUserTicket.tickets[0].giftAttempts.length,
+          response.data.claimUserTicket.tickets[0].transferAttempts.length,
           1,
         );
 
         assert.equal(
-          response.data.claimUserTicket.tickets[0].giftAttempts[0].recipient
+          response.data.claimUserTicket.tickets[0].transferAttempts[0].recipient
             .email,
-          giftRecipient.email,
+          transferRecipient.email,
         );
       }
     });
 
-    it("Should not allow gifting to self", async () => {
+    it("Should not allow transferring to self", async () => {
       const createdEvent = await insertEvent({
         status: "active",
       });
@@ -531,11 +531,11 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  giftInfo: [
+                  transfersInfo: [
                     {
                       name: "Para mi",
                       email: user.email,
-                      message: "Self-gift",
+                      message: "Self-transfer",
                     },
                   ],
                 },
@@ -558,7 +558,7 @@ describe("Claim a user ticket", () => {
       ) {
         assert.equal(
           response.data.claimUserTicket.errorMessage,
-          "Cannot gift to yourself",
+          "Cannot transfer to yourself",
         );
       }
     });
@@ -589,7 +589,7 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
               ],
             },
@@ -643,12 +643,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  giftInfo: [],
+                  transfersInfo: [],
                 },
               ],
             },

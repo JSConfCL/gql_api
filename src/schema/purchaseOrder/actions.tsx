@@ -4,7 +4,7 @@ import { AsyncReturnType } from "type-fest";
 
 import { ORM_TYPE } from "~/datasources/db";
 import {
-  InsertUserTicketGiftSchema,
+  InsertUserTicketTransferSchema,
   USER,
   puchaseOrderPaymentStatusEnum,
   purchaseOrderStatusEnum,
@@ -12,7 +12,7 @@ import {
   selectPurchaseOrdersSchema,
   selectTicketSchema,
   selectUserTicketsSchema,
-  userTicketGiftsSchema,
+  userTicketTransfersSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
 import {
@@ -28,7 +28,7 @@ import { Logger } from "~/logging";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
 import { Context } from "~/types";
 
-import { getExpirationDateForGift } from "../userTickets/helpers";
+import { getExpirationDateForTicketTransfer } from "../userTicketsTransfers/helpers";
 
 const fetchPurchaseOrderInformation = async (
   purchaseOrderId: string,
@@ -630,10 +630,10 @@ export const syncPurchaseOrderPaymentStatus = async ({
               },
             },
           },
-          giftAttempts: {
+          transferAttempts: {
             columns: {
               id: true,
-              giftMessage: true,
+              transferMessage: true,
             },
             with: {
               recipientUser: {
@@ -718,41 +718,42 @@ export const syncPurchaseOrderPaymentStatus = async ({
 
     if (poPaymentStatus === "paid") {
       for (const userTicket of purchaseOrder.userTickets) {
-        if (userTicket.giftAttempts.length > 0) {
+        if (userTicket.transferAttempts.length > 0) {
           await DB.update(userTicketsSchema)
             .set({
               approvalStatus: "gifted",
             })
             .where(eq(userTicketsSchema.id, userTicket.id));
 
-          const expirationDate = getExpirationDateForGift();
+          const expirationDate = getExpirationDateForTicketTransfer();
 
-          for (const giftAttempt of userTicket.giftAttempts) {
-            await transactionalEmailService.sendGiftTicketConfirmations({
-              giftMessage: giftAttempt.giftMessage,
-              recipientEmail: giftAttempt.recipientUser.email,
+          for (const transferAttempt of userTicket.transferAttempts) {
+            await transactionalEmailService.sendTransferTicketConfirmations({
+              transferMessage: transferAttempt.transferMessage,
+              recipientEmail: transferAttempt.recipientUser.email,
               recipientName:
-                giftAttempt.recipientUser.name ??
-                giftAttempt.recipientUser.username,
+                transferAttempt.recipientUser.name ??
+                transferAttempt.recipientUser.username,
               senderName:
                 purchaseOrder.user.name ?? purchaseOrder.user.username,
               ticketTags: userTicket.ticketTemplate.tags,
-              giftId: giftAttempt.id,
+              transferId: transferAttempt.id,
               expirationDate: expirationDate,
               senderEmail: purchaseOrder.user.email,
             });
           }
 
-          const updateGiftValues: Partial<InsertUserTicketGiftSchema> = {
-            expirationDate: expirationDate,
-          };
+          const updateTransferValues: Partial<InsertUserTicketTransferSchema> =
+            {
+              expirationDate: expirationDate,
+            };
 
-          await DB.update(userTicketGiftsSchema)
-            .set(updateGiftValues)
+          await DB.update(userTicketTransfersSchema)
+            .set(updateTransferValues)
             .where(
               inArray(
-                userTicketGiftsSchema.id,
-                userTicket.giftAttempts.map((ga) => ga.id),
+                userTicketTransfersSchema.id,
+                userTicket.transferAttempts.map((ga) => ga.id),
               ),
             );
         } else {

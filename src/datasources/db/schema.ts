@@ -58,6 +58,8 @@ export * from "~/datasources/db/userTickets";
 
 export * from "~/datasources/db/userTicketsEmailLogs";
 
+export * from "~/datasources/db/userTicketsTransfers";
+
 export * from "~/datasources/db/workEmail";
 
 export * from "~/datasources/db/workRole";

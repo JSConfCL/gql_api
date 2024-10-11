@@ -12,16 +12,16 @@ type Props = {
   recipientEmail: string;
   senderName: string;
   ticketType: "CONFERENCE" | "EXPERIENCE";
-  giftMessage?: string | null;
+  transferMessage?: string | null;
   expirationDate: Date;
 };
 
-export const TicketGiftSent9punto5 = ({
+export const TicketTransferSent9punto5 = ({
   recipientName = "Juan",
   recipientEmail = "pedro@example.com",
   senderName = "Pedro",
   ticketType = "CONFERENCE",
-  giftMessage = "Mensaje de regalo",
+  transferMessage = "Mensaje de regalo",
   expirationDate,
 }: Props) => {
   return (
@@ -37,9 +37,9 @@ export const TicketGiftSent9punto5 = ({
         {ticketType === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"} 9.5
       </Text>
 
-      {giftMessage && (
+      {transferMessage && (
         <Text className="italic bg-light p-4 rounded">
-          Tu mensaje de regalo: "{giftMessage}"
+          Tu mensaje de regalo: "{transferMessage}"
         </Text>
       )}
 
@@ -65,4 +65,4 @@ export const TicketGiftSent9punto5 = ({
   );
 };
 
-export default TicketGiftSent9punto5;
+export default TicketTransferSent9punto5;

@@ -1,8 +1,0 @@
-mutation AcceptGiftedTicket($giftId: String!) {
-  acceptGiftedTicket(giftId: $giftId) {
-    id
-    paymentStatus
-    approvalStatus
-    redemptionStatus
-  }
-}

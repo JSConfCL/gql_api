@@ -292,25 +292,6 @@ input GeneratePaymentLinkInput {
   currencyId: String!
 }
 
-enum GiftAttemptStatus {
-  Accepted
-  Cancelled
-  Expired
-  Pending
-  Rejected
-}
-
-input GiftInfoInput {
-  email: String!
-  message: String
-  name: String!
-}
-
-type GiftTicketUserInfo {
-  email: String!
-  name: String
-}
-
 input GiftTicketsToUserInput {
   allowMultipleTicketsPerUsers: Boolean!
   autoApproveTickets: Boolean!
@@ -335,12 +316,11 @@ enum ImageHostingEnum {
 }
 
 type Mutation {
-  acceptGiftedTicket(giftId: String!): UserTicket!
-
   """
   Accept the user's invitation to a team
   """
   acceptTeamInvitation(input: AcceptTeamInvitationInput!): TeamRef!
+  acceptTransferredTicket(transferId: String!): UserTicket!
 
   """
   Try to add a person to a team
@@ -368,7 +348,7 @@ type Mutation {
   checkPurchaseOrderStatus(input: CheckForPurchaseOrderInput!): PurchaseOrder!
 
   """
-  Attempt to claim and/or gift tickets
+  Attempt to claim and/or transfer tickets
   """
   claimUserTicket(input: TicketClaimInput!): RedeemUserTicketResponse!
 
@@ -431,7 +411,6 @@ type Mutation {
   Enqueue images to import
   """
   enqueueGoogleAlbumImport(input: EnqueueGoogleAlbumImportInput!): Boolean!
-  giftMyTicketToUser(input: GiftInfoInput!, ticketId: String!): UserTicketGift!
 
   """
   Gift tickets to users, allowing multiple tickets per user, and conditionally notify them
@@ -457,6 +436,10 @@ type Mutation {
   Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position
   """
   startWorkEmailValidation(email: String!): WorkEmail!
+  transferMyTicketToUser(
+    input: UserTicketTransferInfoInput!
+    ticketId: String!
+  ): UserTicketTransfer!
   triggerUserTicketApprovalReview(
     eventId: String!
     userId: String!
@@ -697,9 +680,9 @@ type PurchaseOrder {
 }
 
 input PurchaseOrderInput {
-  giftInfo: [GiftInfoInput!]
   quantity: Int!
   ticketId: String!
+  transfersInfo: [UserTicketTransferInfoInput!]
 }
 
 enum PurchaseOrderPaymentStatusEnum {
@@ -770,9 +753,9 @@ type Query {
   ): PaginatedPurchaseOrder!
 
   """
-  Get a list of user ticket gifts sent or received by the current user
+  Get a list of user ticket transfers sent or received by the current user
   """
-  myTicketGifts(type: TicketGiftType = ALL): [UserTicketGift!]!
+  myTicketTransfers(type: TicketTransferType = ALL): [UserTicketTransfer!]!
 
   """
   Get a list of tickets for the current user
@@ -1138,12 +1121,6 @@ input TicketEditInput {
   visibility: TicketTemplateVisibility
 }
 
-enum TicketGiftType {
-  ALL
-  RECEIVED
-  SENT
-}
-
 enum TicketPaymentStatus {
   not_required
   paid
@@ -1164,6 +1141,25 @@ enum TicketTemplateVisibility {
   private
   public
   unlisted
+}
+
+enum TicketTransferAttemptStatus {
+  Accepted
+  Cancelled
+  Expired
+  Pending
+  Rejected
+}
+
+enum TicketTransferType {
+  ALL
+  RECEIVED
+  SENT
+}
+
+type TicketTransferUserInfo {
+  email: String!
+  name: String
 }
 
 enum TypeOfEmployment {
@@ -1265,27 +1261,33 @@ Representation of a User ticket
 type UserTicket {
   approvalStatus: TicketApprovalStatus!
   createdAt: DateTime!
-  giftAttempts: [UserTicketGift!]!
   id: ID!
   paymentStatus: PurchaseOrderPaymentStatusEnum
   publicId: String!
   purchaseOrder: PurchaseOrder
   redemptionStatus: TicketRedemptionStatus!
   ticketTemplate: Ticket!
+  transferAttempts: [UserTicketTransfer!]!
   user: User
 }
 
 """
-Representation of a user ticket gift
+Representation of a user ticket transfer
 """
-type UserTicketGift {
+type UserTicketTransfer {
   expirationDate: DateTime!
-  giftMessage: String
-  gifter: GiftTicketUserInfo!
   id: ID!
-  recipient: GiftTicketUserInfo!
-  status: GiftAttemptStatus!
+  recipient: TicketTransferUserInfo!
+  sender: TicketTransferUserInfo!
+  status: TicketTransferAttemptStatus!
+  transferMessage: String
   userTicket: UserTicket!
+}
+
+input UserTicketTransferInfoInput {
+  email: String!
+  message: String
+  name: String!
 }
 
 """

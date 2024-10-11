@@ -8,9 +8,9 @@ mutation ClaimUserTicket($input: TicketClaimInput!) {
         paymentStatus
         approvalStatus
         redemptionStatus
-        giftAttempts {
+        transferAttempts {
           id
-          gifter {
+          sender {
             email
             name
           }

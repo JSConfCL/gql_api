@@ -16,7 +16,7 @@ import {
   selectWorkSenioritySchema,
   selectPaymentLogsSchema,
   selectUserDataSchema,
-  SelectUserTicketGiftSchema,
+  SelectUserTicketTransferSchema,
 } from "~/datasources/db/schema";
 import { SanityAsset, SanityEvent } from "~/datasources/sanity/types";
 
@@ -117,5 +117,5 @@ export const ConsolidatedPaymentLogEntryRef = builder.objectRef<{
   currencyId: string;
 }>("ConsolidatedPaymentLogEntry");
 
-export const UserTicketGiftRef =
-  builder.objectRef<SelectUserTicketGiftSchema>("UserTicketGift");
+export const UserTicketTransferRef =
+  builder.objectRef<SelectUserTicketTransferSchema>("UserTicketTransfer");
