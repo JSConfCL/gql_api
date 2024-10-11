@@ -1,4 +1,4 @@
-import { and, eq, getTableColumns, inArray, or, SQL } from "drizzle-orm";
+import { and, eq, getTableColumns, inArray, or } from "drizzle-orm";
 
 import { builder } from "~/builder";
 import { userTicketsSchema } from "~/datasources/db/userTickets";
