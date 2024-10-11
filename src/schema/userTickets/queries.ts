@@ -1,9 +1,5 @@
 import { builder } from "~/builder";
-import {
-  selectUserTicketsSchema,
-  USER,
-  userTicketsApprovalStatusEnum,
-} from "~/datasources/db/schema";
+import { selectUserTicketsSchema } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import {
   createPaginationInputType,
@@ -12,6 +8,7 @@ import {
 import { PublicUserTicketRef, UserTicketRef } from "~/schema/shared/refs";
 import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 
+import { getUserTicketsQueryApprovalStatus } from "./helpers";
 import {
   TicketApprovalStatus,
   TicketPaymentStatus,
@@ -41,30 +38,6 @@ const MyTicketsSearchValues = builder.inputType("MyTicketsSearchValues", {
 
 const PaginatedUserTicketsRef = createPaginationObjectType(UserTicketRef);
 
-const getQueryApprovalStatus = (
-  approvalStatus:
-    | (typeof userTicketsApprovalStatusEnum)[number][]
-    | null
-    | undefined,
-  user: USER,
-) => {
-  if (approvalStatus) {
-    if (user.isSuperAdmin) {
-      return approvalStatus;
-    } else {
-      return approvalStatus.filter((status) =>
-        normalUserAllowedAppovalStatus.has(status),
-      );
-    }
-  } else {
-    return undefined;
-  }
-};
-
-const normalUserAllowedAppovalStatus = new Set<
-  (typeof userTicketsApprovalStatusEnum)[number]
->(["approved", "not_required", "gifted", "gift_accepted"]);
-
 builder.queryFields((t) => ({
   myTickets: t.field({
     description: "Get a list of tickets for the current user",
@@ -81,7 +54,10 @@ builder.queryFields((t) => ({
         throw new Error("User not found");
       }
 
-      const queryApprovalStatus = getQueryApprovalStatus(approvalStatus, USER);
+      const queryApprovalStatus = getUserTicketsQueryApprovalStatus(
+        approvalStatus,
+        USER,
+      );
 
       const { data, pagination } =
         await userTicketFetcher.searchPaginatedUserTickets({
@@ -161,7 +137,10 @@ builder.queryField("findUserTickets", (t) =>
         throw new Error("User not found");
       }
 
-      const queryApprovalStatus = getQueryApprovalStatus(approvalStatus, USER);
+      const queryApprovalStatus = getUserTicketsQueryApprovalStatus(
+        approvalStatus,
+        USER,
+      );
 
       const { data, pagination } =
         await userTicketFetcher.searchPaginatedUserTickets({
