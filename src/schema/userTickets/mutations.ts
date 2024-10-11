@@ -567,9 +567,11 @@ builder.mutationField("claimUserTicket", (t) =>
                   inArray(userTicketsSchema.approvalStatus, [
                     "approved",
                     "pending",
-                    "gifted",
                     "not_required",
+                    "gifted",
                     "gift_accepted",
+                    "transfer_pending",
+                    "transfer_accepted",
                   ]),
                 ),
               )

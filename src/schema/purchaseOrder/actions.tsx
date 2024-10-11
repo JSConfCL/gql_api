@@ -721,7 +721,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
         if (userTicket.transferAttempts.length > 0) {
           await DB.update(userTicketsSchema)
             .set({
-              approvalStatus: "gifted",
+              approvalStatus: "transfer_pending",
             })
             .where(eq(userTicketsSchema.id, userTicket.id));
 

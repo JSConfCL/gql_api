@@ -136,7 +136,7 @@ describe("Transfer My Ticket To User", () => {
         where: (t, { eq }) => eq(t.id, userTicket.id),
       });
 
-      assert.equal(updatedUserTicket?.approvalStatus, "gifted");
+      assert.equal(updatedUserTicket?.approvalStatus, "transfer_pending");
 
       assert.equal(updatedUserTicket?.userId, recipientUser.id);
     });
@@ -191,7 +191,7 @@ describe("Transfer My Ticket To User", () => {
         where: (t, { eq }) => eq(t.id, userTicket.id),
       });
 
-      assert.equal(updatedUserTicket?.approvalStatus, "gifted");
+      assert.equal(updatedUserTicket?.approvalStatus, "transfer_pending");
 
       assert.equal(updatedUserTicket?.userId, newUser?.id);
     });

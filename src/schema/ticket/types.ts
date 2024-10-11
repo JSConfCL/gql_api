@@ -90,10 +90,12 @@ export const TicketLoadable = builder.loadableObject(TicketRef, {
               eq(ut.ticketTemplateId, root.id),
               inArray(ut.approvalStatus, [
                 "approved",
-                "gift_accepted",
                 "not_required",
                 "pending",
                 "gifted",
+                "gift_accepted",
+                "transfer_accepted",
+                "transfer_pending",
               ]),
             ),
         });

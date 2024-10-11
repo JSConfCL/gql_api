@@ -107,7 +107,7 @@ builder.mutationField("transferMyTicketToUser", (t) =>
         await trx
           .update(userTicketsSchema)
           .set({
-            approvalStatus: "gifted",
+            approvalStatus: "transfer_pending",
             userId: recipientUser.id,
           })
           .where(eq(userTicketsSchema.id, userTicket.id));

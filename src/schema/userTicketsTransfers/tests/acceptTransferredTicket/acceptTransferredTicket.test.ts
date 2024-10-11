@@ -22,7 +22,7 @@ import {
 import { getExpirationDateForTicketTransfer } from "../../helpers";
 
 const prepareTickets = async (
-  status: (typeof userTicketsApprovalStatusEnum)[number] = "gifted",
+  status: (typeof userTicketsApprovalStatusEnum)[number] = "transfer_pending",
 ) => {
   const community1 = await insertCommunity();
   const event1 = await insertEvent();
@@ -48,7 +48,7 @@ const prepareTickets = async (
     senderUserId: senderUser.id,
     recipientUserId: recipientUser.id,
     status:
-      status === "gifted"
+      status === "transfer_pending"
         ? UserTicketTransferStatus.Pending
         : UserTicketTransferStatus.Accepted,
     expirationDate: getExpirationDateForTicketTransfer(),

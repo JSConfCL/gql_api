@@ -15,6 +15,10 @@ export const userTicketsApprovalStatusEnum = [
   "not_required",
   "rejected",
   "cancelled",
+  // A transfer has been initiated but not yet accepted by the recipient
+  "transfer_pending",
+  // The transferred ticket has been accepted by the recipient
+  "transfer_accepted",
 ] as const;
 
 export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;

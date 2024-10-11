@@ -63,7 +63,14 @@ const getQueryApprovalStatus = (
 
 const normalUserAllowedAppovalStatus = new Set<
   (typeof userTicketsApprovalStatusEnum)[number]
->(["approved", "not_required", "gifted", "gift_accepted"]);
+>([
+  "approved",
+  "not_required",
+  "gifted",
+  "gift_accepted",
+  "transfer_pending",
+  "transfer_accepted",
+]);
 
 builder.queryFields((t) => ({
   myTickets: t.field({
