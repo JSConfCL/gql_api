@@ -6,6 +6,7 @@ import { USER } from "~/datasources/db/users";
 import { UserParticipationStatusEnum } from "~/datasources/db/userTeams";
 import {
   approveUserTicketsSchema,
+  userTicketsApprovalStatusEnum,
   userTicketsSchema,
 } from "~/datasources/db/userTickets";
 import { applicationError, ServiceErrors } from "~/errors";
@@ -285,3 +286,27 @@ const bulkApproveUserTickets = async ({
 
   return updated;
 };
+
+export const getUserTicketsQueryApprovalStatus = (
+  approvalStatus:
+    | (typeof userTicketsApprovalStatusEnum)[number][]
+    | null
+    | undefined,
+  user: USER,
+) => {
+  if (user.isSuperAdmin) {
+    return approvalStatus ?? undefined;
+  }
+
+  if (approvalStatus) {
+    return approvalStatus.filter((status) =>
+      normalUserAllowedAppovalStatus.has(status),
+    );
+  } else {
+    return Array.from(normalUserAllowedAppovalStatus);
+  }
+};
+
+const normalUserAllowedAppovalStatus = new Set<
+  (typeof userTicketsApprovalStatusEnum)[number]
+>(["approved", "not_required", "gifted", "gift_accepted"]);
