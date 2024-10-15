@@ -1,0 +1,23 @@
+mutation TransferMyTicketToUser(
+  $ticketId: String!
+  $input: UserTicketTransferInfoInput!
+) {
+  transferMyTicketToUser(ticketId: $ticketId, input: $input) {
+    id
+    status
+    expirationDate
+    transferMessage
+    sender {
+      email
+      name
+    }
+    recipient {
+      email
+      name
+    }
+    userTicket {
+      id
+      approvalStatus
+    }
+  }
+}

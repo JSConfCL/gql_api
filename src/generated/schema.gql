@@ -161,6 +161,7 @@ type Event {
   mobileBannerImage: Image
   name: String!
   previewImage: Image
+  publicShareURL: String
   schedules: [Schedule!]!
   speakers: [Speaker!]!
   startDateTime: DateTime!
@@ -315,12 +316,11 @@ enum ImageHostingEnum {
 }
 
 type Mutation {
-  acceptGiftedTicket(userTicketId: String!): UserTicket!
-
   """
   Accept the user's invitation to a team
   """
   acceptTeamInvitation(input: AcceptTeamInvitationInput!): TeamRef!
+  acceptTransferredTicket(transferId: String!): UserTicket!
 
   """
   Try to add a person to a team
@@ -348,7 +348,7 @@ type Mutation {
   checkPurchaseOrderStatus(input: CheckForPurchaseOrderInput!): PurchaseOrder!
 
   """
-  Attempt to claim a certain ammount of tickets
+  Attempt to claim and/or transfer tickets
   """
   claimUserTicket(input: TicketClaimInput!): RedeemUserTicketResponse!
 
@@ -436,6 +436,10 @@ type Mutation {
   Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position
   """
   startWorkEmailValidation(email: String!): WorkEmail!
+  transferMyTicketToUser(
+    input: UserTicketTransferInfoInput!
+    ticketId: String!
+  ): UserTicketTransfer!
   triggerUserTicketApprovalReview(
     eventId: String!
     userId: String!
@@ -669,6 +673,7 @@ type PurchaseOrder {
   id: ID!
   paymentLink: String
   paymentPlatform: String
+  publicId: String
   purchasePaymentStatus: PurchaseOrderPaymentStatusEnum
   status: PurchaseOrderStatusEnum
   tickets: [UserTicket!]!
@@ -677,6 +682,7 @@ type PurchaseOrder {
 input PurchaseOrderInput {
   quantity: Int!
   ticketId: String!
+  transfersInfo: [UserTicketTransferInfoInput!]
 }
 
 enum PurchaseOrderPaymentStatusEnum {
@@ -745,6 +751,11 @@ type Query {
   myPurchaseOrders(
     input: PaginatedInputMyPurchaseOrdersInput!
   ): PaginatedPurchaseOrder!
+
+  """
+  Get a list of user ticket transfers sent or received by the current user
+  """
+  myTicketTransfers(type: TicketTransferType = ALL): [UserTicketTransfer!]!
 
   """
   Get a list of tickets for the current user
@@ -1132,6 +1143,25 @@ enum TicketTemplateVisibility {
   unlisted
 }
 
+enum TicketTransferAttemptStatus {
+  Accepted
+  Cancelled
+  Expired
+  Pending
+  Rejected
+}
+
+enum TicketTransferType {
+  ALL
+  RECEIVED
+  SENT
+}
+
+type TicketTransferUserInfo {
+  email: String!
+  name: String
+}
+
 enum TypeOfEmployment {
   freelance
   fullTime
@@ -1237,7 +1267,27 @@ type UserTicket {
   purchaseOrder: PurchaseOrder
   redemptionStatus: TicketRedemptionStatus!
   ticketTemplate: Ticket!
+  transferAttempts: [UserTicketTransfer!]!
   user: User
+}
+
+"""
+Representation of a user ticket transfer
+"""
+type UserTicketTransfer {
+  expirationDate: DateTime!
+  id: ID!
+  recipient: TicketTransferUserInfo!
+  sender: TicketTransferUserInfo!
+  status: TicketTransferAttemptStatus!
+  transferMessage: String
+  userTicket: UserTicket!
+}
+
+input UserTicketTransferInfoInput {
+  email: String!
+  message: String
+  name: String!
 }
 
 """

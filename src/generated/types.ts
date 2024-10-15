@@ -177,6 +177,7 @@ export type Event = {
   mobileBannerImage?: Maybe<Image>;
   name: Scalars["String"]["output"];
   previewImage?: Maybe<Image>;
+  publicShareURL?: Maybe<Scalars["String"]["output"]>;
   schedules: Array<Schedule>;
   speakers: Array<Speaker>;
   startDateTime: Scalars["DateTime"]["output"];
@@ -332,9 +333,9 @@ export enum ImageHostingEnum {
 
 export type Mutation = {
   __typename?: "Mutation";
-  acceptGiftedTicket: UserTicket;
   /** Accept the user's invitation to a team */
   acceptTeamInvitation: TeamRef;
+  acceptTransferredTicket: UserTicket;
   /** Try to add a person to a team */
   addPersonToTeam: AddUserToTeamResponseRef;
   /** Apply to a waitlist */
@@ -345,7 +346,7 @@ export type Mutation = {
   cancelUserTicket: UserTicket;
   /** Check the status of a purchase order */
   checkPurchaseOrderStatus: PurchaseOrder;
-  /** Attempt to claim a certain ammount of tickets */
+  /** Attempt to claim and/or transfer tickets */
   claimUserTicket: RedeemUserTicketResponse;
   /** Create an community */
   createCommunity: Community;
@@ -381,6 +382,7 @@ export type Mutation = {
   rejectTeamInvitation: TeamRef;
   /** Kickoff the email validation flow. This flow will links an email to a user, create a company if it does not exist, and allows filling data for that email's position */
   startWorkEmailValidation: WorkEmail;
+  transferMyTicketToUser: UserTicketTransfer;
   triggerUserTicketApprovalReview: Array<UserTicket>;
   /** Update a company */
   updateCompany: Company;
@@ -397,12 +399,12 @@ export type Mutation = {
   validateWorkEmail: WorkEmail;
 };
 
-export type MutationAcceptGiftedTicketArgs = {
-  userTicketId: Scalars["String"]["input"];
-};
-
 export type MutationAcceptTeamInvitationArgs = {
   input: AcceptTeamInvitationInput;
+};
+
+export type MutationAcceptTransferredTicketArgs = {
+  transferId: Scalars["String"]["input"];
 };
 
 export type MutationAddPersonToTeamArgs = {
@@ -495,6 +497,11 @@ export type MutationRejectTeamInvitationArgs = {
 
 export type MutationStartWorkEmailValidationArgs = {
   email: Scalars["String"]["input"];
+};
+
+export type MutationTransferMyTicketToUserArgs = {
+  input: UserTicketTransferInfoInput;
+  ticketId: Scalars["String"]["input"];
 };
 
 export type MutationTriggerUserTicketApprovalReviewArgs = {
@@ -709,6 +716,7 @@ export type PurchaseOrder = {
   id: Scalars["ID"]["output"];
   paymentLink?: Maybe<Scalars["String"]["output"]>;
   paymentPlatform?: Maybe<Scalars["String"]["output"]>;
+  publicId?: Maybe<Scalars["String"]["output"]>;
   purchasePaymentStatus?: Maybe<PurchaseOrderPaymentStatusEnum>;
   status?: Maybe<PurchaseOrderStatusEnum>;
   tickets: Array<UserTicket>;
@@ -717,6 +725,7 @@ export type PurchaseOrder = {
 export type PurchaseOrderInput = {
   quantity: Scalars["Int"]["input"];
   ticketId: Scalars["String"]["input"];
+  transfersInfo?: InputMaybe<Array<UserTicketTransferInfoInput>>;
 };
 
 export enum PurchaseOrderPaymentStatusEnum {
@@ -753,6 +762,8 @@ export type Query = {
   me: User;
   /** Get a list of purchase orders for the authenticated user */
   myPurchaseOrders: PaginatedPurchaseOrder;
+  /** Get a list of user ticket transfers sent or received by the current user */
+  myTicketTransfers: Array<UserTicketTransfer>;
   /** Get a list of tickets for the current user */
   myTickets: PaginatedUserTicket;
   /** Get public event attendance info */
@@ -823,6 +834,10 @@ export type QueryGetWaitlistArgs = {
 
 export type QueryMyPurchaseOrdersArgs = {
   input: PaginatedInputMyPurchaseOrdersInput;
+};
+
+export type QueryMyTicketTransfersArgs = {
+  type?: InputMaybe<TicketTransferType>;
 };
 
 export type QueryMyTicketsArgs = {
@@ -1154,6 +1169,26 @@ export enum TicketTemplateVisibility {
   Unlisted = "unlisted",
 }
 
+export enum TicketTransferAttemptStatus {
+  Accepted = "Accepted",
+  Cancelled = "Cancelled",
+  Expired = "Expired",
+  Pending = "Pending",
+  Rejected = "Rejected",
+}
+
+export enum TicketTransferType {
+  All = "ALL",
+  Received = "RECEIVED",
+  Sent = "SENT",
+}
+
+export type TicketTransferUserInfo = {
+  __typename?: "TicketTransferUserInfo";
+  email: Scalars["String"]["output"];
+  name?: Maybe<Scalars["String"]["output"]>;
+};
+
 export enum TypeOfEmployment {
   Freelance = "freelance",
   FullTime = "fullTime",
@@ -1258,7 +1293,26 @@ export type UserTicket = {
   purchaseOrder?: Maybe<PurchaseOrder>;
   redemptionStatus: TicketRedemptionStatus;
   ticketTemplate: Ticket;
+  transferAttempts: Array<UserTicketTransfer>;
   user?: Maybe<User>;
+};
+
+/** Representation of a user ticket transfer */
+export type UserTicketTransfer = {
+  __typename?: "UserTicketTransfer";
+  expirationDate: Scalars["DateTime"]["output"];
+  id: Scalars["ID"]["output"];
+  recipient: TicketTransferUserInfo;
+  sender: TicketTransferUserInfo;
+  status: TicketTransferAttemptStatus;
+  transferMessage?: Maybe<Scalars["String"]["output"]>;
+  userTicket: UserTicket;
+};
+
+export type UserTicketTransferInfoInput = {
+  email: Scalars["String"]["input"];
+  message?: InputMaybe<Scalars["String"]["input"]>;
+  name: Scalars["String"]["input"];
 };
 
 /** Representation of a user in a team */

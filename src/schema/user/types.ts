@@ -132,7 +132,14 @@ export const UserLoadable = builder.loadableObject(UserRef, {
             userIds: [root.id],
             approvalStatus: ctx.USER?.isSuperAdmin
               ? undefined
-              : ["approved", "gifted", "gift_accepted", "not_required"],
+              : [
+                  "approved",
+                  "gifted",
+                  "gift_accepted",
+                  "not_required",
+                  "transfer_accepted",
+                  "transfer_pending",
+                ],
           },
         });
 

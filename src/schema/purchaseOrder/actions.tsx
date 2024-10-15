@@ -4,6 +4,7 @@ import { AsyncReturnType } from "type-fest";
 
 import { ORM_TYPE } from "~/datasources/db";
 import {
+  InsertUserTicketTransferSchema,
   USER,
   puchaseOrderPaymentStatusEnum,
   purchaseOrderStatusEnum,
@@ -11,6 +12,7 @@ import {
   selectPurchaseOrdersSchema,
   selectTicketSchema,
   selectUserTicketsSchema,
+  userTicketTransfersSchema,
   userTicketsSchema,
 } from "~/datasources/db/schema";
 import {
@@ -25,6 +27,8 @@ import { applicationError, ServiceErrors } from "~/errors";
 import { Logger } from "~/logging";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
 import { Context } from "~/types";
+
+import { getExpirationDateForTicketTransfer } from "../userTicketsTransfers/helpers";
 
 const fetchPurchaseOrderInformation = async (
   purchaseOrderId: string,
@@ -593,31 +597,6 @@ export const syncPurchaseOrderPaymentStatus = async ({
             username: true,
           },
         },
-        userTickets: {
-          columns: {
-            id: true,
-            publicId: true,
-          },
-          with: {
-            ticketTemplate: {
-              columns: {
-                id: true,
-                tags: true,
-              },
-              with: {
-                event: {
-                  columns: {
-                    name: true,
-                    addressDescriptiveName: true,
-                    address: true,
-                    startDateTime: true,
-                    endDateTime: true,
-                  },
-                },
-              },
-            },
-          },
-        },
       },
     })
     .then(async (res) => {
@@ -647,6 +626,21 @@ export const syncPurchaseOrderPaymentStatus = async ({
                       },
                     },
                   },
+                },
+              },
+            },
+          },
+          transferAttempts: {
+            columns: {
+              id: true,
+              transferMessage: true,
+            },
+            with: {
+              recipientUser: {
+                columns: {
+                  email: true,
+                  name: true,
+                  username: true,
                 },
               },
             },
@@ -723,11 +717,53 @@ export const syncPurchaseOrderPaymentStatus = async ({
     }
 
     if (poPaymentStatus === "paid") {
-      await DB.update(userTicketsSchema)
-        .set({
-          approvalStatus: "approved",
-        })
-        .where(eq(userTicketsSchema.purchaseOrderId, purchaseOrderId));
+      for (const userTicket of purchaseOrder.userTickets) {
+        if (userTicket.transferAttempts.length > 0) {
+          await DB.update(userTicketsSchema)
+            .set({
+              approvalStatus: "transfer_pending",
+            })
+            .where(eq(userTicketsSchema.id, userTicket.id));
+
+          const expirationDate = getExpirationDateForTicketTransfer();
+
+          for (const transferAttempt of userTicket.transferAttempts) {
+            await transactionalEmailService.sendTransferTicketConfirmations({
+              transferMessage: transferAttempt.transferMessage,
+              recipientEmail: transferAttempt.recipientUser.email,
+              recipientName:
+                transferAttempt.recipientUser.name ??
+                transferAttempt.recipientUser.username,
+              senderName:
+                purchaseOrder.user.name ?? purchaseOrder.user.username,
+              ticketTags: userTicket.ticketTemplate.tags,
+              transferId: transferAttempt.id,
+              expirationDate: expirationDate,
+              senderEmail: purchaseOrder.user.email,
+            });
+          }
+
+          const updateTransferValues: Partial<InsertUserTicketTransferSchema> =
+            {
+              expirationDate: expirationDate,
+            };
+
+          await DB.update(userTicketTransfersSchema)
+            .set(updateTransferValues)
+            .where(
+              inArray(
+                userTicketTransfersSchema.id,
+                userTicket.transferAttempts.map((ga) => ga.id),
+              ),
+            );
+        } else {
+          await DB.update(userTicketsSchema)
+            .set({
+              approvalStatus: "approved",
+            })
+            .where(eq(userTicketsSchema.id, userTicket.id));
+        }
+      }
 
       await sendPurchaseOrderSuccessfulEmail({
         transactionalEmailService,

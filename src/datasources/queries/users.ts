@@ -10,6 +10,7 @@ import {
 } from "~/datasources/db/schema";
 import { getUsername } from "~/datasources/queries/utils/createUsername";
 import { Logger } from "~/logging";
+import { cleanEmail } from "~/schema/user/userHelpers";
 
 export const findUserByID = async (db: ORM_TYPE, id: string) => {
   const result = await db.query.usersSchema.findFirst({
@@ -32,7 +33,7 @@ export const upsertUserProfileInfo = async (
 
   const { email, imageUrl, isEmailVerified, publicMetadata } =
     parsedProfileInfo;
-  const lowercaseEmail = email.trim().toLowerCase();
+  const lowercaseEmail = cleanEmail(email);
 
   const upsertData: z.infer<typeof allowedUserUpdateForAuth> = {
     imageUrl,

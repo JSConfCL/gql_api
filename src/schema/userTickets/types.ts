@@ -13,6 +13,7 @@ import {
   UserRef,
   UserTicketRef,
   PublicUserTicketRef,
+  UserTicketTransferRef,
 } from "~/schema/shared/refs";
 import { TicketLoadable } from "~/schema/ticket/types";
 import { UserLoadable } from "~/schema/user/types";
@@ -104,6 +105,28 @@ builder.objectType(UserTicketRef, {
       type: "DateTime",
       nullable: false,
       resolve: (root) => new Date(root.createdAt),
+    }),
+    transferAttempts: t.field({
+      type: [UserTicketTransferRef],
+      resolve: async (root, args, context) => {
+        const canRequest =
+          context.USER?.id === root.userId || context.USER?.isSuperAdmin;
+
+        if (!canRequest) {
+          return [];
+        }
+
+        if (!root.userId) {
+          return [];
+        }
+
+        const userTicketTransfers =
+          await context.DB.query.userTicketTransfersSchema.findMany({
+            where: (utg, { eq }) => eq(utg.userTicketId, root.id),
+          });
+
+        return userTicketTransfers;
+      },
     }),
   }),
 });

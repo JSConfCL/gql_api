@@ -10,6 +10,7 @@ import {
 import { getUsername } from "~/datasources/queries/utils/createUsername";
 import { unauthorizedError } from "~/errors";
 import { Logger } from "~/logging";
+import { cleanEmail } from "~/schema/user/userHelpers";
 
 // Obtener el token de autorización de la solicitud, ya sea del encabezado de
 // autorización o de la cookie "community-os-access-token"
@@ -125,7 +126,7 @@ export const upsertUserFromRequest = async ({
   const { avatar_url, name, user_name, email_verified, sub, picture } =
     payload.user_metadata;
   const profileInfo = insertUsersSchema.safeParse({
-    email: payload.email.toLowerCase(),
+    email: cleanEmail(payload.email),
     isEmailVerified: email_verified,
     imageUrl: avatar_url ? avatar_url : picture ? picture : "",
     externalId: sub,
