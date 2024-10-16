@@ -3,6 +3,7 @@ mutation AcceptTransferredTicket($transferId: String!) {
     id
     status
     userTicket {
+      id
       user {
         id
       }
