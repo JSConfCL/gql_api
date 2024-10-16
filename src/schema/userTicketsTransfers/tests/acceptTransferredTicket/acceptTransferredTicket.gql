@@ -1,8 +1,12 @@
 mutation AcceptTransferredTicket($transferId: String!) {
   acceptTransferredTicket(transferId: $transferId) {
     id
-    paymentStatus
-    approvalStatus
-    redemptionStatus
+    status
+    userTicket {
+      id
+      user {
+        id
+      }
+    }
   }
 }

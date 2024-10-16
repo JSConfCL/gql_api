@@ -11,16 +11,19 @@ export type AcceptTransferredTicketMutationVariables = Types.Exact<{
 }>;
 
 
-export type AcceptTransferredTicketMutation = { __typename?: 'Mutation', acceptTransferredTicket: { __typename?: 'UserTicket', id: string, paymentStatus: Types.PurchaseOrderPaymentStatusEnum | null, approvalStatus: Types.TicketApprovalStatus, redemptionStatus: Types.TicketRedemptionStatus } };
+export type AcceptTransferredTicketMutation = { __typename?: 'Mutation', acceptTransferredTicket: { __typename?: 'UserTicketTransfer', id: string, status: Types.TicketTransferAttemptStatus, userTicket: { __typename?: 'UserTicket', user: { __typename?: 'User', id: string } | null } } };
 
 
 export const AcceptTransferredTicket = gql`
     mutation AcceptTransferredTicket($transferId: String!) {
   acceptTransferredTicket(transferId: $transferId) {
     id
-    paymentStatus
-    approvalStatus
-    redemptionStatus
+    status
+    userTicket {
+      user {
+        id
+      }
+    }
   }
 }
     `;

@@ -335,7 +335,7 @@ export type Mutation = {
   __typename?: "Mutation";
   /** Accept the user's invitation to a team */
   acceptTeamInvitation: TeamRef;
-  acceptTransferredTicket: UserTicket;
+  acceptTransferredTicket: UserTicketTransfer;
   /** Try to add a person to a team */
   addPersonToTeam: AddUserToTeamResponseRef;
   /** Apply to a waitlist */
@@ -1097,6 +1097,8 @@ export enum TicketApprovalStatus {
   NotRequired = "not_required",
   Pending = "pending",
   Rejected = "rejected",
+  TransferAccepted = "transfer_accepted",
+  TransferPending = "transfer_pending",
 }
 
 export type TicketClaimInput = {
@@ -1300,6 +1302,7 @@ export type UserTicket = {
 /** Representation of a user ticket transfer */
 export type UserTicketTransfer = {
   __typename?: "UserTicketTransfer";
+  createdAt: Scalars["DateTime"]["output"];
   expirationDate: Scalars["DateTime"]["output"];
   id: Scalars["ID"]["output"];
   recipient: TicketTransferUserInfo;

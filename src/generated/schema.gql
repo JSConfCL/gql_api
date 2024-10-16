@@ -320,7 +320,7 @@ type Mutation {
   Accept the user's invitation to a team
   """
   acceptTeamInvitation(input: AcceptTeamInvitationInput!): TeamRef!
-  acceptTransferredTicket(transferId: String!): UserTicket!
+  acceptTransferredTicket(transferId: String!): UserTicketTransfer!
 
   """
   Try to add a person to a team
@@ -1060,6 +1060,8 @@ enum TicketApprovalStatus {
   not_required
   pending
   rejected
+  transfer_accepted
+  transfer_pending
 }
 
 input TicketClaimInput {
@@ -1275,6 +1277,7 @@ type UserTicket {
 Representation of a user ticket transfer
 """
 type UserTicketTransfer {
+  createdAt: DateTime!
   expirationDate: DateTime!
   id: ID!
   recipient: TicketTransferUserInfo!

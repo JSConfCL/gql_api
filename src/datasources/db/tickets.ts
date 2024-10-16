@@ -73,9 +73,13 @@ export const selectTicketSchema = createSelectSchema(ticketsSchema, {
   tags: z.array(z.string()),
 });
 
+export type SelectTicketSchema = z.infer<typeof selectTicketSchema>;
+
 export const insertTicketSchema = createInsertSchema(ticketsSchema, {
   tags: z.array(z.string()),
 });
+
+export type InsertTicketSchema = z.infer<typeof insertTicketSchema>;
 
 export const updateTicketSchema = insertTicketSchema
   .pick({
@@ -95,3 +99,5 @@ export const updateTicketSchema = insertTicketSchema
     tags: true,
   })
   .partial();
+
+export type UpdateTicketSchema = z.infer<typeof updateTicketSchema>;
