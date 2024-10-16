@@ -703,76 +703,91 @@ export const syncPurchaseOrderPaymentStatus = async ({
       poStatus,
     });
     // we update the purchase order with the new status, only if they are different from the current status
-    const updatedPurchaseOrder = await DB.update(purchaseOrdersSchema)
-      .set({
-        purchaseOrderPaymentStatus: poPaymentStatus,
-        status: poStatus,
-      })
-      .where(eq(purchaseOrdersSchema.id, purchaseOrderId))
-      .returning();
-    const updatedPO = updatedPurchaseOrder[0];
+    const updatedPurchaseOrder = await DB.transaction(async (trx) => {
+      try {
+        const updatedPOs = await trx
+          .update(purchaseOrdersSchema)
+          .set({
+            purchaseOrderPaymentStatus: poPaymentStatus,
+            status: poStatus,
+          })
+          .where(eq(purchaseOrdersSchema.id, purchaseOrderId))
+          .returning();
+        const updatedPO = updatedPOs[0];
 
-    if (!updatedPO) {
-      throw new Error("OC no encontrada");
-    }
+        if (!updatedPO) {
+          throw new Error("OC no encontrada");
+        }
 
-    if (poPaymentStatus === "paid") {
-      for (const userTicket of purchaseOrder.userTickets) {
-        if (userTicket.transferAttempts.length > 0) {
-          await DB.update(userTicketsSchema)
-            .set({
-              approvalStatus: "transfer_pending",
-            })
-            .where(eq(userTicketsSchema.id, userTicket.id));
+        if (poPaymentStatus === "paid") {
+          for (const userTicket of purchaseOrder.userTickets) {
+            if (userTicket.transferAttempts.length > 0) {
+              await DB.update(userTicketsSchema)
+                .set({
+                  approvalStatus: "transfer_pending",
+                })
+                .where(eq(userTicketsSchema.id, userTicket.id));
 
-          const expirationDate = getExpirationDateForTicketTransfer();
+              const expirationDate = getExpirationDateForTicketTransfer();
 
-          for (const transferAttempt of userTicket.transferAttempts) {
-            await transactionalEmailService.sendTransferTicketConfirmations({
-              transferMessage: transferAttempt.transferMessage,
-              recipientEmail: transferAttempt.recipientUser.email,
-              recipientName:
-                transferAttempt.recipientUser.name ??
-                transferAttempt.recipientUser.username,
-              senderName:
-                purchaseOrder.user.name ?? purchaseOrder.user.username,
-              ticketTags: userTicket.ticketTemplate.tags,
-              transferId: transferAttempt.id,
-              expirationDate: expirationDate,
-              senderEmail: purchaseOrder.user.email,
-            });
+              for (const transferAttempt of userTicket.transferAttempts) {
+                await transactionalEmailService.sendTransferTicketConfirmations(
+                  {
+                    transferMessage: transferAttempt.transferMessage,
+                    recipientEmail: transferAttempt.recipientUser.email,
+                    recipientName:
+                      transferAttempt.recipientUser.name ??
+                      transferAttempt.recipientUser.username,
+                    senderName:
+                      purchaseOrder.user.name ?? purchaseOrder.user.username,
+                    ticketTags: userTicket.ticketTemplate.tags,
+                    transferId: transferAttempt.id,
+                    expirationDate: expirationDate,
+                    senderEmail: purchaseOrder.user.email,
+                  },
+                );
+              }
+
+              const updateTransferValues: Partial<InsertUserTicketTransferSchema> =
+                {
+                  expirationDate: expirationDate,
+                };
+
+              await DB.update(userTicketTransfersSchema)
+                .set(updateTransferValues)
+                .where(
+                  inArray(
+                    userTicketTransfersSchema.id,
+                    userTicket.transferAttempts.map((ga) => ga.id),
+                  ),
+                );
+            } else {
+              await DB.update(userTicketsSchema)
+                .set({
+                  approvalStatus: "approved",
+                })
+                .where(eq(userTicketsSchema.id, userTicket.id));
+            }
           }
 
-          const updateTransferValues: Partial<InsertUserTicketTransferSchema> =
-            {
-              expirationDate: expirationDate,
-            };
-
-          await DB.update(userTicketTransfersSchema)
-            .set(updateTransferValues)
-            .where(
-              inArray(
-                userTicketTransfersSchema.id,
-                userTicket.transferAttempts.map((ga) => ga.id),
-              ),
-            );
-        } else {
-          await DB.update(userTicketsSchema)
-            .set({
-              approvalStatus: "approved",
-            })
-            .where(eq(userTicketsSchema.id, userTicket.id));
+          await sendPurchaseOrderSuccessfulEmail({
+            transactionalEmailService,
+            logger,
+            purchaseOrder,
+          });
         }
+      } catch (error) {
+        logger.error(
+          "syncPurchaseOrderPaymentStatus: Error updating purchase order status",
+          error,
+        );
+
+        trx.rollback();
+        throw error;
       }
+    });
 
-      await sendPurchaseOrderSuccessfulEmail({
-        transactionalEmailService,
-        logger,
-        purchaseOrder,
-      });
-    }
-
-    return updatedPO;
+    return updatedPurchaseOrder;
   }
 
   return purchaseOrder;
