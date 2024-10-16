@@ -30,6 +30,10 @@ builder.objectType(UserTicketTransferRef, {
   description: "Representation of a user ticket transfer",
   fields: (t) => ({
     id: t.exposeID("id"),
+    createdAt: t.expose("createdAt", {
+      type: "DateTime",
+      nullable: false,
+    }),
     sender: t.field({
       type: TicketTransferUserInfoRef,
       resolve: async (root, args, { DB }) => {
