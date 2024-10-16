@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
@@ -9,7 +9,7 @@ import {
   userTicketsSchema,
   userTicketsApprovalStatusEnum,
 } from "~/datasources/db/schema";
-import { UserTicketTransferRef, UserTicketRef } from "~/schema/shared/refs";
+import { UserTicketTransferRef } from "~/schema/shared/refs";
 
 import {
   getExpirationDateForTicketTransfer,
@@ -73,7 +73,13 @@ builder.mutationField("transferMyTicketToUser", (t) =>
       }
 
       const validApprovalStatus: (typeof userTicketsApprovalStatusEnum)[number][] =
-        ["approved", "not_required", "gift_accepted"];
+        [
+          "approved",
+          "not_required",
+          "gift_accepted",
+          "transfer_accepted",
+          "transfer_pending",
+        ];
 
       if (!validApprovalStatus.includes(userTicket.approvalStatus)) {
         throw new GraphQLError("Ticket is not transferable");
@@ -94,6 +100,10 @@ builder.mutationField("transferMyTicketToUser", (t) =>
         throw new GraphQLError("Receiver user not found");
       }
 
+      if (recipientUser.id === USER.id) {
+        throw new GraphQLError("You cannot transfer a ticket to yourself");
+      }
+
       const userTicketTransfer: InsertUserTicketTransferSchema = {
         userTicketId: userTicket.id,
         senderUserId: USER.id,
@@ -108,9 +118,23 @@ builder.mutationField("transferMyTicketToUser", (t) =>
           .update(userTicketsSchema)
           .set({
             approvalStatus: "transfer_pending",
-            userId: recipientUser.id,
           })
           .where(eq(userTicketsSchema.id, userTicket.id));
+
+        await trx
+          .update(userTicketTransfersSchema)
+          .set({
+            status: UserTicketTransferStatus.Cancelled,
+          })
+          .where(
+            and(
+              eq(userTicketTransfersSchema.userTicketId, userTicket.id),
+              eq(
+                userTicketTransfersSchema.status,
+                UserTicketTransferStatus.Pending,
+              ),
+            ),
+          );
 
         const result = await trx
           .insert(userTicketTransfersSchema)

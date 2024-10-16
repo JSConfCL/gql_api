@@ -2,6 +2,7 @@ import { differenceInSeconds } from "date-fns";
 import { AsyncReturnType } from "type-fest";
 import { assert, describe, it } from "vitest";
 
+import { UserTicketTransferStatus } from "~/datasources/db/userTicketsTransfers";
 import {
   executeGraphqlOperationAsUser,
   insertAllowedCurrency,
@@ -138,7 +139,8 @@ describe("Transfer My Ticket To User", () => {
 
       assert.equal(updatedUserTicket?.approvalStatus, "transfer_pending");
 
-      assert.equal(updatedUserTicket?.userId, recipientUser.id);
+      // The ticket should still belong to the original user
+      assert.equal(updatedUserTicket?.userId, user.id);
     });
 
     it("Should successfully transfer a ticket to a non-existent user (creating a new user)", async () => {
@@ -193,7 +195,8 @@ describe("Transfer My Ticket To User", () => {
 
       assert.equal(updatedUserTicket?.approvalStatus, "transfer_pending");
 
-      assert.equal(updatedUserTicket?.userId, newUser?.id);
+      // The ticket should still belong to the original user
+      assert.equal(updatedUserTicket?.userId, user?.id);
     });
 
     it("Should handle transfer without a message", async () => {
@@ -289,59 +292,6 @@ describe("Transfer My Ticket To User", () => {
   });
 
   describe("Edge cases", () => {
-    it("Should handle multiple transfer attempts for the same ticket", async () => {
-      const { user, userTicket } = await createTestSetup();
-      const recipientUser1 = await insertUser();
-      const recipientUser2 = await insertUser();
-
-      const response1 = await executeGraphqlOperationAsUser<
-        TransferMyTicketToUserMutation,
-        TransferMyTicketToUserMutationVariables
-      >(
-        {
-          document: TransferMyTicketToUser,
-          variables: {
-            ticketId: userTicket.id,
-            input: {
-              email: recipientUser1.email,
-              name: "Recipient 1",
-            },
-          },
-        },
-        user,
-      );
-
-      assert.equal(response1.data?.transferMyTicketToUser.status, "Pending");
-
-      // Attempt to transfer the same ticket again
-      const response = await executeGraphqlOperationAsUser<
-        TransferMyTicketToUserMutation,
-        TransferMyTicketToUserMutationVariables
-      >(
-        {
-          document: TransferMyTicketToUser,
-          variables: {
-            ticketId: userTicket.id,
-            input: {
-              email: recipientUser2.email,
-              name: "Recipient 2",
-            },
-          },
-        },
-        user,
-      );
-
-      assert.equal(response.errors?.[0].message, "Ticket not found");
-
-      // Verify that the ticket is still associated with the first recipient
-      const DB = await getTestDB();
-      const updatedUserTicket = await DB.query.userTicketsSchema.findFirst({
-        where: (t, { eq }) => eq(t.id, userTicket.id),
-      });
-
-      assert.equal(updatedUserTicket?.userId, recipientUser1.id);
-    });
-
     it("Should verify the expiration date is set correctly", async () => {
       const { user, userTicket } = await createTestSetup();
       const recipientUser = await insertUser();
@@ -376,6 +326,119 @@ describe("Transfer My Ticket To User", () => {
       );
 
       assert.isBelow(diffInSeconds, 5);
+    });
+
+    it("Should throw an error when transferring a ticket to yourself", async () => {
+      const { user, userTicket } = await createTestSetup();
+
+      const response = await executeGraphqlOperationAsUser<
+        TransferMyTicketToUserMutation,
+        TransferMyTicketToUserMutationVariables
+      >(
+        {
+          document: TransferMyTicketToUser,
+          variables: {
+            ticketId: userTicket.id,
+            input: {
+              email: user.email,
+              name: "John Doe",
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(
+        response.errors?.[0].message,
+        "You cannot transfer a ticket to yourself",
+      );
+    });
+
+    it("Should cancel existing pending transfers and create a new one without changing the ticket owner", async () => {
+      const { user, userTicket } = await createTestSetup();
+      const recipientUser1 = await insertUser();
+      const recipientUser2 = await insertUser();
+
+      // First transfer
+      await executeGraphqlOperationAsUser<
+        TransferMyTicketToUserMutation,
+        TransferMyTicketToUserMutationVariables
+      >(
+        {
+          document: TransferMyTicketToUser,
+          variables: {
+            ticketId: userTicket.id,
+            input: {
+              email: recipientUser1.email,
+              name: "Recipient 1",
+            },
+          },
+        },
+        user,
+      );
+
+      // Second transfer
+      const response2 = await executeGraphqlOperationAsUser<
+        TransferMyTicketToUserMutation,
+        TransferMyTicketToUserMutationVariables
+      >(
+        {
+          document: TransferMyTicketToUser,
+          variables: {
+            ticketId: userTicket.id,
+            input: {
+              email: recipientUser2.email,
+              name: "Recipient 2",
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response2.errors, undefined);
+
+      assert.equal(response2.data?.transferMyTicketToUser.status, "Pending");
+
+      const DB = await getTestDB();
+
+      // Verify that the ticket's approval status is 'transfer_pending' but the owner hasn't changed
+      const updatedUserTicket = await DB.query.userTicketsSchema.findFirst({
+        where: (t, { eq }) => eq(t.id, userTicket.id),
+      });
+
+      assert.equal(updatedUserTicket?.userId, user.id); // The ticket should still belong to the original user
+
+      assert.equal(updatedUserTicket?.approvalStatus, "transfer_pending");
+
+      // Verify that the first transfer was cancelled
+      const cancelledTransfer =
+        await DB.query.userTicketTransfersSchema.findFirst({
+          where: (t, { eq, and }) =>
+            and(
+              eq(t.userTicketId, userTicket.id),
+              eq(t.recipientUserId, recipientUser1.id),
+            ),
+        });
+
+      assert.equal(
+        cancelledTransfer?.status,
+        UserTicketTransferStatus.Cancelled,
+      );
+
+      // Verify that a new pending transfer exists for the second recipient
+      const pendingTransfer =
+        await DB.query.userTicketTransfersSchema.findFirst({
+          where: (t, { eq, and }) =>
+            and(
+              eq(t.userTicketId, userTicket.id),
+              eq(t.recipientUserId, recipientUser2.id),
+              eq(t.status, UserTicketTransferStatus.Pending),
+            ),
+        });
+
+      assert.notEqual(pendingTransfer, null);
+
+      assert.equal(pendingTransfer?.senderUserId, user.id);
     });
   });
 });
