@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { pgTable, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 import { pricesSchema, ticketsSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
@@ -33,4 +34,8 @@ export const ticketsPricesRelationsRelations = relations(
 
 export const selectTicketPriceSchema = createSelectSchema(ticketsPricesSchema);
 
+export type SelectTicketPriceSchema = z.infer<typeof selectTicketPriceSchema>;
+
 export const insertTicketPriceSchema = createInsertSchema(ticketsPricesSchema);
+
+export type InsertTicketPriceSchema = z.infer<typeof insertTicketPriceSchema>;

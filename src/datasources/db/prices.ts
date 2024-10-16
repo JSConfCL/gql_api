@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { integer, pgTable, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 import { allowedCurrencySchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
@@ -24,4 +25,8 @@ export const pricesRelations = relations(pricesSchema, ({ many, one }) => ({
 
 export const selectPriceSchema = createSelectSchema(pricesSchema);
 
+export type SelectPriceSchema = z.infer<typeof selectPriceSchema>;
+
 export const insertPriceSchema = createInsertSchema(pricesSchema);
+
+export type InsertPriceSchema = z.infer<typeof insertPriceSchema>;
