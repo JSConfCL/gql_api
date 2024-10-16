@@ -722,7 +722,8 @@ export const syncPurchaseOrderPaymentStatus = async ({
         if (poPaymentStatus === "paid") {
           for (const userTicket of purchaseOrder.userTickets) {
             if (userTicket.transferAttempts.length > 0) {
-              await DB.update(userTicketsSchema)
+              await trx
+                .update(userTicketsSchema)
                 .set({
                   approvalStatus: "transfer_pending",
                 })
@@ -753,7 +754,8 @@ export const syncPurchaseOrderPaymentStatus = async ({
                   expirationDate: expirationDate,
                 };
 
-              await DB.update(userTicketTransfersSchema)
+              await trx
+                .update(userTicketTransfersSchema)
                 .set(updateTransferValues)
                 .where(
                   inArray(
@@ -762,7 +764,8 @@ export const syncPurchaseOrderPaymentStatus = async ({
                   ),
                 );
             } else {
-              await DB.update(userTicketsSchema)
+              await trx
+                .update(userTicketsSchema)
                 .set({
                   approvalStatus: "approved",
                 })
@@ -776,6 +779,8 @@ export const syncPurchaseOrderPaymentStatus = async ({
             purchaseOrder,
           });
         }
+
+        return updatedPO;
       } catch (error) {
         logger.error(
           "syncPurchaseOrderPaymentStatus: Error updating purchase order status",
