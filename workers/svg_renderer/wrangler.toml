@@ -1,7 +1,7 @@
 # 🚨 DEFAULT CONFIG 🚨
 name = "svg-renderer"
 compatibility_date = "2024-06-03"
-main = "./index.ts"
+main = "./index.tsx"
 
 [placement]
 mode = "smart"
