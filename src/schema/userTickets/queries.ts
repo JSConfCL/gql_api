@@ -221,7 +221,7 @@ builder.queryField("publicTicketInfo", (t) =>
           DB,
           search: {
             publicIds: [publicTicketId],
-            approvalStatus: ["approved", "gift_accepted"],
+            approvalStatus: ["approved", "gift_accepted", "transfer_accepted"],
           },
           pagination: {
             page: 0,
