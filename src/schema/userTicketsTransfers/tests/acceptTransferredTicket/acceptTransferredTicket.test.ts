@@ -2,6 +2,7 @@ import { it, describe, assert } from "vitest";
 
 import { userTicketsApprovalStatusEnum } from "~/datasources/db/userTickets";
 import { UserTicketTransferStatus } from "~/datasources/db/userTicketsTransfers";
+import { TicketTransferAttemptStatus } from "~/generated/types";
 import {
   executeGraphqlOperationAsUser,
   insertCommunity,
@@ -82,8 +83,8 @@ describe("Accept user ticket transfer", () => {
       assert.equal(response.errors, undefined);
 
       assert.equal(
-        response.data?.acceptTransferredTicket?.approvalStatus,
-        "gift_accepted",
+        response.data?.acceptTransferredTicket?.status,
+        TicketTransferAttemptStatus.Accepted,
       );
     });
   });
@@ -131,7 +132,7 @@ describe("Accept user ticket transfer", () => {
 
     it("If tickets is not in a transferable state", async () => {
       const { recipientUser, ticketTransfer } =
-        await prepareTickets("gift_accepted");
+        await prepareTickets("transfer_accepted");
       const response = await executeGraphqlOperationAsUser<
         AcceptTransferredTicketMutation,
         AcceptTransferredTicketMutationVariables

@@ -142,7 +142,7 @@ builder.mutationField("transferMyTicketToUser", (t) =>
 
 builder.mutationField("acceptTransferredTicket", (t) =>
   t.field({
-    type: UserTicketRef,
+    type: UserTicketTransferRef,
     args: {
       transferId: t.arg.string({
         required: true,
@@ -207,20 +207,22 @@ builder.mutationField("acceptTransferredTicket", (t) =>
         throw new GraphQLError("Transfer attempt has expired");
       }
 
-      const updatedTicket = await DB.update(userTicketsSchema)
+      await DB.update(userTicketsSchema)
         .set({
-          approvalStatus: "gift_accepted",
+          approvalStatus: "transfer_accepted",
           userId: USER.id,
         })
-        .where(eq(userTicketsSchema.id, ticketTransfer.userTicketId))
-        .returning()
-        .then((t) => t?.[0]);
+        .where(eq(userTicketsSchema.id, ticketTransfer.userTicketId));
 
-      await DB.update(userTicketTransfersSchema)
+      const updatedUserTicketTransfer = await DB.update(
+        userTicketTransfersSchema,
+      )
         .set({
           status: UserTicketTransferStatus.Accepted,
         })
-        .where(eq(userTicketTransfersSchema.id, ticketTransfer.id));
+        .where(eq(userTicketTransfersSchema.id, ticketTransfer.id))
+        .returning()
+        .then((t) => t?.[0]);
 
       await RPC_SERVICE_EMAIL.sendTransferAcceptanceNotificationToSender({
         recipientName: USER.name ?? USER.username,
@@ -230,7 +232,7 @@ builder.mutationField("acceptTransferredTicket", (t) =>
         ticketTags: ticketTransfer.userTicket.ticketTemplate.tags,
       });
 
-      return updatedTicket;
+      return updatedUserTicketTransfer;
     },
   }),
 );
