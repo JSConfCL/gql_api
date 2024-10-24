@@ -7,7 +7,6 @@ import { allowedCurrencySchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 import { ticketsPricesSchema } from "./ticketPrice";
 
-// TICKETS-TABLE
 export const pricesSchema = pgTable("prices", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   price_in_cents: integer("price").notNull(),
