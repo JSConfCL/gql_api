@@ -1,14 +1,14 @@
 import Stripe from "stripe";
 
 import {
-  puchaseOrderPaymentStatusEnum,
-  purchaseOrderStatusEnum,
+  PurchaseOrderPaymentStatus,
+  PurchaseOrderStatus,
 } from "~/datasources/db/schema";
 import { someMinutesIntoTheFuture } from "~/datasources/helpers";
 
 const getPaymentStatusFromStripeSession = (
   stripeStatus: Stripe.Response<Stripe.Checkout.Session>["payment_status"],
-): (typeof puchaseOrderPaymentStatusEnum)[number] => {
+): PurchaseOrderPaymentStatus => {
   if (stripeStatus === "paid") {
     return "paid";
   } else if (stripeStatus === "no_payment_required") {
@@ -22,7 +22,7 @@ const getPaymentStatusFromStripeSession = (
 
 const getPurchaseOrderStatusFromStripeSession = (
   stripeStatus: Stripe.Response<Stripe.Checkout.Session>["status"],
-): (typeof purchaseOrderStatusEnum)[number] => {
+): PurchaseOrderStatus => {
   if (stripeStatus === "complete") {
     return "complete";
   } else if (stripeStatus === "expired") {
