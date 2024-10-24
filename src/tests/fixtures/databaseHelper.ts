@@ -42,7 +42,12 @@ export const getTestDB = async (maybeDatabaseName?: string) => {
   console.log("🆕 Creando una nueva BDD");
 
   await ensureDBIsClean(databaseName);
-  const migrationClient = postgres(`${dbUrl}/${databaseName}`, { max: 1 });
+  const migrationClient = postgres(`${dbUrl}/${databaseName}`, {
+    max: 1,
+    onnotice: () => {
+      // DISCARD NOTICES LIKE identifier "x" will be truncated to "y"
+    },
+  });
 
   client = migrationClient;
 
