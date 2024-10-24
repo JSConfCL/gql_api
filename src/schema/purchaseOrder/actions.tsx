@@ -409,6 +409,7 @@ export const createPaymentIntent = async ({
     );
     const updatedPOs = await DB.update(purchaseOrdersSchema)
       .set({
+        status: "complete",
         purchaseOrderPaymentStatus: "not_required",
       })
       .where(eq(purchaseOrdersSchema.id, purchaseOrderId))
