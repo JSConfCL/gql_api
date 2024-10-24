@@ -2,11 +2,12 @@ import { builder } from "~/builder";
 import {
   selectUserTicketsSchema,
   selectPurchaseOrdersSchema,
-  selectAllowedCurrencySchema,
   puchaseOrderPaymentStatusEnum,
   purchaseOrderStatusEnum,
 } from "~/datasources/db/schema";
-import { AllowedCurrencyRef, UserTicketRef } from "~/schema/shared/refs";
+import { UserTicketRef } from "~/schema/shared/refs";
+
+import { AllowedCurrencyLoadable } from "../allowedCurrency/types";
 
 export const PurchaseOrderPaymentStatusEnum = builder.enumType(
   "PurchaseOrderPaymentStatusEnum",
@@ -81,21 +82,9 @@ export const PurchaseOrderLoadable = builder.loadableObject(PurchaseOrderRef, {
       },
     }),
     currency: t.field({
-      type: AllowedCurrencyRef,
+      type: AllowedCurrencyLoadable,
       nullable: true,
-      resolve: async (root, args, ctx) => {
-        const currencyId = root.purchaseOrder.currencyId;
-
-        if (root.purchaseOrder.totalPrice && currencyId) {
-          const currency = await ctx.DB.query.allowedCurrencySchema.findFirst({
-            where: (acs, { eq }) => eq(acs.id, currencyId),
-          });
-
-          if (currency) {
-            return selectAllowedCurrencySchema.parse(currency);
-          }
-        }
-      },
+      resolve: (root) => root.purchaseOrder.currencyId,
     }),
     purchasePaymentStatus: t.field({
       type: PurchaseOrderPaymentStatusEnum,

@@ -11,7 +11,9 @@ import { ticketsPricesSchema } from "./ticketPrice";
 export const pricesSchema = pgTable("prices", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   price_in_cents: integer("price").notNull(),
-  currencyId: uuid("currency_id").references(() => allowedCurrencySchema.id),
+  currencyId: uuid("currency_id")
+    .references(() => allowedCurrencySchema.id)
+    .notNull(),
   ...createdAndUpdatedAtFields,
 });
 

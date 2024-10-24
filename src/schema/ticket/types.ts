@@ -1,7 +1,8 @@
 import { builder } from "~/builder";
-import { selectAllowedCurrencySchema } from "~/datasources/db/schema";
 import { EventLoadable } from "~/schema/events/types";
-import { AllowedCurrencyRef, PriceRef, TicketRef } from "~/schema/shared/refs";
+import { PriceRef, TicketRef } from "~/schema/shared/refs";
+
+import { AllowedCurrencyLoadable } from "../allowedCurrency/types";
 
 export const TicketTemplateStatus = builder.enumType("TicketTemplateStatus", {
   values: ["active", "inactive"] as const,
@@ -20,14 +21,9 @@ builder.objectType(PriceRef, {
     id: t.exposeID("id"),
     amount: t.exposeInt("amount"),
     currency: t.field({
-      type: AllowedCurrencyRef,
-      resolve: async (root, args, ctx) => {
-        const currency = await ctx.DB.query.allowedCurrencySchema.findFirst({
-          where: (acs, { eq }) => eq(acs.id, root.currencyId),
-        });
-
-        return selectAllowedCurrencySchema.parse(currency);
-      },
+      type: AllowedCurrencyLoadable,
+      nullable: true,
+      resolve: (root) => root.currencyId,
     }),
   }),
 });
@@ -119,36 +115,43 @@ export const TicketLoadable = builder.loadableObject(TicketRef, {
       type: EventLoadable,
       resolve: (root) => root.eventId,
     }),
-    prices: t.field({
-      type: [PriceRef],
+    prices: t.loadableList({
+      type: PriceRef,
       nullable: true,
-      resolve: async (root, args, ctx) => {
-        if (root.isFree) {
-          return null;
+      load: async (ticketsIds: string[], context) => {
+        const validTicketIds = ticketsIds.filter((id) => id !== "");
+
+        if (validTicketIds.length === 0) {
+          return ticketsIds.map(() => null);
         }
 
-        const prices = await ctx.DB.query.ticketsPricesSchema.findMany({
-          where: (tps, { eq }) => eq(tps.ticketId, root.id),
+        const prices = await context.DB.query.ticketsPricesSchema.findMany({
+          where: (tps, { inArray }) => inArray(tps.ticketId, validTicketIds),
           with: {
             price: true,
           },
         });
 
-        const pasedPrices = prices
-          .map((p) => ({
-            id: p.price.id,
-            amount: p.price.price_in_cents,
-            currencyId: p.price.currencyId,
-          }))
-          .filter((p) => p.amount !== null || p.currencyId !== null);
+        return ticketsIds.map((id) => {
+          if (id === "") {
+            return null;
+          }
 
-        // this "AS" is an unnecessary type cast, but it's here bc the "filter"
-        // does not do proper type narrowing.
-        return pasedPrices as {
-          id: string;
-          amount: number;
-          currencyId: string;
-        }[];
+          const matches = prices.filter((p) => p.ticketId === id);
+
+          return matches.map((m) => ({
+            id: m.price.id,
+            amount: m.price.price_in_cents,
+            currencyId: m.price.currencyId,
+          }));
+        });
+      },
+      resolve: (root) => {
+        if (root.isFree) {
+          return "";
+        }
+
+        return root.id;
       },
     }),
   }),
