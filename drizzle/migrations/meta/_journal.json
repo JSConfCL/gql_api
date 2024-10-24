@@ -239,6 +239,13 @@
       "when": 1728659831602,
       "tag": "0033_thankful_orphan",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1729804457209,
+      "tag": "0034_lethal_vision",
+      "breakpoints": true
     }
   ]
 }
