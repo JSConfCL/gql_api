@@ -16,7 +16,7 @@ type AddUserToTeamResponseRef {
 }
 
 """
-Representation of a workEmail
+Representation of an allowed currency
 """
 type AllowedCurrency {
   currency: String!
@@ -592,7 +592,7 @@ Representation of a TicketPrice
 """
 type Price {
   amount: Int!
-  currency: AllowedCurrency!
+  currency: AllowedCurrency
   id: ID!
 }
 
