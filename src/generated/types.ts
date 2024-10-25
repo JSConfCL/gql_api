@@ -643,7 +643,7 @@ export type PayForPurchaseOrderInput = {
 export type Price = {
   __typename?: "Price";
   amount: Scalars["Int"]["output"];
-  currency?: Maybe<AllowedCurrency>;
+  currency: AllowedCurrency;
   id: Scalars["ID"]["output"];
 };
 
