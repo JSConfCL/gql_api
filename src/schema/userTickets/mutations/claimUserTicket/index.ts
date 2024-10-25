@@ -31,7 +31,7 @@ import {
   TicketClaimInput,
   TicketClaimInputType,
 } from "./refs";
-import { assertCanStartTicketClaimingForEvent } from "../helpers";
+import { assertCanStartTicketClaimingForEvent } from "../../helpers";
 
 // Types
 type TicketClaimContext = NonNullableFields<
