@@ -53,17 +53,19 @@ const getUnitAmount = (unitAmount: number) => {
 
 const STRIPE_RESOURCE_MISSING_ERROR = "resource_missing";
 
+export type CreateOrUpdateStripeProductItem = {
+  stripeId: string;
+  currency: string;
+  name: string;
+  description?: string;
+  unit_amount: number;
+};
+
 export const createOrUpdateStripeProductAndPrice = async ({
   item,
   getStripeClient,
 }: {
-  item: {
-    id: string;
-    currency: string;
-    name: string;
-    description?: string;
-    unit_amount: number;
-  };
+  item: CreateOrUpdateStripeProductItem;
   getStripeClient: () => Stripe;
 }): Promise<string> => {
   const stripeClient = getStripeClient();
@@ -72,7 +74,10 @@ export const createOrUpdateStripeProductAndPrice = async ({
     ...getUnitAmount(item.unit_amount),
   };
 
-  const existingProduct = await retrieveExistingProduct(stripeClient, item.id);
+  const existingProduct = await retrieveExistingProduct(
+    stripeClient,
+    item.stripeId,
+  );
 
   if (existingProduct) {
     const productNeedsUpdate =
@@ -80,7 +85,7 @@ export const createOrUpdateStripeProductAndPrice = async ({
       existingProduct.description !== item.description;
 
     if (productNeedsUpdate) {
-      await stripeClient.products.update(item.id, {
+      await stripeClient.products.update(item.stripeId, {
         name: item.name,
         description: item.description,
       });
@@ -98,11 +103,11 @@ export const createOrUpdateStripeProductAndPrice = async ({
 
     if (priceHasChanged) {
       const newPrice = await stripeClient.prices.create({
-        product: item.id,
+        product: item.stripeId,
         ...updatedPriceData,
       });
 
-      await stripeClient.products.update(item.id, {
+      await stripeClient.products.update(item.stripeId, {
         default_price: newPrice.id,
       });
 
@@ -112,7 +117,7 @@ export const createOrUpdateStripeProductAndPrice = async ({
     return existingPrice.id;
   } else {
     const productData = await stripeClient.products.create({
-      id: item.id,
+      id: item.stripeId,
       name: item.name,
       // TODO: Add a way to disable tickets based on ticket status.
       active: true,

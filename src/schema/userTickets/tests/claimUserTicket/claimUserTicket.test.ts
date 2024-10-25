@@ -1,6 +1,7 @@
 import { AsyncReturnType } from "type-fest";
-import { assert, describe, it } from "vitest";
+import { assert, describe, it, vi, expect, beforeEach } from "vitest";
 
+import { handlePaymentLinkGeneration } from "~/schema/purchaseOrder/actions";
 import {
   executeGraphqlOperationAsUser,
   insertAllowedCurrency,
@@ -78,6 +79,11 @@ const createCommunityEventUserAndTicketTemplate = async ({
     ticketPrice: createdTicketPrice,
   };
 };
+
+// Mock the handlePaymentLinkGeneration function
+vi.mock("~/schema/purchaseOrder/actions", () => ({
+  handlePaymentLinkGeneration: vi.fn(),
+}));
 
 describe("Claim a user ticket", () => {
   describe("Should allow claiming", () => {
@@ -672,6 +678,131 @@ describe("Claim a user ticket", () => {
           `Event ${event.id} is not active. Cannot claim tickets for an inactive event.`,
         );
       }
+    });
+  });
+
+  describe("Payment link generation", () => {
+    beforeEach(() => {
+      // Reset all mocks before each test
+      vi.resetAllMocks();
+    });
+
+    it("Should generate a payment link when requested", async () => {
+      const { community, user, ticketTemplate } =
+        await createCommunityEventUserAndTicketTemplate();
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+
+      vi.mocked(handlePaymentLinkGeneration).mockResolvedValue({
+        purchaseOrder: {
+          id: "00000000-0000-0000-0000-000000000000",
+          publicId: "some-public-id",
+          userId: "some-user-id",
+          idempotencyUUIDKey: "some-idempotency-key",
+          totalPrice: "100",
+          description: null,
+          status: "open",
+          createdAt: new Date(),
+          updatedAt: null,
+          deletedAt: null,
+          currencyId: null,
+          paymentPlatform: "stripe",
+          paymentPlatformPaymentLink: "https://stripe.com/pay/123",
+          purchaseOrderPaymentStatus: "not_required",
+          paymentPlatformExpirationDate: null,
+          paymentPlatformReferenceID: null,
+          paymentPlatformStatus: null,
+          paymentPlatformMetadata: null,
+        },
+        ticketsIds: [ticketTemplate.id],
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 2,
+                  transfersInfo: [],
+                },
+              ],
+              generatePaymentLink: {
+                currencyId: "some-currency-id",
+              },
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+
+      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
+        assert.equal(
+          response.data.claimUserTicket.paymentLink,
+          "https://stripe.com/pay/123",
+        );
+
+        assert.equal(response.data.claimUserTicket.paymentPlatform, "stripe");
+      }
+
+      expect(handlePaymentLinkGeneration).toHaveBeenCalled();
+    });
+
+    it("Should not generate a payment link when not requested", async () => {
+      const { community, user, ticketTemplate } =
+        await createCommunityEventUserAndTicketTemplate();
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 2,
+                  transfersInfo: [],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+
+      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
+        assert.isNull(response.data.claimUserTicket.paymentLink);
+
+        assert.isNull(response.data.claimUserTicket.paymentPlatform);
+      }
+
+      expect(handlePaymentLinkGeneration).not.toHaveBeenCalled();
     });
   });
 });

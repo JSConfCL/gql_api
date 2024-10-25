@@ -30,7 +30,7 @@ import {
 } from "~/validations";
 
 import { RedeemUserTicketError } from "./types";
-import { createPaymentIntent } from "../purchaseOrder/actions";
+import { handlePaymentLinkGeneration } from "../purchaseOrder/actions";
 import { cleanEmail } from "../user/userHelpers";
 import { getOrCreateTransferRecipients } from "../userTicketsTransfers/helpers";
 import { UserTicketTransferInfoInputRef } from "../userTicketsTransfers/mutations";
@@ -628,17 +628,18 @@ builder.mutationField("claimUserTicket", (t) =>
                   default_redirect_url: PURCHASE_CALLBACK_URL,
                 });
 
-              const { purchaseOrder, ticketsIds } = await createPaymentIntent({
-                DB: trx,
-                USER,
-                purchaseOrderId: createdPurchaseOrder.id,
-                GET_STRIPE_CLIENT,
-                paymentCancelRedirectURL,
-                paymentSuccessRedirectURL,
-                GET_MERCADOPAGO_CLIENT,
-                currencyId: generatePaymentLink.currencyId,
-                logger,
-              });
+              const { purchaseOrder, ticketsIds } =
+                await handlePaymentLinkGeneration({
+                  DB: trx,
+                  USER,
+                  purchaseOrderId: createdPurchaseOrder.id,
+                  GET_STRIPE_CLIENT,
+                  paymentCancelRedirectURL,
+                  paymentSuccessRedirectURL,
+                  GET_MERCADOPAGO_CLIENT,
+                  currencyId: generatePaymentLink.currencyId,
+                  logger,
+                });
 
               return {
                 purchaseOrder,

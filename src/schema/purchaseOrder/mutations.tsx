@@ -3,7 +3,10 @@ import { builder } from "~/builder";
 import { selectPurchaseOrdersSchema } from "~/datasources/db/purchaseOrders";
 import { getPurchaseRedirectURLsFromPurchaseOrder } from "~/schema/purchaseOrder/helpers";
 
-import { createPaymentIntent, syncPurchaseOrderPaymentStatus } from "./actions";
+import {
+  handlePaymentLinkGeneration,
+  syncPurchaseOrderPaymentStatus,
+} from "./actions";
 import { PurchaseOrderRef } from "./types";
 
 const PayForPurchaseOrderInput = builder.inputType("PayForPurchaseOrderInput", {
@@ -56,7 +59,7 @@ builder.mutationField("payForPurchaseOrder", (t) =>
           default_redirect_url: PURCHASE_CALLBACK_URL,
           purchaseOrderId,
         });
-      const { purchaseOrder, ticketsIds } = await createPaymentIntent({
+      const { purchaseOrder, ticketsIds } = await handlePaymentLinkGeneration({
         DB,
         USER,
         purchaseOrderId,

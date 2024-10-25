@@ -293,11 +293,21 @@ builder.mutationField("createTicket", (t) =>
 
             if (foundPrice?.currency) {
               await ensureProductsAreCreated({
-                price: foundPrice.price_in_cents,
-                currencyCode: foundPrice.currency.currency,
-                ticket: insertedTicket,
+                currency: foundPrice.currency,
+                tickets: [
+                  {
+                    id: insertedTicket.id,
+                    name: insertedTicket.name,
+                    description: insertedTicket.description,
+                    isFree: insertedTicket.isFree,
+                    price: {
+                      amount: foundPrice.price_in_cents,
+                    },
+                    stripeProductId: null,
+                  },
+                ],
                 getStripeClient: ctx.GET_STRIPE_CLIENT,
-                transactionHander: trx,
+                transactionHandler: trx,
                 logger,
               });
             }

@@ -11,7 +11,7 @@ export type AcceptTransferredTicketMutationVariables = Types.Exact<{
 }>;
 
 
-export type AcceptTransferredTicketMutation = { __typename?: 'Mutation', acceptTransferredTicket: { __typename?: 'UserTicketTransfer', id: string, status: Types.TicketTransferAttemptStatus, userTicket: { __typename?: 'UserTicket', user: { __typename?: 'User', id: string } | null } } };
+export type AcceptTransferredTicketMutation = { __typename?: 'Mutation', acceptTransferredTicket: { __typename?: 'UserTicketTransfer', id: string, status: Types.TicketTransferAttemptStatus, userTicket: { __typename?: 'UserTicket', id: string, user: { __typename?: 'User', id: string } | null } } };
 
 
 export const AcceptTransferredTicket = gql`
@@ -20,6 +20,7 @@ export const AcceptTransferredTicket = gql`
     id
     status
     userTicket {
+      id
       user {
         id
       }
