@@ -1,3 +1,10 @@
+import {
+  InputShapeFromTypeParam,
+  InputTypeParam,
+  SchemaTypes,
+  ShapeFromTypeParam,
+  TypeParam,
+} from "@pothos/core";
 import { Resend } from "resend";
 
 import { Env } from "worker-configuration";
@@ -27,3 +34,25 @@ export type GraphqlContext = Context &
   Env & {
     request: Request;
   };
+
+export type InferPothosInputType<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Builder extends PothosSchemaTypes.SchemaBuilder<any>,
+  T extends InputTypeParam<Types>,
+  Types extends SchemaTypes = Builder extends PothosSchemaTypes.SchemaBuilder<
+    infer S
+  >
+    ? S
+    : never,
+> = InputShapeFromTypeParam<Types, T, true>;
+
+export type InferPothosOutputType<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Builder extends PothosSchemaTypes.SchemaBuilder<any>,
+  T extends TypeParam<Types>,
+  Types extends SchemaTypes = Builder extends PothosSchemaTypes.SchemaBuilder<
+    infer S
+  >
+    ? S
+    : never,
+> = ShapeFromTypeParam<Types, T, false>;

@@ -80,7 +80,7 @@ export const getPurchaseRedirectURLsFromPurchaseOrder = async ({
   }
 
   paymentSuccessRedirectURL =
-    eventsToCommunities[0]?.paymentCancelRedirectURL ??
+    eventsToCommunities[0]?.paymentSuccessRedirectURL ??
     paymentSuccessRedirectURL;
 
   paymentSuccessRedirectURL =

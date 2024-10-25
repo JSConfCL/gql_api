@@ -1,7 +1,8 @@
-import { and, count, inArray } from "drizzle-orm";
+import { and, count, eq, inArray } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
+import { ORM_TYPE, TRANSACTION_HANDLER } from "~/datasources/db";
 import {
   InsertUserTicketSchema,
   UserTicketTransferStatus,
@@ -9,76 +10,77 @@ import {
   selectPurchaseOrdersSchema,
   userTicketTransfersSchema,
   userTicketsSchema,
+  SelectUserTicketSchema,
+  UserTicketApprovalStatus,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
+import { Logger } from "~/logging";
+import { handlePaymentLinkGeneration } from "~/schema/purchaseOrder/actions";
 import {
   createInitialPurchaseOrder,
   getPurchaseRedirectURLsFromPurchaseOrder,
 } from "~/schema/purchaseOrder/helpers";
-import { PurchaseOrderRef } from "~/schema/purchaseOrder/types";
 import { isValidUUID } from "~/schema/shared/helpers";
-import { assertCanStartTicketClaimingForEvent } from "~/schema/userTickets/helpers";
+import { cleanEmail } from "~/schema/user/userHelpers";
+import { getOrCreateTransferRecipients } from "~/schema/userTicketsTransfers/helpers";
+import { Context } from "~/types";
 
-import { handlePaymentLinkGeneration } from "../../purchaseOrder/actions";
-import { cleanEmail } from "../../user/userHelpers";
-import { getOrCreateTransferRecipients } from "../../userTicketsTransfers/helpers";
-import { UserTicketTransferInfoInputRef } from "../../userTicketsTransfers/mutations";
-import { RedeemUserTicketError } from "../types";
+import {
+  RedeemUserTicketErrorType,
+  RedeemUserTicketResponse,
+  TicketClaimInput,
+  TicketClaimInputType,
+} from "./refs";
+import { assertCanStartTicketClaimingForEvent } from "../helpers";
 
-const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {
-  fields: (t) => ({
-    ticketId: t.string({
-      required: true,
-    }),
-    quantity: t.int({
-      required: true,
-    }),
-    transfersInfo: t.field({
-      type: [UserTicketTransferInfoInputRef],
-      required: false,
-    }),
-  }),
-});
+// Types
+type TicketClaimContext = NonNullableFields<
+  Pick<
+    Context,
+    | "GET_STRIPE_CLIENT"
+    | "GET_MERCADOPAGO_CLIENT"
+    | "PURCHASE_CALLBACK_URL"
+    | "logger"
+    | "USER"
+  >
+> & {
+  DB: TRANSACTION_HANDLER;
+};
 
-const GeneratePaymentLinkInput = builder.inputType("GeneratePaymentLinkInput", {
-  fields: (t) => ({
-    currencyId: t.string({
-      required: true,
-    }),
-  }),
-});
+export type NormalizedTicketClaimOrder = {
+  ticketId: string;
+  quantity: number;
+  itemDetails: Array<{
+    transferInfo: {
+      email: string;
+      name: string;
+      message: string | null;
+    } | null;
+  }>;
+};
 
-const TicketClaimInput = builder.inputType("TicketClaimInput", {
-  fields: (t) => ({
-    generatePaymentLink: t.field({
-      type: GeneratePaymentLinkInput,
-      description:
-        "If this field is passed, a purchase order payment link will be generated right away",
-      required: false,
-    }),
-    purchaseOrder: t.field({
-      type: [PurchaseOrderInput],
-      required: true,
-    }),
-    idempotencyUUIDKey: t.string({
-      description:
-        "A unique key to prevent duplicate requests, it's optional to send, but it's recommended to send it to prevent duplicate requests. If not sent, it will be created by the server.",
-      required: false,
-      deprecationReason: "This field is deprecated",
-    }),
-  }),
-});
+export type NormalizedTicketClaimInput = Record<
+  string,
+  NormalizedTicketClaimOrder
+>;
 
-const RedeemUserTicketResponse = builder.unionType("RedeemUserTicketResponse", {
-  types: [PurchaseOrderRef, RedeemUserTicketError],
-  resolveType: (value) => {
-    if ("errorMessage" in value) {
-      return RedeemUserTicketError;
-    }
+export type TicketClaimTicketsInfo = {
+  tickets: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    isFree: boolean;
+    requiresApproval: boolean;
+    quantity: number | null;
+    maxTicketsPerUser: number | null;
+    tags: string[] | null;
+  }>;
+};
 
-    return PurchaseOrderRef;
-  },
-});
+type UserTicketClaimData = Array<{
+  ticket: InsertUserTicketSchema;
+  transferAttempt: Omit<InsertUserTicketTransferSchema, "userTicketId"> | null;
+}>;
 
 builder.mutationField("claimUserTicket", (t) =>
   t.field({
@@ -90,413 +92,433 @@ builder.mutationField("claimUserTicket", (t) =>
     authz: {
       rules: ["IsAuthenticated"],
     },
-    resolve: async (
-      root,
-      { input: { purchaseOrder, generatePaymentLink } },
-      {
-        USER,
-        DB,
-        GET_STRIPE_CLIENT,
-        PURCHASE_CALLBACK_URL,
-        GET_MERCADOPAGO_CLIENT,
-        logger,
-      },
-    ) => {
+    resolve: async (_root, { input }, context) => {
+      const { USER, DB, logger } = context;
+
       if (!USER) {
         throw new GraphQLError("User not found");
       }
 
-      // We try to reserve as many tickets as exist in purchaseOrder array. we
-      // create a transaction to check on the tickets and reserve them. We
-      // reverse the transacion if we find that:
-      // - We would be going over the limit of tickets.
-      // - We don't have enough tickets to fulfill the purchase order.
-      // - Other General errors
-      let transactionError: null | GraphQLError = null;
-
-      if (purchaseOrder.length === 0) {
-        throw applicationError(
-          "Purchase order is empty",
-          ServiceErrors.INVALID_ARGUMENT,
-          logger,
-        );
-      }
-
-      // Aggregate purchase order items by ticket ID
-      const purchaseOrderByTickets: Record<
-        string,
-        {
-          ticketId: string;
-          quantity: number;
-          transfersInfo: {
-            email: string;
-            name: string;
-            message: string | null;
-          }[];
-        }
-      > = {};
-
-      for (const item of purchaseOrder) {
-        if (!isValidUUID(item.ticketId)) {
-          throw applicationError(
-            "Invalid ticket id",
-            ServiceErrors.INVALID_ARGUMENT,
-            logger,
-          );
-        }
-
-        if (item.quantity <= 0) {
-          throw applicationError(
-            "Invalid quantity",
-            ServiceErrors.INVALID_ARGUMENT,
-            logger,
-          );
-        }
-
-        if (!purchaseOrderByTickets[item.ticketId]) {
-          purchaseOrderByTickets[item.ticketId] = {
-            ticketId: item.ticketId,
-            quantity: 0,
-            transfersInfo: [],
-          };
-        }
-
-        purchaseOrderByTickets[item.ticketId].quantity += item.quantity;
-
-        purchaseOrderByTickets[item.ticketId].transfersInfo.push(
-          ...(item.transfersInfo || []).map((transfer) => ({
-            name: transfer.name,
-            email: cleanEmail(transfer.email),
-            message: transfer.message || null,
-          })),
-        );
-      }
-
-      for (const ticket of purchaseOrder) {
-        const order = purchaseOrderByTickets[ticket.ticketId];
-
-        if (order.transfersInfo.length > ticket.quantity) {
-          return {
-            error: true as const,
-            errorMessage:
-              "No se puede transferir más tickets de los que se han comprado",
-          };
-        }
-
-        const isTransferringToSelf = order.transfersInfo.some(
-          (transfer) => transfer.email === USER.email,
-        );
-
-        if (isTransferringToSelf) {
-          return {
-            error: true as const,
-            errorMessage: "Cannot transfer to yourself",
-          };
-        }
-      }
-
       try {
-        const transactionResults = await DB.transaction(async (trx) => {
-          try {
-            await assertCanStartTicketClaimingForEvent({
-              DB: trx,
-              user: USER,
-              purchaseOrderByTickets,
-              logger,
-            });
-
-            const ticketTemplatesIds = Object.keys(purchaseOrderByTickets);
-
-            const emailsToUsersData = await getOrCreateTransferRecipients({
-              DB: trx,
-              transferRecipients: purchaseOrder.flatMap((p) => {
-                return purchaseOrderByTickets[p.ticketId].transfersInfo;
-              }),
-            });
-
-            const [createdPurchaseOrder, ticketTemplates] = await Promise.all([
-              createInitialPurchaseOrder({
-                DB: trx,
-                userId: USER.id,
-                logger,
-              }),
-              trx.query.ticketsSchema.findMany({
-                where: (t, { inArray }) => inArray(t.id, ticketTemplatesIds),
-                with: {
-                  event: true,
-                  ticketsPrices: {
-                    with: {
-                      price: true,
-                    },
-                  },
-                },
-              }),
-            ]);
-
-            const notFoundTicketTemplatesIds = ticketTemplatesIds.filter(
-              (ticketId) => !ticketTemplates.find((t) => t.id === ticketId),
-            );
-
-            if (notFoundTicketTemplatesIds.length > 0) {
-              throw applicationError(
-                `Tickets with ids ${notFoundTicketTemplatesIds.join(
-                  ", ",
-                )} not found`,
-                ServiceErrors.NOT_FOUND,
-                logger,
-              );
-            }
-
-            const claimedTickets: InsertUserTicketSchema[] = [];
-
-            // Process each ticket template
-            for (const ticketTemplate of ticketTemplates) {
-              const { event } = ticketTemplate;
-              const quantityToPurchase =
-                purchaseOrderByTickets[ticketTemplate.id].quantity;
-              const ticketTransfers =
-                purchaseOrderByTickets[ticketTemplate.id].transfersInfo;
-
-              // If the event is not active, we throw an error.
-              if (event.status === "inactive") {
-                throw applicationError(
-                  `Event ${event.id} is not active. Cannot claim tickets for an inactive event.`,
-                  ServiceErrors.FAILED_PRECONDITION,
-                  logger,
-                );
-              }
-
-              const isApproved =
-                ticketTemplate.isFree && !ticketTemplate.requiresApproval;
-
-              for (let i = 0; i < quantityToPurchase; i++) {
-                const isTransfer = i < ticketTransfers.length;
-                const transferInfo = isTransfer ? ticketTransfers[i] : null;
-                const recipientUser = transferInfo
-                  ? emailsToUsersData.get(transferInfo.email)
-                  : null;
-
-                if (isTransfer && !transferInfo) {
-                  throw applicationError(
-                    `Transfer info is required for ticket ${i + 1}`,
-                    ServiceErrors.INVALID_ARGUMENT,
-                    logger,
-                  );
-                }
-
-                if (!recipientUser && transferInfo) {
-                  throw applicationError(
-                    `User for email ${transferInfo.email} not found`,
-                    ServiceErrors.NOT_FOUND,
-                    logger,
-                  );
-                }
-
-                const newTicket: InsertUserTicketSchema = {
-                  userId: USER.id,
-                  purchaseOrderId: createdPurchaseOrder.id,
-                  ticketTemplateId: ticketTemplate.id,
-                  approvalStatus: isApproved ? "approved" : "pending",
-                };
-
-                claimedTickets.push(newTicket);
-              }
-            }
-
-            logger.info(`Creating ${claimedTickets.length} user tickets`);
-
-            // Bulk insert claimed tickets
-            const createdUserTickets = await trx
-              .insert(userTicketsSchema)
-              .values(claimedTickets)
-              .returning();
-
-            // Create a map of ticketTemplateId to created userTickets
-            const ticketTemplateToUserTickets = createdUserTickets.reduce(
-              (acc, ticket) => {
-                if (!acc[ticket.ticketTemplateId]) {
-                  acc[ticket.ticketTemplateId] = [];
-                }
-
-                acc[ticket.ticketTemplateId].push(ticket);
-
-                return acc;
-              },
-              {} as Record<string, typeof createdUserTickets>,
-            );
-
-            // Prepare transfer attempts
-            const transfersAttempts: InsertUserTicketTransferSchema[] = [];
-
-            for (const item of purchaseOrder) {
-              const userTickets =
-                ticketTemplateToUserTickets[item.ticketId] || [];
-              const transfersInto =
-                purchaseOrderByTickets[item.ticketId].transfersInfo;
-
-              transfersInto.forEach((transferInfo, index) => {
-                const userTicket = userTickets[index];
-                const recipientUser = emailsToUsersData.get(transferInfo.email);
-
-                if (recipientUser) {
-                  transfersAttempts.push({
-                    userTicketId: userTicket.id,
-                    senderUserId: USER.id,
-                    recipientUserId: recipientUser.id,
-                    status: UserTicketTransferStatus.Pending,
-                    transferMessage: transferInfo.message || null,
-                    // Temporary, this will be updated
-                    // when the payment is done
-                    expirationDate: new Date(),
-                    isReturn: false,
-                  });
-                } else {
-                  throw applicationError(
-                    `User for email ${transferInfo.email} not found`,
-                    ServiceErrors.INTERNAL_SERVER_ERROR,
-                    logger,
-                  );
-                }
-              });
-            }
-
-            // Insert transfer attempts if any
-            if (transfersAttempts.length > 0) {
-              await trx
-                .insert(userTicketTransfersSchema)
-                .values(transfersAttempts);
-            }
-
-            // Bulk query for existing ticket counts
-            const finalTicketsCount = await trx
-              .select({
-                ticketTemplateId: userTicketsSchema.ticketTemplateId,
-                count: count(userTicketsSchema.id),
-              })
-              .from(userTicketsSchema)
-              .where(
-                and(
-                  inArray(
-                    userTicketsSchema.ticketTemplateId,
-                    ticketTemplates.map((t) => t.id),
-                  ),
-                  inArray(userTicketsSchema.approvalStatus, [
-                    "approved",
-                    "pending",
-                    "not_required",
-                    "gifted",
-                    "gift_accepted",
-                    "transfer_pending",
-                    "transfer_accepted",
-                  ]),
-                ),
-              )
-              .groupBy(userTicketsSchema.ticketTemplateId);
-
-            for (const ticketTemplate of ticketTemplates) {
-              const existingCount =
-                finalTicketsCount.find(
-                  (count) => count.ticketTemplateId === ticketTemplate.id,
-                )?.count || 0;
-
-              const limitAlreadyReached = ticketTemplate.quantity
-                ? existingCount > ticketTemplate.quantity
-                : false;
-
-              logger.info(
-                `Ticket template with id ${
-                  ticketTemplate.id
-                } has ${existingCount} tickets ${
-                  limitAlreadyReached ? "and has reached its limit" : ""
-                }
-                  `,
-              );
-
-              //  if the ticket has a quantity field, we  do a last check to see
-              //  if we have enough gone over the limit of tickets.
-              if (limitAlreadyReached) {
-                throw new Error(
-                  `We have gone over the limit of tickets for ticket template with id ${ticketTemplate.id}`,
-                );
-              }
-            }
-
-            // Fetch the created purchase order
-            const foundPurchaseOrder =
-              await trx.query.purchaseOrdersSchema.findFirst({
-                where: (po, { eq }) => eq(po.id, createdPurchaseOrder.id),
-              });
-
-            if (!foundPurchaseOrder) {
-              throw new Error("Could not find purchase order");
-            }
-
-            const selectedPurchaseOrder =
-              selectPurchaseOrdersSchema.parse(foundPurchaseOrder);
-
-            // Generate payment link if requested
-            if (generatePaymentLink) {
-              logger.info("Extracting redirect URLs for purchase order");
-              const { paymentSuccessRedirectURL, paymentCancelRedirectURL } =
-                await getPurchaseRedirectURLsFromPurchaseOrder({
-                  DB: trx,
-                  purchaseOrderId: createdPurchaseOrder.id,
-                  default_redirect_url: PURCHASE_CALLBACK_URL,
-                });
-
-              const { purchaseOrder, ticketsIds } =
-                await handlePaymentLinkGeneration({
-                  DB: trx,
-                  USER,
-                  purchaseOrderId: createdPurchaseOrder.id,
-                  GET_STRIPE_CLIENT,
-                  paymentCancelRedirectURL,
-                  paymentSuccessRedirectURL,
-                  GET_MERCADOPAGO_CLIENT,
-                  currencyId: generatePaymentLink.currencyId,
-                  logger,
-                });
-
-              return {
-                purchaseOrder,
-                ticketsIds,
-              };
-            }
-
-            return {
-              purchaseOrder: selectedPurchaseOrder,
-              ticketsIds: createdUserTickets.map((ticket) => ticket.id),
-            };
-          } catch (e) {
-            logger.error((e as Error).message);
-
-            transactionError =
-              e instanceof Error
-                ? new GraphQLError(e.message, {
-                    originalError: e,
-                  })
-                : new GraphQLError("Unknown error");
-
-            trx.rollback();
-            throw e;
-          }
+        return await DB.transaction(async (trx) => {
+          return await processTicketClaim({
+            input,
+            context: { ...context, USER, DB: trx },
+          });
         });
+      } catch (error) {
+        logger.error("Error claiming user tickets", error);
 
-        return transactionResults;
-      } catch (e: unknown) {
-        logger.error("Error claiming user tickets", e);
-
-        if (transactionError) {
-          return {
-            error: true as const,
-            errorMessage: (transactionError as GraphQLError).message,
-          };
-        }
-
-        throw new GraphQLError(
-          e instanceof Error ? e.message : "Unknown error",
-        );
+        return handleClaimError(error);
       }
     },
   }),
 );
+
+// Main processing function
+async function processTicketClaim({
+  input,
+  context,
+}: {
+  input: TicketClaimInputType;
+  context: TicketClaimContext;
+}) {
+  const { purchaseOrder, generatePaymentLink } = input;
+  const { logger, USER, DB } = context;
+
+  const normalizedInput = normalizeTicketClaimInput(purchaseOrder, logger);
+
+  const [ticketsInfo, purchaseOrderRecord, transferRecipients] =
+    await Promise.all([
+      fetchTicketsInfo(DB, normalizedInput, logger),
+      createInitialPurchaseOrder({
+        DB,
+        userId: USER.id,
+        logger,
+      }),
+      getOrCreateTransferRecipients({
+        DB,
+        transferRecipients: Object.values(normalizedInput)
+          .flatMap((order) => order.itemDetails.map((i) => i.transferInfo))
+          .filter(Boolean),
+      }),
+    ]);
+
+  await assertCanStartTicketClaimingForEvent(
+    context,
+    ticketsInfo,
+    normalizedInput,
+  );
+
+  const ticketsToClaim = prepareUserTicketClaimData({
+    ticketsInfo,
+    normalizedInput,
+    purchaseOrderRecord,
+    transferRecipients,
+    USER,
+    logger,
+  });
+
+  const createdUserTickets = await saveUserTicketsAndRelatedData(
+    DB,
+    logger,
+    ticketsToClaim,
+    ticketsInfo,
+  );
+
+  await verifyFinalTicketCounts(DB, ticketsInfo, USER, logger);
+
+  if (generatePaymentLink) {
+    const redirectURLs = await getPurchaseRedirectURLsFromPurchaseOrder({
+      DB,
+      purchaseOrderId: purchaseOrderRecord.id,
+      default_redirect_url: context.PURCHASE_CALLBACK_URL,
+    });
+
+    return handlePaymentLinkGeneration({
+      DB,
+      USER,
+      purchaseOrderId: purchaseOrderRecord.id,
+      currencyId: generatePaymentLink.currencyId,
+      GET_STRIPE_CLIENT: context.GET_STRIPE_CLIENT,
+      GET_MERCADOPAGO_CLIENT: context.GET_MERCADOPAGO_CLIENT,
+      logger,
+      paymentSuccessRedirectURL: redirectURLs.paymentSuccessRedirectURL,
+      paymentCancelRedirectURL: redirectURLs.paymentCancelRedirectURL,
+    });
+  }
+
+  return {
+    purchaseOrder: selectPurchaseOrdersSchema.parse(purchaseOrderRecord),
+    ticketsIds: createdUserTickets.map((ticket) => ticket.id),
+  };
+}
+
+// Helper functions
+function normalizeTicketClaimInput(
+  purchaseOrder: TicketClaimInputType["purchaseOrder"],
+  logger: Logger,
+): NormalizedTicketClaimInput {
+  if (purchaseOrder.length === 0) {
+    throw applicationError(
+      "Purchase order is empty",
+      ServiceErrors.INVALID_ARGUMENT,
+      logger,
+    );
+  }
+
+  const acc: NormalizedTicketClaimInput = {};
+
+  for (const item of purchaseOrder) {
+    if (!isValidUUID(item.ticketId)) {
+      throw applicationError(
+        "Invalid ticket id",
+        ServiceErrors.INVALID_ARGUMENT,
+        logger,
+      );
+    }
+
+    if (item.quantity <= 0) {
+      throw applicationError(
+        "Invalid quantity",
+        ServiceErrors.INVALID_ARGUMENT,
+        logger,
+      );
+    }
+
+    if (!acc[item.ticketId]) {
+      acc[item.ticketId] = {
+        ticketId: item.ticketId,
+        quantity: 0,
+        itemDetails: [],
+      };
+    }
+
+    acc[item.ticketId].quantity += item.quantity;
+
+    const details = (item.itemsDetails || [])?.map((data) => {
+      const transfer = data.transferInfo;
+      let transferInfo = null;
+
+      if (transfer) {
+        transferInfo = {
+          name: transfer.name,
+          email: cleanEmail(transfer.email),
+          message: transfer.message || null,
+        };
+      }
+
+      return { transferInfo };
+    });
+
+    acc[item.ticketId].itemDetails.push(...details);
+  }
+
+  return acc;
+}
+
+async function fetchTicketsInfo(
+  DB: ORM_TYPE,
+  normalizedInput: NormalizedTicketClaimInput,
+  logger: Logger,
+): Promise<TicketClaimTicketsInfo> {
+  const ticketIds = Object.keys(normalizedInput);
+
+  const tickets = await DB.query.ticketsSchema.findMany({
+    where: (t, { inArray }) => inArray(t.id, ticketIds),
+    columns: {
+      id: true,
+      name: true,
+      description: true,
+      isFree: true,
+      requiresApproval: true,
+      quantity: true,
+      maxTicketsPerUser: true,
+      tags: true,
+    },
+  });
+
+  const notFoundTicketIds = ticketIds.filter(
+    (id) => !tickets.find((t) => t.id === id),
+  );
+
+  if (notFoundTicketIds.length > 0) {
+    throw applicationError(
+      `Tickets with ids ${notFoundTicketIds.join(", ")} not found`,
+      ServiceErrors.NOT_FOUND,
+      logger,
+    );
+  }
+
+  return { tickets };
+}
+
+function prepareUserTicketClaimData({
+  ticketsInfo,
+  normalizedInput,
+  purchaseOrderRecord,
+  transferRecipients,
+  USER,
+  logger,
+}: {
+  ticketsInfo: TicketClaimTicketsInfo;
+  normalizedInput: NormalizedTicketClaimInput;
+  purchaseOrderRecord: { id: string };
+  transferRecipients: Map<string, { id: string }>;
+  USER: NonNullable<Context["USER"]>;
+  logger: Logger;
+}): UserTicketClaimData {
+  const { tickets: ticketTemplates } = ticketsInfo;
+
+  return ticketTemplates.flatMap((ticketTemplate) => {
+    const order = normalizedInput[ticketTemplate.id];
+    const isApproved =
+      ticketTemplate.isFree && !ticketTemplate.requiresApproval;
+
+    const newTickets: UserTicketClaimData = [];
+
+    for (let i = 0; i < order.quantity; i++) {
+      const itemDetails = order.itemDetails[i];
+
+      const newTicket: InsertUserTicketSchema = {
+        userId: USER.id,
+        purchaseOrderId: purchaseOrderRecord.id,
+        ticketTemplateId: ticketTemplate.id,
+        approvalStatus: isApproved ? "approved" : "pending",
+      };
+
+      let transferAttempt = null;
+
+      if (itemDetails?.transferInfo) {
+        const transferInfo = itemDetails.transferInfo;
+        const recipientUser = transferRecipients.get(transferInfo.email);
+
+        if (!recipientUser) {
+          throw applicationError(
+            `Recipient user not found for email ${transferInfo.email}`,
+            ServiceErrors.NOT_FOUND,
+            logger,
+          );
+        }
+
+        transferAttempt = {
+          senderUserId: USER.id,
+          recipientUserId: recipientUser.id,
+          status: UserTicketTransferStatus.Pending,
+          transferMessage: transferInfo.message,
+          // Temporary, this will be updated
+          // when the payment is done
+          expirationDate: new Date(),
+          isReturn: false,
+        };
+      }
+
+      newTickets.push({
+        ticket: newTicket,
+        transferAttempt,
+      });
+    }
+
+    return newTickets;
+  });
+}
+
+async function saveUserTicketsAndRelatedData(
+  DB: ORM_TYPE,
+  logger: Logger,
+  ticketsToClaim: UserTicketClaimData,
+  ticketInfo: TicketClaimTicketsInfo,
+): Promise<SelectUserTicketSchema[]> {
+  const createdTickets: SelectUserTicketSchema[] = [];
+  const transferAttemptsToInsert: InsertUserTicketTransferSchema[] = [];
+
+  // since each ticket has its own transfer attempt
+  // we cannot insert them in bulk because the returned id is needed
+  // for the transfer attempt and the "returning" clause
+  // could return the tickets in any order
+  const createTicketsPromises = ticketsToClaim.map(async (ticketData) => {
+    const [createdTicket] = await DB.insert(userTicketsSchema)
+      .values(ticketData.ticket)
+      .returning();
+
+    createdTickets.push(createdTicket);
+
+    if (ticketData.transferAttempt) {
+      transferAttemptsToInsert.push({
+        ...ticketData.transferAttempt,
+        userTicketId: createdTicket.id,
+      });
+    }
+
+    return createdTicket;
+  });
+
+  await Promise.all(createTicketsPromises);
+
+  // Insert transfer attempts if any
+  const createdUserTicketTransfers =
+    transferAttemptsToInsert.length > 0
+      ? await DB.insert(userTicketTransfersSchema)
+          .values(transferAttemptsToInsert)
+          .returning()
+      : [];
+
+  return createdTickets.map((userTicket) => {
+    const ticketTemplate = ticketInfo.tickets.find(
+      (t) => t.id === userTicket.ticketTemplateId,
+    );
+
+    if (!ticketTemplate) {
+      throw applicationError(
+        `Ticket template with id ${userTicket.ticketTemplateId} not found`,
+        ServiceErrors.NOT_FOUND,
+        logger,
+      );
+    }
+
+    const transferAttempt = createdUserTicketTransfers.find(
+      (t) => t.userTicketId === userTicket.id,
+    );
+
+    return {
+      ...userTicket,
+      ticketTemplate,
+      transferAttempt: transferAttempt || null,
+    };
+  });
+}
+
+async function verifyFinalTicketCounts(
+  DB: ORM_TYPE,
+  ticketInfo: TicketClaimTicketsInfo,
+  USER: NonNullable<Context["USER"]>,
+  logger: Logger,
+) {
+  const validApprovalStatuses: UserTicketApprovalStatus[] = [
+    "approved",
+    "pending",
+    "not_required",
+    "gifted",
+    "gift_accepted",
+    "transfer_pending",
+    "transfer_accepted",
+  ];
+
+  // Bulk query for existing ticket counts
+  const ticketCounts = await DB.select({
+    ticketTemplateId: userTicketsSchema.ticketTemplateId,
+    globalCount: count(userTicketsSchema.id),
+    userCount: count(
+      and(
+        eq(userTicketsSchema.userId, USER.id),
+        inArray(userTicketsSchema.approvalStatus, validApprovalStatuses),
+      ),
+    ),
+  })
+    .from(userTicketsSchema)
+    .where(
+      and(
+        inArray(
+          userTicketsSchema.ticketTemplateId,
+          ticketInfo.tickets.map((t) => t.id),
+        ),
+        inArray(userTicketsSchema.approvalStatus, validApprovalStatuses),
+      ),
+    )
+    .groupBy(userTicketsSchema.ticketTemplateId);
+
+  for (const ticketTemplate of ticketInfo.tickets) {
+    const countInfo = ticketCounts.find(
+      (count) => count.ticketTemplateId === ticketTemplate.id,
+    );
+    const globalCount = countInfo?.globalCount ?? 0;
+    const userCount = countInfo?.userCount ?? 0;
+
+    const limitAlreadyReached = ticketTemplate.quantity
+      ? globalCount > ticketTemplate.quantity
+      : false;
+
+    logger.info(
+      `Ticket template with id ${
+        ticketTemplate.id
+      } has ${globalCount} tickets ${
+        limitAlreadyReached ? "and has reached its limit" : ""
+      }`,
+    );
+
+    //  if the ticket has a quantity field, we  do a last check to see
+    //  if we have enough gone over the limit of tickets.
+    if (limitAlreadyReached) {
+      throw applicationError(
+        `We have gone over the limit of tickets for ticket template with id ${ticketTemplate.id}`,
+        ServiceErrors.FAILED_PRECONDITION,
+        logger,
+      );
+    }
+
+    if (
+      ticketTemplate.maxTicketsPerUser &&
+      userCount > ticketTemplate.maxTicketsPerUser
+    ) {
+      throw applicationError(
+        `Ticket limit per user exceeded for ticket template ${ticketTemplate.id}`,
+        ServiceErrors.FAILED_PRECONDITION,
+        logger,
+      );
+    }
+  }
+}
+
+function handleClaimError(error: unknown): RedeemUserTicketErrorType {
+  if (error instanceof GraphQLError || error instanceof Error) {
+    return {
+      error: true,
+      errorMessage: error.message,
+    };
+  }
+
+  return {
+    error: true,
+    errorMessage: "An unknown error occurred",
+  };
+}

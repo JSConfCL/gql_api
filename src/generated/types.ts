@@ -723,9 +723,13 @@ export type PurchaseOrder = {
 };
 
 export type PurchaseOrderInput = {
+  itemsDetails?: InputMaybe<Array<PurchaseOrderItemDetailsInput>>;
   quantity: Scalars["Int"]["input"];
   ticketId: Scalars["String"]["input"];
-  transfersInfo?: InputMaybe<Array<UserTicketTransferInfoInput>>;
+};
+
+export type PurchaseOrderItemDetailsInput = {
+  transferInfo?: InputMaybe<UserTicketTransferInfoInput>;
 };
 
 export enum PurchaseOrderPaymentStatusEnum {
@@ -1104,11 +1108,6 @@ export enum TicketApprovalStatus {
 export type TicketClaimInput = {
   /** If this field is passed, a purchase order payment link will be generated right away */
   generatePaymentLink?: InputMaybe<GeneratePaymentLinkInput>;
-  /**
-   * A unique key to prevent duplicate requests, it's optional to send, but it's recommended to send it to prevent duplicate requests. If not sent, it will be created by the server.
-   * @deprecated This field is deprecated
-   */
-  idempotencyUUIDKey?: InputMaybe<Scalars["String"]["input"]>;
   purchaseOrder: Array<PurchaseOrderInput>;
 };
 
