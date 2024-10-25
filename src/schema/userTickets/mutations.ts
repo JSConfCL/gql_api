@@ -14,8 +14,7 @@ import {
   canCancelUserTicket,
   canRedeemUserTicket,
 } from "~/validations";
-
-import "./mutations/claimUserTickets";
+import "./mutations/claimUserTicket";
 
 builder.mutationField("cancelUserTicket", (t) =>
   t.field({
