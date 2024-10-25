@@ -420,8 +420,10 @@ export const handlePaymentLinkGeneration = async ({
     DB,
   );
 
-  const { totalAmount, allTicketsAreFree: allTicketsAreFree } =
-    calculateTotalAmount(purchaseOrderInfo, currencyId);
+  const { totalAmount, allTicketsAreFree } = calculateTotalAmount(
+    purchaseOrderInfo,
+    currencyId,
+  );
 
   if (!allTicketsAreFree && totalAmount === 0) {
     throw new GraphQLError(
@@ -525,6 +527,7 @@ const createPaymentIntent = async ({
   let paymentPlatformData: PaymentPlatformIntent;
   const currencyCode = currency.currency;
 
+  // Create products in stripe or the payment platform if needed
   const updatedProducts = await DB.transaction(async (trx) => {
     const uniqueTickets = userTickets
       .map(({ ticketTemplate }) => {
@@ -551,6 +554,7 @@ const createPaymentIntent = async ({
     });
   });
 
+  // Update the user tickets with the updated payment platform data
   const updatedUserTickets = userTickets.map((userTicket) => {
     const updatedTicket = updatedProducts.tickets.find(
       (ut) => ut.id === userTicket.ticketTemplate.id,
