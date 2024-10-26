@@ -15,7 +15,7 @@ import {
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import { addToObjectIfPropertyExists } from "~/schema/shared/helpers";
-import { TicketRef } from "~/schema/shared/refs";
+import { PricingInputFieldRef, TicketRef } from "~/schema/shared/refs";
 import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
 import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
 import {
@@ -23,19 +23,6 @@ import {
   TicketTemplateVisibility,
 } from "~/schema/ticket/types";
 import { canCreateTicket, canEditTicket } from "~/validations";
-
-const PricingInputField = builder.inputType("PricingInputField", {
-  fields: (t) => ({
-    value_in_cents: t.int({
-      description:
-        "The price. But in cents, so for a $10 ticket, you'd pass 1000 (or 10_00), or for 1000 chilean pesos, you'd pass 1000_00",
-      required: true,
-    }),
-    currencyId: t.string({
-      required: true,
-    }),
-  }),
-});
 
 const TicketCreateInput = builder.inputType("TicketCreateInput", {
   fields: (t) => ({
@@ -94,7 +81,7 @@ const TicketCreateInput = builder.inputType("TicketCreateInput", {
         "If the ticket is free, the price submitted will be ignored.",
     }),
     prices: t.field({
-      type: [PricingInputField],
+      type: [PricingInputFieldRef],
       required: false,
     }),
   }),
@@ -306,6 +293,7 @@ builder.mutationField("createTicket", (t) =>
                     stripeProductId: null,
                   },
                 ],
+                addons: [],
                 getStripeClient: ctx.GET_STRIPE_CLIENT,
                 transactionHandler: trx,
                 logger,
@@ -369,7 +357,7 @@ const TicketEditInput = builder.inputType("TicketEditInput", {
         "If provided, quantity must not be passed. This is for things like online events where there is no limit to the amount of tickets that can be sold.",
     }),
     prices: t.field({
-      type: [PricingInputField],
+      type: [PricingInputFieldRef],
       required: false,
     }),
   }),

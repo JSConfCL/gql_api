@@ -19,6 +19,7 @@ import {
   NormalizedTicketClaimOrder,
   TicketClaimTicketsInfo,
 } from "./mutations/claimUserTicket";
+import { validateAddonClaimsAndConstraints } from "../userTicketsAddons/helpers";
 
 export const assertCanStartTicketClaimingForEvent = async (
   context: NonNullableFields<Pick<Context, "USER" | "logger">> & {
@@ -77,6 +78,14 @@ export const assertCanStartTicketClaimingForEvent = async (
     validateTicketPurchase(ticket, order, logger);
 
     validateTransferRequests(order, USER, logger);
+
+    validateAddonClaimsAndConstraints({
+      ticketId: ticket.id,
+      newAddonClaims: order.itemDetails.flatMap((i) => i.addonRequests),
+      alreadyClaimedAddons: [],
+      ticketRelatedAddonsInfo: ticketInfo.addons,
+      logger,
+    });
   });
 };
 

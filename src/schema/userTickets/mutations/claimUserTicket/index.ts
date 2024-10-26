@@ -12,6 +12,10 @@ import {
   userTicketsSchema,
   SelectUserTicketSchema,
   UserTicketApprovalStatus,
+  AddonConstraintType,
+  InsertUserTicketAddonClaimSchema,
+  UserTicketAddonRedemptionStatus,
+  userTicketAddonsSchema,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import { Logger } from "~/logging";
@@ -56,6 +60,10 @@ export type NormalizedTicketClaimOrder = {
       name: string;
       message: string | null;
     } | null;
+    addonRequests: Array<{
+      addonId: string;
+      quantity: number;
+    }>;
   }>;
 };
 
@@ -75,11 +83,27 @@ export type TicketClaimTicketsInfo = {
     maxTicketsPerUser: number | null;
     tags: string[] | null;
   }>;
+  addons: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    totalStock: number | null;
+    maxPerTicket: number | null;
+    isUnlimited: boolean;
+    constraints: Array<{
+      constraintType: AddonConstraintType;
+      relatedAddonId: string;
+    }>;
+    ticketAddons: Array<{
+      ticketId: string;
+    }>;
+  }>;
 };
 
 type UserTicketClaimData = Array<{
   ticket: InsertUserTicketSchema;
   transferAttempt: Omit<InsertUserTicketTransferSchema, "userTicketId"> | null;
+  addonClaims: Array<Omit<InsertUserTicketAddonClaimSchema, "userTicketId">>;
 }>;
 
 builder.mutationField("claimUserTicket", (t) =>
@@ -128,9 +152,9 @@ async function processTicketClaim({
 
   const normalizedInput = normalizeTicketClaimInput(purchaseOrder, logger);
 
-  const [ticketsInfo, purchaseOrderRecord, transferRecipients] =
+  const [ticketsAndAddonsInfo, purchaseOrderRecord, transferRecipients] =
     await Promise.all([
-      fetchTicketsInfo(DB, normalizedInput, logger),
+      fetchTicketsAndAddonsInfo(DB, normalizedInput, logger),
       createInitialPurchaseOrder({
         DB,
         userId: USER.id,
@@ -146,12 +170,12 @@ async function processTicketClaim({
 
   await assertCanStartTicketClaimingForEvent(
     context,
-    ticketsInfo,
+    ticketsAndAddonsInfo,
     normalizedInput,
   );
 
-  const ticketsToClaim = prepareUserTicketClaimData({
-    ticketsInfo,
+  const userTicketsToClaim = prepareUserTicketClaimData({
+    ticketsAndAddonsInfo,
     normalizedInput,
     purchaseOrderRecord,
     transferRecipients,
@@ -161,12 +185,10 @@ async function processTicketClaim({
 
   const createdUserTickets = await saveUserTicketsAndRelatedData(
     DB,
-    logger,
-    ticketsToClaim,
-    ticketsInfo,
+    userTicketsToClaim,
   );
 
-  await verifyFinalTicketCounts(DB, ticketsInfo, USER, logger);
+  await verifyFinalUserTicketCounts(DB, ticketsAndAddonsInfo, USER, logger);
 
   if (generatePaymentLink) {
     const redirectURLs = await getPurchaseRedirectURLsFromPurchaseOrder({
@@ -248,7 +270,7 @@ function normalizeTicketClaimInput(
         };
       }
 
-      return { transferInfo };
+      return { transferInfo, addonRequests: data.addons };
     });
 
     acc[item.ticketId].itemDetails.push(...details);
@@ -257,26 +279,64 @@ function normalizeTicketClaimInput(
   return acc;
 }
 
-async function fetchTicketsInfo(
+async function fetchTicketsAndAddonsInfo(
   DB: ORM_TYPE,
   normalizedInput: NormalizedTicketClaimInput,
   logger: Logger,
 ): Promise<TicketClaimTicketsInfo> {
   const ticketIds = Object.keys(normalizedInput);
+  const addonIds = Object.values(normalizedInput)
+    .flatMap((order) => order.itemDetails.flatMap((i) => i.addonRequests))
+    .map((addon) => addon.addonId);
 
-  const tickets = await DB.query.ticketsSchema.findMany({
-    where: (t, { inArray }) => inArray(t.id, ticketIds),
-    columns: {
-      id: true,
-      name: true,
-      description: true,
-      isFree: true,
-      requiresApproval: true,
-      quantity: true,
-      maxTicketsPerUser: true,
-      tags: true,
-    },
-  });
+  const [tickets, addons] = await Promise.all([
+    DB.query.ticketsSchema.findMany({
+      where: (t, { inArray }) => inArray(t.id, ticketIds),
+      columns: {
+        id: true,
+        name: true,
+        description: true,
+        isFree: true,
+        requiresApproval: true,
+        quantity: true,
+        maxTicketsPerUser: true,
+        tags: true,
+      },
+      with: {
+        ticketAddons: {
+          columns: {
+            addonId: true,
+          },
+        },
+      },
+    }),
+    addonIds.length > 0
+      ? DB.query.addonsSchema.findMany({
+          where: (a, { inArray }) => inArray(a.id, addonIds),
+          columns: {
+            id: true,
+            name: true,
+            description: true,
+            totalStock: true,
+            maxPerTicket: true,
+            isUnlimited: true,
+          },
+          with: {
+            constraints: {
+              columns: {
+                constraintType: true,
+                relatedAddonId: true,
+              },
+            },
+            ticketAddons: {
+              columns: {
+                ticketId: true,
+              },
+            },
+          },
+        })
+      : Promise.resolve([]),
+  ]);
 
   const notFoundTicketIds = ticketIds.filter(
     (id) => !tickets.find((t) => t.id === id),
@@ -290,25 +350,25 @@ async function fetchTicketsInfo(
     );
   }
 
-  return { tickets };
+  return { tickets, addons };
 }
 
 function prepareUserTicketClaimData({
-  ticketsInfo,
+  ticketsAndAddonsInfo,
   normalizedInput,
   purchaseOrderRecord,
   transferRecipients,
   USER,
   logger,
 }: {
-  ticketsInfo: TicketClaimTicketsInfo;
+  ticketsAndAddonsInfo: TicketClaimTicketsInfo;
   normalizedInput: NormalizedTicketClaimInput;
   purchaseOrderRecord: { id: string };
   transferRecipients: Map<string, { id: string }>;
   USER: NonNullable<Context["USER"]>;
   logger: Logger;
 }): UserTicketClaimData {
-  const { tickets: ticketTemplates } = ticketsInfo;
+  const { tickets: ticketTemplates } = ticketsAndAddonsInfo;
 
   return ticketTemplates.flatMap((ticketTemplate) => {
     const order = normalizedInput[ticketTemplate.id];
@@ -318,7 +378,8 @@ function prepareUserTicketClaimData({
     const newTickets: UserTicketClaimData = [];
 
     for (let i = 0; i < order.quantity; i++) {
-      const itemDetails = order.itemDetails[i];
+      const itemDetails =
+        order.itemDetails.length > i ? order.itemDetails[i] : null;
 
       const newTicket: InsertUserTicketSchema = {
         userId: USER.id,
@@ -353,9 +414,39 @@ function prepareUserTicketClaimData({
         };
       }
 
+      const addonClaims: UserTicketClaimData[0]["addonClaims"] = [];
+
+      for (const addonRequest of itemDetails?.addonRequests || []) {
+        const addon = ticketsAndAddonsInfo.addons.find(
+          (a) => a.id === addonRequest.addonId,
+        );
+
+        if (!addon) {
+          throw applicationError(
+            `Addon with id ${addonRequest.addonId} not found`,
+            ServiceErrors.NOT_FOUND,
+            logger,
+          );
+        }
+
+        const addonClaim: Omit<
+          InsertUserTicketAddonClaimSchema,
+          "userTicketId"
+        > = {
+          addonId: addon.id,
+          quantity: addonRequest.quantity,
+          purchaseOrderId: purchaseOrderRecord.id,
+          unitPriceInCents: 0,
+          redemptionStatus: UserTicketAddonRedemptionStatus.PENDING,
+        };
+
+        addonClaims.push(addonClaim);
+      }
+
       newTickets.push({
         ticket: newTicket,
         transferAttempt,
+        addonClaims,
       });
     }
 
@@ -365,12 +456,11 @@ function prepareUserTicketClaimData({
 
 async function saveUserTicketsAndRelatedData(
   DB: ORM_TYPE,
-  logger: Logger,
   ticketsToClaim: UserTicketClaimData,
-  ticketInfo: TicketClaimTicketsInfo,
 ): Promise<SelectUserTicketSchema[]> {
   const createdTickets: SelectUserTicketSchema[] = [];
   const transferAttemptsToInsert: InsertUserTicketTransferSchema[] = [];
+  const addonClaimsToInsert: InsertUserTicketAddonClaimSchema[] = [];
 
   // since each ticket has its own transfer attempt
   // we cannot insert them in bulk because the returned id is needed
@@ -390,45 +480,36 @@ async function saveUserTicketsAndRelatedData(
       });
     }
 
+    addonClaimsToInsert.push(
+      ...ticketData.addonClaims.map((addonClaim) => ({
+        ...addonClaim,
+        userTicketId: createdTicket.id,
+      })),
+    );
+
     return createdTicket;
   });
 
   await Promise.all(createTicketsPromises);
 
-  // Insert transfer attempts if any
-  const createdUserTicketTransfers =
+  // Insert transfer attempts and addon claims if any
+  await Promise.all([
     transferAttemptsToInsert.length > 0
-      ? await DB.insert(userTicketTransfersSchema)
+      ? DB.insert(userTicketTransfersSchema)
           .values(transferAttemptsToInsert)
           .returning()
-      : [];
+      : Promise.resolve([]),
+    addonClaimsToInsert.length > 0
+      ? DB.insert(userTicketAddonsSchema)
+          .values(addonClaimsToInsert)
+          .returning()
+      : Promise.resolve([]),
+  ]);
 
-  return createdTickets.map((userTicket) => {
-    const ticketTemplate = ticketInfo.tickets.find(
-      (t) => t.id === userTicket.ticketTemplateId,
-    );
-
-    if (!ticketTemplate) {
-      throw applicationError(
-        `Ticket template with id ${userTicket.ticketTemplateId} not found`,
-        ServiceErrors.NOT_FOUND,
-        logger,
-      );
-    }
-
-    const transferAttempt = createdUserTicketTransfers.find(
-      (t) => t.userTicketId === userTicket.id,
-    );
-
-    return {
-      ...userTicket,
-      ticketTemplate,
-      transferAttempt: transferAttempt || null,
-    };
-  });
+  return createdTickets;
 }
 
-async function verifyFinalTicketCounts(
+async function verifyFinalUserTicketCounts(
   DB: ORM_TYPE,
   ticketInfo: TicketClaimTicketsInfo,
   USER: NonNullable<Context["USER"]>,
@@ -445,7 +526,7 @@ async function verifyFinalTicketCounts(
   ];
 
   // Bulk query for existing ticket counts
-  const ticketCounts = await DB.select({
+  const ticketCountsPromise = DB.select({
     ticketTemplateId: userTicketsSchema.ticketTemplateId,
     globalCount: count(userTicketsSchema.id),
     userCount: count(
@@ -467,6 +548,49 @@ async function verifyFinalTicketCounts(
     )
     .groupBy(userTicketsSchema.ticketTemplateId);
 
+  // Bulk query for existing addon claims counts
+  const globalAddonClaimCountsPromise = DB.select({
+    addonId: userTicketAddonsSchema.addonId,
+    globalCount: count(userTicketAddonsSchema.id),
+  })
+    .from(userTicketAddonsSchema)
+    .innerJoin(
+      userTicketsSchema,
+      eq(userTicketAddonsSchema.userTicketId, userTicketsSchema.id),
+    )
+    .where(inArray(userTicketsSchema.approvalStatus, validApprovalStatuses))
+    .groupBy(userTicketAddonsSchema.addonId);
+
+  // Bulk query for existing addon claims counts
+  // that are associated to the user by addon and ticket template
+  const userAddonClaimCountsPromise = DB.select({
+    addonId: userTicketAddonsSchema.addonId,
+    ticketTemplateId: userTicketsSchema.ticketTemplateId,
+    userCount: count(userTicketAddonsSchema.id),
+  })
+    .from(userTicketAddonsSchema)
+    .innerJoin(
+      userTicketsSchema,
+      eq(userTicketAddonsSchema.userTicketId, userTicketsSchema.id),
+    )
+    .where(
+      and(
+        inArray(userTicketsSchema.approvalStatus, validApprovalStatuses),
+        eq(userTicketsSchema.userId, USER.id),
+      ),
+    )
+    .groupBy(
+      userTicketAddonsSchema.addonId,
+      userTicketsSchema.ticketTemplateId,
+    );
+
+  const [ticketCounts, globalAddonClaimCounts, userAddonClaimCounts] =
+    await Promise.all([
+      ticketCountsPromise,
+      globalAddonClaimCountsPromise,
+      userAddonClaimCountsPromise,
+    ]);
+
   for (const ticketTemplate of ticketInfo.tickets) {
     const countInfo = ticketCounts.find(
       (count) => count.ticketTemplateId === ticketTemplate.id,
@@ -486,8 +610,8 @@ async function verifyFinalTicketCounts(
       }`,
     );
 
-    //  if the ticket has a quantity field, we  do a last check to see
-    //  if we have enough gone over the limit of tickets.
+    // if the ticket has a quantity field, we  do a last check to see
+    // if we have enough gone over the limit of tickets.
     if (limitAlreadyReached) {
       throw applicationError(
         `We have gone over the limit of tickets for ticket template with id ${ticketTemplate.id}`,
@@ -505,6 +629,41 @@ async function verifyFinalTicketCounts(
         ServiceErrors.FAILED_PRECONDITION,
         logger,
       );
+    }
+  }
+
+  for (const addon of ticketInfo.addons) {
+    const globalCount =
+      globalAddonClaimCounts.find((count) => count.addonId === addon.id)
+        ?.globalCount ?? 0;
+
+    const limitAlreadyReached = addon.totalStock
+      ? globalCount > addon.totalStock
+      : false;
+
+    if (limitAlreadyReached) {
+      throw applicationError(
+        `We have gone over the limit of addons for addon with id ${addon.id}`,
+        ServiceErrors.FAILED_PRECONDITION,
+        logger,
+      );
+    }
+
+    for (const ticketTemplate of ticketInfo.tickets) {
+      const userCount =
+        userAddonClaimCounts.find(
+          (count) =>
+            count.addonId === addon.id &&
+            count.ticketTemplateId === ticketTemplate.id,
+        )?.userCount ?? 0;
+
+      if (addon.maxPerTicket && userCount > addon.maxPerTicket) {
+        throw applicationError(
+          `Addon limit per user exceeded for addon with id ${addon.id} and ticket template ${ticketTemplate.id}`,
+          ServiceErrors.FAILED_PRECONDITION,
+          logger,
+        );
+      }
     }
   }
 }

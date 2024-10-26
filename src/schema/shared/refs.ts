@@ -119,3 +119,23 @@ export const ConsolidatedPaymentLogEntryRef = builder.objectRef<{
 
 export const UserTicketTransferRef =
   builder.objectRef<SelectUserTicketTransferSchema>("UserTicketTransfer");
+
+export const AddonClaimInputRef = builder.inputType("AddonClaimInput", {
+  fields: (t) => ({
+    addonId: t.string({ required: true }),
+    quantity: t.int({ required: true }),
+  }),
+});
+
+export const PricingInputFieldRef = builder.inputType("PricingInputField", {
+  fields: (t) => ({
+    value_in_cents: t.int({
+      description:
+        "The price. But in cents, so for a $10 ticket, you'd pass 1000 (or 10_00), or for 1000 chilean pesos, you'd pass 1000_00",
+      required: true,
+    }),
+    currencyId: t.string({
+      required: true,
+    }),
+  }),
+});

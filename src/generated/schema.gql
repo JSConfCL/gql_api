@@ -16,6 +16,45 @@ type AddUserToTeamResponseRef {
 }
 
 """
+Representation of an Addon
+"""
+type Addon {
+  availableStock: Int
+  constraints: [AddonConstraint!]!
+  description: String
+  id: ID!
+  isFree: Boolean!
+  isUnlimited: Boolean!
+  maxPerTicket: Int
+  name: String!
+  prices: [Price!]!
+  ticketAddons: [TicketAddon!]!
+  totalStock: Int
+}
+
+input AddonClaimInput {
+  addonId: String!
+  quantity: Int!
+}
+
+"""
+Representation of an Addon Constraint
+"""
+type AddonConstraint {
+  addon: Addon!
+  addonId: ID!
+  constraintType: AddonConstraintType!
+  id: ID!
+  relatedAddon: Addon!
+  relatedAddonId: ID!
+}
+
+enum AddonConstraintType {
+  DEPENDENCY
+  MUTUAL_EXCLUSION
+}
+
+"""
 Representation of an allowed currency
 """
 type AllowedCurrency {
@@ -686,6 +725,7 @@ input PurchaseOrderInput {
 }
 
 input PurchaseOrderItemDetailsInput {
+  addons: [AddonClaimInput!]!
   transferInfo: UserTicketTransferInfoInput
 }
 
@@ -794,6 +834,7 @@ type Query {
   searchConsolidatedPaymentLogs(
     input: SearchPaymentLogsInput!
   ): [ConsolidatedPaymentLogEntry!]!
+  searchCurrencies: [AllowedCurrency!]!
 
   """
   Get a list of events. Filter by name, id, status or date
@@ -1056,6 +1097,18 @@ type Ticket {
   visibility: TicketTemplateVisibility!
 }
 
+"""
+Representation of a Ticket Addon
+"""
+type TicketAddon {
+  addon: Addon!
+  addonId: ID!
+  id: ID!
+  orderDisplay: Int!
+  ticket: Ticket!
+  ticketId: ID!
+}
+
 enum TicketApprovalStatus {
   approved
   cancelled
@@ -1270,6 +1323,27 @@ type UserTicket {
   ticketTemplate: Ticket!
   transferAttempts: [UserTicketTransfer!]!
   user: User
+}
+
+"""
+Representation of a User Ticket Addon
+"""
+type UserTicketAddon {
+  addon: Addon!
+  addonId: ID!
+  id: ID!
+  purchaseOrder: PurchaseOrder!
+  purchaseOrderId: ID!
+  quantity: Int!
+  redemptionStatus: UserTicketAddonStatus!
+  unitPriceInCents: Int!
+  userTicket: UserTicket!
+  userTicketId: ID!
+}
+
+enum UserTicketAddonStatus {
+  PENDING
+  REDEEMED
 }
 
 """
