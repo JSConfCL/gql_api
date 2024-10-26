@@ -3,7 +3,12 @@ import { pgTable, uuid, text, index } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { purchaseOrdersSchema, ticketsSchema, usersSchema } from "./schema";
+import {
+  purchaseOrdersSchema,
+  ticketsSchema,
+  usersSchema,
+  userTicketAddonsSchema,
+} from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 import { userTicketTransfersSchema } from "./userTicketsTransfers";
 
@@ -87,6 +92,7 @@ export const userTicketsRelations = relations(
       references: [usersSchema.id],
     }),
     transferAttempts: many(userTicketTransfersSchema),
+    userTicketAddons: many(userTicketAddonsSchema),
   }),
 );
 

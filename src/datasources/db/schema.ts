@@ -67,3 +67,9 @@ export * from "~/datasources/db/workRole";
 export * from "~/datasources/db/workSeniority";
 
 export * from "~/datasources/db/workSeniorityAndRole";
+
+export * from "~/datasources/db/ticketAddons";
+
+export * from "~/datasources/db/ticketsAddonsPrices";
+
+export * from "~/datasources/db/userTicketsAddons";
