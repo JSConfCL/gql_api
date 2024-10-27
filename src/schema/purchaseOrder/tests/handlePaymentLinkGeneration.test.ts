@@ -1,6 +1,6 @@
 import { GraphQLError } from "graphql";
 import { PreferenceResponse } from "mercadopago/dist/clients/preference/commonTypes";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 
 import { ORM_TYPE } from "~/datasources/db";
 import { createMercadoPagoPayment } from "~/datasources/mercadopago";
@@ -613,18 +613,34 @@ describe("handlePaymentLinkGeneration", () => {
       purchaseOrderPaymentStatus: "unpaid",
     });
 
-    const userTicket = await insertTicket({
+    // Insert two tickets
+    const userTicket1 = await insertTicket({
       ticketTemplateId: ticketTemplate.id,
       purchaseOrderId: purchaseOrder.id,
       userId: user.id,
     });
 
-    // Insert a user ticket addon
+    const userTicket2 = await insertTicket({
+      ticketTemplateId: ticketTemplate.id,
+      purchaseOrderId: purchaseOrder.id,
+      userId: user.id,
+    });
+
+    // Insert user ticket addons with different quantities
     await insertUserTicketAddon({
       addonId: addon.id,
       purchaseOrderId: purchaseOrder.id,
-      userTicketId: userTicket.id,
+      userTicketId: userTicket1.id,
       unitPriceInCents: addonPrice.price_in_cents,
+      quantity: 2,
+    });
+
+    await insertUserTicketAddon({
+      addonId: addon.id,
+      purchaseOrderId: purchaseOrder.id,
+      userTicketId: userTicket2.id,
+      unitPriceInCents: addonPrice.price_in_cents,
+      quantity: 1,
     });
 
     const mockStripeClient = {
@@ -635,7 +651,7 @@ describe("handlePaymentLinkGeneration", () => {
             url: "https://stripe.com/pay",
             status: "unpaid",
             expires_at: Date.now() + 3600000,
-            amount_total: 1500, // 1000 (ticket) + 500 (addon)
+            amount_total: 3500, // 2 * 1000 (tickets) + 3 * 500 (addons)
           }),
         },
       },
@@ -644,7 +660,7 @@ describe("handlePaymentLinkGeneration", () => {
           id: "stripe_product_id",
           default_price: {
             id: "stripe_price_id",
-            unit_amount: 1500,
+            unit_amount: 3500,
             currency: "usd",
           },
         }),
@@ -698,7 +714,18 @@ describe("handlePaymentLinkGeneration", () => {
 
     expect(result.purchaseOrder.purchaseOrderPaymentStatus).toBe("unpaid");
 
-    expect(result.purchaseOrder.totalPrice).toBe("1500");
+    expect(result.purchaseOrder.totalPrice).toBe("3500");
+    // Check that the correct items and quantities were passed to Stripe
+    const createSessionCall = (
+      mockStripeClient.checkout.sessions.create as Mock
+    ).mock.calls[0][0] as {
+      line_items: Array<{ price: string; quantity: number }>;
+    };
+
+    expect(createSessionCall.line_items).toEqual([
+      { price: "stripe_ticket_product_id", quantity: 2 },
+      { price: "stripe_addon_product_id", quantity: 3 },
+    ]);
   });
 
   it("should handle a mix of free and paid tickets with addons correctly", async () => {
@@ -962,5 +989,165 @@ describe("handlePaymentLinkGeneration", () => {
     expect(result.purchaseOrder.purchaseOrderPaymentStatus).toBe("unpaid");
 
     expect(result.purchaseOrder.totalPrice).toBe("2000");
+  });
+
+  it("should create a MercadoPago payment intent for CLP currency with correct quantities", async () => {
+    const user = await insertUser();
+    const event = await insertEvent({ status: "active" });
+    const ticketTemplate = await insertTicketTemplate({
+      eventId: event.id,
+      quantity: 100,
+      isFree: false,
+    });
+    const currency = await insertAllowedCurrency({
+      currency: "CLP",
+      validPaymentMethods: "mercado_pago",
+    });
+    const price = await insertPrice({
+      price_in_cents: 1000,
+      currencyId: currency.id,
+    });
+
+    await insertTicketPrice({ priceId: price.id, ticketId: ticketTemplate.id });
+
+    // Create an addon
+    const addon = await insertAddon({
+      eventId: event.id,
+      name: "VIP Access",
+      description: "VIP access to the event",
+      isFree: false,
+    });
+    const addonPrice = await insertPrice({
+      price_in_cents: 500,
+      currencyId: currency.id,
+    });
+
+    await insertAddonPrice({ priceId: addonPrice.id, addonId: addon.id });
+
+    const purchaseOrder = await insertPurchaseOrder({
+      userId: user.id,
+      status: "open",
+      purchaseOrderPaymentStatus: "unpaid",
+    });
+
+    // Insert two tickets
+    const userTicket1 = await insertTicket({
+      ticketTemplateId: ticketTemplate.id,
+      purchaseOrderId: purchaseOrder.id,
+      userId: user.id,
+    });
+
+    const userTicket2 = await insertTicket({
+      ticketTemplateId: ticketTemplate.id,
+      purchaseOrderId: purchaseOrder.id,
+      userId: user.id,
+    });
+
+    // Insert user ticket addons with different quantities
+    await insertUserTicketAddon({
+      addonId: addon.id,
+      purchaseOrderId: purchaseOrder.id,
+      userTicketId: userTicket1.id,
+      unitPriceInCents: addonPrice.price_in_cents,
+      quantity: 2,
+    });
+
+    await insertUserTicketAddon({
+      addonId: addon.id,
+      purchaseOrderId: purchaseOrder.id,
+      userTicketId: userTicket2.id,
+      unitPriceInCents: addonPrice.price_in_cents,
+      quantity: 1,
+    });
+
+    const mockEnsureProductsAreCreated = vi.spyOn(
+      ticketHelpers,
+      "ensureProductsAreCreated",
+    );
+
+    mockEnsureProductsAreCreated.mockResolvedValue({
+      addons: [
+        {
+          ...addon,
+          price: { amount: addonPrice.price_in_cents },
+        },
+      ],
+      tickets: [
+        {
+          ...ticketTemplate,
+          price: { amount: price.price_in_cents },
+        },
+      ],
+    });
+
+    // Mock the createMercadoPagoPayment function
+    vi.mock("~/datasources/mercadopago");
+
+    const mockPreference = {
+      id: "mock_preference_id",
+      init_point: "https://www.mercadopago.com/mock_init_point",
+    } as PreferenceResponse;
+
+    const mockExpirationDate = new Date(Date.now() + 3600000);
+
+    vi.mocked(createMercadoPagoPayment).mockResolvedValue({
+      preference: mockPreference,
+      expirationDate: mockExpirationDate.toISOString(),
+    });
+
+    const result = await handlePaymentLinkGeneration({
+      DB: testDb,
+      USER: user,
+      purchaseOrderId: purchaseOrder.id,
+      currencyId: currency.id,
+      GET_MERCADOPAGO_CLIENT: vi.fn(),
+      GET_STRIPE_CLIENT: vi.fn(),
+      paymentSuccessRedirectURL: "http://success.com",
+      paymentCancelRedirectURL: "http://cancel.com",
+      logger: logger,
+    });
+
+    expect(createMercadoPagoPayment).toHaveBeenCalled();
+
+    expect(result.purchaseOrder.paymentPlatform).toBe("mercadopago");
+
+    expect(result.purchaseOrder.paymentPlatformPaymentLink).toBe(
+      mockPreference.init_point,
+    );
+
+    expect(result.purchaseOrder.paymentPlatformReferenceID).toBe(
+      mockPreference.id,
+    );
+
+    expect(result.purchaseOrder.paymentPlatformStatus).toBe("none");
+
+    expect(result.purchaseOrder.paymentPlatformExpirationDate).toEqual(
+      mockExpirationDate,
+    );
+
+    expect(result.purchaseOrder.totalPrice).toBe("3500");
+
+    // Check that the correct items and quantities were passed to MercadoPago
+    const createPaymentCall = vi.mocked(createMercadoPagoPayment).mock
+      .calls[0][0];
+
+    expect(createPaymentCall.items).toEqual([
+      {
+        id: ticketTemplate.id,
+        unit_price: 1000,
+        title: ticketTemplate.name,
+        description: ticketTemplate.description ?? undefined,
+        quantity: 2,
+      },
+      {
+        id: addon.id,
+        unit_price: 500,
+        title: addon.name,
+        description: addon.description ?? undefined,
+        quantity: 3,
+      },
+    ]);
+
+    expect(mockEnsureProductsAreCreated).toHaveBeenCalled();
   });
 });

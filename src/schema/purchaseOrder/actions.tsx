@@ -185,6 +185,7 @@ const sendPurchaseOrderSuccessfulEmail = async ({
 
 const createMercadoPagoPaymentIntent = async ({
   userTickets,
+  userTicketAddons,
   purchaseOrderId,
   USER,
   paymentSuccessRedirectURL,
@@ -200,16 +201,17 @@ const createMercadoPagoPaymentIntent = async ({
           amount: number;
         } | null;
       };
-      userTicketAddons: Array<{
-        addon: Pick<SelectAddonSchema, "id" | "name" | "isFree"> & {
-          description?: string | null;
-          price: {
-            amount: number;
-          } | null;
-        };
-      }>;
     }
   >;
+  userTicketAddons: Array<{
+    addon: Pick<SelectAddonSchema, "id" | "name" | "isFree"> & {
+      description?: string | null;
+      price: {
+        amount: number;
+      } | null;
+    };
+    quantity: number;
+  }>;
   purchaseOrderId: string;
   GET_MERCADOPAGO_CLIENT: Context["GET_MERCADOPAGO_CLIENT"];
   paymentSuccessRedirectURL: string;
@@ -220,7 +222,17 @@ const createMercadoPagoPaymentIntent = async ({
   };
   logger: Logger;
 }): Promise<PaymentPlatformIntent> => {
-  const productsGrouped: Record<
+  const ticketsGrouped: Record<
+    string,
+    {
+      title: string;
+      description: string | undefined;
+      quantity: number;
+      unit_price: number;
+    }
+  > = {};
+
+  const addonsGrouped: Record<
     string,
     {
       title: string;
@@ -234,62 +246,77 @@ const createMercadoPagoPaymentIntent = async ({
 
   for (const ticket of userTickets) {
     // Process ticket
-    if (!ticket.ticketTemplate.isFree) {
-      if (!ticket.ticketTemplate.price) {
-        throw new Error(
-          `Ticket ${ticket.ticketTemplate.id} does not have a price`,
-        );
-      }
-
-      const ticketId = ticket.ticketTemplate.id;
-
-      if (!productsGrouped[ticketId]) {
-        productsGrouped[ticketId] = {
-          title: ticket.ticketTemplate.name,
-          description: ticket.ticketTemplate.description ?? undefined,
-          quantity: 0,
-          unit_price: ticket.ticketTemplate.price.amount,
-        };
-      }
-
-      productsGrouped[ticketId].quantity += 1;
-
-      totalPrice += ticket.ticketTemplate.price.amount;
+    if (ticket.ticketTemplate.isFree) {
+      continue;
     }
 
-    // Process addons
-    for (const { addon } of ticket.userTicketAddons) {
-      if (!addon.isFree) {
-        if (!addon.price) {
-          throw new Error(`Addon ${addon.id} does not have a price`);
-        }
-
-        if (!productsGrouped[addon.id]) {
-          productsGrouped[addon.id] = {
-            title: addon.name,
-            description: addon.description ?? undefined,
-            quantity: 0,
-            unit_price: addon.price.amount,
-          };
-        }
-
-        productsGrouped[addon.id].quantity += 1;
-
-        totalPrice += addon.price.amount;
-      }
+    if (!ticket.ticketTemplate.price) {
+      throw new Error(
+        `Ticket ${ticket.ticketTemplate.id} does not have a price`,
+      );
     }
+
+    const ticketId = ticket.ticketTemplate.id;
+
+    if (!ticketsGrouped[ticketId]) {
+      ticketsGrouped[ticketId] = {
+        title: ticket.ticketTemplate.name,
+        description: ticket.ticketTemplate.description ?? undefined,
+        quantity: 0,
+        unit_price: ticket.ticketTemplate.price.amount,
+      };
+    }
+
+    ticketsGrouped[ticketId].quantity += 1;
+
+    totalPrice += ticket.ticketTemplate.price.amount;
   }
 
-  const { preference, expirationDate } = await createMercadoPagoPayment({
-    eventId: "event-id",
-    getMercadoPagoClient: GET_MERCADOPAGO_CLIENT,
-    items: Object.entries(productsGrouped).map(([id, value]) => ({
+  // Process addons
+  for (const { addon, quantity } of userTicketAddons) {
+    if (addon.isFree) {
+      continue;
+    }
+
+    if (!addon.price) {
+      throw new Error(`Addon ${addon.id} does not have a price`);
+    }
+
+    if (!addonsGrouped[addon.id]) {
+      addonsGrouped[addon.id] = {
+        title: addon.name,
+        description: addon.description ?? undefined,
+        quantity: 0,
+        unit_price: addon.price.amount,
+      };
+    }
+
+    addonsGrouped[addon.id].quantity += quantity;
+
+    totalPrice += addon.price.amount * quantity;
+  }
+
+  const items = [
+    ...Object.entries(ticketsGrouped).map(([id, value]) => ({
       id,
       unit_price: value.unit_price,
       title: value.title,
       description: value.description,
       quantity: value.quantity,
     })),
+    ...Object.entries(addonsGrouped).map(([id, value]) => ({
+      id,
+      unit_price: value.unit_price,
+      title: value.title,
+      description: value.description,
+      quantity: value.quantity,
+    })),
+  ];
+
+  const { preference, expirationDate } = await createMercadoPagoPayment({
+    eventId: "event-id",
+    getMercadoPagoClient: GET_MERCADOPAGO_CLIENT,
+    items,
     purchaseOrderId,
     user: {
       email: USER.email,
@@ -326,6 +353,7 @@ const createStripePaymentIntent = async ({
   purchaseOrderId,
   GET_STRIPE_CLIENT,
   userTickets,
+  userTicketAddons,
   paymentSuccessRedirectURL,
   paymentCancelRedirectURL,
   logger,
@@ -336,18 +364,28 @@ const createStripePaymentIntent = async ({
         SelectTicketSchema,
         "id" | "stripeProductId" | "isFree"
       >;
-      userTicketAddons: Array<{
-        addon: Pick<SelectAddonSchema, "id" | "isFree" | "stripeProductId">;
-      }>;
     }
   >;
+  userTicketAddons: Array<{
+    addon: Pick<SelectAddonSchema, "id" | "isFree" | "stripeProductId">;
+    quantity: number;
+  }>;
   purchaseOrderId: string;
   GET_STRIPE_CLIENT: Context["GET_STRIPE_CLIENT"];
   paymentSuccessRedirectURL: string;
   paymentCancelRedirectURL: string;
   logger: Logger;
 }): Promise<PaymentPlatformIntent> => {
-  const productsGrouped: Record<
+  const ticketsGrouped: Record<
+    string,
+    {
+      id: string;
+      quantity: number;
+      stripeId: string;
+    }
+  > = {};
+
+  const addonsGrouped: Record<
     string,
     {
       id: string;
@@ -367,43 +405,47 @@ const createStripePaymentIntent = async ({
 
       const ticketId = ticket.ticketTemplate.id;
 
-      if (!productsGrouped[ticketId]) {
-        productsGrouped[ticketId] = {
+      if (!ticketsGrouped[ticketId]) {
+        ticketsGrouped[ticketId] = {
           id: ticketId,
           quantity: 0,
           stripeId: ticket.ticketTemplate.stripeProductId,
         };
       }
 
-      productsGrouped[ticketId].quantity += 1;
-    }
-
-    // Process addons
-    for (const { addon } of ticket.userTicketAddons) {
-      if (!addon.isFree) {
-        if (!addon.stripeProductId) {
-          throw new Error(`Stripe product not found for addon ${addon.id}`);
-        }
-
-        if (!productsGrouped[addon.id]) {
-          productsGrouped[addon.id] = {
-            id: addon.id,
-            quantity: 0,
-            stripeId: addon.stripeProductId,
-          };
-        }
-
-        productsGrouped[addon.id].quantity += 1;
-      }
+      ticketsGrouped[ticketId].quantity += 1;
     }
   }
 
-  const items: Array<{ price: string; quantity: number }> = Object.values(
-    productsGrouped,
-  ).map(({ stripeId, quantity }) => ({
-    price: stripeId,
-    quantity,
-  }));
+  // Process addons
+  for (const { addon, quantity } of userTicketAddons) {
+    if (!addon.isFree) {
+      if (!addon.stripeProductId) {
+        throw new Error(`Stripe product not found for addon ${addon.id}`);
+      }
+
+      if (!addonsGrouped[addon.id]) {
+        addonsGrouped[addon.id] = {
+          id: addon.id,
+          quantity: 0,
+          stripeId: addon.stripeProductId,
+        };
+      }
+
+      addonsGrouped[addon.id].quantity += quantity;
+    }
+  }
+
+  const items: Array<{ price: string; quantity: number }> = [
+    ...Object.values(ticketsGrouped).map(({ stripeId, quantity }) => ({
+      price: stripeId,
+      quantity,
+    })),
+    ...Object.values(addonsGrouped).map(({ stripeId, quantity }) => ({
+      price: stripeId,
+      quantity,
+    })),
+  ];
 
   logger.info("Attempting to create payment on Stripe", {
     items,
@@ -669,26 +711,6 @@ const createPaymentIntent = async ({
       (ut) => ut.id === userTicket.ticketTemplate.id,
     );
 
-    const updatedUserTicketAddons = userTicketAddons.map((userTicketAddon) => {
-      const updatedAddon = updatedProducts.addons.find(
-        (ua) => ua.id === userTicketAddon.addon.id,
-      );
-
-      if (!updatedAddon) {
-        throw new Error(
-          `Addon ${userTicketAddon.addon.id} not found in updated addons`,
-        );
-      }
-
-      return {
-        ...userTicketAddon,
-        addon: {
-          ...userTicketAddon.addon,
-          ...updatedAddon,
-        },
-      };
-    });
-
     if (!updatedTicket) {
       throw new Error(
         `Ticket ${userTicket.ticketTemplate.id} not found in updated tickets`,
@@ -698,13 +720,31 @@ const createPaymentIntent = async ({
     return {
       ...userTicket,
       ticketTemplate: updatedTicket,
-      userTicketAddons: updatedUserTicketAddons,
+    };
+  });
+
+  // Update the user ticket addons with the updated payment platform data
+  const updatedUserTicketAddons = userTicketAddons.map((userTicketAddon) => {
+    const updatedAddon = updatedProducts.addons.find(
+      (ua) => ua.id === userTicketAddon.addon.id,
+    );
+
+    if (!updatedAddon) {
+      throw new Error(
+        `Addon ${userTicketAddon.addon.id} not found in updated addons`,
+      );
+    }
+
+    return {
+      ...userTicketAddon,
+      addon: updatedAddon,
     };
   });
 
   if (currencyCode === "USD") {
     paymentPlatformData = await createStripePaymentIntent({
       userTickets: updatedUserTickets,
+      userTicketAddons: updatedUserTicketAddons,
       purchaseOrderId,
       GET_STRIPE_CLIENT,
       paymentSuccessRedirectURL,
@@ -714,6 +754,7 @@ const createPaymentIntent = async ({
   } else if (currencyCode === "CLP") {
     paymentPlatformData = await createMercadoPagoPaymentIntent({
       userTickets: updatedUserTickets,
+      userTicketAddons: updatedUserTicketAddons,
       purchaseOrderId,
       USER,
       paymentSuccessRedirectURL,
