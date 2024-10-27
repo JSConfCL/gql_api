@@ -1323,6 +1323,7 @@ type UserTicket {
   ticketTemplate: Ticket!
   transferAttempts: [UserTicketTransfer!]!
   user: User
+  userTicketAddons: [UserTicketAddon!]!
 }
 
 """
@@ -1331,6 +1332,7 @@ Representation of a User Ticket Addon
 type UserTicketAddon {
   addon: Addon!
   addonId: ID!
+  approvalStatus: UserTicketAddonApprovalStatus!
   id: ID!
   purchaseOrder: PurchaseOrder!
   purchaseOrderId: ID!
@@ -1339,6 +1341,12 @@ type UserTicketAddon {
   unitPriceInCents: Int!
   userTicket: UserTicket!
   userTicketId: ID!
+}
+
+enum UserTicketAddonApprovalStatus {
+  APPROVED
+  CANCELLED
+  PENDING
 }
 
 enum UserTicketAddonStatus {

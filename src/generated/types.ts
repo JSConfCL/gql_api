@@ -1346,6 +1346,7 @@ export type UserTicket = {
   ticketTemplate: Ticket;
   transferAttempts: Array<UserTicketTransfer>;
   user?: Maybe<User>;
+  userTicketAddons: Array<UserTicketAddon>;
 };
 
 /** Representation of a User Ticket Addon */
@@ -1353,6 +1354,7 @@ export type UserTicketAddon = {
   __typename?: "UserTicketAddon";
   addon: Addon;
   addonId: Scalars["ID"]["output"];
+  approvalStatus: UserTicketAddonApprovalStatus;
   id: Scalars["ID"]["output"];
   purchaseOrder: PurchaseOrder;
   purchaseOrderId: Scalars["ID"]["output"];
@@ -1362,6 +1364,12 @@ export type UserTicketAddon = {
   userTicket: UserTicket;
   userTicketId: Scalars["ID"]["output"];
 };
+
+export enum UserTicketAddonApprovalStatus {
+  Approved = "APPROVED",
+  Cancelled = "CANCELLED",
+  Pending = "PENDING",
+}
 
 export enum UserTicketAddonStatus {
   Pending = "PENDING",

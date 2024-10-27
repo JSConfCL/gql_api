@@ -83,7 +83,9 @@ export const assertCanStartTicketClaimingForEvent = async (
       ticketId: ticket.id,
       newAddonClaims: order.itemDetails.flatMap((i) => i.addonRequests),
       alreadyClaimedAddons: [],
-      ticketRelatedAddonsInfo: ticketInfo.addons,
+      ticketRelatedAddonsInfo: ticketInfo.addons.filter((a) =>
+        a.ticketAddons.some((ta) => ta.ticketId === ticket.id),
+      ),
       logger,
     });
   });

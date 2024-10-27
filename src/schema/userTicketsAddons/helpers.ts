@@ -33,7 +33,7 @@ export function validateAddonClaimsAndConstraints({
 
     if (!addon) {
       throw applicationError(
-        `Addon ${addonClaim.addonId} not found`,
+        `Addon ${addonClaim.addonId} is not related to ticket ${ticketId}`,
         ServiceErrors.NOT_FOUND,
         logger,
       );
@@ -54,7 +54,7 @@ export function validateAddonClaimsAndConstraints({
 
       if (totalQuantity > addon.maxPerTicket) {
         throw applicationError(
-          `Addon ${addon.id} total quantity exceeds limit for ticket ${ticketId}`,
+          `Addon ${addon.id} total quantity exceeds limit per ticket for ticket ${ticketId}`,
           ServiceErrors.FAILED_PRECONDITION,
           logger,
         );

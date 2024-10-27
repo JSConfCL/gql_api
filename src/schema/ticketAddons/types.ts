@@ -11,6 +11,7 @@ import { selectTicketSchema } from "~/datasources/db/tickets";
 import { selectUserTicketsSchema } from "~/datasources/db/userTickets";
 import {
   SelectUserTicketAddonSchema,
+  UserTicketAddonApprovalStatus,
   UserTicketAddonRedemptionStatus,
 } from "~/datasources/db/userTicketsAddons";
 import { TicketRef, UserTicketRef, PriceRef } from "~/schema/shared/refs";
@@ -25,6 +26,13 @@ export const UserTicketAddonStatusEnum = builder.enumType(
   UserTicketAddonRedemptionStatus,
   {
     name: "UserTicketAddonStatus",
+  },
+);
+
+export const UserTicketAddonApprovalStatusEnum = builder.enumType(
+  UserTicketAddonApprovalStatus,
+  {
+    name: "UserTicketAddonApprovalStatus",
   },
 );
 
@@ -183,6 +191,9 @@ builder.objectType(UserTicketAddonRef, {
     unitPriceInCents: t.exposeInt("unitPriceInCents"),
     redemptionStatus: t.expose("redemptionStatus", {
       type: UserTicketAddonStatusEnum,
+    }),
+    approvalStatus: t.expose("approvalStatus", {
+      type: UserTicketAddonApprovalStatusEnum,
     }),
     purchaseOrderId: t.exposeID("purchaseOrderId"),
     userTicket: t.field({

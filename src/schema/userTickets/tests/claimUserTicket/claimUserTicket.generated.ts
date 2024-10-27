@@ -11,7 +11,7 @@ export type ClaimUserTicketMutationVariables = Types.Exact<{
 }>;
 
 
-export type ClaimUserTicketMutation = { __typename?: 'Mutation', claimUserTicket: { __typename: 'PurchaseOrder', id: string, paymentLink: string | null, paymentPlatform: string | null, tickets: Array<{ __typename?: 'UserTicket', id: string, paymentStatus: Types.PurchaseOrderPaymentStatusEnum | null, approvalStatus: Types.TicketApprovalStatus, redemptionStatus: Types.TicketRedemptionStatus, transferAttempts: Array<{ __typename?: 'UserTicketTransfer', id: string, sender: { __typename?: 'TicketTransferUserInfo', email: string, name: string | null }, recipient: { __typename?: 'TicketTransferUserInfo', email: string, name: string | null } }> }> } | { __typename: 'RedeemUserTicketError', errorMessage: string } };
+export type ClaimUserTicketMutation = { __typename?: 'Mutation', claimUserTicket: { __typename: 'PurchaseOrder', id: string, paymentLink: string | null, paymentPlatform: string | null, tickets: Array<{ __typename?: 'UserTicket', id: string, paymentStatus: Types.PurchaseOrderPaymentStatusEnum | null, approvalStatus: Types.TicketApprovalStatus, redemptionStatus: Types.TicketRedemptionStatus, transferAttempts: Array<{ __typename?: 'UserTicketTransfer', id: string, sender: { __typename?: 'TicketTransferUserInfo', email: string, name: string | null }, recipient: { __typename?: 'TicketTransferUserInfo', email: string, name: string | null } }>, userTicketAddons: Array<{ __typename?: 'UserTicketAddon', id: string, quantity: number, approvalStatus: Types.UserTicketAddonApprovalStatus, addon: { __typename?: 'Addon', id: string, name: string } }> }> } | { __typename: 'RedeemUserTicketError', errorMessage: string } };
 
 
 export const ClaimUserTicket = gql`
@@ -35,6 +35,15 @@ export const ClaimUserTicket = gql`
           }
           recipient {
             email
+            name
+          }
+        }
+        userTicketAddons {
+          id
+          quantity
+          approvalStatus
+          addon {
+            id
             name
           }
         }

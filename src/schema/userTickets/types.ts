@@ -19,6 +19,8 @@ import { TicketLoadable } from "~/schema/ticket/types";
 import { UserLoadable } from "~/schema/user/types";
 import { usersFetcher } from "~/schema/user/userFetcher";
 
+import { UserTicketAddonRef } from "../ticketAddons/types";
+
 export const TicketPaymentStatus = builder.enumType("TicketPaymentStatus", {
   values: puchaseOrderPaymentStatusEnum,
 });
@@ -127,6 +129,23 @@ builder.objectType(UserTicketRef, {
 
         return userTicketTransfers;
       },
+    }),
+    userTicketAddons: t.loadableList({
+      type: UserTicketAddonRef,
+      load: async (ids: string[], { DB }) => {
+        const userTicketAddons = await DB.query.userTicketAddonsSchema.findMany(
+          {
+            where: (etc, { inArray }) => inArray(etc.userTicketId, ids),
+          },
+        );
+
+        const resultGroupedByUserTicketId = ids.map((id) => {
+          return userTicketAddons.filter((addon) => addon.userTicketId === id);
+        });
+
+        return resultGroupedByUserTicketId;
+      },
+      resolve: (root) => root.id,
     }),
   }),
 });

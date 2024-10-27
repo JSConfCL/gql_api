@@ -17,6 +17,9 @@ import {
   insertTicketPrice,
   insertTicketTemplate,
   insertUser,
+  insertAddon,
+  insertAddonPrice,
+  insertUserTicketAddon,
 } from "~/tests/fixtures";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 
@@ -102,6 +105,7 @@ describe("handlePaymentLinkGeneration", () => {
     );
 
     mockEnsureProductsAreCreated.mockResolvedValue({
+      addons: [],
       tickets: [
         {
           ...ticketTemplate,
@@ -283,6 +287,7 @@ describe("handlePaymentLinkGeneration", () => {
     );
 
     mockEnsureProductsAreCreated.mockResolvedValue({
+      addons: [],
       tickets: [
         {
           ...ticketTemplate,
@@ -430,6 +435,7 @@ describe("handlePaymentLinkGeneration", () => {
     } as unknown as ReturnType<typeof getStripeClient>;
 
     vi.spyOn(ticketHelpers, "ensureProductsAreCreated").mockResolvedValue({
+      addons: [],
       tickets: [
         {
           ...paidTicketTemplate,
@@ -534,6 +540,7 @@ describe("handlePaymentLinkGeneration", () => {
     );
 
     mockEnsureProductsAreCreated.mockResolvedValue({
+      addons: [],
       tickets: [
         {
           ...ticketTemplate,
@@ -556,5 +563,404 @@ describe("handlePaymentLinkGeneration", () => {
         logger: logger,
       }),
     ).rejects.toThrow("Unsupported currency");
+  });
+
+  it("should generate a payment link for a valid purchase order with tickets and addons", async () => {
+    const user = await insertUser();
+    const community = await insertCommunity();
+    const event = await insertEvent({ status: "active" });
+
+    await insertEventToCommunity({
+      eventId: event.id,
+      communityId: community.id,
+    });
+    const ticketTemplate = await insertTicketTemplate({
+      eventId: event.id,
+      quantity: 100,
+      isFree: false,
+    });
+    const currency = await insertAllowedCurrency({
+      currency: "USD",
+      validPaymentMethods: "stripe",
+    });
+    const ticketPrice = await insertPrice({
+      price_in_cents: 1000,
+      currencyId: currency.id,
+    });
+
+    await insertTicketPrice({
+      priceId: ticketPrice.id,
+      ticketId: ticketTemplate.id,
+    });
+
+    // Create an addon
+    const addon = await insertAddon({
+      eventId: event.id,
+      name: "VIP Access",
+      description: "VIP access to the event",
+      isFree: false,
+    });
+    const addonPrice = await insertPrice({
+      price_in_cents: 500,
+      currencyId: currency.id,
+    });
+
+    await insertAddonPrice({ priceId: addonPrice.id, addonId: addon.id });
+
+    const purchaseOrder = await insertPurchaseOrder({
+      userId: user.id,
+      status: "open",
+      purchaseOrderPaymentStatus: "unpaid",
+    });
+
+    const userTicket = await insertTicket({
+      ticketTemplateId: ticketTemplate.id,
+      purchaseOrderId: purchaseOrder.id,
+      userId: user.id,
+    });
+
+    // Insert a user ticket addon
+    await insertUserTicketAddon({
+      addonId: addon.id,
+      purchaseOrderId: purchaseOrder.id,
+      userTicketId: userTicket.id,
+      unitPriceInCents: addonPrice.price_in_cents,
+    });
+
+    const mockStripeClient = {
+      checkout: {
+        sessions: {
+          create: vi.fn().mockResolvedValue({
+            id: "stripe_payment_id",
+            url: "https://stripe.com/pay",
+            status: "unpaid",
+            expires_at: Date.now() + 3600000,
+            amount_total: 1500, // 1000 (ticket) + 500 (addon)
+          }),
+        },
+      },
+      products: {
+        retrieve: vi.fn().mockResolvedValue({
+          id: "stripe_product_id",
+          default_price: {
+            id: "stripe_price_id",
+            unit_amount: 1500,
+            currency: "usd",
+          },
+        }),
+      },
+    } as unknown as ReturnType<typeof getStripeClient>;
+
+    // Mock the ensureProductsAreCreated function
+    const mockEnsureProductsAreCreated = vi.spyOn(
+      ticketHelpers,
+      "ensureProductsAreCreated",
+    );
+
+    mockEnsureProductsAreCreated.mockResolvedValue({
+      tickets: [
+        {
+          ...ticketTemplate,
+          price: { amount: ticketPrice.price_in_cents },
+          stripeProductId: "stripe_ticket_product_id",
+        },
+      ],
+      addons: [
+        {
+          ...addon,
+          price: { amount: addonPrice.price_in_cents },
+          stripeProductId: "stripe_addon_product_id",
+        },
+      ],
+    });
+
+    const result = await handlePaymentLinkGeneration({
+      DB: testDb,
+      USER: user,
+      purchaseOrderId: purchaseOrder.id,
+      currencyId: currency.id,
+      GET_MERCADOPAGO_CLIENT: vi.fn(),
+      GET_STRIPE_CLIENT: () => mockStripeClient,
+      paymentSuccessRedirectURL: "http://success.com",
+      paymentCancelRedirectURL: "http://cancel.com",
+      logger: logger,
+    });
+
+    expect(result.purchaseOrder.paymentPlatform).toBe("stripe");
+
+    expect(result.purchaseOrder.paymentPlatformPaymentLink).toBe(
+      "https://stripe.com/pay",
+    );
+
+    expect(mockStripeClient.checkout.sessions.create).toHaveBeenCalled();
+
+    expect(result.purchaseOrder.status).toBe("open");
+
+    expect(result.purchaseOrder.purchaseOrderPaymentStatus).toBe("unpaid");
+
+    expect(result.purchaseOrder.totalPrice).toBe("1500");
+  });
+
+  it("should handle a mix of free and paid tickets with addons correctly", async () => {
+    const user = await insertUser();
+    const event = await insertEvent({ status: "active" });
+    const freeTicketTemplate = await insertTicketTemplate({
+      eventId: event.id,
+      quantity: 50,
+      isFree: true,
+    });
+    const paidTicketTemplate = await insertTicketTemplate({
+      eventId: event.id,
+      quantity: 50,
+      isFree: false,
+    });
+    const currency = await insertAllowedCurrency({
+      currency: "USD",
+      validPaymentMethods: "stripe",
+    });
+    const ticketPrice = await insertPrice({
+      price_in_cents: 1000,
+      currencyId: currency.id,
+    });
+
+    await insertTicketPrice({
+      priceId: ticketPrice.id,
+      ticketId: paidTicketTemplate.id,
+    });
+
+    // Create a paid addon
+    const paidAddon = await insertAddon({
+      eventId: event.id,
+      name: "VIP Access",
+      description: "VIP access to the event",
+      isFree: false,
+    });
+    const paidAddonPrice = await insertPrice({
+      price_in_cents: 500,
+      currencyId: currency.id,
+    });
+
+    await insertAddonPrice({
+      priceId: paidAddonPrice.id,
+      addonId: paidAddon.id,
+    });
+
+    // Create a free addon
+    const freeAddon = await insertAddon({
+      eventId: event.id,
+      name: "Free Gift",
+      description: "A free gift for attendees",
+      isFree: true,
+    });
+
+    const purchaseOrder = await insertPurchaseOrder({
+      userId: user.id,
+      status: "open",
+      purchaseOrderPaymentStatus: "unpaid",
+    });
+
+    await insertTicket({
+      ticketTemplateId: freeTicketTemplate.id,
+      purchaseOrderId: purchaseOrder.id,
+      userId: user.id,
+    });
+
+    const userTicket = await insertTicket({
+      ticketTemplateId: paidTicketTemplate.id,
+      purchaseOrderId: purchaseOrder.id,
+      userId: user.id,
+    });
+
+    // Insert user ticket addons
+    await insertUserTicketAddon({
+      addonId: paidAddon.id,
+      purchaseOrderId: purchaseOrder.id,
+      userTicketId: userTicket.id,
+      unitPriceInCents: paidAddonPrice.price_in_cents,
+    });
+
+    await insertUserTicketAddon({
+      addonId: freeAddon.id,
+      purchaseOrderId: purchaseOrder.id,
+      userTicketId: userTicket.id,
+      unitPriceInCents: 0,
+    });
+
+    const mockStripeClient = {
+      checkout: {
+        sessions: {
+          create: vi.fn().mockResolvedValue({
+            id: "stripe_payment_id",
+            url: "https://stripe.com/pay",
+            status: "unpaid",
+            expires_at: Date.now() + 3600000,
+            amount_total: 1500, // 1000 (paid ticket) + 500 (paid addon)
+          }),
+        },
+      },
+    } as unknown as ReturnType<typeof getStripeClient>;
+
+    vi.spyOn(ticketHelpers, "ensureProductsAreCreated").mockResolvedValue({
+      tickets: [
+        {
+          ...paidTicketTemplate,
+          price: { amount: ticketPrice.price_in_cents },
+          stripeProductId: "stripe_paid_ticket_product_id",
+        },
+        {
+          ...freeTicketTemplate,
+          price: { amount: 0 },
+          stripeProductId: "stripe_free_ticket_product_id",
+        },
+      ],
+      addons: [
+        {
+          ...paidAddon,
+          price: { amount: paidAddonPrice.price_in_cents },
+          stripeProductId: "stripe_paid_addon_product_id",
+        },
+        {
+          ...freeAddon,
+          price: { amount: 0 },
+          stripeProductId: "stripe_free_addon_product_id",
+        },
+      ],
+    });
+
+    const result = await handlePaymentLinkGeneration({
+      DB: testDb,
+      USER: user,
+      purchaseOrderId: purchaseOrder.id,
+      currencyId: currency.id,
+      GET_MERCADOPAGO_CLIENT: vi.fn(),
+      GET_STRIPE_CLIENT: () => mockStripeClient,
+      paymentSuccessRedirectURL: "http://success.com",
+      paymentCancelRedirectURL: "http://cancel.com",
+      logger: logger,
+    });
+
+    expect(result.purchaseOrder.paymentPlatform).toBe("stripe");
+
+    expect(result.purchaseOrder.paymentPlatformPaymentLink).toBe(
+      "https://stripe.com/pay",
+    );
+
+    expect(result.purchaseOrder.status).toBe("open");
+
+    expect(result.purchaseOrder.purchaseOrderPaymentStatus).toBe("unpaid");
+
+    expect(result.purchaseOrder.totalPrice).toBe("1500");
+  });
+
+  it("should generate a payment link for a purchase order with only addons if the user ticket is already paid", async () => {
+    const user = await insertUser();
+    const event = await insertEvent({ status: "active" });
+    const currency = await insertAllowedCurrency({
+      currency: "USD",
+      validPaymentMethods: "stripe",
+    });
+
+    // Create a paid addon
+    const addon = await insertAddon({
+      eventId: event.id,
+      name: "VIP Access",
+      description: "VIP access to the event",
+      isFree: false,
+    });
+    const addonPrice = await insertPrice({
+      price_in_cents: 2000,
+      currencyId: currency.id,
+    });
+
+    await insertAddonPrice({ priceId: addonPrice.id, addonId: addon.id });
+
+    const ticketPaidPurchaseOrder = await insertPurchaseOrder({
+      userId: user.id,
+      status: "complete",
+      purchaseOrderPaymentStatus: "paid",
+    });
+
+    const ticketTemplate = await insertTicketTemplate({
+      eventId: event.id,
+      quantity: 100,
+      isFree: false,
+    });
+
+    const userTicket = await insertTicket({
+      ticketTemplateId: ticketTemplate.id,
+      purchaseOrderId: ticketPaidPurchaseOrder.id,
+      userId: user.id,
+    });
+
+    const addonPurchaseOrder = await insertPurchaseOrder({
+      userId: user.id,
+      status: "open",
+      purchaseOrderPaymentStatus: "unpaid",
+    });
+
+    // Insert a user ticket addon without an associated ticket
+    await insertUserTicketAddon({
+      addonId: addon.id,
+      purchaseOrderId: addonPurchaseOrder.id,
+      userTicketId: userTicket.id,
+      unitPriceInCents: addonPrice.price_in_cents,
+    });
+
+    const mockStripeClient = {
+      checkout: {
+        sessions: {
+          create: vi.fn().mockResolvedValue({
+            id: "stripe_payment_id",
+            url: "https://stripe.com/pay",
+            status: "unpaid",
+            expires_at: Date.now() + 3600000,
+            amount_total: 2000,
+          }),
+        },
+      },
+    } as unknown as ReturnType<typeof getStripeClient>;
+
+    // Mock the ensureProductsAreCreated function
+    const mockEnsureProductsAreCreated = vi.spyOn(
+      ticketHelpers,
+      "ensureProductsAreCreated",
+    );
+
+    mockEnsureProductsAreCreated.mockResolvedValue({
+      tickets: [],
+      addons: [
+        {
+          ...addon,
+          price: { amount: addonPrice.price_in_cents },
+          stripeProductId: "stripe_addon_product_id",
+        },
+      ],
+    });
+
+    const result = await handlePaymentLinkGeneration({
+      DB: testDb,
+      USER: user,
+      purchaseOrderId: addonPurchaseOrder.id,
+      currencyId: currency.id,
+      GET_MERCADOPAGO_CLIENT: vi.fn(),
+      GET_STRIPE_CLIENT: () => mockStripeClient,
+      paymentSuccessRedirectURL: "http://success.com",
+      paymentCancelRedirectURL: "http://cancel.com",
+      logger: logger,
+    });
+
+    expect(result.purchaseOrder.paymentPlatform).toBe("stripe");
+
+    expect(result.purchaseOrder.paymentPlatformPaymentLink).toBe(
+      "https://stripe.com/pay",
+    );
+
+    expect(mockStripeClient.checkout.sessions.create).toHaveBeenCalled();
+
+    expect(result.purchaseOrder.status).toBe("open");
+
+    expect(result.purchaseOrder.purchaseOrderPaymentStatus).toBe("unpaid");
+
+    expect(result.purchaseOrder.totalPrice).toBe("2000");
   });
 });

@@ -1,6 +1,7 @@
 import { assert, describe, it, vi, expect, beforeEach } from "vitest";
 
 import { InsertEventSchema } from "~/datasources/db/events";
+import { AddonConstraintType } from "~/datasources/db/ticketAddons";
 import { InsertTicketSchema } from "~/datasources/db/tickets";
 import { InsertUserSchema } from "~/datasources/db/users";
 import { handlePaymentLinkGeneration } from "~/schema/purchaseOrder/actions";
@@ -15,6 +16,10 @@ import {
   insertTicketTemplate,
   insertUser,
   insertUserToCommunity,
+  insertAddon,
+  insertAddonConstraint,
+  insertTicketAddon,
+  insertAddonPrice,
 } from "~/tests/fixtures";
 
 import {
@@ -53,13 +58,13 @@ const createCommunityEventUserAndTicketTemplate = async ({
     ...ticketTemplate,
   });
 
-  const allowedCurrency = await insertAllowedCurrency({
+  const usdAllowedCurrency = await insertAllowedCurrency({
     currency: "USD",
     validPaymentMethods: "stripe",
   });
   const price = await insertPrice({
     price_in_cents: 100_00,
-    currencyId: allowedCurrency.id,
+    currencyId: usdAllowedCurrency.id,
   });
   const createdTicketPrice = await insertTicketPrice({
     priceId: price.id,
@@ -72,6 +77,7 @@ const createCommunityEventUserAndTicketTemplate = async ({
     user: createdUser,
     ticketTemplate: createdTicketTemplate,
     ticketPrice: createdTicketPrice,
+    usdAllowedCurrency,
   };
 };
 
@@ -455,6 +461,7 @@ describe("Claim a user ticket", () => {
                         email: transferRecipient.email,
                         message: "Enjoy the event!",
                       },
+                      addons: [],
                     },
                   ],
                 },
@@ -514,6 +521,7 @@ describe("Claim a user ticket", () => {
                         email: user.email,
                         message: "Self-transfer",
                       },
+                      addons: [],
                     },
                   ],
                 },
@@ -770,6 +778,545 @@ describe("Claim a user ticket", () => {
       }
 
       expect(handlePaymentLinkGeneration).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Addon handling", () => {
+    it("Should allow claiming tickets with addons", async () => {
+      const { community, user, ticketTemplate, event, usdAllowedCurrency } =
+        await createCommunityEventUserAndTicketTemplate();
+
+      const addon = await insertAddon({
+        name: "Test Addon",
+        description: "Test Addon Description",
+        totalStock: 100,
+        maxPerTicket: 2,
+        isUnlimited: false,
+        eventId: event.id,
+      });
+
+      await insertTicketAddon({
+        ticketId: ticketTemplate.id,
+        addonId: addon.id,
+        orderDisplay: 1,
+      });
+
+      await insertAddonPrice({
+        addonId: addon.id,
+        priceId: (
+          await insertPrice({
+            price_in_cents: 100_00,
+            currencyId: usdAllowedCurrency.id,
+          })
+        ).id,
+      });
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 1,
+                  itemsDetails: [
+                    {
+                      addons: [
+                        {
+                          addonId: addon.id,
+                          quantity: 2,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+
+      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
+        assert.equal(response.data.claimUserTicket.tickets.length, 1);
+
+        assert.equal(
+          response.data.claimUserTicket.tickets[0].userTicketAddons.length,
+          1,
+        );
+
+        assert.equal(
+          response.data.claimUserTicket.tickets[0].userTicketAddons[0].quantity,
+          2,
+        );
+
+        assert.equal(
+          response.data.claimUserTicket.tickets[0].userTicketAddons[0].addon.id,
+          addon.id,
+        );
+      }
+    });
+
+    it("Should not allow claiming more addons than maxPerTicket", async () => {
+      const { community, user, ticketTemplate, event, usdAllowedCurrency } =
+        await createCommunityEventUserAndTicketTemplate();
+
+      const addon = await insertAddon({
+        name: "Test Addon",
+        description: "Test Addon Description",
+        totalStock: 100,
+        maxPerTicket: 2,
+        isUnlimited: false,
+        eventId: event.id,
+      });
+
+      await insertTicketAddon({
+        ticketId: ticketTemplate.id,
+        addonId: addon.id,
+        orderDisplay: 1,
+      });
+
+      await insertAddonPrice({
+        addonId: addon.id,
+        priceId: (
+          await insertPrice({
+            price_in_cents: 100_00,
+            currencyId: usdAllowedCurrency.id,
+          })
+        ).id,
+      });
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 1,
+                  itemsDetails: [
+                    {
+                      addons: [
+                        {
+                          addonId: addon.id,
+                          quantity: 3,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(
+        response.data?.claimUserTicket?.__typename,
+        "RedeemUserTicketError",
+      );
+
+      if (
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
+      ) {
+        assert.include(
+          response.data.claimUserTicket.errorMessage,
+          `total quantity exceeds limit per ticket for ticket`,
+        );
+      }
+    });
+
+    it("Should not allow claiming addons that are not associated with the ticket", async () => {
+      const { community, user, ticketTemplate, event, usdAllowedCurrency } =
+        await createCommunityEventUserAndTicketTemplate();
+
+      const addon = await insertAddon({
+        name: "Test Addon",
+        description: "Test Addon Description",
+        totalStock: 100,
+        maxPerTicket: 2,
+        isUnlimited: false,
+        eventId: event.id,
+      });
+
+      // Not associating the addon with the ticket
+
+      await insertAddonPrice({
+        addonId: addon.id,
+        priceId: (
+          await insertPrice({
+            price_in_cents: 100_00,
+            currencyId: usdAllowedCurrency.id,
+          })
+        ).id,
+      });
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 1,
+                  itemsDetails: [
+                    {
+                      addons: [
+                        {
+                          addonId: addon.id,
+                          quantity: 1,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(
+        response.data?.claimUserTicket?.__typename,
+        "RedeemUserTicketError",
+      );
+
+      if (
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
+      ) {
+        assert.include(
+          response.data.claimUserTicket.errorMessage,
+          `Addon ${addon.id} is not related to ticket ${ticketTemplate.id}`,
+        );
+      }
+    });
+
+    it("Should handle addon constraints", async () => {
+      const { community, user, ticketTemplate, event, usdAllowedCurrency } =
+        await createCommunityEventUserAndTicketTemplate();
+
+      const addon1 = await insertAddon({
+        name: "Addon 1",
+        description: "Addon 1 Description",
+        totalStock: 100,
+        maxPerTicket: 1,
+        isUnlimited: false,
+        eventId: event.id,
+      });
+
+      const addon2 = await insertAddon({
+        name: "Addon 2",
+        description: "Addon 2 Description",
+        totalStock: 100,
+        maxPerTicket: 1,
+        isUnlimited: false,
+        eventId: event.id,
+      });
+
+      await insertTicketAddon({
+        ticketId: ticketTemplate.id,
+        addonId: addon1.id,
+        orderDisplay: 1,
+      });
+
+      await insertTicketAddon({
+        ticketId: ticketTemplate.id,
+        addonId: addon2.id,
+        orderDisplay: 2,
+      });
+
+      await insertAddonPrice({
+        addonId: addon1.id,
+        priceId: (
+          await insertPrice({
+            price_in_cents: 100_00,
+            currencyId: usdAllowedCurrency.id,
+          })
+        ).id,
+      });
+
+      await insertAddonPrice({
+        addonId: addon2.id,
+        priceId: (
+          await insertPrice({
+            price_in_cents: 100_00,
+            currencyId: usdAllowedCurrency.id,
+          })
+        ).id,
+      });
+
+      await insertAddonConstraint({
+        addonId: addon1.id,
+        relatedAddonId: addon2.id,
+        constraintType: AddonConstraintType.MUTUAL_EXCLUSION,
+      });
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 1,
+                  itemsDetails: [
+                    {
+                      addons: [
+                        {
+                          addonId: addon1.id,
+                          quantity: 1,
+                        },
+                        {
+                          addonId: addon2.id,
+                          quantity: 1,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(
+        response.data?.claimUserTicket?.__typename,
+        "RedeemUserTicketError",
+      );
+
+      if (
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
+      ) {
+        assert.include(
+          response.data.claimUserTicket.errorMessage,
+          "mutually exclusive",
+        );
+      }
+    });
+
+    it("Should not allow claiming more addons than total stock", async () => {
+      const { community, user, ticketTemplate, event, usdAllowedCurrency } =
+        await createCommunityEventUserAndTicketTemplate();
+
+      const addon = await insertAddon({
+        name: "Limited Addon",
+        description: "Limited Addon Description",
+        totalStock: 5,
+        maxPerTicket: 10,
+        isUnlimited: false,
+        eventId: event.id,
+      });
+
+      await insertTicketAddon({
+        ticketId: ticketTemplate.id,
+        addonId: addon.id,
+        orderDisplay: 1,
+      });
+
+      await insertAddonPrice({
+        addonId: addon.id,
+        priceId: (
+          await insertPrice({
+            price_in_cents: 100_00,
+            currencyId: usdAllowedCurrency.id,
+          })
+        ).id,
+      });
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 1,
+                  itemsDetails: [
+                    {
+                      addons: [
+                        {
+                          addonId: addon.id,
+                          quantity: 6,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(
+        response.data?.claimUserTicket?.__typename,
+        "RedeemUserTicketError",
+      );
+
+      if (
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
+      ) {
+        assert.include(
+          response.data.claimUserTicket.errorMessage,
+          "gone over the limit of addons",
+        );
+      }
+    });
+
+    it("Should allow claiming unlimited addons", async () => {
+      const { community, user, ticketTemplate, event, usdAllowedCurrency } =
+        await createCommunityEventUserAndTicketTemplate();
+
+      const addon = await insertAddon({
+        name: "Unlimited Addon",
+        description: "Unlimited Addon Description",
+        totalStock: null,
+        maxPerTicket: null,
+        isUnlimited: true,
+        eventId: event.id,
+      });
+
+      await insertTicketAddon({
+        ticketId: ticketTemplate.id,
+        addonId: addon.id,
+        orderDisplay: 1,
+      });
+
+      await insertAddonPrice({
+        addonId: addon.id,
+        priceId: (
+          await insertPrice({
+            price_in_cents: 100_00,
+            currencyId: usdAllowedCurrency.id,
+          })
+        ).id,
+      });
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 1,
+                  itemsDetails: [
+                    {
+                      addons: [
+                        {
+                          addonId: addon.id,
+                          quantity: 100,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+
+      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
+        assert.equal(response.data.claimUserTicket.tickets.length, 1);
+
+        assert.equal(
+          response.data.claimUserTicket.tickets[0].userTicketAddons.length,
+          1,
+        );
+
+        assert.equal(
+          response.data.claimUserTicket.tickets[0].userTicketAddons[0].quantity,
+          100,
+        );
+
+        assert.equal(
+          response.data.claimUserTicket.tickets[0].userTicketAddons[0].addon.id,
+          addon.id,
+        );
+      }
     });
   });
 });

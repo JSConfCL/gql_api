@@ -21,6 +21,15 @@ mutation ClaimUserTicket($input: TicketClaimInput!) {
             name
           }
         }
+        userTicketAddons {
+          id
+          quantity
+          approvalStatus
+          addon {
+            id
+            name
+          }
+        }
       }
     }
     ... on RedeemUserTicketError {

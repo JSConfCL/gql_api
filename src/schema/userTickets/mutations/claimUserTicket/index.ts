@@ -1,4 +1,4 @@
-import { and, count, eq, inArray } from "drizzle-orm";
+import { and, count, eq, inArray, sum } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
@@ -16,6 +16,7 @@ import {
   InsertUserTicketAddonClaimSchema,
   UserTicketAddonRedemptionStatus,
   userTicketAddonsSchema,
+  UserTicketAddonApprovalStatus,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import { Logger } from "~/logging";
@@ -551,14 +552,15 @@ async function verifyFinalUserTicketCounts(
   // Bulk query for existing addon claims counts
   const globalAddonClaimCountsPromise = DB.select({
     addonId: userTicketAddonsSchema.addonId,
-    globalCount: count(userTicketAddonsSchema.id),
+    globalCount: sum(userTicketAddonsSchema.quantity),
   })
     .from(userTicketAddonsSchema)
-    .innerJoin(
-      userTicketsSchema,
-      eq(userTicketAddonsSchema.userTicketId, userTicketsSchema.id),
+    .where(
+      inArray(userTicketAddonsSchema.approvalStatus, [
+        UserTicketAddonApprovalStatus.APPROVED,
+        UserTicketAddonApprovalStatus.PENDING,
+      ]),
     )
-    .where(inArray(userTicketsSchema.approvalStatus, validApprovalStatuses))
     .groupBy(userTicketAddonsSchema.addonId);
 
   // Bulk query for existing addon claims counts
@@ -566,7 +568,7 @@ async function verifyFinalUserTicketCounts(
   const userAddonClaimCountsPromise = DB.select({
     addonId: userTicketAddonsSchema.addonId,
     ticketTemplateId: userTicketsSchema.ticketTemplateId,
-    userCount: count(userTicketAddonsSchema.id),
+    userCount: sum(userTicketAddonsSchema.quantity),
   })
     .from(userTicketAddonsSchema)
     .innerJoin(
@@ -575,7 +577,10 @@ async function verifyFinalUserTicketCounts(
     )
     .where(
       and(
-        inArray(userTicketsSchema.approvalStatus, validApprovalStatuses),
+        inArray(userTicketAddonsSchema.approvalStatus, [
+          UserTicketAddonApprovalStatus.APPROVED,
+          UserTicketAddonApprovalStatus.PENDING,
+        ]),
         eq(userTicketsSchema.userId, USER.id),
       ),
     )
@@ -638,7 +643,7 @@ async function verifyFinalUserTicketCounts(
         ?.globalCount ?? 0;
 
     const limitAlreadyReached = addon.totalStock
-      ? globalCount > addon.totalStock
+      ? Number(globalCount) > addon.totalStock
       : false;
 
     if (limitAlreadyReached) {
@@ -657,7 +662,7 @@ async function verifyFinalUserTicketCounts(
             count.ticketTemplateId === ticketTemplate.id,
         )?.userCount ?? 0;
 
-      if (addon.maxPerTicket && userCount > addon.maxPerTicket) {
+      if (addon.maxPerTicket && Number(userCount) > addon.maxPerTicket) {
         throw applicationError(
           `Addon limit per user exceeded for addon with id ${addon.id} and ticket template ${ticketTemplate.id}`,
           ServiceErrors.FAILED_PRECONDITION,

@@ -777,24 +777,30 @@ function calculateTotalAmount(
   let allItemsAreFree = true;
 
   for (const userTicket of userTickets) {
-    if (!userTicket.ticketTemplate.isFree) {
-      const ticketPrice = userTicket.ticketTemplate.ticketsPrices.find(
-        (tp) => tp.price.currency.id === currencyId,
-      );
-
-      if (!ticketPrice) {
-        throw new Error(
-          `Ticket price not found for ticket ${userTicket.ticketTemplate.id}`,
-        );
-      }
-
-      totalAmount += ticketPrice.price.price_in_cents;
-
-      allItemsAreFree = false;
+    if (userTicket.ticketTemplate.isFree) {
+      continue;
     }
+
+    const ticketPrice = userTicket.ticketTemplate.ticketsPrices.find(
+      (tp) => tp.price.currency.id === currencyId,
+    );
+
+    if (!ticketPrice) {
+      throw new Error(
+        `Ticket price not found for ticket ${userTicket.ticketTemplate.id}`,
+      );
+    }
+
+    totalAmount += ticketPrice.price.price_in_cents;
+
+    allItemsAreFree = false;
   }
 
   for (const userTicketAddon of userTicketAddons) {
+    if (userTicketAddon.addon.isFree) {
+      continue;
+    }
+
     const addonPrice = userTicketAddon.addon.prices.find(
       (p) => p.price.currency.id === currencyId,
     );
