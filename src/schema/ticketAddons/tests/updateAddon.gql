@@ -1,0 +1,6 @@
+mutation UpdateAddon($input: UpdateAddonInput!) {
+  updateAddon(input: $input) {
+    id
+    name
+  }
+}

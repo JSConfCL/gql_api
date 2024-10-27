@@ -5,9 +5,12 @@ export const sanitizeForLikeSearch = (str: string) => {
 };
 
 export const addToObjectIfPropertyExists = (
-  object: Record<string, number | string | boolean | Date | undefined | null>,
+  object: Record<
+    string,
+    number | string | string[] | boolean | Date | undefined | null
+  >,
   key: string,
-  value: number | string | boolean | Date | undefined | null,
+  value: number | string | string[] | boolean | Date | undefined | null,
 ) => {
   if (value !== undefined && value !== null) {
     object[key] = value;

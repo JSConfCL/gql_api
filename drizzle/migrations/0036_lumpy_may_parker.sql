@@ -1,0 +1,2 @@
+DROP INDEX IF EXISTS "idx_addon_constraints_unique";--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "idx_addon_constraints_unique" ON "addon_constraints" USING btree ("addon_id","related_addon_id","constraint_type");

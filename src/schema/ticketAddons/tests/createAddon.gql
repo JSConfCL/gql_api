@@ -1,0 +1,5 @@
+mutation CreateAddon($input: AddonInput!) {
+  createAddon(input: $input) {
+    id
+  }
+}

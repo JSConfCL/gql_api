@@ -89,6 +89,33 @@ export enum AddonConstraintType {
   MutualExclusion = "MUTUAL_EXCLUSION",
 }
 
+export type AddonInput = {
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  eventId: Scalars["String"]["input"];
+  /** Cannot be true if prices are passed. */
+  isFree: Scalars["Boolean"]["input"];
+  /** If true, totalStock must not be passed. */
+  isUnlimited: Scalars["Boolean"]["input"];
+  maxPerTicket?: InputMaybe<Scalars["Int"]["input"]>;
+  name: Scalars["String"]["input"];
+  prices?: InputMaybe<Array<PricingInputField>>;
+  tags?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  tickets?: InputMaybe<Array<AddonInputTicket>>;
+  totalStock?: InputMaybe<Scalars["Int"]["input"]>;
+};
+
+export type AddonInputTicket = {
+  constraints?: InputMaybe<Array<CreateAddonConstraintInput>>;
+  orderDisplay: Scalars["Int"]["input"];
+  ticketId: Scalars["String"]["input"];
+};
+
+export type AddonTicketUpdateInput = {
+  constraints?: InputMaybe<TicketUpdateConstraintInput>;
+  orderDisplay: Scalars["Int"]["input"];
+  ticketId: Scalars["String"]["input"];
+};
+
 /** Representation of an allowed currency */
 export type AllowedCurrency = {
   __typename?: "AllowedCurrency";
@@ -147,6 +174,11 @@ export type ConsolidatedPaymentLogEntry = {
   id: Scalars["ID"]["output"];
   platform: Scalars["String"]["output"];
   totalTransactionAmount: Scalars["Float"]["output"];
+};
+
+export type CreateAddonConstraintInput = {
+  constraintType: AddonConstraintType;
+  relatedAddonId: Scalars["String"]["input"];
 };
 
 export type CreateCommunityInput = {
@@ -385,6 +417,7 @@ export type Mutation = {
   checkPurchaseOrderStatus: PurchaseOrder;
   /** Attempt to claim and/or transfer tickets */
   claimUserTicket: RedeemUserTicketResponse;
+  createAddon: Addon;
   /** Create an community */
   createCommunity: Community;
   /** Create a company */
@@ -399,6 +432,7 @@ export type Mutation = {
   createTeam: TeamRef;
   /** Create a ticket */
   createTicket: Ticket;
+  deleteAddons: Addon;
   /** Try to add a person to a team */
   deletePersonFomTeam: TeamRef;
   /** Edit an community */
@@ -421,6 +455,7 @@ export type Mutation = {
   startWorkEmailValidation: WorkEmail;
   transferMyTicketToUser: UserTicketTransfer;
   triggerUserTicketApprovalReview: Array<UserTicket>;
+  updateAddon: Addon;
   /** Update a company */
   updateCompany: Company;
   updateMyUserData: User;
@@ -468,6 +503,10 @@ export type MutationClaimUserTicketArgs = {
   input: TicketClaimInput;
 };
 
+export type MutationCreateAddonArgs = {
+  input: AddonInput;
+};
+
 export type MutationCreateCommunityArgs = {
   input: CreateCommunityInput;
 };
@@ -494,6 +533,10 @@ export type MutationCreateTeamArgs = {
 
 export type MutationCreateTicketArgs = {
   input: TicketCreateInput;
+};
+
+export type MutationDeleteAddonsArgs = {
+  ids: Array<Scalars["String"]["input"]>;
 };
 
 export type MutationDeletePersonFomTeamArgs = {
@@ -544,6 +587,10 @@ export type MutationTransferMyTicketToUserArgs = {
 export type MutationTriggerUserTicketApprovalReviewArgs = {
   eventId: Scalars["String"]["input"];
   userId: Scalars["String"]["input"];
+};
+
+export type MutationUpdateAddonArgs = {
+  input: UpdateAddonInput;
 };
 
 export type MutationUpdateCompanyArgs = {
@@ -816,6 +863,8 @@ export type Query = {
   salaries: Array<Salary>;
   /** Get a schedule by its ID */
   schedule: Schedule;
+  /** Get addons for a specific event */
+  searchAddons: Array<Addon>;
   /** Search a consolidated payment logs, by date, aggregated by platform and currency_id */
   searchConsolidatedPaymentLogs: Array<ConsolidatedPaymentLogEntry>;
   searchCurrencies: Array<AllowedCurrency>;
@@ -897,6 +946,10 @@ export type QueryPublicTicketInfoArgs = {
 
 export type QueryScheduleArgs = {
   scheduleId: Scalars["String"]["input"];
+};
+
+export type QuerySearchAddonsArgs = {
+  eventId: Scalars["String"]["input"];
 };
 
 export type QuerySearchConsolidatedPaymentLogsArgs = {
@@ -1240,11 +1293,40 @@ export type TicketTransferUserInfo = {
   name?: Maybe<Scalars["String"]["output"]>;
 };
 
+export type TicketUpdateConstraintInput = {
+  create?: InputMaybe<Array<CreateAddonConstraintInput>>;
+  idsToDelete?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  update?: InputMaybe<Array<UpdateAddonConstraintInput>>;
+};
+
 export enum TypeOfEmployment {
   Freelance = "freelance",
   FullTime = "fullTime",
   PartTime = "partTime",
 }
+
+export type UpdateAddonConstraintInput = {
+  constraintType: AddonConstraintType;
+  id: Scalars["String"]["input"];
+  relatedAddonId: Scalars["String"]["input"];
+};
+
+export type UpdateAddonInput = {
+  deletePriceIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  deleteTicketIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  id: Scalars["String"]["input"];
+  /** Cannot be true if prices are passed. */
+  isFree?: InputMaybe<Scalars["Boolean"]["input"]>;
+  isUnlimited?: InputMaybe<Scalars["Boolean"]["input"]>;
+  maxPerTicket?: InputMaybe<Scalars["Int"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  newTickets?: InputMaybe<Array<AddonInputTicket>>;
+  prices?: InputMaybe<Array<PricingInputField>>;
+  tags?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  totalStock?: InputMaybe<Scalars["Int"]["input"]>;
+  updateTickets?: InputMaybe<Array<AddonTicketUpdateInput>>;
+};
 
 export type UpdateCommunityInput = {
   communityId: Scalars["String"]["input"];
