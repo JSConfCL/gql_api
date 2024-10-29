@@ -3,6 +3,8 @@ mutation ClaimUserTicket($input: TicketClaimInput!) {
     __typename
     ... on PurchaseOrder {
       id
+      paymentLink
+      paymentPlatform
       tickets {
         id
         paymentStatus

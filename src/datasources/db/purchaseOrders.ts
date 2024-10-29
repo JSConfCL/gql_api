@@ -26,6 +26,14 @@ export const puchaseOrderPaymentStatusEnum = [
   "not_required",
 ] as const;
 
+export type PurchaseOrderPaymentStatus =
+  (typeof puchaseOrderPaymentStatusEnum)[number];
+
+export type PurchaseOrderStatus = (typeof purchaseOrderStatusEnum)[number];
+
+export type PurchaseOrderPaymentPlatform =
+  (typeof purchaseOrderPaymentPlatforms)[number];
+
 // PURCHASE_OURDERS TABLE
 export const purchaseOrdersSchema = pgTable("purchase_orders", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),

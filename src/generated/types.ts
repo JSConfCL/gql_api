@@ -52,7 +52,7 @@ export type AddUserToTeamResponseRef = {
   userIsInOtherTeams: Scalars["Boolean"]["output"];
 };
 
-/** Representation of a workEmail */
+/** Representation of an allowed currency */
 export type AllowedCurrency = {
   __typename?: "AllowedCurrency";
   currency: Scalars["String"]["output"];

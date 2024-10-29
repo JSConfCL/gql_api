@@ -16,7 +16,7 @@ type AddUserToTeamResponseRef {
 }
 
 """
-Representation of a workEmail
+Representation of an allowed currency
 """
 type AllowedCurrency {
   currency: String!

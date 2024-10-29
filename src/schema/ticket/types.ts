@@ -22,7 +22,7 @@ builder.objectType(PriceRef, {
     amount: t.exposeInt("amount"),
     currency: t.field({
       type: AllowedCurrencyLoadable,
-      nullable: true,
+      nullable: false,
       resolve: (root) => root.currencyId,
     }),
   }),

@@ -7,6 +7,7 @@ import {
   AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 import {
   eventsToCommunitiesSchema,
@@ -75,7 +76,11 @@ export const eventsRelations = relations(eventsSchema, ({ many, one }) => ({
 
 export const selectEventsSchema = createSelectSchema(eventsSchema);
 
+export type SelectEventSchema = z.infer<typeof selectEventsSchema>;
+
 export const insertEventsSchema = createInsertSchema(eventsSchema);
+
+export type InsertEventSchema = z.infer<typeof insertEventsSchema>;
 
 export const updateEventsSchema = insertEventsSchema.pick({
   name: true,

@@ -44,7 +44,7 @@ describe("createOrUpdateStripeProductAndPrice", () => {
 
     const result = await createOrUpdateStripeProductAndPrice({
       item: {
-        id: productId,
+        stripeId: productId,
         name: "Test Product",
         description: "Test Description",
         currency: "USD",
@@ -90,7 +90,7 @@ describe("createOrUpdateStripeProductAndPrice", () => {
 
     const result = await createOrUpdateStripeProductAndPrice({
       item: {
-        id: productId,
+        stripeId: productId,
         name: "New Name",
         description: "New Description",
         currency: "USD",

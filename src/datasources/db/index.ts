@@ -26,7 +26,11 @@ export const getDb = ({
   neonUrl: string;
   logger: Logger;
 }) => {
-  const client = postgres(neonUrl);
+  const client = postgres(neonUrl, {
+    onnotice: () => {
+      // DISCARD NOTICES LIKE identifier "x" will be truncated to "y"
+    },
+  });
 
   try {
     const db = drizzle(client, {
