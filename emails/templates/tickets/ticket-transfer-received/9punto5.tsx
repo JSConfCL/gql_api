@@ -69,7 +69,6 @@ export const TicketTransferReceived9punto5 = ({
 
       <Text className="mb-0">Además, pronto podrás agregar:</Text>
       <ul className="list-disc pl-5 ml-0">
-        <li>Estadía para 3 noches en hotel Villa del Río</li>
         <li>Almuerzo para los 3 días</li>
       </ul>
 

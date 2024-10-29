@@ -25,10 +25,9 @@ import {
 } from "~/datasources/stripe";
 import { applicationError, ServiceErrors } from "~/errors";
 import { Logger } from "~/logging";
+import { ensureProductsAreCreated } from "~/schema/ticket/helpers";
+import { getExpirationDateForTicketTransfer } from "~/schema/userTicketsTransfers/helpers";
 import { Context } from "~/types";
-
-import { ensureProductsAreCreated } from "../ticket/helpers";
-import { getExpirationDateForTicketTransfer } from "../userTicketsTransfers/helpers";
 
 const fetchPurchaseOrderInformation = async (
   purchaseOrderId: string,
