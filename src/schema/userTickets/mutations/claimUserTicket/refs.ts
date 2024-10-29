@@ -3,7 +3,7 @@ import { PurchaseOrderRef } from "~/schema/purchaseOrder/types";
 import { UserTicketTransferInfoInputRef } from "~/schema/userTicketsTransfers/mutations";
 import { InferPothosInputType, InferPothosOutputType } from "~/types";
 
-export const PurchaseOrderItemDetailsInputRef = builder.inputType(
+const PurchaseOrderItemDetailsInputRef = builder.inputType(
   "PurchaseOrderItemDetailsInput",
   {
     fields: (t) => ({
@@ -15,7 +15,7 @@ export const PurchaseOrderItemDetailsInputRef = builder.inputType(
   },
 );
 
-export const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {
+const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {
   fields: (t) => ({
     ticketId: t.string({ required: true }),
     quantity: t.int({ required: true }),
@@ -26,14 +26,11 @@ export const PurchaseOrderInput = builder.inputType("PurchaseOrderInput", {
   }),
 });
 
-export const GeneratePaymentLinkInput = builder.inputType(
-  "GeneratePaymentLinkInput",
-  {
-    fields: (t) => ({
-      currencyId: t.string({ required: true }),
-    }),
-  },
-);
+const GeneratePaymentLinkInput = builder.inputType("GeneratePaymentLinkInput", {
+  fields: (t) => ({
+    currencyId: t.string({ required: true }),
+  }),
+});
 
 export const TicketClaimInput = builder.inputType("TicketClaimInput", {
   fields: (t) => ({
@@ -52,23 +49,20 @@ export type TicketClaimInputType = InferPothosInputType<
   typeof TicketClaimInput
 >;
 
-export const RedeemUserTicketErrorRef = builder.objectRef<{
+const RedeemUserTicketErrorRef = builder.objectRef<{
   error: true;
   errorMessage: string;
 }>("RedeemUserTicketError");
 
-export const RedeemUserTicketError = builder.objectType(
-  RedeemUserTicketErrorRef,
-  {
-    fields: (t) => ({
-      error: t.field({
-        type: "Boolean",
-        resolve: () => true,
-      }),
-      errorMessage: t.exposeString("errorMessage", {}),
+const RedeemUserTicketError = builder.objectType(RedeemUserTicketErrorRef, {
+  fields: (t) => ({
+    error: t.field({
+      type: "Boolean",
+      resolve: () => true,
     }),
-  },
-);
+    errorMessage: t.exposeString("errorMessage", {}),
+  }),
+});
 
 export type RedeemUserTicketErrorType = InferPothosOutputType<
   typeof builder,
