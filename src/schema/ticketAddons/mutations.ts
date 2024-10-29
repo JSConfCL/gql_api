@@ -17,10 +17,6 @@ export const AddonInputTicketRef = builder.inputType("AddonInputTicket", {
   fields: (t) => ({
     ticketId: t.string({ required: true }),
     orderDisplay: t.int({ required: true }),
-    constraints: t.field({
-      type: [CreateAddonConstraintInputRef],
-      required: false,
-    }),
   }),
 });
 
@@ -43,6 +39,10 @@ export const AddonInputRef = builder.inputType("AddonInput", {
     prices: t.field({ type: [PricingInputFieldRef], required: false }),
     tickets: t.field({
       type: [AddonInputTicketRef],
+      required: false,
+    }),
+    constraints: t.field({
+      type: [CreateAddonConstraintInputRef],
       required: false,
     }),
   }),
@@ -75,42 +75,6 @@ export const UpdateAddonConstraintInputRef = builder.inputType(
   },
 );
 
-// For ticket associations
-export const AddonTicketUpdateInputRef = builder.inputType(
-  "AddonTicketUpdateInput",
-  {
-    fields: (t) => ({
-      ticketId: t.string({ required: true }),
-      orderDisplay: t.int({ required: true }),
-      constraints: t.field({
-        type: TicketUpdateConstraintInputRef,
-        required: false,
-      }),
-    }),
-  },
-);
-
-// Group constraint operations
-const TicketUpdateConstraintInputRef = builder.inputType(
-  "TicketUpdateConstraintInput",
-  {
-    fields: (t) => ({
-      create: t.field({
-        type: [CreateAddonConstraintInputRef],
-        required: false,
-      }),
-      update: t.field({
-        type: [UpdateAddonConstraintInputRef],
-        required: false,
-      }),
-      idsToDelete: t.field({
-        type: ["String"],
-        required: false,
-      }),
-    }),
-  },
-);
-
 // Main update input remains the same
 const UpdateAddonInputRef = builder.inputType("UpdateAddonInput", {
   fields: (t) => ({
@@ -129,10 +93,19 @@ const UpdateAddonInputRef = builder.inputType("UpdateAddonInput", {
     deletePriceIds: t.field({ type: ["String"], required: false }),
     newTickets: t.field({ type: [AddonInputTicketRef], required: false }),
     updateTickets: t.field({
-      type: [AddonTicketUpdateInputRef],
+      type: [AddonInputTicketRef],
       required: false,
     }),
     deleteTicketIds: t.field({ type: ["String"], required: false }),
+    newConstraints: t.field({
+      type: [CreateAddonConstraintInputRef],
+      required: false,
+    }),
+    updateConstraints: t.field({
+      type: [UpdateAddonConstraintInputRef],
+      required: false,
+    }),
+    deleteConstraintIds: t.field({ type: ["String"], required: false }),
   }),
 });
 
@@ -147,12 +120,15 @@ builder.mutationField("createAddon", (t) =>
     },
     resolve: async (root, { input }, { DB, logger }) => {
       return await DB.transaction(async (tx) => {
-        createUpdateAddonMutationHelpers.validateBaseData(logger, {
-          isFree: input.isFree,
-          maxPerTicket: input.maxPerTicket,
-          totalStock: input.totalStock,
-          prices: input.prices,
-          isUnlimited: input.isUnlimited,
+        createUpdateAddonMutationHelpers.validateBaseData({
+          logger,
+          data: {
+            isFree: input.isFree,
+            maxPerTicket: input.maxPerTicket,
+            totalStock: input.totalStock,
+            prices: input.prices,
+            isUnlimited: input.isUnlimited,
+          },
         });
 
         const [addon] = await tx
@@ -174,20 +150,42 @@ builder.mutationField("createAddon", (t) =>
         }
 
         await Promise.all([
-          createUpdateAddonMutationHelpers.handlePrices(
+          createUpdateAddonMutationHelpers.handlePricesUpdate({
             logger,
             tx,
-            addon.id,
-            input.prices,
-          ),
-          createUpdateAddonMutationHelpers.handleNewTickets(
+            addonId: addon.id,
+            params: {
+              prices: input.prices || null,
+              deletePriceIds: null,
+            },
+          }),
+          createUpdateAddonMutationHelpers.handleTicketsUpdate({
             logger,
             tx,
-            addon.id,
-            input.eventId,
-            input.tickets,
-          ),
+            params: {
+              addonId: addon.id,
+              eventId: input.eventId,
+              newTickets: input.tickets || null,
+              updateTickets: null,
+              deleteTicketIds: null,
+            },
+          }),
         ]);
+
+        // We need to wait till tickets associations are created
+        // before creating constraints
+        // this to ensure that we only create valid constraints
+        // (e.g. related addons are available on the same tickets)
+        await createUpdateAddonMutationHelpers.handleConstraintsUpdate({
+          logger,
+          tx,
+          params: {
+            addonId: addon.id,
+            newConstraints: input.constraints || null,
+            updateConstraints: null,
+            deleteConstraintIds: null,
+          },
+        });
 
         return addon;
       });
@@ -224,12 +222,15 @@ builder.mutationField("updateAddon", (t) =>
         let updatedAddon: SelectAddonSchema | undefined;
 
         if (Object.keys(updateData).length > 0) {
-          createUpdateAddonMutationHelpers.validateBaseData(logger, {
-            isFree: updateData.isFree,
-            maxPerTicket: updateData.maxPerTicket,
-            totalStock: updateData.totalStock,
-            prices: input.prices,
-            isUnlimited: updateData.isUnlimited,
+          createUpdateAddonMutationHelpers.validateBaseData({
+            logger,
+            data: {
+              isFree: updateData.isFree,
+              maxPerTicket: updateData.maxPerTicket,
+              totalStock: updateData.totalStock,
+              prices: input.prices,
+              isUnlimited: updateData.isUnlimited,
+            },
           });
 
           const result = await tx
@@ -250,29 +251,41 @@ builder.mutationField("updateAddon", (t) =>
         }
 
         await Promise.all([
-          createUpdateAddonMutationHelpers.handleUpdatePrices(
+          createUpdateAddonMutationHelpers.handlePricesUpdate({
             logger,
             tx,
-            input.id,
-            input.prices,
-            input.deletePriceIds,
-          ),
-          createUpdateAddonMutationHelpers.handleNewTickets(
+            addonId: input.id,
+            params: {
+              prices: input.prices || null,
+              deletePriceIds: input.deletePriceIds || null,
+            },
+          }),
+          createUpdateAddonMutationHelpers.handleTicketsUpdate({
             logger,
             tx,
-            updatedAddon.id,
-            updatedAddon.eventId,
-            input.newTickets,
-          ),
-          createUpdateAddonMutationHelpers.handleUpdateTickets(
-            logger,
-            tx,
-            updatedAddon.id,
-            updatedAddon.eventId,
-            input.updateTickets || [],
-            input.deleteTicketIds || [],
-          ),
+            params: {
+              addonId: updatedAddon.id,
+              eventId: updatedAddon.eventId,
+              newTickets: input.newTickets || null,
+              updateTickets: input.updateTickets || null,
+              deleteTicketIds: input.deleteTicketIds || null,
+            },
+          }),
         ]);
+
+        // maybe the user has deleted some tickets
+        // so we need to update the constraints after the tickets are updated
+        // just in case the user has deleted some tickets that are related to some constraints
+        await createUpdateAddonMutationHelpers.handleConstraintsUpdate({
+          logger,
+          tx,
+          params: {
+            addonId: updatedAddon.id,
+            newConstraints: input.newConstraints || null,
+            updateConstraints: input.updateConstraints || null,
+            deleteConstraintIds: input.deleteConstraintIds || null,
+          },
+        });
 
         return updatedAddon;
       });

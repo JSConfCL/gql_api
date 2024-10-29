@@ -90,6 +90,7 @@ export enum AddonConstraintType {
 }
 
 export type AddonInput = {
+  constraints?: InputMaybe<Array<CreateAddonConstraintInput>>;
   description?: InputMaybe<Scalars["String"]["input"]>;
   eventId: Scalars["String"]["input"];
   /** Cannot be true if prices are passed. */
@@ -105,13 +106,6 @@ export type AddonInput = {
 };
 
 export type AddonInputTicket = {
-  constraints?: InputMaybe<Array<CreateAddonConstraintInput>>;
-  orderDisplay: Scalars["Int"]["input"];
-  ticketId: Scalars["String"]["input"];
-};
-
-export type AddonTicketUpdateInput = {
-  constraints?: InputMaybe<TicketUpdateConstraintInput>;
   orderDisplay: Scalars["Int"]["input"];
   ticketId: Scalars["String"]["input"];
 };
@@ -1293,12 +1287,6 @@ export type TicketTransferUserInfo = {
   name?: Maybe<Scalars["String"]["output"]>;
 };
 
-export type TicketUpdateConstraintInput = {
-  create?: InputMaybe<Array<CreateAddonConstraintInput>>;
-  idsToDelete?: InputMaybe<Array<Scalars["String"]["input"]>>;
-  update?: InputMaybe<Array<UpdateAddonConstraintInput>>;
-};
-
 export enum TypeOfEmployment {
   Freelance = "freelance",
   FullTime = "fullTime",
@@ -1312,6 +1300,7 @@ export type UpdateAddonConstraintInput = {
 };
 
 export type UpdateAddonInput = {
+  deleteConstraintIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
   deletePriceIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
   deleteTicketIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
   description?: InputMaybe<Scalars["String"]["input"]>;
@@ -1321,11 +1310,13 @@ export type UpdateAddonInput = {
   isUnlimited?: InputMaybe<Scalars["Boolean"]["input"]>;
   maxPerTicket?: InputMaybe<Scalars["Int"]["input"]>;
   name?: InputMaybe<Scalars["String"]["input"]>;
+  newConstraints?: InputMaybe<Array<CreateAddonConstraintInput>>;
   newTickets?: InputMaybe<Array<AddonInputTicket>>;
   prices?: InputMaybe<Array<PricingInputField>>;
   tags?: InputMaybe<Array<Scalars["String"]["input"]>>;
   totalStock?: InputMaybe<Scalars["Int"]["input"]>;
-  updateTickets?: InputMaybe<Array<AddonTicketUpdateInput>>;
+  updateConstraints?: InputMaybe<Array<UpdateAddonConstraintInput>>;
+  updateTickets?: InputMaybe<Array<AddonInputTicket>>;
 };
 
 export type UpdateCommunityInput = {

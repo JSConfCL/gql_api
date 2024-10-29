@@ -55,6 +55,7 @@ enum AddonConstraintType {
 }
 
 input AddonInput {
+  constraints: [CreateAddonConstraintInput!]
   description: String
   eventId: String!
 
@@ -76,13 +77,6 @@ input AddonInput {
 }
 
 input AddonInputTicket {
-  constraints: [CreateAddonConstraintInput!]
-  orderDisplay: Int!
-  ticketId: String!
-}
-
-input AddonTicketUpdateInput {
-  constraints: TicketUpdateConstraintInput
   orderDisplay: Int!
   ticketId: String!
 }
@@ -1262,12 +1256,6 @@ type TicketTransferUserInfo {
   name: String
 }
 
-input TicketUpdateConstraintInput {
-  create: [CreateAddonConstraintInput!]
-  idsToDelete: [String!]
-  update: [UpdateAddonConstraintInput!]
-}
-
 enum TypeOfEmployment {
   freelance
   fullTime
@@ -1281,6 +1269,7 @@ input UpdateAddonConstraintInput {
 }
 
 input UpdateAddonInput {
+  deleteConstraintIds: [String!]
   deletePriceIds: [String!]
   deleteTicketIds: [String!]
   description: String
@@ -1293,11 +1282,13 @@ input UpdateAddonInput {
   isUnlimited: Boolean
   maxPerTicket: Int
   name: String
+  newConstraints: [CreateAddonConstraintInput!]
   newTickets: [AddonInputTicket!]
   prices: [PricingInputField!]
   tags: [String!]
   totalStock: Int
-  updateTickets: [AddonTicketUpdateInput!]
+  updateConstraints: [UpdateAddonConstraintInput!]
+  updateTickets: [AddonInputTicket!]
 }
 
 input UpdateCommunityInput {

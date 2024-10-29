@@ -370,16 +370,11 @@ describe("Create Addon", () => {
             eventId: event.id,
             isFree: true,
             isUnlimited: true,
-            tickets: [
+            tickets: [{ ticketId: ticket.id, orderDisplay: 2 }],
+            constraints: [
               {
-                ticketId: ticket.id,
-                orderDisplay: 2,
-                constraints: [
-                  {
-                    relatedAddonId: addon1Response.data.createAddon.id,
-                    constraintType: GraphQLAddonConstraintType.Dependency,
-                  },
-                ],
+                relatedAddonId: addon1Response.data.createAddon.id,
+                constraintType: GraphQLAddonConstraintType.Dependency,
               },
             ],
           },
@@ -428,16 +423,11 @@ describe("Create Addon", () => {
             eventId: event.id,
             isFree: true,
             isUnlimited: true,
-            tickets: [
+            tickets: [{ ticketId: ticket.id, orderDisplay: 1 }],
+            constraints: [
               {
-                ticketId: ticket.id,
-                orderDisplay: 1,
-                constraints: [
-                  {
-                    relatedAddonId: "non-existent-addon-id",
-                    constraintType: GraphQLAddonConstraintType.Dependency,
-                  },
-                ],
+                relatedAddonId: SAMPLE_TEST_UUID,
+                constraintType: GraphQLAddonConstraintType.Dependency,
               },
             ],
           },
@@ -448,7 +438,7 @@ describe("Create Addon", () => {
 
       assert.include(
         response.errors?.[0].message.toLowerCase(),
-        `addons with ids non-existent-addon-id do not belong to the specified ticket`,
+        `addons with ids ${SAMPLE_TEST_UUID} are not available in the same tickets`,
       );
     });
 

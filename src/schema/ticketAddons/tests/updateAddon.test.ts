@@ -15,6 +15,8 @@ import {
   insertAllowedCurrency,
   insertTicketAddon,
   insertAddonConstraint,
+  insertAddonPrice,
+  insertPrice,
 } from "~/tests/fixtures";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 
@@ -139,18 +141,10 @@ describe("Update Addon", () => {
         variables: {
           input: {
             id: addon1.id,
-            updateTickets: [
+            newConstraints: [
               {
-                ticketId: ticket.id,
-                orderDisplay: 1,
-                constraints: {
-                  create: [
-                    {
-                      relatedAddonId: addon2.id,
-                      constraintType: GraphQLAddonConstraintType.Dependency,
-                    },
-                  ],
-                },
+                relatedAddonId: addon2.id,
+                constraintType: GraphQLAddonConstraintType.Dependency,
               },
             ],
           },
@@ -223,18 +217,10 @@ describe("Update Addon", () => {
         variables: {
           input: {
             id: addon1.id,
-            updateTickets: [
+            newConstraints: [
               {
-                ticketId: ticket.id,
-                orderDisplay: 1,
-                constraints: {
-                  create: [
-                    {
-                      relatedAddonId: addon3.id,
-                      constraintType: GraphQLAddonConstraintType.Dependency,
-                    },
-                  ],
-                },
+                relatedAddonId: addon3.id,
+                constraintType: GraphQLAddonConstraintType.Dependency,
               },
             ],
           },
@@ -284,18 +270,10 @@ describe("Update Addon", () => {
         variables: {
           input: {
             id: addon2.id,
-            updateTickets: [
+            newConstraints: [
               {
-                ticketId: ticket.id,
-                orderDisplay: 2,
-                constraints: {
-                  create: [
-                    {
-                      relatedAddonId: addon1.id,
-                      constraintType: GraphQLAddonConstraintType.Dependency,
-                    },
-                  ],
-                },
+                relatedAddonId: addon1.id,
+                constraintType: GraphQLAddonConstraintType.Dependency,
               },
             ],
           },
@@ -354,23 +332,14 @@ describe("Update Addon", () => {
         variables: {
           input: {
             id: addon1.id,
-            updateTickets: [
+            updateConstraints: [
               {
-                ticketId: ticket.id,
-                orderDisplay: 1,
-                constraints: {
-                  update: [
-                    {
-                      id: constraint.id,
-                      relatedAddonId: addon2.id,
-                      constraintType:
-                        GraphQLAddonConstraintType.MutualExclusion,
-                    },
-                  ],
-                  idsToDelete: [constraint.id],
-                },
+                id: constraint.id,
+                relatedAddonId: addon2.id,
+                constraintType: GraphQLAddonConstraintType.MutualExclusion,
               },
             ],
+            deleteConstraintIds: [constraint.id],
           },
         },
       });
@@ -424,6 +393,187 @@ describe("Update Addon", () => {
         response.errors?.[0].message.toLowerCase(),
         "addon cannot be free and have prices",
       );
+    });
+  });
+
+  describe("Price Updates", () => {
+    it("Should allow updating existing prices and adding new ones", async () => {
+      const event = await insertEvent();
+      const usdCurrency = await insertAllowedCurrency({ currency: "USD" });
+      const eurCurrency = await insertAllowedCurrency({ currency: "EUR" });
+
+      const addon = await insertAddon({
+        name: "Paid Addon",
+        eventId: event.id,
+        isFree: false,
+      });
+
+      const usdPrice = await insertPrice({
+        price_in_cents: 1000,
+        currencyId: usdCurrency.id,
+      });
+
+      await insertAddonPrice({
+        addonId: addon.id,
+        priceId: usdPrice.id,
+      });
+
+      const response = await executeGraphqlOperationAsSuperAdmin<
+        UpdateAddonMutation,
+        UpdateAddonMutationVariables
+      >({
+        document: UpdateAddon,
+        variables: {
+          input: {
+            id: addon.id,
+            prices: [
+              {
+                value_in_cents: 2000,
+                currencyId: usdCurrency.id,
+              },
+              {
+                value_in_cents: 1800, // Add new EUR price
+                currencyId: eurCurrency.id,
+              },
+            ],
+          },
+        },
+      });
+
+      assert.equal(response.errors, undefined);
+
+      assert.equal(response.data?.updateAddon?.prices.length, 2);
+
+      assert.equal(response.data?.updateAddon?.prices[0].amount, 2000);
+    });
+  });
+
+  describe("Ticket Constraints", () => {
+    it("Should fail when adding constraint with mismatched tickets", async () => {
+      const event = await insertEvent();
+      const ticket1 = await insertTicketTemplate({ eventId: event.id });
+      const ticket2 = await insertTicketTemplate({ eventId: event.id });
+
+      const addon1 = await insertAddon({
+        name: "Addon 1",
+        eventId: event.id,
+      });
+      const addon2 = await insertAddon({
+        name: "Addon 2",
+        eventId: event.id,
+      });
+
+      // Add addon1 to both tickets but addon2 only to ticket1
+      await insertTicketAddon({
+        addonId: addon1.id,
+        ticketId: ticket1.id,
+        orderDisplay: 1,
+      });
+
+      await insertTicketAddon({
+        addonId: addon1.id,
+        ticketId: ticket2.id,
+        orderDisplay: 1,
+      });
+
+      await insertTicketAddon({
+        addonId: addon2.id,
+        ticketId: ticket1.id,
+        orderDisplay: 2,
+      });
+
+      const response = await executeGraphqlOperationAsSuperAdmin<
+        UpdateAddonMutation,
+        UpdateAddonMutationVariables
+      >({
+        document: UpdateAddon,
+        variables: {
+          input: {
+            id: addon1.id,
+            newConstraints: [
+              {
+                relatedAddonId: addon2.id,
+                constraintType: GraphQLAddonConstraintType.Dependency,
+              },
+            ],
+          },
+        },
+      });
+
+      assert.exists(response.errors);
+
+      assert.include(
+        response.errors?.[0].message.toLowerCase(),
+        `addons with ids ${addon2.id} are not available in the same tickets`,
+      );
+    });
+
+    it("Should handle ticket deletion with multiple related tickets", async () => {
+      const event = await insertEvent();
+      const ticket1 = await insertTicketTemplate({ eventId: event.id });
+      const ticket2 = await insertTicketTemplate({ eventId: event.id });
+
+      const addon1 = await insertAddon({
+        name: "Addon 1",
+        eventId: event.id,
+      });
+      const addon2 = await insertAddon({
+        name: "Addon 2",
+        eventId: event.id,
+      });
+
+      // Add both addons to both tickets
+      await insertTicketAddon({
+        addonId: addon1.id,
+        ticketId: ticket1.id,
+        orderDisplay: 1,
+      });
+
+      await insertTicketAddon({
+        addonId: addon1.id,
+        ticketId: ticket2.id,
+        orderDisplay: 1,
+      });
+
+      await insertTicketAddon({
+        addonId: addon2.id,
+        ticketId: ticket1.id,
+        orderDisplay: 2,
+      });
+
+      await insertTicketAddon({
+        addonId: addon2.id,
+        ticketId: ticket2.id,
+        orderDisplay: 2,
+      });
+
+      await insertAddonConstraint({
+        addonId: addon1.id,
+        relatedAddonId: addon2.id,
+        constraintType: AddonConstraintType.DEPENDENCY,
+      });
+
+      // Delete ticket1 - should succeed as constraint still valid through ticket2
+
+      const response = await executeGraphqlOperationAsSuperAdmin<
+        UpdateAddonMutation,
+        UpdateAddonMutationVariables
+      >({
+        document: UpdateAddon,
+        variables: {
+          input: { id: addon1.id, deleteTicketIds: [ticket1.id] },
+        },
+      });
+
+      assert.equal(response.errors, undefined);
+
+      // Verify DB state
+      const DB = await getTestDB();
+      const constraints = await DB.query.addonConstraintsSchema.findMany({
+        where: (ac, { eq }) => eq(ac.addonId, addon1.id),
+      });
+
+      assert.equal(constraints.length, 1);
     });
   });
 });
