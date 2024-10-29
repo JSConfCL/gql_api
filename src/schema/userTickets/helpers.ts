@@ -1,8 +1,7 @@
 import { inArray } from "drizzle-orm";
 
-import { ORM_TYPE } from "~/datasources/db";
+import { ORM_TYPE, TRANSACTION_HANDLER } from "~/datasources/db";
 import { TeamStatusEnum } from "~/datasources/db/teams";
-import { USER } from "~/datasources/db/users";
 import { UserParticipationStatusEnum } from "~/datasources/db/userTeams";
 import {
   approveUserTicketsSchema,
@@ -13,40 +12,30 @@ import { Logger } from "~/logging";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
 import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
+import { Context } from "~/types";
 
-export const assertCanStartTicketClaimingForEvent = async ({
-  DB,
-  user,
-  purchaseOrderByTickets,
-  logger,
-}: {
-  DB: ORM_TYPE;
-  user: USER;
-  purchaseOrderByTickets: Record<
-    string,
-    {
-      ticketId: string;
-      quantity: number;
-    }
-  >;
-  logger: Logger;
-}) => {
-  const ticketIds = Object.keys(purchaseOrderByTickets);
-  const [events, tickets] = await Promise.all([
-    eventsFetcher.searchEvents({
-      DB,
-      search: {
-        ticketIds,
-      },
-    }),
+import {
+  NormalizedTicketClaimInput,
+  NormalizedTicketClaimOrder,
+  TicketClaimTicketsInfo,
+} from "./mutations/claimUserTicket";
 
-    ticketsFetcher.searchTickets({
-      DB,
-      search: {
-        ticketIds,
-      },
-    }),
-  ]);
+export const assertCanStartTicketClaimingForEvent = async (
+  context: NonNullableFields<Pick<Context, "USER" | "logger">> & {
+    DB: TRANSACTION_HANDLER;
+  },
+  ticketInfo: TicketClaimTicketsInfo,
+  normalizedInput: NormalizedTicketClaimInput,
+) => {
+  const { DB, USER, logger } = context;
+  const { tickets: ticketTemplates } = ticketInfo;
+
+  const events = await eventsFetcher.searchEvents({
+    DB,
+    search: {
+      ticketIds: ticketTemplates.map((t) => t.id),
+    },
+  });
 
   if (events.length > 1) {
     throw applicationError(
@@ -74,7 +63,7 @@ export const assertCanStartTicketClaimingForEvent = async ({
     );
   }
 
-  if (event.status === "inactive" && !user.isSuperAdmin) {
+  if (event.status === "inactive" && !USER.isSuperAdmin) {
     throw applicationError(
       `Event ${event.id} is not active. Cannot claim tickets for an inactive event.`,
       ServiceErrors.FAILED_PRECONDITION,
@@ -82,35 +71,70 @@ export const assertCanStartTicketClaimingForEvent = async ({
     );
   }
 
-  if (tickets.length !== ticketIds.length) {
+  ticketTemplates.forEach((ticket) => {
+    const order = normalizedInput[ticket.id];
+
+    validateTicketPurchase(ticket, order, logger);
+
+    validateTransferRequests(order, USER, logger);
+  });
+};
+
+function validateTicketPurchase(
+  ticket: TicketClaimTicketsInfo["tickets"][0],
+  order: NormalizedTicketClaimOrder,
+  logger: Logger,
+) {
+  if (order.quantity <= 0) {
     throw applicationError(
-      "Not all tickets found for event",
-      ServiceErrors.NOT_FOUND,
+      `Invalid quantity for ticket ${ticket.id}`,
+      ServiceErrors.FAILED_PRECONDITION,
       logger,
     );
   }
 
-  for (const ticket of tickets) {
-    if (
-      ticket.maxTicketsPerUser &&
-      ticket.maxTicketsPerUser < purchaseOrderByTickets[ticket.id].quantity
-    ) {
-      throw applicationError(
-        `You cannot get more than ${ticket.maxTicketsPerUser} for ticket ${ticket.id}`,
-        ServiceErrors.FAILED_PRECONDITION,
-        logger,
-      );
-    }
-
-    if (ticket.tags.includes("waitlist")) {
-      throw applicationError(
-        `Ticket ${ticket.id} is a waitlist ticket. Cannot claim waitlist tickets`,
-        ServiceErrors.FAILED_PRECONDITION,
-        logger,
-      );
-    }
+  if (ticket.maxTicketsPerUser && ticket.maxTicketsPerUser < order.quantity) {
+    throw applicationError(
+      `You cannot get more than ${ticket.maxTicketsPerUser} for ticket ${ticket.id}`,
+      ServiceErrors.FAILED_PRECONDITION,
+      logger,
+    );
   }
-};
+
+  if (ticket.tags?.includes("waitlist")) {
+    throw applicationError(
+      `Ticket ${ticket.id} is a waitlist ticket. Cannot claim waitlist tickets`,
+      ServiceErrors.FAILED_PRECONDITION,
+      logger,
+    );
+  }
+
+  if (order.itemDetails.length > order.quantity) {
+    throw applicationError(
+      "Item details exceed purchase order quantity",
+      ServiceErrors.FAILED_PRECONDITION,
+      logger,
+    );
+  }
+}
+
+function validateTransferRequests(
+  order: NormalizedTicketClaimOrder,
+  USER: NonNullable<Context["USER"]>,
+  logger: Logger,
+) {
+  const isTransferringToSelf = order.itemDetails.some(
+    (i) => i.transferInfo?.email === USER.email,
+  );
+
+  if (isTransferringToSelf) {
+    throw applicationError(
+      "Cannot transfer to yourself",
+      ServiceErrors.FAILED_PRECONDITION,
+      logger,
+    );
+  }
+}
 
 type ValidateUserDataAndApproveUserTicketsOptions = {
   DB: ORM_TYPE;

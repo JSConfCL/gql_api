@@ -195,21 +195,3 @@ builder.objectType(PublicUserTicketRef, {
     }),
   }),
 });
-
-export const RedeemUserTicketErrorRef = builder.objectRef<{
-  error: true;
-  errorMessage: string;
-}>("RedeemUserTicketError");
-
-export const RedeemUserTicketError = builder.objectType(
-  RedeemUserTicketErrorRef,
-  {
-    fields: (t) => ({
-      error: t.field({
-        type: "Boolean",
-        resolve: () => true,
-      }),
-      errorMessage: t.exposeString("errorMessage", {}),
-    }),
-  },
-);

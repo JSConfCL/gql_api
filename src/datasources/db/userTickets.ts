@@ -21,6 +21,9 @@ export const userTicketsApprovalStatusEnum = [
   "transfer_accepted",
 ] as const;
 
+export type UserTicketApprovalStatus =
+  (typeof userTicketsApprovalStatusEnum)[number];
+
 export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;
 
 // USER-TICKETS-TABLE

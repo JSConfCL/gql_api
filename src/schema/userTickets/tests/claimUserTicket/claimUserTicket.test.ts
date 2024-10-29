@@ -1,6 +1,8 @@
-import { AsyncReturnType } from "type-fest";
 import { assert, describe, it, vi, expect, beforeEach } from "vitest";
 
+import { InsertEventSchema } from "~/datasources/db/events";
+import { InsertTicketSchema } from "~/datasources/db/tickets";
+import { InsertUserSchema } from "~/datasources/db/users";
 import { handlePaymentLinkGeneration } from "~/schema/purchaseOrder/actions";
 import {
   executeGraphqlOperationAsUser,
@@ -22,39 +24,34 @@ import {
 } from "./claimUserTicket.generated";
 
 const createCommunityEventUserAndTicketTemplate = async ({
-  community,
-  event,
-  user,
   ticketTemplate,
-  ticketPrice,
+  user,
+  event,
 }: {
-  community?: AsyncReturnType<typeof insertCommunity>;
-  event?: AsyncReturnType<typeof insertEvent>;
-  user?: AsyncReturnType<typeof insertUser>;
-  ticketTemplate?: AsyncReturnType<typeof insertTicketTemplate>;
-  ticketPrice?: AsyncReturnType<typeof insertPrice>;
+  ticketTemplate?: Partial<InsertTicketSchema>;
+  user?: Partial<InsertUserSchema>;
+  event?: Partial<InsertEventSchema>;
 } = {}) => {
-  const createdCommunity = community ?? (await insertCommunity());
-  const createdEvent =
-    event ??
-    (await insertEvent({
-      status: "active",
-    }));
+  const createdCommunity = await insertCommunity();
+  const createdEvent = await insertEvent({
+    ...event,
+  });
 
   await insertEventToCommunity({
     eventId: createdEvent.id,
     communityId: createdCommunity.id,
   });
-  const createdUser = user ?? (await insertUser());
+  const createdUser = await insertUser({
+    ...user,
+  });
 
-  const createdTicketTemplate =
-    ticketTemplate ??
-    (await insertTicketTemplate({
-      eventId: createdEvent.id,
-      quantity: 100,
-      isFree: false,
-      isUnlimited: false,
-    }));
+  const createdTicketTemplate = await insertTicketTemplate({
+    eventId: createdEvent.id,
+    quantity: 100,
+    isFree: false,
+    isUnlimited: false,
+    ...ticketTemplate,
+  });
 
   const allowedCurrency = await insertAllowedCurrency({
     currency: "USD",
@@ -64,12 +61,10 @@ const createCommunityEventUserAndTicketTemplate = async ({
     price_in_cents: 100_00,
     currencyId: allowedCurrency.id,
   });
-  const createdTicketPrice =
-    ticketPrice ??
-    (await insertTicketPrice({
-      priceId: price.id,
-      ticketId: createdTicketTemplate.id,
-    }));
+  const createdTicketPrice = await insertTicketPrice({
+    priceId: price.id,
+    ticketId: createdTicketTemplate.id,
+  });
 
   return {
     community: createdCommunity,
@@ -108,12 +103,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
               ],
             },
@@ -152,12 +147,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
               ],
             },
@@ -196,12 +191,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
               ],
             },
@@ -220,12 +215,11 @@ describe("Claim a user ticket", () => {
     });
 
     it("For a SUPER ADMIN user", async () => {
-      const createdUser = await insertUser({
-        isSuperAdmin: true,
-      });
       const { user, ticketTemplate } =
         await createCommunityEventUserAndTicketTemplate({
-          user: createdUser,
+          user: {
+            isSuperAdmin: true,
+          },
         });
 
       const response = await executeGraphqlOperationAsUser<
@@ -240,12 +234,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
               ],
             },
@@ -267,18 +261,13 @@ describe("Claim a user ticket", () => {
   describe("Should handle quantity limits", () => {
     it("Should not allow claiming more tickets than the max per user", async () => {
       const maxTicketsPerUser = 2;
-      const event = await insertEvent({
-        status: "active",
-      });
-      const ticketTemplate = await insertTicketTemplate({
-        eventId: event.id,
-        quantity: 200,
-        maxTicketsPerUser,
-      });
 
-      const { community, user } =
+      const { community, user, ticketTemplate } =
         await createCommunityEventUserAndTicketTemplate({
-          event,
+          ticketTemplate: {
+            maxTicketsPerUser,
+            quantity: 200,
+          },
         });
 
       await insertUserToCommunity({
@@ -298,12 +287,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
               ],
             },
@@ -328,17 +317,11 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should not allow claiming more tickets than available", async () => {
-      const createdEvent = await insertEvent({
-        status: "active",
-      });
-      const createdTicketTemplate = await insertTicketTemplate({
-        eventId: createdEvent.id,
-        quantity: 5,
-      });
       const { community, user, ticketTemplate } =
         await createCommunityEventUserAndTicketTemplate({
-          event: createdEvent,
-          ticketTemplate: createdTicketTemplate,
+          ticketTemplate: {
+            quantity: 5,
+          },
         });
 
       await insertUserToCommunity({
@@ -358,12 +341,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 10,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
               ],
             },
@@ -392,11 +375,12 @@ describe("Claim a user ticket", () => {
     it("Should allow claiming up to the available quantity", async () => {
       const { community, user, ticketTemplate } =
         await createCommunityEventUserAndTicketTemplate({
-          ticketTemplate: await insertTicketTemplate({
+          ticketTemplate: {
             quantity: 5,
             isFree: true,
             isUnlimited: false,
-          }),
+            maxTicketsPerUser: 5,
+          },
         });
 
       await insertUserToCommunity({
@@ -417,7 +401,7 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 5,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
               ],
             },
@@ -438,17 +422,11 @@ describe("Claim a user ticket", () => {
 
   describe("Should handle transferring scenarios", () => {
     it("Should handle transferring to another user", async () => {
-      const createdEvent = await insertEvent({
-        status: "active",
-      });
-      const createdTicketTemplate = await insertTicketTemplate({
-        eventId: createdEvent.id,
-        quantity: 10,
-      });
       const { community, user, ticketTemplate } =
         await createCommunityEventUserAndTicketTemplate({
-          event: createdEvent,
-          ticketTemplate: createdTicketTemplate,
+          ticketTemplate: {
+            quantity: 10,
+          },
         });
       const transferRecipient = await insertUser();
 
@@ -470,11 +448,13 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  transfersInfo: [
+                  itemsDetails: [
                     {
-                      name: "John Doe",
-                      email: transferRecipient.email,
-                      message: "Enjoy the event!",
+                      transferInfo: {
+                        name: "John Doe",
+                        email: transferRecipient.email,
+                        message: "Enjoy the event!",
+                      },
                     },
                   ],
                 },
@@ -506,18 +486,8 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should not allow transferring to self", async () => {
-      const createdEvent = await insertEvent({
-        status: "active",
-      });
-      const createdTicketTemplate = await insertTicketTemplate({
-        eventId: createdEvent.id,
-        quantity: 10,
-      });
       const { community, user, ticketTemplate } =
-        await createCommunityEventUserAndTicketTemplate({
-          event: createdEvent,
-          ticketTemplate: createdTicketTemplate,
-        });
+        await createCommunityEventUserAndTicketTemplate();
 
       await insertUserToCommunity({
         communityId: community.id,
@@ -537,11 +507,13 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  transfersInfo: [
+                  itemsDetails: [
                     {
-                      name: "Para mi",
-                      email: user.email,
-                      message: "Self-transfer",
+                      transferInfo: {
+                        name: "Para mi",
+                        email: user.email,
+                        message: "Self-transfer",
+                      },
                     },
                   ],
                 },
@@ -572,16 +544,12 @@ describe("Claim a user ticket", () => {
 
   describe("Should fail to create user tickets for a ticket in a waitlist state", () => {
     it("For a MEMBER user", async () => {
-      const event = await insertEvent();
-      const ticketTemplate = await insertTicketTemplate({
-        tags: ["waitlist"],
-        eventId: event.id,
-      });
-
-      const { user } = await createCommunityEventUserAndTicketTemplate({
-        event,
-        ticketTemplate,
-      });
+      const { user, ticketTemplate } =
+        await createCommunityEventUserAndTicketTemplate({
+          ticketTemplate: {
+            tags: ["waitlist"],
+          },
+        });
 
       const response = await executeGraphqlOperationAsUser<
         ClaimUserTicketMutation,
@@ -595,7 +563,7 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
               ],
             },
@@ -624,12 +592,11 @@ describe("Claim a user ticket", () => {
 
   describe("Should NOT allow claiming", () => {
     it("if the event is Inactive", async () => {
-      const createdEvent = await insertEvent({
-        status: "inactive",
-      });
       const { community, user, ticketTemplate, event } =
         await createCommunityEventUserAndTicketTemplate({
-          event: createdEvent,
+          event: {
+            status: "inactive",
+          },
         });
 
       await insertUserToCommunity({
@@ -649,12 +616,12 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 1,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
               ],
             },
@@ -733,7 +700,7 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
               ],
               generatePaymentLink: {
@@ -783,7 +750,7 @@ describe("Claim a user ticket", () => {
                 {
                   ticketId: ticketTemplate.id,
                   quantity: 2,
-                  transfersInfo: [],
+                  itemsDetails: [],
                 },
               ],
             },
