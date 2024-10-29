@@ -11,14 +11,18 @@ export type UpdateAddonMutationVariables = Types.Exact<{
 }>;
 
 
-export type UpdateAddonMutation = { __typename?: 'Mutation', updateAddon: { __typename?: 'Addon', id: string, name: string } };
+export type UpdateAddonMutation = { __typename?: 'Mutation', updateAddon: { __typename?: 'Addon', id: string, name: string, prices: Array<{ __typename?: 'Price', id: string, amount: number }> } };
 
 
 export const UpdateAddon = gql`
-    mutation updateAddon($input: UpdateAddonInput!) {
+    mutation UpdateAddon($input: UpdateAddonInput!) {
   updateAddon(input: $input) {
     id
     name
+    prices {
+      id
+      amount
+    }
   }
 }
     `;

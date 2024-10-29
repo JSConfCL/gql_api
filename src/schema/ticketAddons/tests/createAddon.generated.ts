@@ -15,7 +15,7 @@ export type CreateAddonMutation = { __typename?: 'Mutation', createAddon: { __ty
 
 
 export const CreateAddon = gql`
-    mutation createAddon($input: AddonInput!) {
+    mutation CreateAddon($input: AddonInput!) {
   createAddon(input: $input) {
     id
   }

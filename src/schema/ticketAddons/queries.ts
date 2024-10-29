@@ -1,11 +1,7 @@
-import { eq, getTableColumns } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { builder } from "~/builder";
-import {
-  addonsSchema,
-  ticketAddonsSchema,
-  ticketsSchema,
-} from "~/datasources/db/schema";
+import { addonsSchema } from "~/datasources/db/schema";
 
 import { AddonRef } from "./types";
 
@@ -20,19 +16,9 @@ builder.queryField("searchAddons", (t) =>
       rules: ["IsSuperAdmin"],
     },
     resolve: async (root, { eventId }, { DB }) => {
-      const addons = await DB.select({
-        ...getTableColumns(addonsSchema),
-      })
-        .from(addonsSchema)
-        .innerJoin(
-          ticketAddonsSchema,
-          eq(ticketAddonsSchema.addonId, addonsSchema.id),
-        )
-        .innerJoin(
-          ticketsSchema,
-          eq(ticketsSchema.id, ticketAddonsSchema.ticketId),
-        )
-        .where(eq(ticketsSchema.eventId, eventId));
+      const addons = await DB.query.addonsSchema.findMany({
+        where: eq(addonsSchema.eventId, eventId),
+      });
 
       return addons;
     },

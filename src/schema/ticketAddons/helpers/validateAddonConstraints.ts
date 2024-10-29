@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 import { builder } from "~/builder";
 import { TRANSACTION_HANDLER } from "~/datasources/db";
@@ -33,16 +33,20 @@ type AddonMap = Record<
  * 4. No duplicate constraints
  * 5. No invalid constraint combinations
  */
-export const validateAddonConstraints = async (
-  logger: Logger,
-  tx: TRANSACTION_HANDLER,
-  addonId: string,
+export const validateAddonConstraints = async ({
+  logger,
+  tx,
+  addonId,
+  newConstraints,
+}: {
+  logger: Logger;
+  tx: TRANSACTION_HANDLER;
+  addonId: string;
   newConstraints: InferPothosInputType<
     typeof builder,
     typeof CreateAddonConstraintInputRef
-  >[],
-  ticketId: string,
-): Promise<void> => {
+  >[];
+}): Promise<void> => {
   // Check for duplicate constraints in new constraints
   const duplicates = findDuplicateConstraints(newConstraints);
 
@@ -56,7 +60,7 @@ export const validateAddonConstraints = async (
     );
   }
 
-  const addonMap = await fetchTicketAddonsWithConstraints(tx, ticketId);
+  const addonMap = await fetchCommonAddonsWithConstraints(tx, addonId);
 
   const {
     invalidAddons,
@@ -70,7 +74,7 @@ export const validateAddonConstraints = async (
     throw applicationError(
       `Addons with ids ${invalidAddons.join(
         ", ",
-      )} do not belong to the specified ticket`,
+      )} are not available in the same tickets`,
       ServiceErrors.INVALID_ARGUMENT,
       logger,
     );
@@ -132,12 +136,31 @@ const findDuplicateConstraints = (
 };
 
 /**
- * Fetches all addons and their constraints for a given ticket
+ * Fetches all addons and their constraints that are common across all tickets
+ * associated with the given addon. This ensures we only work with addons
+ * that could potentially form valid constraints.
+ *
+ * For example, if addon A is on tickets [1,2] and addon B is only on ticket [1],
+ * addon B won't be included in the results as it's not available on all tickets
+ * that addon A is on.
+ *
+ * @param tx Database transaction handler
+ * @param addonId ID of the addon we're validating constraints for
+ * @returns Map of addon IDs to their details and constraints
  */
-const fetchTicketAddonsWithConstraints = async (
+const fetchCommonAddonsWithConstraints = async (
   tx: TRANSACTION_HANDLER,
-  ticketId: string,
+  addonId: string,
 ): Promise<AddonMap> => {
+  // First, get all tickets associated with our addon
+  const addonTickets = await tx
+    .select({ ticketId: ticketAddonsSchema.ticketId })
+    .from(ticketAddonsSchema)
+    .where(eq(ticketAddonsSchema.addonId, addonId));
+
+  const ticketIds = addonTickets.map((t) => t.ticketId);
+
+  // Then get all addons that appear in ALL of these tickets
   const rows = await tx
     .select({
       id: addonsSchema.id,
@@ -150,19 +173,31 @@ const fetchTicketAddonsWithConstraints = async (
       addonConstraintsSchema,
       eq(addonConstraintsSchema.addonId, addonsSchema.id),
     )
-    .where(eq(ticketAddonsSchema.ticketId, ticketId));
+    .where(inArray(ticketAddonsSchema.ticketId, ticketIds));
 
-  return rows.reduce((acc, row) => {
-    if (!acc[row.id]) {
-      acc[row.id] = { ...row, constraints: [] };
+  // Group by addon ID and count tickets to ensure we only keep
+  // addons that appear in all tickets
+  const addonTicketCounts = new Map<string, number>();
+  const result: AddonMap = {};
+
+  for (const row of rows) {
+    addonTicketCounts.set(row.id, (addonTicketCounts.get(row.id) || 0) + 1);
+
+    if (!result[row.id]) {
+      result[row.id] = { ...row, constraints: [] };
     }
 
     if (row.constraints) {
-      acc[row.id].constraints.push(row.constraints);
+      result[row.id].constraints.push(row.constraints);
     }
+  }
 
-    return acc;
-  }, {} as AddonMap);
+  // Only keep addons that appear in all tickets
+  return Object.fromEntries(
+    Object.entries(result).filter(
+      ([id]) => addonTicketCounts.get(id) === ticketIds.length,
+    ),
+  );
 };
 
 /**
@@ -208,8 +243,8 @@ const analyzeConstraints = (
   for (const constraint of newConstraints) {
     const { relatedAddonId } = constraint;
 
-    if (!addonMap[addonId] || !addonMap[relatedAddonId]) {
-      invalidAddons.push(addonId in addonMap ? relatedAddonId : addonId);
+    if (!addonMap[relatedAddonId]) {
+      invalidAddons.push(relatedAddonId);
       continue;
     }
 
