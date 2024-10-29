@@ -36,6 +36,8 @@ builder.mutationField("claimUserTicketAddons", (t) =>
       currencyId: t.arg({
         type: "String",
         required: false,
+        description:
+          "The currency id to use for the purchase order. If any addon is not free, this parameter is required",
       }),
     },
     authz: {
@@ -196,7 +198,25 @@ builder.mutationField("claimUserTicketAddons", (t) =>
                 },
               },
             })
-            .then((addons) => addons.map((a) => a.addon));
+            .then((relations) => {
+              if (currencyId) {
+                return relations.map(({ addon }) => {
+                  const addonPrice = addon.prices.find(
+                    (p) => p.price.currency.id === currencyId,
+                  );
+
+                  return {
+                    ...addon,
+                    price: addonPrice?.price || null,
+                  };
+                });
+              }
+
+              return relations.map(({ addon }) => ({
+                ...addon,
+                price: null,
+              }));
+            });
 
           const notFoundAddons = addonsClaims.filter(
             (a) => !addons.find((addon) => addon.id === a.addonId),
@@ -254,7 +274,7 @@ builder.mutationField("claimUserTicketAddons", (t) =>
           for (const [addonId, { quantity, addon }] of Object.entries(
             aggregatedAddonsClaims,
           )) {
-            let unitPriceInCents = 0;
+            const unitPriceInCents = 0;
             let approvalStatus: UserTicketAddonApprovalStatus =
               UserTicketAddonApprovalStatus.PENDING;
 
@@ -267,11 +287,7 @@ builder.mutationField("claimUserTicketAddons", (t) =>
                 );
               }
 
-              const addonPrice = addon.prices.find(
-                (p) => p.price.currency.id === currencyId,
-              );
-
-              if (!addonPrice) {
+              if (!addon.price) {
                 throw applicationError(
                   `No price found for addon ${addonId} in the specified currency`,
                   ServiceErrors.NOT_FOUND,
@@ -279,15 +295,13 @@ builder.mutationField("claimUserTicketAddons", (t) =>
                 );
               }
 
-              if (addonPrice.price.price_in_cents === 0) {
+              if (addon.price.price_in_cents === 0) {
                 throw applicationError(
                   `Addon ${addonId} is not free, but the price is 0`,
                   ServiceErrors.INVALID_ARGUMENT,
                   logger,
                 );
               }
-
-              unitPriceInCents = addonPrice.price.price_in_cents;
             } else {
               approvalStatus = UserTicketAddonApprovalStatus.APPROVED;
             }
