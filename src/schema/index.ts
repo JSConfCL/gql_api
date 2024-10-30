@@ -54,6 +54,7 @@ import "./user/types";
 import "./userTickets/mutations";
 import "./userTickets/queries";
 import "./userTickets/types";
+import "./userTicketsAddons/mutations";
 import "./userTicketsTransfers/mutations";
 import "./userTicketsTransfers/queries";
 import "./userTicketsTransfers/types";
