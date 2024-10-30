@@ -422,6 +422,19 @@ type Mutation {
   Attempt to claim and/or transfer tickets
   """
   claimUserTicket(input: TicketClaimInput!): RedeemUserTicketResponse!
+
+  """
+  Claim ticket addons
+  """
+  claimUserTicketAddons(
+    addonsClaims: [AddonClaimInput!]!
+
+    """
+    The currency id to use for the purchase order. If any addon is not free, this parameter is required
+    """
+    currencyId: String
+    userTicketId: String!
+  ): RedeemUserTicketAddonsResponse!
   createAddon(input: AddonInput!): Addon!
 
   """
@@ -927,6 +940,15 @@ type Query {
 input RSVPFilterInput {
   eventIds: [String!]
 }
+
+type RedeemUserTicketAddonsError {
+  error: Boolean!
+  errorMessage: String!
+}
+
+union RedeemUserTicketAddonsResponse =
+    PurchaseOrder
+  | RedeemUserTicketAddonsError
 
 type RedeemUserTicketError {
   error: Boolean!

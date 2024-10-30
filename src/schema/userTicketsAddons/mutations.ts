@@ -12,18 +12,48 @@ import {
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import { handlePaymentLinkGeneration } from "~/schema/purchaseOrder/actions";
+import { InferPothosOutputType } from "~/types";
 
 import { validateAddonClaimsAndConstraints } from "./helpers";
+import { PurchaseOrderRef } from "../purchaseOrder/types";
 import { AddonClaimInputRef } from "../shared/refs";
-import {
-  RedeemUserTicketErrorType,
-  RedeemUserTicketResponse,
-} from "../userTickets/mutations/claimUserTicket/refs";
+
+const RedeemUserTicketAddonsErrorRef = builder.objectRef<{
+  error: true;
+  errorMessage: string;
+}>("RedeemUserTicketAddonsError");
+
+const RedeemUserTicketAddonsError = builder.objectType(
+  RedeemUserTicketAddonsErrorRef,
+  {
+    fields: (t) => ({
+      error: t.field({
+        type: "Boolean",
+        resolve: () => true,
+      }),
+      errorMessage: t.exposeString("errorMessage", {}),
+    }),
+  },
+);
+
+export type RedeemUserTicketAddonsErrorType = InferPothosOutputType<
+  typeof builder,
+  typeof RedeemUserTicketAddonsErrorRef
+>;
+
+export const RedeemUserTicketAddonsResponse = builder.unionType(
+  "RedeemUserTicketAddonsResponse",
+  {
+    types: [PurchaseOrderRef, RedeemUserTicketAddonsError],
+    resolveType: (value) =>
+      "errorMessage" in value ? RedeemUserTicketAddonsError : PurchaseOrderRef,
+  },
+);
 
 builder.mutationField("claimUserTicketAddons", (t) =>
   t.field({
     description: "Claim ticket addons",
-    type: RedeemUserTicketResponse,
+    type: RedeemUserTicketAddonsResponse,
     args: {
       userTicketId: t.arg({
         type: "String",
@@ -274,7 +304,7 @@ builder.mutationField("claimUserTicketAddons", (t) =>
           for (const [addonId, { quantity, addon }] of Object.entries(
             aggregatedAddonsClaims,
           )) {
-            const unitPriceInCents = 0;
+            const unitPriceInCents = addon.price?.price_in_cents || 0;
             let approvalStatus: UserTicketAddonApprovalStatus =
               UserTicketAddonApprovalStatus.PENDING;
 
@@ -295,7 +325,7 @@ builder.mutationField("claimUserTicketAddons", (t) =>
                 );
               }
 
-              if (addon.price.price_in_cents === 0) {
+              if (unitPriceInCents === 0) {
                 throw applicationError(
                   `Addon ${addonId} is not free, but the price is 0`,
                   ServiceErrors.INVALID_ARGUMENT,
@@ -366,7 +396,7 @@ builder.mutationField("claimUserTicketAddons", (t) =>
   }),
 );
 
-function handleClaimError(error: unknown): RedeemUserTicketErrorType {
+function handleClaimError(error: unknown): RedeemUserTicketAddonsErrorType {
   if (error instanceof GraphQLError || error instanceof Error) {
     return {
       error: true,

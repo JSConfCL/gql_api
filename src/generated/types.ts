@@ -411,6 +411,8 @@ export type Mutation = {
   checkPurchaseOrderStatus: PurchaseOrder;
   /** Attempt to claim and/or transfer tickets */
   claimUserTicket: RedeemUserTicketResponse;
+  /** Claim ticket addons */
+  claimUserTicketAddons: RedeemUserTicketAddonsResponse;
   createAddon: Addon;
   /** Create an community */
   createCommunity: Community;
@@ -495,6 +497,12 @@ export type MutationCheckPurchaseOrderStatusArgs = {
 
 export type MutationClaimUserTicketArgs = {
   input: TicketClaimInput;
+};
+
+export type MutationClaimUserTicketAddonsArgs = {
+  addonsClaims: Array<AddonClaimInput>;
+  currencyId?: InputMaybe<Scalars["String"]["input"]>;
+  userTicketId: Scalars["String"]["input"];
 };
 
 export type MutationCreateAddonArgs = {
@@ -985,6 +993,16 @@ export type QueryWorkRoleSenioritiesArgs = {
 export type RsvpFilterInput = {
   eventIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
+
+export type RedeemUserTicketAddonsError = {
+  __typename?: "RedeemUserTicketAddonsError";
+  error: Scalars["Boolean"]["output"];
+  errorMessage: Scalars["String"]["output"];
+};
+
+export type RedeemUserTicketAddonsResponse =
+  | PurchaseOrder
+  | RedeemUserTicketAddonsError;
 
 export type RedeemUserTicketError = {
   __typename?: "RedeemUserTicketError";
