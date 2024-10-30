@@ -1,4 +1,4 @@
-import { and, eq, inArray, lt } from "drizzle-orm";
+import { and, eq, inArray, lt, sql } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 import { ORM_TYPE } from "~/datasources/db";
@@ -661,40 +661,40 @@ const createPaymentIntent = async ({
   let paymentPlatformData: PaymentPlatformIntent;
   const currencyCode = currency.currency;
 
+  const uniqueTickets = userTickets
+    .map(({ ticketTemplate }) => {
+      const price = ticketTemplate.ticketsPrices.find(
+        (p) => p.price.currency.id === currency.id,
+      )?.price.price_in_cents;
+
+      return {
+        ...ticketTemplate,
+        price: price ? { amount: price } : null,
+      };
+    })
+    .filter((t, index, self) => {
+      // We filter out duplicate tickets
+      return self.findIndex((t2) => t2.id === t.id) === index;
+    });
+
+  const uniqueAddons = userTicketAddons
+    .map(({ addon }) => addon)
+    .map((addon) => {
+      const price = addon.prices.find(
+        (p) => p.price.currency.id === currency.id,
+      )?.price.price_in_cents;
+
+      return {
+        ...addon,
+        price: price ? { amount: price } : null,
+      };
+    })
+    .filter((a, index, self) => {
+      return self.findIndex((a2) => a2.id === a.id) === index;
+    });
+
   // Create products in stripe or the payment platform if needed
   const updatedProducts = await DB.transaction(async (trx) => {
-    const uniqueTickets = userTickets
-      .map(({ ticketTemplate }) => {
-        const price = ticketTemplate.ticketsPrices.find(
-          (p) => p.price.currency.id === currency.id,
-        )?.price.price_in_cents;
-
-        return {
-          ...ticketTemplate,
-          price: price ? { amount: price } : null,
-        };
-      })
-      .filter((t, index, self) => {
-        // We filter out duplicate tickets
-        return self.findIndex((t2) => t2.id === t.id) === index;
-      });
-
-    const uniqueAddons = userTicketAddons
-      .map(({ addon }) => addon)
-      .map((addon) => {
-        const price = addon.prices.find(
-          (p) => p.price.currency.id === currency.id,
-        )?.price.price_in_cents;
-
-        return {
-          ...addon,
-          price: price ? { amount: price } : null,
-        };
-      })
-      .filter((a, index, self) => {
-        return self.findIndex((a2) => a2.id === a.id) === index;
-      });
-
     return ensureProductsAreCreated({
       currency,
       tickets: uniqueTickets,
@@ -779,21 +779,57 @@ const createPaymentIntent = async ({
     paymentPlatformExpirationDate,
   } = paymentPlatformData;
 
-  const updatedPurchaseOrders = await DB.update(purchaseOrdersSchema)
-    .set({
-      totalPrice,
-      paymentPlatform,
-      paymentPlatformPaymentLink,
-      paymentPlatformReferenceID,
-      paymentPlatformStatus,
-      paymentPlatformExpirationDate,
-      purchaseOrderPaymentStatus: "unpaid",
-      currencyId: currency.id,
-    })
-    .where(eq(purchaseOrdersSchema.id, purchaseOrderId))
-    .returning();
+  const updatedPurchaseOrder = await DB.transaction(async (trx) => {
+    const [updatedPO] = await trx
+      .update(purchaseOrdersSchema)
+      .set({
+        totalPrice,
+        paymentPlatform,
+        paymentPlatformPaymentLink,
+        paymentPlatformReferenceID,
+        paymentPlatformStatus,
+        paymentPlatformExpirationDate,
+        purchaseOrderPaymentStatus: "unpaid",
+        currencyId: currency.id,
+      })
+      .where(eq(purchaseOrdersSchema.id, purchaseOrderId))
+      .returning();
 
-  const updatedPurchaseOrder = updatedPurchaseOrders[0];
+    if (!updatedPO) {
+      throw new Error("Purchase order not found");
+    }
+
+    if (userTicketAddons.length > 0) {
+      const updateUserTicketAddonsSQL = sql`
+        UPDATE ${userTicketAddonsSchema}
+        SET
+          ${sql.raw(
+            userTicketAddonsSchema.unitPriceInCents.name,
+          )} = temp.unit_price_in_cents
+        FROM (
+          VALUES
+            ${sql.join(
+              userTicketAddons.map(
+                (userTicketAddon) => sql`(
+                  ${userTicketAddon.id}::uuid, 
+                  ${
+                    userTicketAddon.addon.prices.find(
+                      (p) => p.price.currency.id === currency.id,
+                    )?.price.price_in_cents ?? 0
+                  }::integer
+                )`,
+              ),
+              sql.raw(","),
+            )}
+        ) AS temp(user_ticket_addon_id, unit_price_in_cents)
+        WHERE ${userTicketAddonsSchema.id} = temp.user_ticket_addon_id
+      `;
+
+      await trx.execute(updateUserTicketAddonsSQL);
+    }
+
+    return updatedPO;
+  });
 
   if (!updatedPurchaseOrder) {
     throw new Error("Purchase order not found");
