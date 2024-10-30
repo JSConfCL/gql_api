@@ -1541,6 +1541,148 @@ describe("handlePaymentLinkGeneration", () => {
       },
     ]);
 
+    const updatedUserTicketAddons =
+      await testDb.query.userTicketAddonsSchema.findMany({
+        where: (u, ops) => ops.eq(u.purchaseOrderId, purchaseOrder.id),
+      });
+
+    expect(updatedUserTicketAddons.length).toBe(3);
+
+    expect(updatedUserTicketAddons[0].unitPriceInCents).toBe(
+      addonPrice.price_in_cents,
+    );
+
+    expect(updatedUserTicketAddons[1].unitPriceInCents).toBe(
+      addonPrice.price_in_cents,
+    );
+
+    // third one is free
+    expect(updatedUserTicketAddons[2].unitPriceInCents).toBe(0);
+
     expect(mockEnsureProductsAreCreated).toHaveBeenCalled();
+  });
+
+  it("should update user ticket addon prices during payment generation", async () => {
+    const user = await insertUser();
+    const event = await insertEvent({ status: "active" });
+    const ticketTemplate = await insertTicketTemplate({
+      eventId: event.id,
+      quantity: 100,
+      isFree: false,
+    });
+    const currency = await insertAllowedCurrency({
+      currency: "USD",
+      validPaymentMethods: "stripe",
+    });
+    const ticketPrice = await insertPrice({
+      price_in_cents: 1000,
+      currencyId: currency.id,
+    });
+
+    await insertTicketPrice({
+      priceId: ticketPrice.id,
+      ticketId: ticketTemplate.id,
+    });
+
+    // Create an addon with multiple prices
+    const addon = await insertAddon({
+      eventId: event.id,
+      name: "VIP Access",
+      description: "VIP access to the event",
+      isFree: false,
+    });
+
+    const usdAddonPrice = await insertPrice({
+      price_in_cents: 500,
+      currencyId: currency.id,
+    });
+
+    const otherCurrency = await insertAllowedCurrency({
+      currency: "EUR",
+      validPaymentMethods: undefined,
+    });
+
+    const eurAddonPrice = await insertPrice({
+      price_in_cents: 400,
+      currencyId: otherCurrency.id,
+    });
+
+    await insertAddonPrice({ priceId: usdAddonPrice.id, addonId: addon.id });
+
+    await insertAddonPrice({ priceId: eurAddonPrice.id, addonId: addon.id });
+
+    const purchaseOrder = await insertPurchaseOrder({
+      userId: user.id,
+      status: "open",
+      purchaseOrderPaymentStatus: "unpaid",
+    });
+
+    const userTicket = await insertTicket({
+      ticketTemplateId: ticketTemplate.id,
+      purchaseOrderId: purchaseOrder.id,
+      userId: user.id,
+    });
+
+    // Insert user ticket addon with initial price of 0
+    const userTicketAddon = await insertUserTicketAddon({
+      addonId: addon.id,
+      purchaseOrderId: purchaseOrder.id,
+      userTicketId: userTicket.id,
+      unitPriceInCents: 0,
+      quantity: 2,
+    });
+
+    const mockStripeClient = {
+      checkout: {
+        sessions: {
+          create: vi.fn().mockResolvedValue({
+            id: "stripe_payment_id",
+            url: "https://stripe.com/pay",
+            status: "unpaid",
+            expires_at: Date.now() + 3600000,
+            amount_total: 2000, // 1000 (ticket) + 2 * 500 (addons)
+          }),
+        },
+      },
+    } as unknown as ReturnType<typeof getStripeClient>;
+
+    vi.spyOn(ticketHelpers, "ensureProductsAreCreated").mockResolvedValue({
+      tickets: [
+        {
+          ...ticketTemplate,
+          price: { amount: ticketPrice.price_in_cents },
+          stripeProductId: "stripe_ticket_product_id",
+        },
+      ],
+      addons: [
+        {
+          ...addon,
+          price: { amount: usdAddonPrice.price_in_cents },
+          stripeProductId: "stripe_addon_product_id",
+        },
+      ],
+    });
+
+    await handlePaymentLinkGeneration({
+      DB: testDb,
+      USER: user,
+      purchaseOrderId: purchaseOrder.id,
+      currencyId: currency.id,
+      GET_MERCADOPAGO_CLIENT: vi.fn(),
+      GET_STRIPE_CLIENT: () => mockStripeClient,
+      paymentSuccessRedirectURL: "http://success.com",
+      paymentCancelRedirectURL: "http://cancel.com",
+      logger: logger,
+    });
+
+    // Verify that the user ticket addon price was updated
+    const updatedUserTicketAddon =
+      await testDb.query.userTicketAddonsSchema.findFirst({
+        where: (u, ops) => ops.eq(u.id, userTicketAddon.id),
+      });
+
+    expect(updatedUserTicketAddon?.unitPriceInCents).toBe(
+      usdAddonPrice.price_in_cents,
+    );
   });
 });

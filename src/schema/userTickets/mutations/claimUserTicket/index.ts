@@ -437,6 +437,8 @@ function prepareUserTicketClaimData({
           addonId: addon.id,
           quantity: addonRequest.quantity,
           purchaseOrderId: purchaseOrderRecord.id,
+          // this gets updated when the purchase order
+          // payment link is generated
           unitPriceInCents: 0,
           redemptionStatus: UserTicketAddonRedemptionStatus.PENDING,
         };
