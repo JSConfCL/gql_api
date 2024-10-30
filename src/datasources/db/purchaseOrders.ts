@@ -11,6 +11,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import {
   allowedCurrencySchema,
+  userTicketAddonsSchema,
   userTicketsSchema,
   usersSchema,
 } from "./schema";
@@ -71,6 +72,7 @@ export const purchaseOrdersRelations = relations(
   purchaseOrdersSchema,
   ({ one, many }) => ({
     userTickets: many(userTicketsSchema),
+    userTicketAddons: many(userTicketAddonsSchema),
     user: one(usersSchema, {
       fields: [purchaseOrdersSchema.userId],
       references: [usersSchema.id],

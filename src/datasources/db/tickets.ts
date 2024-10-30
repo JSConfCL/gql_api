@@ -11,7 +11,7 @@ import {
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { eventsSchema, userTicketsSchema } from "./schema";
+import { eventsSchema, ticketAddonsSchema, userTicketsSchema } from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 import { ticketsPricesSchema } from "./ticketPrice";
 
@@ -67,6 +67,7 @@ export const ticketRelations = relations(ticketsSchema, ({ one, many }) => ({
   }),
   userTickets: many(userTicketsSchema),
   ticketsPrices: many(ticketsPricesSchema),
+  ticketAddons: many(ticketAddonsSchema),
 }));
 
 export const selectTicketSchema = createSelectSchema(ticketsSchema, {
