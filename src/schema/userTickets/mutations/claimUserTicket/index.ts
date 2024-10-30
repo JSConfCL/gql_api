@@ -617,7 +617,7 @@ async function verifyFinalUserTicketCounts(
       }`,
     );
 
-    // if the ticket has a quantity field, we  do a last check to see
+    // if the ticket has a quantity field, we do a last check to see
     // if we have enough gone over the limit of tickets.
     if (limitAlreadyReached) {
       throw applicationError(
