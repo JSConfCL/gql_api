@@ -7,27 +7,28 @@ import type * as Types from '../../../generated/types';
 import type { JsonObject } from "type-fest";
 import gql from 'graphql-tag';
 export type ClaimUserTicketAddonsMutationVariables = Types.Exact<{
-  userTicketId: Types.Scalars['String']['input'];
-  addonsClaims: Array<Types.AddonClaimInput> | Types.AddonClaimInput;
+  addonsClaims: Array<Types.ClaimUserTicketAddonInput> | Types.ClaimUserTicketAddonInput;
   currencyId: Types.InputMaybe<Types.Scalars['String']['input']>;
 }>;
 
 
-export type ClaimUserTicketAddonsMutation = { __typename?: 'Mutation', claimUserTicketAddons: { __typename: 'PurchaseOrder', id: string, status: Types.PurchaseOrderStatusEnum | null, paymentLink: string | null } | { __typename: 'RedeemUserTicketAddonsError', error: boolean, errorMessage: string } };
+export type ClaimUserTicketAddonsMutation = { __typename?: 'Mutation', claimUserTicketAddons: { __typename: 'PurchaseOrder', id: string, status: Types.PurchaseOrderStatusEnum | null, paymentLink: string | null, userTicketAddons: Array<{ __typename?: 'UserTicketAddon', id: string, userTicketId: string, addonId: string, quantity: number }> } | { __typename: 'RedeemUserTicketAddonsError', error: boolean, errorMessage: string } };
 
 
 export const ClaimUserTicketAddons = gql`
-    mutation ClaimUserTicketAddons($userTicketId: String!, $addonsClaims: [AddonClaimInput!]!, $currencyId: String) {
-  claimUserTicketAddons(
-    userTicketId: $userTicketId
-    addonsClaims: $addonsClaims
-    currencyId: $currencyId
-  ) {
+    mutation ClaimUserTicketAddons($addonsClaims: [ClaimUserTicketAddonInput!]!, $currencyId: String) {
+  claimUserTicketAddons(addonsClaims: $addonsClaims, currencyId: $currencyId) {
     __typename
     ... on PurchaseOrder {
       id
       status
       paymentLink
+      userTicketAddons {
+        id
+        userTicketId
+        addonId
+        quantity
+      }
     }
     ... on RedeemUserTicketAddonsError {
       error

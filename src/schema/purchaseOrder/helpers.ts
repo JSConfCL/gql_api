@@ -15,10 +15,25 @@ export const getPurchaseRedirectURLsFromPurchaseOrder = async ({
   default_redirect_url: string;
   purchaseOrderId: string;
 }) => {
-  const po = await DB.query.purchaseOrdersSchema.findFirst({
-    where: (pos, { eq }) => eq(pos.id, purchaseOrderId),
+  const userTicketsPromise = DB.query.userTicketsSchema.findMany({
+    where: (ut, { eq }) => eq(ut.purchaseOrderId, purchaseOrderId),
     with: {
-      userTickets: {
+      ticketTemplate: {
+        with: {
+          event: {
+            with: {
+              eventsToCommunities: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const userTicketAddonsPromise = DB.query.userTicketAddonsSchema.findMany({
+    where: (uat, { eq }) => eq(uat.purchaseOrderId, purchaseOrderId),
+    with: {
+      userTicket: {
         with: {
           ticketTemplate: {
             with: {
@@ -34,17 +49,25 @@ export const getPurchaseRedirectURLsFromPurchaseOrder = async ({
     },
   });
 
-  if (!po) {
+  const [userTickets, userTicketAddons] = await Promise.all([
+    userTicketsPromise,
+    userTicketAddonsPromise,
+  ]);
+
+  if (!userTickets.length && !userTicketAddons.length) {
     throw new Error("Purchase order not found");
   }
 
-  const { userTickets } = po;
+  const allRelatedUsersTickets = [
+    ...userTickets,
+    ...userTicketAddons.map((u) => u.userTicket),
+  ];
 
-  if (!userTickets.length) {
+  if (!allRelatedUsersTickets.length) {
     throw new Error("No tickets found for purchase order");
   }
 
-  const { ticketTemplate } = userTickets[0];
+  const { ticketTemplate } = allRelatedUsersTickets[0];
 
   if (!ticketTemplate) {
     throw new Error("No tickets found for purchase order");

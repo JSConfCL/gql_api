@@ -122,6 +122,15 @@ export type CheckForPurchaseOrderInput = {
   purchaseOrderId: Scalars["String"]["input"];
 };
 
+export type ClaimUserTicketAddonInput = {
+  /** The ID of the addon to claim */
+  addonId: Scalars["String"]["input"];
+  /** The quantity of the addon to claim */
+  quantity: Scalars["Int"]["input"];
+  /** The ID of the user ticket to add the addon to */
+  userTicketId: Scalars["String"]["input"];
+};
+
 export enum CommnunityStatus {
   Active = "active",
   Inactive = "inactive",
@@ -411,7 +420,7 @@ export type Mutation = {
   checkPurchaseOrderStatus: PurchaseOrder;
   /** Attempt to claim and/or transfer tickets */
   claimUserTicket: RedeemUserTicketResponse;
-  /** Claim ticket addons */
+  /** Claim ticket addons for multiple tickets */
   claimUserTicketAddons: RedeemUserTicketAddonsResponse;
   createAddon: Addon;
   /** Create an community */
@@ -500,9 +509,8 @@ export type MutationClaimUserTicketArgs = {
 };
 
 export type MutationClaimUserTicketAddonsArgs = {
-  addonsClaims: Array<AddonClaimInput>;
+  addonsClaims: Array<ClaimUserTicketAddonInput>;
   currencyId?: InputMaybe<Scalars["String"]["input"]>;
-  userTicketId: Scalars["String"]["input"];
 };
 
 export type MutationCreateAddonArgs = {
@@ -806,6 +814,7 @@ export type PurchaseOrder = {
   purchasePaymentStatus?: Maybe<PurchaseOrderPaymentStatusEnum>;
   status?: Maybe<PurchaseOrderStatusEnum>;
   tickets: Array<UserTicket>;
+  userTicketAddons: Array<UserTicketAddon>;
 };
 
 export type PurchaseOrderInput = {

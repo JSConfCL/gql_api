@@ -1,22 +1,46 @@
-import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
 import {
-  InsertUserTicketAddonClaimSchema,
   userTicketAddonsSchema,
-  purchaseOrdersSchema,
-  insertPurchaseOrdersSchema,
   selectPurchaseOrdersSchema,
-  UserTicketAddonApprovalStatus,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import { handlePaymentLinkGeneration } from "~/schema/purchaseOrder/actions";
+import {
+  createInitialPurchaseOrder,
+  getPurchaseRedirectURLsFromPurchaseOrder,
+} from "~/schema/purchaseOrder/helpers";
 import { InferPothosOutputType } from "~/types";
 
-import { validateAddonClaimsAndConstraints } from "./helpers";
+import {
+  validateAddonClaimsAndConstraints,
+  claimUserTicketAddonsHelpers,
+} from "./helpers";
 import { PurchaseOrderRef } from "../purchaseOrder/types";
-import { AddonClaimInputRef } from "../shared/refs";
+
+const ClaimUserTicketAddonInput = builder
+  .inputRef<{
+    userTicketId: string;
+    addonId: string;
+    quantity: number;
+  }>("ClaimUserTicketAddonInput")
+  .implement({
+    fields: (t) => ({
+      userTicketId: t.string({
+        required: true,
+        description: "The ID of the user ticket to add the addon to",
+      }),
+      addonId: t.string({
+        required: true,
+        description: "The ID of the addon to claim",
+      }),
+      quantity: t.int({
+        required: true,
+        description: "The quantity of the addon to claim",
+      }),
+    }),
+  });
 
 const RedeemUserTicketAddonsErrorRef = builder.objectRef<{
   error: true;
@@ -52,15 +76,11 @@ export const RedeemUserTicketAddonsResponse = builder.unionType(
 
 builder.mutationField("claimUserTicketAddons", (t) =>
   t.field({
-    description: "Claim ticket addons",
+    description: "Claim addons for multiple user tickets",
     type: RedeemUserTicketAddonsResponse,
     args: {
-      userTicketId: t.arg({
-        type: "String",
-        required: true,
-      }),
       addonsClaims: t.arg({
-        type: [AddonClaimInputRef],
+        type: [ClaimUserTicketAddonInput],
         required: true,
       }),
       currencyId: t.arg({
@@ -73,308 +93,124 @@ builder.mutationField("claimUserTicketAddons", (t) =>
     authz: {
       rules: ["IsAuthenticated"],
     },
-    resolve: async (
-      root,
-      { userTicketId, addonsClaims, currencyId },
-      context,
-    ) => {
+    resolve: async (root, { addonsClaims, currencyId }, context) => {
       const { USER, DB, logger } = context;
 
       if (!USER) {
         throw new GraphQLError("User not found");
       }
 
-      if (addonsClaims.length === 0) {
-        throw applicationError(
-          "No addons claims provided",
-          ServiceErrors.INVALID_ARGUMENT,
-          logger,
-        );
-      }
-
       return await DB.transaction(async (trx) => {
         try {
-          // Create a new purchase order
-          const [createdPurchaseOrder] = await trx
-            .insert(purchaseOrdersSchema)
-            .values(insertPurchaseOrdersSchema.parse({ userId: USER.id }))
-            .returning();
-
-          const userTicketPromise = trx.query.userTicketsSchema.findFirst({
-            where: (t, ops) =>
-              ops.and(eq(t.id, userTicketId), eq(t.userId, USER.id)),
-            with: {
-              ticketTemplate: {
-                with: {
-                  event: {
-                    with: {
-                      eventsToCommunities: {
-                        with: {
-                          community: true,
-                        },
-                      },
-                    },
-                  },
-                  ticketsPrices: {
-                    with: {
-                      price: {
-                        with: {
-                          currency: true,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          });
-
-          const uniqueClaimedAddonsPromise = trx.query.userTicketAddonsSchema
-            .findMany({
-              where: (t, ops) => {
-                return ops.and(
-                  ops.eq(t.userTicketId, userTicketId),
-                  ops.eq(
-                    t.approvalStatus,
-                    UserTicketAddonApprovalStatus.APPROVED,
-                  ),
-                );
-              },
-            })
-            .then((claimedAddons) => {
-              const uniqueClaimedAddons = claimedAddons.reduce(
-                (acc, curr) => {
-                  if (!acc[curr.addonId]) {
-                    acc[curr.addonId] = {
-                      addonId: curr.addonId,
-                      quantity: 0,
-                    };
-                  }
-
-                  acc[curr.addonId].quantity += curr.quantity;
-
-                  return acc;
-                },
-                {} as Record<
-                  string,
-                  {
-                    addonId: string;
-                    quantity: number;
-                  }
-                >,
-              );
-
-              return Object.values(uniqueClaimedAddons);
+          // Group claims by ticket and validate basic input structure
+          const { uniqueUserTicketIds, claimsByTicket } =
+            claimUserTicketAddonsHelpers.validateAndGroupClaims({
+              addonsClaims,
+              logger,
             });
 
-          const [userTicket, uniqueClaimedAddons] = await Promise.all([
-            userTicketPromise,
-            uniqueClaimedAddonsPromise,
+          const [
+            createdPurchaseOrder,
+            userTickets,
+            aggregatedAddons,
+            claimedAddonsByUserTicketId,
+          ] = await Promise.all([
+            createInitialPurchaseOrder({
+              DB: trx,
+              userId: USER.id,
+              logger,
+            }),
+            claimUserTicketAddonsHelpers.fetchAndValidateUserTickets({
+              trx,
+              userTicketIds: uniqueUserTicketIds,
+              userId: USER.id,
+              logger,
+            }),
+            claimUserTicketAddonsHelpers.fetchAndValidateAggregatedAddons({
+              trx,
+              currencyId,
+              logger,
+              addonIds: addonsClaims.map((a) => a.addonId),
+            }),
+            claimUserTicketAddonsHelpers.fetchClaimedAddonsByUserTicketId({
+              trx,
+              userTicketIds: uniqueUserTicketIds,
+            }),
           ]);
 
-          if (!userTicket) {
-            throw applicationError(
-              "User ticket not found",
-              ServiceErrors.NOT_FOUND,
-              logger,
+          // validate that all addons constraints are respected
+          for (const [userTicketId, claims] of Object.entries(claimsByTicket)) {
+            const userTicket = userTickets.find((ut) => ut.id === userTicketId);
+            const validAddons = aggregatedAddons.filter(
+              (ta) => ta.ticketId === userTicket?.ticketTemplate.id,
             );
-          }
 
-          if (userTicket.approvalStatus !== "approved") {
-            throw applicationError(
-              "User ticket is not approved",
-              ServiceErrors.INVALID_ARGUMENT,
-              logger,
-            );
-          }
-
-          const duplicatedIds = addonsClaims.filter(
-            (a, i) =>
-              addonsClaims.findIndex((b) => b.addonId === a.addonId) !== i,
-          );
-
-          if (duplicatedIds.length > 0) {
-            throw applicationError(
-              `Duplicated addon ids: ${duplicatedIds.join(", ")}`,
-              ServiceErrors.INVALID_ARGUMENT,
-              logger,
-            );
-          }
-
-          const addons = await trx.query.ticketAddonsSchema
-            .findMany({
-              where: (t, ops) =>
-                ops.and(
-                  eq(t.ticketId, userTicket.ticketTemplate.id),
-                  ops.inArray(
-                    t.addonId,
-                    addonsClaims.map((a) => a.addonId),
-                  ),
-                ),
-              with: {
-                addon: {
-                  with: {
-                    constraints: true,
-                    prices: {
-                      with: {
-                        price: {
-                          with: {
-                            currency: true,
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            })
-            .then((relations) => {
-              if (currencyId) {
-                return relations.map(({ addon }) => {
-                  const addonPrice = addon.prices.find(
-                    (p) => p.price.currency.id === currencyId,
-                  );
-
-                  return {
-                    ...addon,
-                    price: addonPrice?.price || null,
-                  };
-                });
-              }
-
-              return relations.map(({ addon }) => ({
-                ...addon,
-                price: null,
-              }));
-            });
-
-          const notFoundAddons = addonsClaims.filter(
-            (a) => !addons.find((addon) => addon.id === a.addonId),
-          );
-
-          if (notFoundAddons.length > 0) {
-            throw applicationError(
-              `Some addons were not found: ${notFoundAddons
-                .map((a) => a.addonId)
-                .join(", ")}`,
-              ServiceErrors.NOT_FOUND,
-              logger,
-            );
-          }
-
-          validateAddonClaimsAndConstraints({
-            ticketId: userTicket.ticketTemplate.id,
-            newAddonClaims: addonsClaims,
-            alreadyClaimedAddons: uniqueClaimedAddons,
-            ticketRelatedAddonsInfo: addons,
-            logger,
-          });
-
-          const aggregatedAddonsClaims = addonsClaims.reduce(
-            (acc, curr) => {
-              const addon = addons.find((a) => a.id === curr.addonId);
-
-              if (!addon) {
-                throw applicationError(
-                  `Addon not found: ${curr.addonId}`,
-                  ServiceErrors.NOT_FOUND,
-                  logger,
-                );
-              }
-
-              acc[addon.id] = {
-                quantity: curr.quantity,
-                addon,
-              };
-
-              return acc;
-            },
-            {} as Record<
-              string,
-              {
-                quantity: number;
-                addon: (typeof addons)[number];
-              }
-            >,
-          );
-
-          let totalPriceInCents = 0;
-          const toInsert: InsertUserTicketAddonClaimSchema[] = [];
-
-          for (const [addonId, { quantity, addon }] of Object.entries(
-            aggregatedAddonsClaims,
-          )) {
-            const unitPriceInCents = addon.price?.price_in_cents || 0;
-            let approvalStatus: UserTicketAddonApprovalStatus =
-              UserTicketAddonApprovalStatus.PENDING;
-
-            if (!addon.isFree) {
-              if (!currencyId) {
-                throw applicationError(
-                  "Currency ID is required for non-free addons",
-                  ServiceErrors.INVALID_ARGUMENT,
-                  logger,
-                );
-              }
-
-              if (!addon.price) {
-                throw applicationError(
-                  `No price found for addon ${addonId} in the specified currency`,
-                  ServiceErrors.NOT_FOUND,
-                  logger,
-                );
-              }
-
-              if (unitPriceInCents === 0) {
-                throw applicationError(
-                  `Addon ${addonId} is not free, but the price is 0`,
-                  ServiceErrors.INVALID_ARGUMENT,
-                  logger,
-                );
-              }
-            } else {
-              approvalStatus = UserTicketAddonApprovalStatus.APPROVED;
+            if (!userTicket) {
+              throw applicationError(
+                "User ticket not found",
+                ServiceErrors.NOT_FOUND,
+                logger,
+              );
             }
 
-            totalPriceInCents += unitPriceInCents * quantity;
-
-            toInsert.push({
-              userTicketId,
-              addonId: addon.id,
-              purchaseOrderId: createdPurchaseOrder.id,
-              quantity,
-              unitPriceInCents,
-              approvalStatus,
+            validateAddonClaimsAndConstraints({
+              ticketId: userTicket.ticketTemplate.id,
+              newAddonClaims: claims,
+              alreadyClaimedAddons:
+                claimedAddonsByUserTicketId[userTicketId] ?? [],
+              ticketRelatedAddonsInfo: validAddons,
+              logger,
             });
           }
 
-          if (!createdPurchaseOrder) {
-            throw applicationError(
-              "Failed to create purchase order",
-              ServiceErrors.INTERNAL_SERVER_ERROR,
+          const { toInsert, totalPriceInCents } =
+            claimUserTicketAddonsHelpers.prepareAddonClaims({
+              addonsClaims,
+              addonsWithRelatedTicketId: aggregatedAddons,
+              currencyId,
+              purchaseOrderId: createdPurchaseOrder.id,
               logger,
-            );
-          }
+            });
 
           // Insert user ticket addons
-          await trx.insert(userTicketAddonsSchema).values(toInsert).returning();
+          await trx.insert(userTicketAddonsSchema).values(toInsert);
 
-          if (totalPriceInCents > 0 && currencyId) {
-            const community =
-              userTicket.ticketTemplate.event.eventsToCommunities[0].community;
-            const defaultRedirectUrl = context.PURCHASE_CALLBACK_URL;
-            const paymentSuccessRedirectURL =
-              community.paymentSuccessRedirectURL ?? defaultRedirectUrl;
-            const paymentCancelRedirectURL =
-              community.paymentCancelRedirectURL ?? defaultRedirectUrl;
+          if (totalPriceInCents > 0) {
+            if (!currencyId) {
+              throw applicationError(
+                "Currency id is required for paid addons",
+                ServiceErrors.INVALID_ARGUMENT,
+                logger,
+              );
+            }
+
+            const uniqueEventsIds = new Set(
+              userTickets.map((ut) => ut.ticketTemplate.event.id),
+            );
+
+            if (uniqueEventsIds.size > 1) {
+              throw applicationError(
+                "Multiple events found for related user tickets. This is not allowed for the time being (We are working on it)",
+                ServiceErrors.FAILED_PRECONDITION,
+                logger,
+              );
+            }
+
+            const redirectURLs = await getPurchaseRedirectURLsFromPurchaseOrder(
+              {
+                DB: trx,
+                purchaseOrderId: createdPurchaseOrder.id,
+                default_redirect_url: context.PURCHASE_CALLBACK_URL,
+              },
+            );
 
             return handlePaymentLinkGeneration({
               DB: trx,
               logger,
               GET_MERCADOPAGO_CLIENT: context.GET_MERCADOPAGO_CLIENT,
               GET_STRIPE_CLIENT: context.GET_STRIPE_CLIENT,
-              paymentSuccessRedirectURL,
-              paymentCancelRedirectURL,
+              paymentSuccessRedirectURL: redirectURLs.paymentSuccessRedirectURL,
+              paymentCancelRedirectURL: redirectURLs.paymentCancelRedirectURL,
               currencyId,
               purchaseOrderId: createdPurchaseOrder.id,
               USER: USER,
@@ -384,7 +220,7 @@ builder.mutationField("claimUserTicketAddons", (t) =>
           return {
             purchaseOrder:
               selectPurchaseOrdersSchema.parse(createdPurchaseOrder),
-            ticketsIds: [userTicket.id],
+            ticketsIds: uniqueUserTicketIds,
           };
         } catch (e: unknown) {
           logger.error("Error claiming user ticket addons", e);

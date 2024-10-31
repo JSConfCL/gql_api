@@ -1,18 +1,19 @@
 mutation ClaimUserTicketAddons(
-  $userTicketId: String!
-  $addonsClaims: [AddonClaimInput!]!
+  $addonsClaims: [ClaimUserTicketAddonInput!]!
   $currencyId: String
 ) {
-  claimUserTicketAddons(
-    userTicketId: $userTicketId
-    addonsClaims: $addonsClaims
-    currencyId: $currencyId
-  ) {
+  claimUserTicketAddons(addonsClaims: $addonsClaims, currencyId: $currencyId) {
     __typename
     ... on PurchaseOrder {
       id
       status
       paymentLink
+      userTicketAddons {
+        id
+        userTicketId
+        addonId
+        quantity
+      }
     }
     ... on RedeemUserTicketAddonsError {
       error
