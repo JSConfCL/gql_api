@@ -2,7 +2,7 @@ import { builder } from "~/builder";
 import {
   selectUserTicketsSchema,
   USER,
-  userTicketsApprovalStatusEnum,
+  UserTicketApprovalStatus,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import {
@@ -12,6 +12,10 @@ import {
 import { PublicUserTicketRef, UserTicketRef } from "~/schema/shared/refs";
 import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 
+import {
+  NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES,
+  REDEEMABLE_USER_TICKET_APPROVAL_STATUSES,
+} from "./constants";
 import {
   TicketApprovalStatus,
   TicketPaymentStatus,
@@ -42,35 +46,21 @@ const MyTicketsSearchValues = builder.inputType("MyTicketsSearchValues", {
 const PaginatedUserTicketsRef = createPaginationObjectType(UserTicketRef);
 
 const getQueryApprovalStatus = (
-  approvalStatus:
-    | (typeof userTicketsApprovalStatusEnum)[number][]
-    | null
-    | undefined,
+  approvalStatus: UserTicketApprovalStatus[] | null | undefined,
   user: USER,
 ) => {
+  if (user.isSuperAdmin) {
+    return approvalStatus ?? undefined;
+  }
+
   if (approvalStatus) {
-    if (user.isSuperAdmin) {
-      return approvalStatus;
-    } else {
-      return approvalStatus.filter((status) =>
-        normalUserAllowedAppovalStatus.has(status),
-      );
-    }
+    return approvalStatus.filter((status) =>
+      NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES.includes(status),
+    );
   } else {
-    return undefined;
+    return NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES;
   }
 };
-
-const normalUserAllowedAppovalStatus = new Set<
-  (typeof userTicketsApprovalStatusEnum)[number]
->([
-  "approved",
-  "not_required",
-  "gifted",
-  "gift_accepted",
-  "transfer_pending",
-  "transfer_accepted",
-]);
 
 builder.queryFields((t) => ({
   myTickets: t.field({
@@ -221,7 +211,7 @@ builder.queryField("publicTicketInfo", (t) =>
           DB,
           search: {
             publicIds: [publicTicketId],
-            approvalStatus: ["approved", "gift_accepted", "transfer_accepted"],
+            approvalStatus: REDEEMABLE_USER_TICKET_APPROVAL_STATUSES,
           },
           pagination: {
             page: 0,

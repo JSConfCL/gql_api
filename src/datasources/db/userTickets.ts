@@ -31,6 +31,9 @@ export type UserTicketApprovalStatus =
 
 export const userTicketsRedemptionStatusEnum = ["redeemed", "pending"] as const;
 
+export type UserTicketRedemptionStatus =
+  (typeof userTicketsRedemptionStatusEnum)[number];
+
 // USER-TICKETS-TABLE
 export const userTicketsSchema = pgTable(
   "user_tickets",

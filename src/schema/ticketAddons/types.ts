@@ -16,7 +16,9 @@ import {
 } from "~/datasources/db/userTicketsAddons";
 import { TicketRef, UserTicketRef, PriceRef } from "~/schema/shared/refs";
 
+import { RESERVED_USER_TICKET_ADDON_APPROVAL_STATUSES } from "./constants";
 import { PurchaseOrderRef } from "../purchaseOrder/types";
+import { RESERVED_USER_TICKET_APPROVAL_STATUSES } from "../userTickets/constants";
 
 export const AddonConstraintTypeEnum = builder.enumType(AddonConstraintType, {
   name: "AddonConstraintType",
@@ -86,15 +88,10 @@ builder.objectType(AddonRef, {
           where: (ut, { eq, and, inArray }) =>
             and(
               eq(ut.ticketTemplateId, root.id),
-              inArray(ut.approvalStatus, [
-                "approved",
-                "not_required",
-                "pending",
-                "gifted",
-                "gift_accepted",
-                "transfer_accepted",
-                "transfer_pending",
-              ]),
+              inArray(
+                ut.approvalStatus,
+                RESERVED_USER_TICKET_APPROVAL_STATUSES,
+              ),
             ),
         });
 
@@ -110,6 +107,10 @@ builder.objectType(AddonRef, {
                 ops.inArray(
                   ut.userTicketId,
                   userTickets.map((ut) => ut.id),
+                ),
+                ops.inArray(
+                  ut.approvalStatus,
+                  RESERVED_USER_TICKET_ADDON_APPROVAL_STATUSES,
                 ),
               ),
           },

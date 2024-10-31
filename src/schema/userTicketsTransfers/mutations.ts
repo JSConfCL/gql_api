@@ -7,7 +7,6 @@ import {
   InsertUserTicketTransferSchema,
   userTicketTransfersSchema,
   userTicketsSchema,
-  userTicketsApprovalStatusEnum,
 } from "~/datasources/db/schema";
 import { UserTicketTransferRef } from "~/schema/shared/refs";
 
@@ -16,6 +15,7 @@ import {
   getOrCreateTransferRecipients,
 } from "./helpers";
 import { cleanEmail } from "../user/userHelpers";
+import { NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES } from "../userTickets/constants";
 
 export const UserTicketTransferInfoInputRef = builder.inputType(
   "UserTicketTransferInfoInput",
@@ -72,16 +72,11 @@ builder.mutationField("transferMyTicketToUser", (t) =>
         throw new GraphQLError("Ticket not found");
       }
 
-      const validApprovalStatus: (typeof userTicketsApprovalStatusEnum)[number][] =
-        [
-          "approved",
-          "not_required",
-          "gift_accepted",
-          "transfer_accepted",
-          "transfer_pending",
-        ];
-
-      if (!validApprovalStatus.includes(userTicket.approvalStatus)) {
+      if (
+        !NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES.includes(
+          userTicket.approvalStatus,
+        )
+      ) {
         throw new GraphQLError("Ticket is not transferable");
       }
 

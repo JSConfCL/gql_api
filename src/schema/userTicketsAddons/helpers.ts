@@ -10,6 +10,8 @@ import { AddonConstraintType } from "~/datasources/db/ticketAddons";
 import { applicationError, ServiceErrors } from "~/errors";
 import { Logger } from "~/logging";
 
+import { REDEEMABLE_USER_TICKET_APPROVAL_STATUSES } from "../userTickets/constants";
+
 type ValidateAddonClaimsAndConstraints = {
   ticketId: string;
   newAddonClaims: { addonId: string; quantity: number }[];
@@ -193,17 +195,12 @@ export const claimUserTicketAddonsHelpers = {
       },
     });
 
-    const validApprovalStatuses = [
-      "approved",
-      "gifted",
-      "gift_accepted",
-      "not_required",
-      "transfer_accepted",
-      "transfer_pending",
-    ];
-
     userTickets.forEach((userTicket) => {
-      if (!validApprovalStatuses.includes(userTicket.approvalStatus)) {
+      if (
+        !REDEEMABLE_USER_TICKET_APPROVAL_STATUSES.includes(
+          userTicket.approvalStatus,
+        )
+      ) {
         throw applicationError(
           `Can't claim addons for user ticket: ${userTicket.id} because it's not in a valid approval status`,
           ServiceErrors.INVALID_ARGUMENT,

@@ -11,12 +11,10 @@ import {
   userTicketTransfersSchema,
   userTicketsSchema,
   SelectUserTicketSchema,
-  UserTicketApprovalStatus,
   AddonConstraintType,
   InsertUserTicketAddonClaimSchema,
   UserTicketAddonRedemptionStatus,
   userTicketAddonsSchema,
-  UserTicketAddonApprovalStatus,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import { Logger } from "~/logging";
@@ -26,6 +24,7 @@ import {
   getPurchaseRedirectURLsFromPurchaseOrder,
 } from "~/schema/purchaseOrder/helpers";
 import { isValidUUID } from "~/schema/shared/helpers";
+import { RESERVED_USER_TICKET_ADDON_APPROVAL_STATUSES } from "~/schema/ticketAddons/constants";
 import { cleanEmail } from "~/schema/user/userHelpers";
 import { getOrCreateTransferRecipients } from "~/schema/userTicketsTransfers/helpers";
 import { Context } from "~/types";
@@ -36,6 +35,7 @@ import {
   TicketClaimInput,
   TicketClaimInputType,
 } from "./refs";
+import { RESERVED_USER_TICKET_APPROVAL_STATUSES } from "../../constants";
 import { assertCanStartTicketClaimingForEvent } from "../../helpers";
 
 // Types
@@ -518,16 +518,6 @@ async function verifyFinalUserTicketCounts(
   USER: NonNullable<Context["USER"]>,
   logger: Logger,
 ) {
-  const validApprovalStatuses: UserTicketApprovalStatus[] = [
-    "approved",
-    "pending",
-    "not_required",
-    "gifted",
-    "gift_accepted",
-    "transfer_pending",
-    "transfer_accepted",
-  ];
-
   // Bulk query for existing ticket counts
   const ticketCountsPromise = DB.select({
     ticketTemplateId: userTicketsSchema.ticketTemplateId,
@@ -535,7 +525,10 @@ async function verifyFinalUserTicketCounts(
     userCount: count(
       and(
         eq(userTicketsSchema.userId, USER.id),
-        inArray(userTicketsSchema.approvalStatus, validApprovalStatuses),
+        inArray(
+          userTicketsSchema.approvalStatus,
+          RESERVED_USER_TICKET_APPROVAL_STATUSES,
+        ),
       ),
     ),
   })
@@ -546,7 +539,10 @@ async function verifyFinalUserTicketCounts(
           userTicketsSchema.ticketTemplateId,
           ticketInfo.tickets.map((t) => t.id),
         ),
-        inArray(userTicketsSchema.approvalStatus, validApprovalStatuses),
+        inArray(
+          userTicketsSchema.approvalStatus,
+          RESERVED_USER_TICKET_APPROVAL_STATUSES,
+        ),
       ),
     )
     .groupBy(userTicketsSchema.ticketTemplateId);
@@ -558,10 +554,10 @@ async function verifyFinalUserTicketCounts(
   })
     .from(userTicketAddonsSchema)
     .where(
-      inArray(userTicketAddonsSchema.approvalStatus, [
-        UserTicketAddonApprovalStatus.APPROVED,
-        UserTicketAddonApprovalStatus.PENDING,
-      ]),
+      inArray(
+        userTicketAddonsSchema.approvalStatus,
+        RESERVED_USER_TICKET_ADDON_APPROVAL_STATUSES,
+      ),
     )
     .groupBy(userTicketAddonsSchema.addonId);
 
@@ -579,10 +575,10 @@ async function verifyFinalUserTicketCounts(
     )
     .where(
       and(
-        inArray(userTicketAddonsSchema.approvalStatus, [
-          UserTicketAddonApprovalStatus.APPROVED,
-          UserTicketAddonApprovalStatus.PENDING,
-        ]),
+        inArray(
+          userTicketAddonsSchema.approvalStatus,
+          RESERVED_USER_TICKET_ADDON_APPROVAL_STATUSES,
+        ),
         eq(userTicketsSchema.userId, USER.id),
       ),
     )

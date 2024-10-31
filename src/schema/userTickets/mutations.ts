@@ -14,7 +14,9 @@ import {
   canCancelUserTicket,
   canRedeemUserTicket,
 } from "~/validations";
+
 import "./mutations/claimUserTicket";
+import { REDEEMABLE_USER_TICKET_APPROVAL_STATUSES } from "./constants";
 
 builder.mutationField("cancelUserTicket", (t) =>
   t.field({
@@ -159,12 +161,12 @@ builder.mutationField("redeemUserTicket", (t) =>
           throw new GraphQLError("Unauthorized!");
         }
 
-        if (ticket.approvalStatus === "cancelled") {
-          throw new GraphQLError("No es posible redimir un ticket cancelado");
-        }
-
-        if (ticket.approvalStatus === "rejected") {
-          throw new GraphQLError("No es posible redimir un ticket rechazado");
+        if (
+          !REDEEMABLE_USER_TICKET_APPROVAL_STATUSES.includes(
+            ticket.approvalStatus,
+          )
+        ) {
+          throw new GraphQLError("The ticket is not redeemable");
         }
 
         if (ticket.redemptionStatus === "redeemed") {

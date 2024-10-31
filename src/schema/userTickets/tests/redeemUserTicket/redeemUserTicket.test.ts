@@ -376,7 +376,7 @@ describe("Redeem user ticket", () => {
 
       assert.equal(
         response.errors?.[0].message,
-        "No es posible redimir un ticket rechazado",
+        "The ticket is not redeemable",
       );
     });
 
@@ -426,7 +426,7 @@ describe("Redeem user ticket", () => {
 
       assert.equal(
         response.errors?.[0].message,
-        "No es posible redimir un ticket cancelado",
+        "The ticket is not redeemable",
       );
     });
   });

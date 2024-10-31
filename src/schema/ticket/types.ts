@@ -3,6 +3,7 @@ import { EventLoadable } from "~/schema/events/types";
 import { PriceRef, TicketRef } from "~/schema/shared/refs";
 
 import { AllowedCurrencyLoadable } from "../allowedCurrency/types";
+import { RESERVED_USER_TICKET_APPROVAL_STATUSES } from "../userTickets/constants";
 
 export const TicketTemplateStatus = builder.enumType("TicketTemplateStatus", {
   values: ["active", "inactive"] as const,
@@ -84,15 +85,10 @@ export const TicketLoadable = builder.loadableObject(TicketRef, {
           where: (ut, { eq, and, inArray }) =>
             and(
               eq(ut.ticketTemplateId, root.id),
-              inArray(ut.approvalStatus, [
-                "approved",
-                "not_required",
-                "pending",
-                "gifted",
-                "gift_accepted",
-                "transfer_accepted",
-                "transfer_pending",
-              ]),
+              inArray(
+                ut.approvalStatus,
+                RESERVED_USER_TICKET_APPROVAL_STATUSES,
+              ),
             ),
         });
 
