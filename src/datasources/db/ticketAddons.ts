@@ -124,6 +124,7 @@ export const addonConstraintsSchema = pgTable(
     uniqueAddonConstraint: uniqueIndex("idx_addon_constraints_unique").on(
       t.addonId,
       t.relatedAddonId,
+      t.constraintType,
     ),
     addonIdIndex: index("idx_addon_constraints_addon_id").on(t.addonId),
     relatedAddonIdIndex: index("idx_addon_constraints_related_addon_id").on(

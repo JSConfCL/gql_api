@@ -253,6 +253,13 @@
       "when": 1729980192989,
       "tag": "0035_curved_squadron_sinister",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1730059746855,
+      "tag": "0036_lumpy_may_parker",
+      "breakpoints": true
     }
   ]
 }

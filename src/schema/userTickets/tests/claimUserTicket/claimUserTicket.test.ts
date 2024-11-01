@@ -20,6 +20,7 @@ import {
   insertAddonConstraint,
   insertTicketAddon,
   insertAddonPrice,
+  SAMPLE_TEST_UUID,
 } from "~/tests/fixtures";
 
 import {
@@ -674,7 +675,7 @@ describe("Claim a user ticket", () => {
 
       vi.mocked(handlePaymentLinkGeneration).mockResolvedValue({
         purchaseOrder: {
-          id: "00000000-0000-0000-0000-000000000000",
+          id: SAMPLE_TEST_UUID,
           publicId: "some-public-id",
           userId: "some-user-id",
           idempotencyUUIDKey: "some-idempotency-key",

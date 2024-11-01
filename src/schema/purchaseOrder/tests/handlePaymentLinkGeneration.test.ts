@@ -20,6 +20,7 @@ import {
   insertAddon,
   insertAddonPrice,
   insertUserTicketAddon,
+  SAMPLE_TEST_UUID,
 } from "~/tests/fixtures";
 import { getTestDB } from "~/tests/fixtures/databaseHelper";
 
@@ -147,8 +148,8 @@ describe("handlePaymentLinkGeneration", () => {
       handlePaymentLinkGeneration({
         DB: testDb,
         USER: user,
-        purchaseOrderId: "00000000-0000-0000-0000-000000000000",
-        currencyId: "00000000-0000-0000-0000-000000000000",
+        purchaseOrderId: SAMPLE_TEST_UUID,
+        currencyId: SAMPLE_TEST_UUID,
         GET_MERCADOPAGO_CLIENT: vi.fn(),
         GET_STRIPE_CLIENT: vi.fn(),
         paymentSuccessRedirectURL: "http://success.com",
@@ -171,7 +172,7 @@ describe("handlePaymentLinkGeneration", () => {
         DB: testDb,
         USER: user,
         purchaseOrderId: purchaseOrder.id,
-        currencyId: "00000000-0000-0000-0000-000000000000", // Use a valid UUID format
+        currencyId: SAMPLE_TEST_UUID, // Use a valid UUID format
         GET_MERCADOPAGO_CLIENT: vi.fn(),
         GET_STRIPE_CLIENT: vi.fn(),
         paymentSuccessRedirectURL: "http://success.com",

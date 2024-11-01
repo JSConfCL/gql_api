@@ -920,3 +920,5 @@ export const toISODate = <T extends Date | null>(
 
   return new Date(date).toISOString() as T extends Date ? string : null;
 };
+
+export const SAMPLE_TEST_UUID = "00000000-0000-0000-0000-000000000000";

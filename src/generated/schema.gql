@@ -54,6 +54,33 @@ enum AddonConstraintType {
   MUTUAL_EXCLUSION
 }
 
+input AddonInput {
+  constraints: [CreateAddonConstraintInput!]
+  description: String
+  eventId: String!
+
+  """
+  Cannot be true if prices are passed.
+  """
+  isFree: Boolean!
+
+  """
+  If true, totalStock must not be passed.
+  """
+  isUnlimited: Boolean!
+  maxPerTicket: Int
+  name: String!
+  prices: [PricingInputField!]
+  tags: [String!]
+  tickets: [AddonInputTicket!]
+  totalStock: Int
+}
+
+input AddonInputTicket {
+  orderDisplay: Int!
+  ticketId: String!
+}
+
 """
 Representation of an allowed currency
 """
@@ -119,6 +146,11 @@ type ConsolidatedPaymentLogEntry {
   id: ID!
   platform: String!
   totalTransactionAmount: Float!
+}
+
+input CreateAddonConstraintInput {
+  constraintType: AddonConstraintType!
+  relatedAddonId: String!
 }
 
 input CreateCommunityInput {
@@ -390,6 +422,7 @@ type Mutation {
   Attempt to claim and/or transfer tickets
   """
   claimUserTicket(input: TicketClaimInput!): RedeemUserTicketResponse!
+  createAddon(input: AddonInput!): Addon!
 
   """
   Create an community
@@ -425,6 +458,7 @@ type Mutation {
   Create a ticket
   """
   createTicket(input: TicketCreateInput!): Ticket!
+  deleteAddons(ids: [String!]!): Addon!
 
   """
   Try to add a person to a team
@@ -483,6 +517,7 @@ type Mutation {
     eventId: String!
     userId: String!
   ): [UserTicket!]!
+  updateAddon(input: UpdateAddonInput!): Addon!
 
   """
   Update a company
@@ -827,6 +862,11 @@ type Query {
   Get a schedule by its ID
   """
   schedule(scheduleId: String!): Schedule!
+
+  """
+  Get addons for a specific event
+  """
+  searchAddons(eventId: String!): [Addon!]!
 
   """
   Search a consolidated payment logs, by date, aggregated by platform and currency_id
@@ -1220,6 +1260,35 @@ enum TypeOfEmployment {
   freelance
   fullTime
   partTime
+}
+
+input UpdateAddonConstraintInput {
+  constraintType: AddonConstraintType!
+  id: String!
+  relatedAddonId: String!
+}
+
+input UpdateAddonInput {
+  deleteConstraintIds: [String!]
+  deletePriceIds: [String!]
+  deleteTicketIds: [String!]
+  description: String
+  id: String!
+
+  """
+  Cannot be true if prices are passed.
+  """
+  isFree: Boolean
+  isUnlimited: Boolean
+  maxPerTicket: Int
+  name: String
+  newConstraints: [CreateAddonConstraintInput!]
+  newTickets: [AddonInputTicket!]
+  prices: [PricingInputField!]
+  tags: [String!]
+  totalStock: Int
+  updateConstraints: [UpdateAddonConstraintInput!]
+  updateTickets: [AddonInputTicket!]
 }
 
 input UpdateCommunityInput {
