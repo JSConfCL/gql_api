@@ -4,10 +4,12 @@ import {
   selectPurchaseOrdersSchema,
   puchaseOrderPaymentStatusEnum,
   purchaseOrderStatusEnum,
+  SelectUserTicketAddonSchema,
 } from "~/datasources/db/schema";
 import { UserTicketRef } from "~/schema/shared/refs";
 
 import { AllowedCurrencyLoadable } from "../allowedCurrency/types";
+import { UserTicketAddonRef } from "../ticketAddons/types";
 
 export const PurchaseOrderPaymentStatusEnum = builder.enumType(
   "PurchaseOrderPaymentStatusEnum",
@@ -131,6 +133,34 @@ export const PurchaseOrderLoadable = builder.loadableObject(PurchaseOrderRef, {
 
         return userTickets.map((ut) => selectUserTicketsSchema.parse(ut));
       },
+    }),
+    userTicketAddons: t.loadableList({
+      type: UserTicketAddonRef,
+      load: async (ids: string[], { DB }) => {
+        const userTicketAddons = await DB.query.userTicketAddonsSchema.findMany(
+          {
+            where: (uat, ops) => {
+              return ops.inArray(uat.purchaseOrderId, ids);
+            },
+          },
+        );
+
+        const userTicketAddonsByPurchaseOrderIdMap: Record<
+          string,
+          SelectUserTicketAddonSchema[]
+        > = {};
+
+        userTicketAddons.forEach((uat) => {
+          if (!userTicketAddonsByPurchaseOrderIdMap[uat.purchaseOrderId]) {
+            userTicketAddonsByPurchaseOrderIdMap[uat.purchaseOrderId] = [];
+          }
+
+          userTicketAddonsByPurchaseOrderIdMap[uat.purchaseOrderId].push(uat);
+        });
+
+        return ids.map((id) => userTicketAddonsByPurchaseOrderIdMap[id] || []);
+      },
+      resolve: (root) => root.purchaseOrder.id,
     }),
   }),
 });

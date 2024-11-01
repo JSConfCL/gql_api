@@ -94,6 +94,23 @@ input CheckForPurchaseOrderInput {
   purchaseOrderId: String!
 }
 
+input ClaimUserTicketAddonInput {
+  """
+  The ID of the addon to claim
+  """
+  addonId: String!
+
+  """
+  The quantity of the addon to claim
+  """
+  quantity: Int!
+
+  """
+  The ID of the user ticket to add the addon to
+  """
+  userTicketId: String!
+}
+
 enum CommnunityStatus {
   active
   inactive
@@ -422,6 +439,18 @@ type Mutation {
   Attempt to claim and/or transfer tickets
   """
   claimUserTicket(input: TicketClaimInput!): RedeemUserTicketResponse!
+
+  """
+  Claim addons for multiple user tickets
+  """
+  claimUserTicketAddons(
+    addonsClaims: [ClaimUserTicketAddonInput!]!
+
+    """
+    The currency id to use for the purchase order. If any addon is not free, this parameter is required
+    """
+    currencyId: String
+  ): RedeemUserTicketAddonsResponse!
   createAddon(input: AddonInput!): Addon!
 
   """
@@ -751,6 +780,7 @@ type PurchaseOrder {
   purchasePaymentStatus: PurchaseOrderPaymentStatusEnum
   status: PurchaseOrderStatusEnum
   tickets: [UserTicket!]!
+  userTicketAddons: [UserTicketAddon!]!
 }
 
 input PurchaseOrderInput {
@@ -927,6 +957,15 @@ type Query {
 input RSVPFilterInput {
   eventIds: [String!]
 }
+
+type RedeemUserTicketAddonsError {
+  error: Boolean!
+  errorMessage: String!
+}
+
+union RedeemUserTicketAddonsResponse =
+    PurchaseOrder
+  | RedeemUserTicketAddonsError
 
 type RedeemUserTicketError {
   error: Boolean!

@@ -122,6 +122,15 @@ export type CheckForPurchaseOrderInput = {
   purchaseOrderId: Scalars["String"]["input"];
 };
 
+export type ClaimUserTicketAddonInput = {
+  /** The ID of the addon to claim */
+  addonId: Scalars["String"]["input"];
+  /** The quantity of the addon to claim */
+  quantity: Scalars["Int"]["input"];
+  /** The ID of the user ticket to add the addon to */
+  userTicketId: Scalars["String"]["input"];
+};
+
 export enum CommnunityStatus {
   Active = "active",
   Inactive = "inactive",
@@ -411,6 +420,8 @@ export type Mutation = {
   checkPurchaseOrderStatus: PurchaseOrder;
   /** Attempt to claim and/or transfer tickets */
   claimUserTicket: RedeemUserTicketResponse;
+  /** Claim addons for multiple user tickets */
+  claimUserTicketAddons: RedeemUserTicketAddonsResponse;
   createAddon: Addon;
   /** Create an community */
   createCommunity: Community;
@@ -495,6 +506,11 @@ export type MutationCheckPurchaseOrderStatusArgs = {
 
 export type MutationClaimUserTicketArgs = {
   input: TicketClaimInput;
+};
+
+export type MutationClaimUserTicketAddonsArgs = {
+  addonsClaims: Array<ClaimUserTicketAddonInput>;
+  currencyId?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type MutationCreateAddonArgs = {
@@ -798,6 +814,7 @@ export type PurchaseOrder = {
   purchasePaymentStatus?: Maybe<PurchaseOrderPaymentStatusEnum>;
   status?: Maybe<PurchaseOrderStatusEnum>;
   tickets: Array<UserTicket>;
+  userTicketAddons: Array<UserTicketAddon>;
 };
 
 export type PurchaseOrderInput = {
@@ -985,6 +1002,16 @@ export type QueryWorkRoleSenioritiesArgs = {
 export type RsvpFilterInput = {
   eventIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
+
+export type RedeemUserTicketAddonsError = {
+  __typename?: "RedeemUserTicketAddonsError";
+  error: Scalars["Boolean"]["output"];
+  errorMessage: Scalars["String"]["output"];
+};
+
+export type RedeemUserTicketAddonsResponse =
+  | PurchaseOrder
+  | RedeemUserTicketAddonsError;
 
 export type RedeemUserTicketError = {
   __typename?: "RedeemUserTicketError";

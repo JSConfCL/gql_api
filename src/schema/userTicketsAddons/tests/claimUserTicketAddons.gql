@@ -1,0 +1,23 @@
+mutation ClaimUserTicketAddons(
+  $addonsClaims: [ClaimUserTicketAddonInput!]!
+  $currencyId: String
+) {
+  claimUserTicketAddons(addonsClaims: $addonsClaims, currencyId: $currencyId) {
+    __typename
+    ... on PurchaseOrder {
+      id
+      status
+      paymentLink
+      userTicketAddons {
+        id
+        userTicketId
+        addonId
+        quantity
+      }
+    }
+    ... on RedeemUserTicketAddonsError {
+      error
+      errorMessage
+    }
+  }
+}
