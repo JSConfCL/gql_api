@@ -52,6 +52,43 @@ export type AddUserToTeamResponseRef = {
   userIsInOtherTeams: Scalars["Boolean"]["output"];
 };
 
+/** Representation of an Addon */
+export type Addon = {
+  __typename?: "Addon";
+  availableStock?: Maybe<Scalars["Int"]["output"]>;
+  constraints: Array<AddonConstraint>;
+  description?: Maybe<Scalars["String"]["output"]>;
+  id: Scalars["ID"]["output"];
+  isFree: Scalars["Boolean"]["output"];
+  isUnlimited: Scalars["Boolean"]["output"];
+  maxPerTicket?: Maybe<Scalars["Int"]["output"]>;
+  name: Scalars["String"]["output"];
+  prices: Array<Price>;
+  ticketAddons: Array<TicketAddon>;
+  totalStock?: Maybe<Scalars["Int"]["output"]>;
+};
+
+export type AddonClaimInput = {
+  addonId: Scalars["String"]["input"];
+  quantity: Scalars["Int"]["input"];
+};
+
+/** Representation of an Addon Constraint */
+export type AddonConstraint = {
+  __typename?: "AddonConstraint";
+  addon: Addon;
+  addonId: Scalars["ID"]["output"];
+  constraintType: AddonConstraintType;
+  id: Scalars["ID"]["output"];
+  relatedAddon: Addon;
+  relatedAddonId: Scalars["ID"]["output"];
+};
+
+export enum AddonConstraintType {
+  Dependency = "DEPENDENCY",
+  MutualExclusion = "MUTUAL_EXCLUSION",
+}
+
 /** Representation of an allowed currency */
 export type AllowedCurrency = {
   __typename?: "AllowedCurrency";
@@ -729,6 +766,7 @@ export type PurchaseOrderInput = {
 };
 
 export type PurchaseOrderItemDetailsInput = {
+  addons: Array<AddonClaimInput>;
   transferInfo?: InputMaybe<UserTicketTransferInfoInput>;
 };
 
@@ -780,6 +818,7 @@ export type Query = {
   schedule: Schedule;
   /** Search a consolidated payment logs, by date, aggregated by platform and currency_id */
   searchConsolidatedPaymentLogs: Array<ConsolidatedPaymentLogEntry>;
+  searchCurrencies: Array<AllowedCurrency>;
   /** Get a list of events. Filter by name, id, status or date */
   searchEvents: PaginatedEvent;
   /** Search on the payment logs by date, and returns a list of payment logs */
@@ -1093,6 +1132,17 @@ export type Ticket = {
   visibility: TicketTemplateVisibility;
 };
 
+/** Representation of a Ticket Addon */
+export type TicketAddon = {
+  __typename?: "TicketAddon";
+  addon: Addon;
+  addonId: Scalars["ID"]["output"];
+  id: Scalars["ID"]["output"];
+  orderDisplay: Scalars["Int"]["output"];
+  ticket: Ticket;
+  ticketId: Scalars["ID"]["output"];
+};
+
 export enum TicketApprovalStatus {
   Approved = "approved",
   Cancelled = "cancelled",
@@ -1296,7 +1346,35 @@ export type UserTicket = {
   ticketTemplate: Ticket;
   transferAttempts: Array<UserTicketTransfer>;
   user?: Maybe<User>;
+  userTicketAddons: Array<UserTicketAddon>;
 };
+
+/** Representation of a User Ticket Addon */
+export type UserTicketAddon = {
+  __typename?: "UserTicketAddon";
+  addon: Addon;
+  addonId: Scalars["ID"]["output"];
+  approvalStatus: UserTicketAddonApprovalStatus;
+  id: Scalars["ID"]["output"];
+  purchaseOrder: PurchaseOrder;
+  purchaseOrderId: Scalars["ID"]["output"];
+  quantity: Scalars["Int"]["output"];
+  redemptionStatus: UserTicketAddonStatus;
+  unitPriceInCents: Scalars["Int"]["output"];
+  userTicket: UserTicket;
+  userTicketId: Scalars["ID"]["output"];
+};
+
+export enum UserTicketAddonApprovalStatus {
+  Approved = "APPROVED",
+  Cancelled = "CANCELLED",
+  Pending = "PENDING",
+}
+
+export enum UserTicketAddonStatus {
+  Pending = "PENDING",
+  Redeemed = "REDEEMED",
+}
 
 /** Representation of a user ticket transfer */
 export type UserTicketTransfer = {

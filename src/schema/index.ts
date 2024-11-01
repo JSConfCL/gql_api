@@ -45,6 +45,7 @@ import "./teams/types";
 import "./ticket/mutations";
 import "./ticket/queries";
 import "./ticket/types";
+import "./ticketAddons/types";
 import "./user/mutations";
 import "./user/queries";
 import "./user/types";

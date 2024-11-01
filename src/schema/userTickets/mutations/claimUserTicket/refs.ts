@@ -1,5 +1,6 @@
 import { builder } from "~/builder";
 import { PurchaseOrderRef } from "~/schema/purchaseOrder/types";
+import { AddonClaimInputRef } from "~/schema/shared/refs";
 import { UserTicketTransferInfoInputRef } from "~/schema/userTicketsTransfers/mutations";
 import { InferPothosInputType, InferPothosOutputType } from "~/types";
 
@@ -11,6 +12,7 @@ const PurchaseOrderItemDetailsInputRef = builder.inputType(
         type: UserTicketTransferInfoInputRef,
         required: false,
       }),
+      addons: t.field({ type: [AddonClaimInputRef], required: true }),
     }),
   },
 );

@@ -16,6 +16,8 @@ import { Env } from "worker-configuration";
 import * as rules from "~/authz";
 import {
   PronounsEnum,
+  addonConstraintsSchema,
+  addonsSchema,
   allowedCurrencySchema,
   communitySchema,
   companiesSchema,
@@ -24,6 +26,8 @@ import {
   eventsToCommunitiesSchema,
   eventsToTagsSchema,
   eventsToUsersSchema,
+  insertAddonConstraintSchema,
+  insertAddonSchema,
   insertAllowedCurrencySchema,
   insertCommunitySchema,
   insertCompaniesSchema,
@@ -51,7 +55,9 @@ import {
   insertWorkSenioritySchema,
   pricesSchema,
   purchaseOrdersSchema,
+  selectAddonConstraintSchema,
   salariesSchema,
+  selectAddonSchema,
   selectAllowedCurrencySchema,
   selectCommunitySchema,
   selectCompaniesSchema,
@@ -92,6 +98,15 @@ import {
   workRoleSchema,
   workSeniorityAndRoleSchema,
   workSenioritySchema,
+  userTicketAddonsSchema,
+  selectUserTicketAddonSchema,
+  insertUserTicketAddonSchema,
+  ticketAddonsSchema,
+  selectTicketAddonSchema,
+  insertTicketAddonSchema,
+  insertAddonPriceSchema,
+  selectAddonPriceSchema,
+  addonsPricesSchema,
 } from "~/datasources/db/schema";
 import { GenderOptionsEnum } from "~/datasources/db/shared";
 import {
@@ -838,6 +853,61 @@ export const insertUserTicketTransfer = async (
     selectUserTicketTransferSchema,
     userTicketTransfersSchema,
     possibleInput,
+  );
+};
+
+export const insertAddon = async (
+  partialInput: z.infer<typeof insertAddonSchema>,
+) => {
+  return insertOne(
+    insertAddonSchema,
+    selectAddonSchema,
+    addonsSchema,
+    partialInput,
+  );
+};
+
+export const insertAddonConstraint = async (
+  partialInput: z.infer<typeof insertAddonConstraintSchema>,
+) => {
+  return insertOne(
+    insertAddonConstraintSchema,
+    selectAddonConstraintSchema,
+    addonConstraintsSchema,
+    partialInput,
+  );
+};
+
+export const insertUserTicketAddon = async (
+  partialInput: z.infer<typeof insertUserTicketAddonSchema>,
+) => {
+  return insertOne(
+    insertUserTicketAddonSchema,
+    selectUserTicketAddonSchema,
+    userTicketAddonsSchema,
+    partialInput,
+  );
+};
+
+export const insertTicketAddon = async (
+  partialInput: z.infer<typeof insertTicketAddonSchema>,
+) => {
+  return insertOne(
+    insertTicketAddonSchema,
+    selectTicketAddonSchema,
+    ticketAddonsSchema,
+    partialInput,
+  );
+};
+
+export const insertAddonPrice = async (
+  partialInput: z.infer<typeof insertAddonPriceSchema>,
+) => {
+  return insertOne(
+    insertAddonPriceSchema,
+    selectAddonPriceSchema,
+    addonsPricesSchema,
+    partialInput,
   );
 };
 
