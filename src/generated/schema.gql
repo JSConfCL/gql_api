@@ -441,7 +441,7 @@ type Mutation {
   claimUserTicket(input: TicketClaimInput!): RedeemUserTicketResponse!
 
   """
-  Claim ticket addons for multiple tickets
+  Claim addons for multiple user tickets
   """
   claimUserTicketAddons(
     addonsClaims: [ClaimUserTicketAddonInput!]!

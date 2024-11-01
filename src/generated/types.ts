@@ -420,7 +420,7 @@ export type Mutation = {
   checkPurchaseOrderStatus: PurchaseOrder;
   /** Attempt to claim and/or transfer tickets */
   claimUserTicket: RedeemUserTicketResponse;
-  /** Claim ticket addons for multiple tickets */
+  /** Claim addons for multiple user tickets */
   claimUserTicketAddons: RedeemUserTicketAddonsResponse;
   createAddon: Addon;
   /** Create an community */
