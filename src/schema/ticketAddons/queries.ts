@@ -12,9 +12,6 @@ builder.queryField("searchAddons", (t) =>
     args: {
       eventId: t.arg.string({ required: true }),
     },
-    authz: {
-      rules: ["IsSuperAdmin"],
-    },
     resolve: async (root, { eventId }, { DB }) => {
       const addons = await DB.query.addonsSchema.findMany({
         where: eq(addonsSchema.eventId, eventId),
