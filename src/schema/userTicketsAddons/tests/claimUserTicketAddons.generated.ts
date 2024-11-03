@@ -12,7 +12,7 @@ export type ClaimUserTicketAddonsMutationVariables = Types.Exact<{
 }>;
 
 
-export type ClaimUserTicketAddonsMutation = { __typename?: 'Mutation', claimUserTicketAddons: { __typename: 'PurchaseOrder', id: string, status: Types.PurchaseOrderStatusEnum | null, paymentLink: string | null, userTicketAddons: Array<{ __typename?: 'UserTicketAddon', id: string, userTicketId: string, addonId: string, quantity: number }> } | { __typename: 'RedeemUserTicketAddonsError', error: boolean, errorMessage: string } };
+export type ClaimUserTicketAddonsMutation = { __typename?: 'Mutation', claimUserTicketAddons: { __typename: 'PurchaseOrder', id: string, status: Types.PurchaseOrderStatusEnum | null, purchasePaymentStatus: Types.PurchaseOrderPaymentStatusEnum | null, paymentLink: string | null, userTicketAddons: Array<{ __typename?: 'UserTicketAddon', id: string, userTicketId: string, addonId: string, quantity: number }> } | { __typename: 'RedeemUserTicketAddonsError', error: boolean, errorMessage: string } };
 
 
 export const ClaimUserTicketAddons = gql`
@@ -22,6 +22,7 @@ export const ClaimUserTicketAddons = gql`
     ... on PurchaseOrder {
       id
       status
+      purchasePaymentStatus
       paymentLink
       userTicketAddons {
         id

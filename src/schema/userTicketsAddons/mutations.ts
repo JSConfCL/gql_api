@@ -210,18 +210,27 @@ builder.mutationField("claimUserTicketAddons", (t) =>
             });
           }
 
-          await trx
+          const [updatedPurchaseOrder] = await trx
             .update(purchaseOrdersSchema)
             .set({
               purchaseOrderPaymentStatus: "not_required",
               status: "complete",
               totalPrice: "0",
             })
-            .where(eq(purchaseOrdersSchema.id, createdPurchaseOrder.id));
+            .where(eq(purchaseOrdersSchema.id, createdPurchaseOrder.id))
+            .returning();
+
+          if (!updatedPurchaseOrder) {
+            throw applicationError(
+              "Failed to update purchase order",
+              ServiceErrors.FAILED_PRECONDITION,
+              logger,
+            );
+          }
 
           return {
             purchaseOrder:
-              selectPurchaseOrdersSchema.parse(createdPurchaseOrder),
+              selectPurchaseOrdersSchema.parse(updatedPurchaseOrder),
             ticketsIds: uniqueUserTicketIds,
           };
         } catch (e: unknown) {

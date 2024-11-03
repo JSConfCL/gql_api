@@ -1306,4 +1306,191 @@ describe("claimUserTicketAddons mutation", () => {
       "PurchaseOrder",
     );
   });
+
+  it("should set purchase order status to completed when claiming only free addons", async () => {
+    const community = await insertCommunity();
+    const event = await insertEvent();
+    const user = await insertUser();
+
+    await insertEventToCommunity({
+      eventId: event.id,
+      communityId: community.id,
+    });
+
+    const ticket = await insertTicketTemplate({
+      eventId: event.id,
+      quantity: 100,
+    });
+
+    const userTicket = await insertTicket({
+      userId: user.id,
+      ticketTemplateId: ticket.id,
+      approvalStatus: "approved",
+    });
+
+    const freeAddon = await insertAddon({
+      name: "Free Addon",
+      eventId: event.id,
+      isFree: true,
+      maxPerTicket: 2,
+    });
+
+    await insertTicketAddon({
+      ticketId: ticket.id,
+      addonId: freeAddon.id,
+      orderDisplay: 1,
+    });
+
+    const response = await executeGraphqlOperationAsUser<
+      ClaimUserTicketAddonsMutation,
+      ClaimUserTicketAddonsMutationVariables
+    >(
+      {
+        document: ClaimUserTicketAddons,
+        variables: {
+          addonsClaims: [
+            {
+              userTicketId: userTicket.id,
+              addonId: freeAddon.id,
+              quantity: 1,
+            },
+          ],
+          currencyId: null,
+        },
+      },
+      user,
+    );
+
+    assert.equal(response.errors, undefined);
+
+    assert.equal(
+      response.data?.claimUserTicketAddons.__typename,
+      "PurchaseOrder",
+    );
+
+    if (response.data?.claimUserTicketAddons.__typename === "PurchaseOrder") {
+      assert.equal(response.data.claimUserTicketAddons.status, "complete");
+
+      assert.equal(
+        response.data.claimUserTicketAddons.purchasePaymentStatus,
+        "not_required",
+      );
+
+      assert.equal(response.data.claimUserTicketAddons.paymentLink, null);
+    }
+  });
+
+  it("should set purchase order status to open when claiming paid addons", async () => {
+    const community = await insertCommunity();
+    const event = await insertEvent();
+    const user = await insertUser();
+    const usdCurrency = await insertAllowedCurrency({
+      currency: "USD",
+      validPaymentMethods: "stripe",
+    });
+
+    await insertEventToCommunity({
+      eventId: event.id,
+      communityId: community.id,
+    });
+
+    const ticket = await insertTicketTemplate({
+      eventId: event.id,
+      quantity: 100,
+    });
+
+    const userTicket = await insertTicket({
+      userId: user.id,
+      ticketTemplateId: ticket.id,
+      approvalStatus: "approved",
+    });
+
+    const paidAddon = await insertAddon({
+      name: "Paid Addon",
+      eventId: event.id,
+      isFree: false,
+      maxPerTicket: 2,
+    });
+
+    await insertTicketAddon({
+      ticketId: ticket.id,
+      addonId: paidAddon.id,
+      orderDisplay: 1,
+    });
+
+    await insertAddonPrice({
+      addonId: paidAddon.id,
+      priceId: (
+        await insertPrice({
+          price_in_cents: 1000,
+          currencyId: usdCurrency.id,
+        })
+      ).id,
+    });
+
+    vi.mocked(handlePaymentLinkGeneration).mockResolvedValue({
+      purchaseOrder: {
+        id: SAMPLE_TEST_UUID,
+        publicId: "some-public-id",
+        userId: user.id,
+        idempotencyUUIDKey: "some-idempotency-key",
+        totalPrice: "1000",
+        description: null,
+        status: "open",
+        createdAt: new Date(),
+        updatedAt: null,
+        deletedAt: null,
+        currencyId: usdCurrency.id,
+        paymentPlatform: "stripe",
+        paymentPlatformPaymentLink: "https://test-payment-link.com",
+        purchaseOrderPaymentStatus: "unpaid",
+        paymentPlatformExpirationDate: null,
+        paymentPlatformReferenceID: null,
+        paymentPlatformStatus: null,
+        paymentPlatformMetadata: null,
+      },
+      ticketsIds: [],
+    });
+
+    const response = await executeGraphqlOperationAsUser<
+      ClaimUserTicketAddonsMutation,
+      ClaimUserTicketAddonsMutationVariables
+    >(
+      {
+        document: ClaimUserTicketAddons,
+        variables: {
+          addonsClaims: [
+            {
+              userTicketId: userTicket.id,
+              addonId: paidAddon.id,
+              quantity: 1,
+            },
+          ],
+          currencyId: usdCurrency.id,
+        },
+      },
+      user,
+    );
+
+    assert.equal(response.errors, undefined);
+
+    assert.equal(
+      response.data?.claimUserTicketAddons.__typename,
+      "PurchaseOrder",
+    );
+
+    if (response.data?.claimUserTicketAddons.__typename === "PurchaseOrder") {
+      assert.equal(response.data.claimUserTicketAddons.status, "open");
+
+      assert.equal(
+        response.data.claimUserTicketAddons.purchasePaymentStatus,
+        "unpaid",
+      );
+
+      assert.equal(
+        response.data.claimUserTicketAddons.paymentLink,
+        "https://test-payment-link.com",
+      );
+    }
+  });
 });
