@@ -1,9 +1,11 @@
+import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
 import {
   userTicketAddonsSchema,
   selectPurchaseOrdersSchema,
+  purchaseOrdersSchema,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import { handlePaymentLinkGeneration } from "~/schema/purchaseOrder/actions";
@@ -207,6 +209,15 @@ builder.mutationField("claimUserTicketAddons", (t) =>
               USER: USER,
             });
           }
+
+          await trx
+            .update(purchaseOrdersSchema)
+            .set({
+              purchaseOrderPaymentStatus: "not_required",
+              status: "complete",
+              totalPrice: "0",
+            })
+            .where(eq(purchaseOrdersSchema.id, createdPurchaseOrder.id));
 
           return {
             purchaseOrder:
