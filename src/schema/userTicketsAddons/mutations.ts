@@ -111,36 +111,27 @@ builder.mutationField("claimUserTicketAddons", (t) =>
 
           const [
             createdPurchaseOrder,
-            userTickets,
-            aggregatedAddons,
-            claimedAddonsByUserTicketId,
+            { userTickets, aggregatedAddons, claimedAddonsByUserTicketId },
           ] = await Promise.all([
             createInitialPurchaseOrder({
               DB: trx,
               userId: USER.id,
               logger,
             }),
-            claimUserTicketAddonsHelpers.fetchAndValidateUserTickets({
+            claimUserTicketAddonsHelpers.fetchAndValidateTicketData({
               trx,
               userTicketIds: uniqueUserTicketIds,
               userId: USER.id,
               logger,
-            }),
-            claimUserTicketAddonsHelpers.fetchAndValidateAggregatedAddons({
-              trx,
-              currencyId,
-              logger,
               addonIds: addonsClaims.map((a) => a.addonId),
-            }),
-            claimUserTicketAddonsHelpers.fetchClaimedAddonsByUserTicketId({
-              trx,
-              userTicketIds: uniqueUserTicketIds,
+              currencyId,
             }),
           ]);
 
           // validate that all addons constraints are respected
           for (const [userTicketId, claims] of Object.entries(claimsByTicket)) {
             const userTicket = userTickets.find((ut) => ut.id === userTicketId);
+
             const validAddons = aggregatedAddons.filter(
               (ta) => ta.ticketId === userTicket?.ticketTemplate.id,
             );

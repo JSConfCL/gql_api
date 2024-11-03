@@ -1,5 +1,6 @@
 import { assert, beforeEach, describe, it, vi } from "vitest";
 
+import { AddonConstraintType } from "~/datasources/db/ticketAddons";
 import { handlePaymentLinkGeneration } from "~/schema/purchaseOrder/actions";
 import {
   executeGraphqlOperationAsUser,
@@ -16,6 +17,7 @@ import {
   insertAddonPrice,
   insertTicket,
   SAMPLE_TEST_UUID,
+  insertAddonConstraint,
 } from "~/tests/fixtures";
 
 import {
@@ -928,5 +930,380 @@ describe("claimUserTicketAddons mutation", () => {
         "total quantity exceeds limit per ticket for ticket",
       );
     }
+  });
+
+  it("should fail when claiming an addon that is mutually exclusive with an existing one", async () => {
+    const community = await insertCommunity();
+    const event = await insertEvent();
+    const user = await insertUser();
+
+    await insertEventToCommunity({
+      eventId: event.id,
+      communityId: community.id,
+    });
+
+    const ticket = await insertTicketTemplate({
+      eventId: event.id,
+      quantity: 100,
+    });
+
+    const userTicket = await insertTicket({
+      userId: user.id,
+      ticketTemplateId: ticket.id,
+      approvalStatus: "approved",
+    });
+
+    // Create two mutually exclusive addons
+    const addon1 = await insertAddon({
+      name: "Addon 1",
+      description: "First addon",
+      totalStock: 100,
+      isUnlimited: false,
+      eventId: event.id,
+      isFree: true,
+    });
+
+    const addon2 = await insertAddon({
+      name: "Addon 2",
+      description: "Second addon",
+      totalStock: 100,
+      isUnlimited: false,
+      eventId: event.id,
+      isFree: true,
+    });
+
+    // Set up mutual exclusion constraint
+    await insertAddonConstraint({
+      addonId: addon1.id,
+      relatedAddonId: addon2.id,
+      constraintType: AddonConstraintType.MUTUAL_EXCLUSION,
+    });
+
+    await insertTicketAddon({
+      ticketId: ticket.id,
+      addonId: addon1.id,
+      orderDisplay: 1,
+    });
+
+    await insertTicketAddon({
+      ticketId: ticket.id,
+      addonId: addon2.id,
+      orderDisplay: 2,
+    });
+
+    // First claim addon1 - should succeed
+    const firstResponse = await executeGraphqlOperationAsUser<
+      ClaimUserTicketAddonsMutation,
+      ClaimUserTicketAddonsMutationVariables
+    >(
+      {
+        document: ClaimUserTicketAddons,
+        variables: {
+          addonsClaims: [
+            {
+              userTicketId: userTicket.id,
+              addonId: addon1.id,
+              quantity: 1,
+            },
+          ],
+          currencyId: null,
+        },
+      },
+      user,
+    );
+
+    assert.equal(
+      firstResponse.data?.claimUserTicketAddons.__typename,
+      "PurchaseOrder",
+    );
+
+    // Try to claim addon2 - should fail due to mutual exclusion
+    const secondResponse = await executeGraphqlOperationAsUser<
+      ClaimUserTicketAddonsMutation,
+      ClaimUserTicketAddonsMutationVariables
+    >(
+      {
+        document: ClaimUserTicketAddons,
+        variables: {
+          addonsClaims: [
+            {
+              userTicketId: userTicket.id,
+              addonId: addon2.id,
+              quantity: 1,
+            },
+          ],
+          currencyId: null,
+        },
+      },
+      user,
+    );
+
+    assert.equal(
+      secondResponse.data?.claimUserTicketAddons.__typename,
+      "RedeemUserTicketAddonsError",
+    );
+
+    if (
+      secondResponse.data?.claimUserTicketAddons.__typename ===
+      "RedeemUserTicketAddonsError"
+    ) {
+      assert.include(
+        secondResponse.data?.claimUserTicketAddons.errorMessage,
+        "is mutually exclusive with addon",
+      );
+    }
+  });
+
+  it("should succeed when claiming multiple non-conflicting addons sequentially", async () => {
+    const community = await insertCommunity();
+    const event = await insertEvent();
+    const user = await insertUser();
+
+    await insertEventToCommunity({
+      eventId: event.id,
+      communityId: community.id,
+    });
+
+    const ticket = await insertTicketTemplate({
+      eventId: event.id,
+      quantity: 100,
+    });
+
+    const userTicket = await insertTicket({
+      userId: user.id,
+      ticketTemplateId: ticket.id,
+      approvalStatus: "approved",
+    });
+
+    // Create two independent addons
+    const addon1 = await insertAddon({
+      name: "Addon 1",
+      description: "First addon",
+      totalStock: 100,
+      isUnlimited: false,
+      eventId: event.id,
+      isFree: true,
+    });
+
+    const addon2 = await insertAddon({
+      name: "Addon 2",
+      description: "Second addon",
+      totalStock: 100,
+      isUnlimited: false,
+      eventId: event.id,
+      isFree: true,
+    });
+
+    await insertTicketAddon({
+      ticketId: ticket.id,
+      addonId: addon1.id,
+      orderDisplay: 1,
+    });
+
+    await insertTicketAddon({
+      ticketId: ticket.id,
+      addonId: addon2.id,
+      orderDisplay: 2,
+    });
+
+    // First claim addon1 - should succeed
+    const firstResponse = await executeGraphqlOperationAsUser<
+      ClaimUserTicketAddonsMutation,
+      ClaimUserTicketAddonsMutationVariables
+    >(
+      {
+        document: ClaimUserTicketAddons,
+        variables: {
+          addonsClaims: [
+            {
+              userTicketId: userTicket.id,
+              addonId: addon1.id,
+              quantity: 1,
+            },
+          ],
+          currencyId: null,
+        },
+      },
+      user,
+    );
+
+    assert.equal(
+      firstResponse.data?.claimUserTicketAddons.__typename,
+      "PurchaseOrder",
+    );
+
+    // Claim addon2 - should also succeed
+    const secondResponse = await executeGraphqlOperationAsUser<
+      ClaimUserTicketAddonsMutation,
+      ClaimUserTicketAddonsMutationVariables
+    >(
+      {
+        document: ClaimUserTicketAddons,
+        variables: {
+          addonsClaims: [
+            {
+              userTicketId: userTicket.id,
+              addonId: addon2.id,
+              quantity: 1,
+            },
+          ],
+          currencyId: null,
+        },
+      },
+      user,
+    );
+
+    assert.equal(
+      secondResponse.data?.claimUserTicketAddons.__typename,
+      "PurchaseOrder",
+    );
+  });
+
+  it("should enforce addon dependencies correctly", async () => {
+    const community = await insertCommunity();
+    const event = await insertEvent();
+    const user = await insertUser();
+
+    await insertEventToCommunity({
+      eventId: event.id,
+      communityId: community.id,
+    });
+
+    const ticket = await insertTicketTemplate({
+      eventId: event.id,
+      quantity: 100,
+    });
+
+    const userTicket = await insertTicket({
+      userId: user.id,
+      ticketTemplateId: ticket.id,
+      approvalStatus: "approved",
+    });
+
+    // Create dependent addons
+    const baseAddon = await insertAddon({
+      name: "Base Addon",
+      description: "Required addon",
+      totalStock: 100,
+      isUnlimited: false,
+      eventId: event.id,
+      isFree: true,
+    });
+
+    const dependentAddon = await insertAddon({
+      name: "Dependent Addon",
+      description: "Requires base addon",
+      totalStock: 100,
+      isUnlimited: false,
+      eventId: event.id,
+      isFree: true,
+    });
+
+    // Set up dependency constraint
+    await insertAddonConstraint({
+      addonId: dependentAddon.id,
+      relatedAddonId: baseAddon.id,
+      constraintType: AddonConstraintType.DEPENDENCY,
+    });
+
+    await insertTicketAddon({
+      ticketId: ticket.id,
+      addonId: baseAddon.id,
+      orderDisplay: 1,
+    });
+
+    await insertTicketAddon({
+      ticketId: ticket.id,
+      addonId: dependentAddon.id,
+      orderDisplay: 2,
+    });
+
+    // Try to claim dependent addon without base - should fail
+    const failedResponse = await executeGraphqlOperationAsUser<
+      ClaimUserTicketAddonsMutation,
+      ClaimUserTicketAddonsMutationVariables
+    >(
+      {
+        document: ClaimUserTicketAddons,
+        variables: {
+          addonsClaims: [
+            {
+              userTicketId: userTicket.id,
+              addonId: dependentAddon.id,
+              quantity: 1,
+            },
+          ],
+          currencyId: null,
+        },
+      },
+      user,
+    );
+
+    assert.equal(
+      failedResponse.data?.claimUserTicketAddons.__typename,
+      "RedeemUserTicketAddonsError",
+    );
+
+    if (
+      failedResponse.data?.claimUserTicketAddons.__typename ===
+      "RedeemUserTicketAddonsError"
+    ) {
+      assert.include(
+        failedResponse.data?.claimUserTicketAddons.errorMessage,
+        "requires addon",
+      );
+    }
+
+    // Claim base addon first - should succeed
+    const baseResponse = await executeGraphqlOperationAsUser<
+      ClaimUserTicketAddonsMutation,
+      ClaimUserTicketAddonsMutationVariables
+    >(
+      {
+        document: ClaimUserTicketAddons,
+        variables: {
+          addonsClaims: [
+            {
+              userTicketId: userTicket.id,
+              addonId: baseAddon.id,
+              quantity: 1,
+            },
+          ],
+          currencyId: null,
+        },
+      },
+      user,
+    );
+
+    assert.equal(
+      baseResponse.data?.claimUserTicketAddons.__typename,
+      "PurchaseOrder",
+    );
+
+    // Now claim dependent addon - should succeed
+    const dependentResponse = await executeGraphqlOperationAsUser<
+      ClaimUserTicketAddonsMutation,
+      ClaimUserTicketAddonsMutationVariables
+    >(
+      {
+        document: ClaimUserTicketAddons,
+        variables: {
+          addonsClaims: [
+            {
+              userTicketId: userTicket.id,
+              addonId: dependentAddon.id,
+              quantity: 1,
+            },
+          ],
+          currencyId: null,
+        },
+      },
+      user,
+    );
+
+    assert.equal(
+      dependentResponse.data?.claimUserTicketAddons.__typename,
+      "PurchaseOrder",
+    );
   });
 });
