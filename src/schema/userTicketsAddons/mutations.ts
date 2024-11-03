@@ -6,7 +6,6 @@ import {
   userTicketAddonsSchema,
   selectPurchaseOrdersSchema,
   purchaseOrdersSchema,
-  userTicketsSchema,
   UserTicketAddonApprovalStatus,
   AddonConstraintType,
 } from "~/datasources/db/schema";
@@ -263,7 +262,7 @@ function handleClaimError(error: unknown): RedeemUserTicketAddonsErrorType {
 
 builder.mutationField("cancelUserTicketAddons", (t) =>
   t.field({
-    description: "Cancel addons for multiple user tickets",
+    description: "Cancel multiple user ticket addons",
     type: [UserTicketAddonRef],
     args: {
       userTicketAddonIds: t.arg({
@@ -293,7 +292,9 @@ builder.mutationField("cancelUserTicketAddons", (t) =>
       return await DB.transaction(async (trx) => {
         try {
           const allUserTickets = await trx.query.userTicketsSchema.findMany({
-            where: eq(userTicketsSchema.userId, USER.id),
+            where: (etc, ops) => {
+              return ops.eq(etc.userId, USER.id);
+            },
             columns: {
               id: true,
             },
@@ -366,10 +367,15 @@ builder.mutationField("cancelUserTicketAddons", (t) =>
             );
           }
 
-          // Fetch all user ticket addons for the same tickets to check dependencies
+          // Fetch all user ticket addons to check dependencies
+          // We only consider approved addons to check dependencies
           const otherUserTicketAddons = allUserTickets
             .flatMap((ut) => ut.userTicketAddons)
-            .filter((uta) => !userTicketAddonIds.includes(uta.id));
+            .filter(
+              (uta) =>
+                !userTicketAddonIds.includes(uta.id) &&
+                uta.approvalStatus === UserTicketAddonApprovalStatus.APPROVED,
+            );
 
           // TODO: Future improvements needed:
           // 1. Handle paid addons cancellation - requires refund logic implementation

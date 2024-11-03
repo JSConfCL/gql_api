@@ -269,6 +269,7 @@ describe("cancelUserTicketAddons mutation", () => {
       quantity: 1,
       purchaseOrderId: purchaseOrder.id,
       unitPriceInCents: 0,
+      approvalStatus: UserTicketAddonApprovalStatus.APPROVED,
     });
 
     await insertUserTicketAddon({
@@ -277,6 +278,7 @@ describe("cancelUserTicketAddons mutation", () => {
       quantity: 1,
       purchaseOrderId: purchaseOrder.id,
       unitPriceInCents: 0,
+      approvalStatus: UserTicketAddonApprovalStatus.APPROVED,
     });
 
     const response = await executeGraphqlOperationAsUser<
@@ -567,6 +569,160 @@ describe("cancelUserTicketAddons mutation", () => {
     assert.include(
       response.errors?.[0].message,
       "Some addons are already cancelled",
+    );
+  });
+
+  it("should allow cancelling base addon after dependent addon is cancelled", async () => {
+    const community = await insertCommunity();
+    const event = await insertEvent();
+    const user = await insertUser();
+
+    await insertEventToCommunity({
+      eventId: event.id,
+      communityId: community.id,
+    });
+
+    const ticket = await insertTicketTemplate({
+      eventId: event.id,
+      quantity: 100,
+    });
+
+    const userTicket = await insertTicket({
+      userId: user.id,
+      ticketTemplateId: ticket.id,
+      approvalStatus: "approved",
+    });
+
+    const baseAddon = await insertAddon({
+      name: "Base Addon",
+      eventId: event.id,
+      isFree: true,
+    });
+
+    const dependentAddon = await insertAddon({
+      name: "Dependent Addon",
+      eventId: event.id,
+      isFree: true,
+    });
+
+    // Set up dependency constraint
+    await insertAddonConstraint({
+      addonId: dependentAddon.id,
+      relatedAddonId: baseAddon.id,
+      constraintType: AddonConstraintType.DEPENDENCY,
+    });
+
+    await insertTicketAddon({
+      ticketId: ticket.id,
+      addonId: baseAddon.id,
+      orderDisplay: 1,
+    });
+
+    await insertTicketAddon({
+      ticketId: ticket.id,
+      addonId: dependentAddon.id,
+      orderDisplay: 2,
+    });
+
+    const purchaseOrder = await insertPurchaseOrder({
+      userId: user.id,
+      status: "complete",
+      totalPrice: "0",
+      purchaseOrderPaymentStatus: "not_required",
+    });
+
+    const baseUserTicketAddon = await insertUserTicketAddon({
+      userTicketId: userTicket.id,
+      addonId: baseAddon.id,
+      quantity: 1,
+      purchaseOrderId: purchaseOrder.id,
+      unitPriceInCents: 0,
+      approvalStatus: UserTicketAddonApprovalStatus.APPROVED,
+    });
+
+    const dependentUserTicketAddon = await insertUserTicketAddon({
+      userTicketId: userTicket.id,
+      addonId: dependentAddon.id,
+      quantity: 1,
+      purchaseOrderId: purchaseOrder.id,
+      unitPriceInCents: 0,
+      approvalStatus: UserTicketAddonApprovalStatus.APPROVED,
+    });
+
+    // First attempt: Try to cancel base addon while dependent is active
+    const firstResponse = await executeGraphqlOperationAsUser<
+      CancelUserTicketAddonsMutation,
+      CancelUserTicketAddonsMutationVariables
+    >(
+      {
+        document: CancelUserTicketAddons,
+        variables: {
+          userTicketAddonIds: [baseUserTicketAddon.id],
+        },
+      },
+      user,
+    );
+
+    assert.exists(firstResponse.errors);
+
+    assert.include(firstResponse.errors?.[0].message, "Cannot cancel addon");
+
+    assert.include(
+      firstResponse.errors?.[0].message,
+      "because other addons depend on it",
+    );
+
+    // Second attempt: Cancel the dependent addon
+    const secondResponse = await executeGraphqlOperationAsUser<
+      CancelUserTicketAddonsMutation,
+      CancelUserTicketAddonsMutationVariables
+    >(
+      {
+        document: CancelUserTicketAddons,
+        variables: {
+          userTicketAddonIds: [dependentUserTicketAddon.id],
+        },
+      },
+      user,
+    );
+
+    assert.equal(secondResponse.errors, undefined);
+    const cancelledDependentAddons =
+      secondResponse.data?.cancelUserTicketAddons;
+
+    assert.equal(cancelledDependentAddons?.length, 1);
+
+    assert.equal(cancelledDependentAddons?.[0].id, dependentUserTicketAddon.id);
+
+    assert.equal(
+      cancelledDependentAddons?.[0].approvalStatus,
+      GraphQLUserTicketAddonApprovalStatus.Cancelled,
+    );
+
+    // Third attempt: Now try to cancel base addon
+    const thirdResponse = await executeGraphqlOperationAsUser<
+      CancelUserTicketAddonsMutation,
+      CancelUserTicketAddonsMutationVariables
+    >(
+      {
+        document: CancelUserTicketAddons,
+        variables: {
+          userTicketAddonIds: [baseUserTicketAddon.id],
+        },
+      },
+      user,
+    );
+
+    assert.equal(thirdResponse.errors, undefined);
+    const cancelledBaseAddons = thirdResponse.data?.cancelUserTicketAddons;
+
+    assert.equal(cancelledBaseAddons?.length, 1);
+
+    assert.equal(cancelledBaseAddons?.[0].id, baseUserTicketAddon.id);
+
+    assert.equal(
+      cancelledBaseAddons?.[0].approvalStatus,
+      GraphQLUserTicketAddonApprovalStatus.Cancelled,
     );
   });
 });
