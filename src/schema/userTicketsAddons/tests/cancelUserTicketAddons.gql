@@ -1,0 +1,9 @@
+mutation CancelUserTicketAddons($userTicketAddonIds: [String!]!) {
+  cancelUserTicketAddons(userTicketAddonIds: $userTicketAddonIds) {
+    id
+    approvalStatus
+    quantity
+    addonId
+    userTicketId
+  }
+}

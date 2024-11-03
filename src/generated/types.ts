@@ -416,6 +416,8 @@ export type Mutation = {
   approvalUserTicket: UserTicket;
   /** Cancel a ticket */
   cancelUserTicket: UserTicket;
+  /** Cancel addons for multiple user tickets */
+  cancelUserTicketAddons: Array<UserTicketAddon>;
   /** Check the status of a purchase order */
   checkPurchaseOrderStatus: PurchaseOrder;
   /** Attempt to claim and/or transfer tickets */
@@ -498,6 +500,10 @@ export type MutationApprovalUserTicketArgs = {
 
 export type MutationCancelUserTicketArgs = {
   userTicketId: Scalars["String"]["input"];
+};
+
+export type MutationCancelUserTicketAddonsArgs = {
+  userTicketAddonIds: Array<Scalars["String"]["input"]>;
 };
 
 export type MutationCheckPurchaseOrderStatusArgs = {
