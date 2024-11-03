@@ -34,7 +34,8 @@ export function validateAddonClaimsAndConstraints({
 }: ValidateAddonClaimsAndConstraints) {
   const allAddonClaims = [...alreadyClaimedAddons, ...newAddonClaims];
 
-  for (const addonClaim of allAddonClaims) {
+  // Validate all new addon claims
+  for (const addonClaim of newAddonClaims) {
     const addon = ticketRelatedAddonsInfo.find(
       (a) => a.id === addonClaim.addonId,
     );
@@ -67,6 +68,17 @@ export function validateAddonClaimsAndConstraints({
           logger,
         );
       }
+    }
+  }
+
+  // Check constraints for all addons (both new and already claimed)
+  for (const addonClaim of allAddonClaims) {
+    const addon = ticketRelatedAddonsInfo.find(
+      (a) => a.id === addonClaim.addonId,
+    );
+
+    if (!addon) {
+      continue;
     }
 
     for (const constraint of addon.constraints) {
@@ -147,23 +159,22 @@ export const claimUserTicketAddonsHelpers = {
     return { uniqueUserTicketIds, claimsByTicket };
   },
 
-  /**
-   * Fetches user tickets and validates:
-   * - Ticket ownership, only the current user's tickets are fetched
-   * - Ticket approval status
-   * - Related event and community data
-   */
-  fetchAndValidateUserTickets: async ({
+  fetchAndValidateTicketData: async ({
     trx,
     userTicketIds,
     userId,
+    currencyId,
+    addonIds,
     logger,
   }: {
     trx: TRANSACTION_HANDLER;
     userTicketIds: string[];
     userId: string;
+    currencyId: string | null | undefined;
+    addonIds: string[];
     logger: Logger;
   }) => {
+    // Fetch user tickets with all related data
     const userTickets = await trx.query.userTicketsSchema.findMany({
       where: (t, ops) =>
         ops.and(ops.inArray(t.id, userTicketIds), ops.eq(t.userId, userId)),
@@ -193,6 +204,7 @@ export const claimUserTicketAddonsHelpers = {
       },
     });
 
+    // Validate user tickets
     const validApprovalStatuses = [
       "approved",
       "gifted",
@@ -224,28 +236,33 @@ export const claimUserTicketAddonsHelpers = {
       );
     }
 
-    return userTickets;
-  },
+    // Get ticket template IDs
+    const ticketTemplateIds = userTickets.map((ut) => ut.ticketTemplateId);
 
-  /**
-   * Fetches and validates addons with their pricing information.
-   * Ensures all requested addons exist.
-   * If currencyId is provided, includes pricing information for that currency.
-   */
-  fetchAndValidateAggregatedAddons: async ({
-    trx,
-    addonIds,
-    currencyId,
-    logger,
-  }: {
-    trx: TRANSACTION_HANDLER;
-    addonIds: string[];
-    currencyId?: string | null;
-    logger: Logger;
-  }): Promise<AddonWithPrice[]> => {
-    const addonsWithPrice = await trx.query.ticketAddonsSchema
+    // Fetch claimed addons
+    const claimedAddonsByUserTicketId =
+      await claimUserTicketAddonsHelpers._fetchClaimedAddonsByUserTicketId({
+        trx,
+        userTicketIds,
+      });
+
+    // Get all addon IDs we need to fetch
+    // We need to fetch all claimed addons for the tickets we are claiming addons for
+    // because they might have constraints that affect the addons we are claiming
+    const allClaimedAddonIds = Object.values(claimedAddonsByUserTicketId)
+      .flat()
+      .map((claim) => claim.addonId);
+
+    const allAddonIds = [...new Set([...addonIds, ...allClaimedAddonIds])];
+
+    // Fetch aggregated addons with all related data
+    const aggregatedAddons = await trx.query.ticketAddonsSchema
       .findMany({
-        where: (t, ops) => ops.inArray(t.addonId, addonIds),
+        where: (t, ops) =>
+          ops.and(
+            ops.inArray(t.addonId, allAddonIds),
+            ops.inArray(t.ticketId, ticketTemplateIds),
+          ),
         with: {
           addon: {
             with: {
@@ -264,56 +281,32 @@ export const claimUserTicketAddonsHelpers = {
         },
       })
       .then((relations) => {
-        if (currencyId) {
-          return relations.map(({ addon, ticketId }) => {
+        const processed = relations.map(({ addon, ticketId }) => {
+          if (currencyId) {
             const price =
               addon.prices.find((p) => p.price.currency.id === currencyId)
                 ?.price || null;
 
             return { ...addon, ticketId, price };
-          });
-        }
+          }
 
-        return relations.map(({ addon, ticketId }) => ({
-          ...addon,
-          ticketId,
-          price: null,
-        }));
+          return { ...addon, ticketId, price: null };
+        });
+
+        return processed;
       });
 
-    const notFoundAddons = addonIds.filter(
-      (id) => !addonsWithPrice.find((addon) => addon.id === id),
-    );
-
-    if (notFoundAddons.length > 0) {
-      throw applicationError(
-        `Some addons were not found: ${notFoundAddons.join(", ")}`,
-        ServiceErrors.NOT_FOUND,
-        logger,
-      );
-    }
-
-    return addonsWithPrice;
+    return {
+      userTickets,
+      aggregatedAddons,
+      claimedAddonsByUserTicketId,
+    };
   },
 
   /**
-   * Fetches and aggregates the quantity of approved addon claims for given user tickets.
-   * Returns a nested object structure mapping user ticket IDs to their claimed addons and quantities.
-   * Only includes addons with APPROVED status.
-   *
-   * @example
-   * // Returns an object like:
-   * {
-   *   "user-ticket-1": [
-   *     { addonId: "addon-123", quantity: 2 },
-   *     { addonId: "addon-456", quantity: 1 }
-   *   ],
-   *   "user-ticket-2": [
-   *     { addonId: "addon-789", quantity: 3 }
-   *   ]
-   * }
+   * Fetches claimed addons for user tickets
    */
-  fetchClaimedAddonsByUserTicketId: async ({
+  _fetchClaimedAddonsByUserTicketId: async ({
     trx,
     userTicketIds,
   }: {
@@ -370,11 +363,7 @@ export const claimUserTicketAddonsHelpers = {
   },
 
   /**
-   * Prepares addon claims for database insertion and calculates total price.
-   * Handles both free and paid addons:
-   * - Free addons are automatically approved
-   * - Paid addons require currency and valid pricing
-   * - Validates price consistency for paid addons
+   * Prepares addon claims for database insertion
    */
   prepareAddonClaims: ({
     addonsClaims,
@@ -388,10 +377,7 @@ export const claimUserTicketAddonsHelpers = {
     currencyId?: string | null;
     purchaseOrderId: string;
     logger: Logger;
-  }): {
-    toInsert: InsertUserTicketAddonClaimSchema[];
-    totalPriceInCents: number;
-  } => {
+  }) => {
     let totalPriceInCents = 0;
     const toInsert: InsertUserTicketAddonClaimSchema[] = [];
 
