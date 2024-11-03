@@ -82,35 +82,15 @@ builder.objectType(AddonRef, {
           return null;
         }
 
-        const userTickets = await DB.query.userTicketsSchema.findMany({
-          where: (ut, { eq, and, inArray }) =>
-            and(
-              eq(ut.ticketTemplateId, root.id),
-              inArray(ut.approvalStatus, [
-                "approved",
-                "not_required",
-                "pending",
-                "gifted",
-                "gift_accepted",
-                "transfer_accepted",
-                "transfer_pending",
-              ]),
-            ),
-        });
-
-        if (userTickets.length === 0) {
-          return root.totalStock;
-        }
-
         const userTicketAddons = await DB.query.userTicketAddonsSchema.findMany(
           {
             where: (ut, ops) =>
               ops.and(
                 ops.eq(ut.addonId, root.id),
-                ops.inArray(
-                  ut.userTicketId,
-                  userTickets.map((ut) => ut.id),
-                ),
+                ops.inArray(ut.approvalStatus, [
+                  UserTicketAddonApprovalStatus.APPROVED,
+                  UserTicketAddonApprovalStatus.PENDING,
+                ]),
               ),
           },
         );

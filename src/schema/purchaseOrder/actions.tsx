@@ -1185,6 +1185,18 @@ export const clearExpiredPurchaseOrders = async ({
         ),
       )
       .returning();
+
+    await DB.update(userTicketAddonsSchema)
+      .set({
+        approvalStatus: UserTicketAddonApprovalStatus.CANCELLED,
+      })
+      .where(
+        inArray(
+          userTicketAddonsSchema.purchaseOrderId,
+          expiredOrders.map((po) => po.id),
+        ),
+      )
+      .returning();
   }
 
   return expiredOrders;
