@@ -132,20 +132,6 @@ builder.mutationField("claimUserTicketAddons", (t) =>
           for (const [userTicketId, claims] of Object.entries(claimsByTicket)) {
             const userTicket = userTickets.find((ut) => ut.id === userTicketId);
 
-            logger.debug("User ticket:", JSON.stringify(userTicket, null, 2));
-
-            logger.debug(
-              "Raw aggregatedAddons:",
-              JSON.stringify(
-                aggregatedAddons.map((a) => ({
-                  addonId: a.id,
-                  ticketId: a.ticketId,
-                })),
-                null,
-                2,
-              ),
-            );
-
             const validAddons = aggregatedAddons.filter(
               (ta) => ta.ticketId === userTicket?.ticketTemplate.id,
             );
