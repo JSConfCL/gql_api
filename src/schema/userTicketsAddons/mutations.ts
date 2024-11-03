@@ -1,9 +1,11 @@
+import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
 import {
   userTicketAddonsSchema,
   selectPurchaseOrdersSchema,
+  purchaseOrdersSchema,
 } from "~/datasources/db/schema";
 import { applicationError, ServiceErrors } from "~/errors";
 import { handlePaymentLinkGeneration } from "~/schema/purchaseOrder/actions";
@@ -208,9 +210,27 @@ builder.mutationField("claimUserTicketAddons", (t) =>
             });
           }
 
+          const [updatedPurchaseOrder] = await trx
+            .update(purchaseOrdersSchema)
+            .set({
+              purchaseOrderPaymentStatus: "not_required",
+              status: "complete",
+              totalPrice: "0",
+            })
+            .where(eq(purchaseOrdersSchema.id, createdPurchaseOrder.id))
+            .returning();
+
+          if (!updatedPurchaseOrder) {
+            throw applicationError(
+              "Failed to update purchase order",
+              ServiceErrors.FAILED_PRECONDITION,
+              logger,
+            );
+          }
+
           return {
             purchaseOrder:
-              selectPurchaseOrdersSchema.parse(createdPurchaseOrder),
+              selectPurchaseOrdersSchema.parse(updatedPurchaseOrder),
             ticketsIds: uniqueUserTicketIds,
           };
         } catch (e: unknown) {
