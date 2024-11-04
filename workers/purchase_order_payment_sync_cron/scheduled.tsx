@@ -64,16 +64,27 @@ export const scheduled: ExportedHandlerScheduledHandler<ENV> = async (
       `Syncing purchase order payment status for ${purchaseOrder.id}`,
     );
 
-    await syncPurchaseOrderPaymentStatus({
-      purchaseOrderId: purchaseOrder.id,
-      DB,
-      GET_STRIPE_CLIENT,
-      GET_MERCADOPAGO_CLIENT,
-      logger,
-      transactionalEmailService: env.RPC_SERVICE_EMAIL,
-    });
+    try {
+      await syncPurchaseOrderPaymentStatus({
+        purchaseOrderId: purchaseOrder.id,
+        DB,
+        GET_STRIPE_CLIENT,
+        GET_MERCADOPAGO_CLIENT,
+        logger,
+        transactionalEmailService: env.RPC_SERVICE_EMAIL,
+      });
 
-    logger.info(`Synced purchase order payment status for ${purchaseOrder.id}`);
+      logger.info(
+        `Synced purchase order payment status for ${purchaseOrder.id}`,
+      );
+    } catch (error) {
+      logger.error(
+        `Error syncing purchase order payment status for ${purchaseOrder.id}`,
+        {
+          error,
+        },
+      );
+    }
   }
 
   const clearedOders = await clearExpiredPurchaseOrders({ DB });
