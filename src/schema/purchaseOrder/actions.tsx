@@ -31,6 +31,7 @@ import { Logger } from "~/logging";
 import { Context } from "~/types";
 
 import { ensureProductsAreCreated } from "../ticket/helpers";
+import { sendStartTransferTicketSuccesfulEmails } from "../userTicketsTransfers/actions";
 import { getExpirationDateForTicketTransfer } from "../userTicketsTransfers/helpers";
 
 const fetchPurchaseOrderInformation = async (
@@ -1076,21 +1077,25 @@ export const syncPurchaseOrderPaymentStatus = async ({
               const expirationDate = getExpirationDateForTicketTransfer();
 
               for (const transferAttempt of userTicket.transferAttempts) {
-                await transactionalEmailService.sendTransferTicketConfirmations(
-                  {
+                await sendStartTransferTicketSuccesfulEmails({
+                  userTicketTransfer: {
+                    id: transferAttempt.id,
+                    recipientUser: {
+                      name: transferAttempt.recipientUser.name ?? "",
+                      email: transferAttempt.recipientUser.email,
+                      username: transferAttempt.recipientUser.username,
+                    },
+                    senderUser: {
+                      name: purchaseOrder.user.name,
+                      email: purchaseOrder.user.email,
+                      username: purchaseOrder.user.username,
+                    },
                     transferMessage: transferAttempt.transferMessage,
-                    recipientEmail: transferAttempt.recipientUser.email,
-                    recipientName:
-                      transferAttempt.recipientUser.name ??
-                      transferAttempt.recipientUser.username,
-                    senderName:
-                      purchaseOrder.user.name ?? purchaseOrder.user.username,
-                    ticketTags: userTicket.ticketTemplate.tags,
-                    transferId: transferAttempt.id,
-                    expirationDate: expirationDate,
-                    senderEmail: purchaseOrder.user.email,
+                    userTicket: userTicket,
                   },
-                );
+                  logger,
+                  transactionalEmailService,
+                });
               }
 
               const updateTransferValues: Partial<InsertUserTicketTransferSchema> =

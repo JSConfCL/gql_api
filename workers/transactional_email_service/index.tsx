@@ -1,19 +1,24 @@
 import { render } from "@react-email/components";
 import { WorkerEntrypoint } from "cloudflare:workers";
+import { add } from "date-fns";
 import * as React from "react";
 import { Resend } from "resend";
 
 import { JSConfCLTicketConfirmation } from "emails/templates/tickets/purchase-order-successful/jsconfcl";
 import { TicketTransferAcceptedByReceiver9punto5 } from "emails/templates/tickets/ticket-transfer-accepted-by-receiver/9punto5";
+import { JSConfCLAcceptedTicketTransfer } from "emails/templates/tickets/ticket-transfer-accepted-by-receiver/jsconfcl";
 import { TicketTransferReceived9punto5 } from "emails/templates/tickets/ticket-transfer-received/9punto5";
+import { JSConfCLTicketReceivedTransfer } from "emails/templates/tickets/ticket-transfer-received/jsconfcl";
 import { TicketTransferSent9punto5 } from "emails/templates/tickets/ticket-transfer-sent/9punto5";
+import { JSConfCLTicketStartTransfer } from "emails/templates/tickets/ticket-transfer-sent/jsconfcl";
 import {
   ResendEmailArgs,
   sendTransactionalHTMLEmail,
 } from "~/datasources/email/sendTransactionalHTMLEmail";
 import { createLogger } from "~/logging";
-import { ENV } from "~workers/transactional_email_service/types";
+import { ENV, CommunityInfo, EventInfo, UserTicketTransferInfo } from "~workers/transactional_email_service/types";
 
+import { defaultInfo } from "./helpers";
 import { EventInvitation } from "../../emails/templates/tickets/event-invitation";
 import { PurchaseOrderSuccessful9punto5 } from "../../emails/templates/tickets/purchase-order-successful/9punto5";
 import { PurchaseOrderSuccessful } from "../../emails/templates/tickets/purchase-order-successful/communityos";
@@ -21,6 +26,7 @@ import { TicketConfirmation } from "../../emails/templates/tickets/ticket-confir
 import { WaitlistAccepted } from "../../emails/templates/tickets/waitlist-accepted";
 import { WaitlistRejected } from "../../emails/templates/tickets/waitlist-rejected";
 import { YouAreOnTheWaitlist } from "../../emails/templates/tickets/you-are-on-the-waitlist-confirmation";
+
 
 type ReceiverType = {
   name?: string;
@@ -91,19 +97,8 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
         };
       }>;
     };
-    communityInfo: {
-      name: string;
-      slug: string | null;
-      logoImageSanityRef: string | null;
-    };
-    eventInfo: {
-      name: string;
-      addressDescriptiveName: string | null;
-      address: string | null;
-      startDateTime: Date;
-      endDateTime: Date | null;
-      eventLogoCloudflareImageURL?: string;
-    };
+    communityInfo: CommunityInfo;
+    eventInfo: EventInfo;
   }) {
     this.logger.info(
       `About to send purchase order email for ID: ${purchaseOrder.id}`,
@@ -144,11 +139,8 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
             email: purchaseOrder.user.email,
           },
         ],
-        from: {
-          name: "9punto5",
-          email: "tickets@updates.9punto5.cl",
-        },
-        replyTo: "tickets@9punto5.cl",
+        from: defaultInfo.nuevopuntocinco.from,
+        replyTo: defaultInfo.nuevopuntocinco.replyTo,
         subject: "Tus tickets están listos 🎉 | 9punto5",
       });
     } else if (communityInfo.slug?.toLowerCase() === "jscl") {
@@ -168,10 +160,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
             email: purchaseOrder.user.email,
           },
         ],
-        from: {
-          name: "JSConf Chile",
-          email: "contacto@jsconf.cl",
-        },
+        from: defaultInfo.jscl.from,
         subject: "Tu ticket para JSConf Chile 2024",
       });
     } else {
@@ -201,10 +190,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
             email: purchaseOrder.user.email,
           },
         ],
-        from: {
-          name: "CommunityOS",
-          email: "contacto@communityos.io",
-        },
+        from: defaultInfo.community.from,
         subject: "Tus tickets están listos 🎉",
       });
     }
@@ -244,10 +230,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
           email,
         },
       ],
-      from: {
-        name: "CommunityOS",
-        email: "contacto@communityos.io",
-      },
+      from: defaultInfo.community.from,
       subject: `Estas en la Lista de espera para ${ticketName}`,
     });
 
@@ -285,10 +268,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
           email,
         },
       ],
-      from: {
-        name: "CommunityOS",
-        email: "contacto@communityos.io",
-      },
+      from: defaultInfo.community.from,
       subject: `¡Felicidades! Tienes un lugar en ${eventName}`,
     });
   }
@@ -323,10 +303,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
           email,
         },
       ],
-      from: {
-        name: "CommunityOS",
-        email: "contacto@communityos.io",
-      },
+      from: defaultInfo.community.from,
       subject: `Gracias por tu interés en ${eventName}`,
     });
   }
@@ -364,10 +341,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
               email: receiver.email,
             },
           ],
-          from: {
-            name: "CommunityOS",
-            email: "contacto@communityos.io",
-          },
+          from: defaultInfo.community.from,
         }) satisfies ResendEmailArgs,
     );
 
@@ -410,10 +384,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
               email: receiver.email,
             },
           ],
-          from: {
-            name: "CommunityOS",
-            email: "contacto@communityos.io",
-          },
+          from: defaultInfo.community.from,
         }) satisfies ResendEmailArgs,
     );
 
@@ -421,118 +392,178 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
   }
 
   async sendTransferTicketConfirmations({
-    transferId,
-    recipientName,
-    recipientEmail,
-    senderName,
-    senderEmail,
-    ticketTags,
-    transferMessage,
-    expirationDate,
+    userTicketTransfer,
+    communityInfo,
+    eventInfo,
   }: {
-    transferId: string;
-    recipientName: string;
-    recipientEmail: string;
-    senderName: string;
-    senderEmail: string;
-    ticketTags: string[];
-    transferMessage: string | null;
-    expirationDate: Date;
+    userTicketTransfer: UserTicketTransferInfo;
+    communityInfo: CommunityInfo;
+    eventInfo: EventInfo;
   }) {
     this.logger.info(`Sending transfer ticket notifications`, {
-      transferId,
-      recipientEmail,
-      senderEmail,
+      userTicketTransferId: userTicketTransfer.id,
+      recipientEmail: userTicketTransfer.recipientUser.email,
+      senderEmail: userTicketTransfer.senderUser.email
     });
+    const expirationDate = add(new Date(), { weeks: 1 });
 
-    const ticketType = get9unto5TicketType(ticketTags);
+    if (communityInfo.name === "9punto5") {
+      const userTicket = userTicketTransfer.userTicket;
+      const ticketTemplate = userTicket.ticketTemplate;
 
-    // Send email to transfer recipient
-    await sendTransactionalHTMLEmail(this.resend, this.logger, {
-      htmlContent: render(
-        <TicketTransferReceived9punto5
-          ticketType={ticketType}
-          recipientName={recipientName}
-          senderName={senderName}
-          transferMessage={transferMessage}
-          transferId={transferId}
-          expirationDate={expirationDate}
-        />,
-      ),
-      to: [{ name: recipientName, email: recipientEmail }],
-      from: { name: "9punto5", email: "tickets@updates.9punto5.cl" },
-      replyTo: "tickets@9punto5.cl",
-      subject: `Te han enviado una entrada para ${
-        ticketType === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"
-      } 9.5`,
-    });
+      const ticketType = get9unto5TicketType(ticketTemplate.tags);
 
-    // Send confirmation email to transfer sender
-    await sendTransactionalHTMLEmail(this.resend, this.logger, {
-      htmlContent: render(
-        <TicketTransferSent9punto5
-          ticketType={ticketType}
-          recipientName={recipientName}
-          senderName={senderName}
-          transferMessage={transferMessage}
-          recipientEmail={recipientEmail}
-          expirationDate={expirationDate}
-        />,
-      ),
-      to: [{ name: senderName, email: senderEmail }],
-      from: { name: "9punto5", email: "tickets@updates.9punto5.cl" },
-      subject: `La entrada ${
-        ticketType === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"
-      } 9.5 para ${recipientName} ha sido enviada`,
-    });
+      // Send confirmation email to transfer sender
+      await sendTransactionalHTMLEmail(this.resend, this.logger, {
+        htmlContent: render(
+          <TicketTransferReceived9punto5
+            transferId={userTicketTransfer.id}
+            recipientName={userTicketTransfer.recipientUser.name ?? ""}
+            senderName={userTicketTransfer.senderUser.name ?? ""}
+            ticketType={ticketType}
+            transferMessage={userTicketTransfer.transferMessage ?? ""}
+            expirationDate={expirationDate}
+          />,
+        ),
+        to: [{ name: userTicketTransfer.senderUser.name ?? "", email: userTicketTransfer.senderUser.email ?? "" }],
+        from: defaultInfo.nuevopuntocinco.from,
+        subject: `La entrada ${
+          ticketType === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"
+        } 9.5 para ${userTicketTransfer.recipientUser.name ?? ""} ha sido enviada`,
+      });
+      
+      // Send confirmation email to transfer sender
+      await sendTransactionalHTMLEmail(this.resend, this.logger, {
+        htmlContent: render(
+          <TicketTransferSent9punto5
+            ticketType={ticketType}
+            recipientName={userTicketTransfer.recipientUser.name ?? ""}
+            senderName={userTicketTransfer.senderUser.name ?? ""}
+            transferMessage={userTicketTransfer.transferMessage ?? ""}
+            recipientEmail={userTicketTransfer.recipientUser.email}
+            expirationDate={expirationDate}
+          />,
+        ),
+        to: [{ name: userTicketTransfer.senderUser.name ?? "", email: userTicketTransfer.senderUser.email ?? "" }],
+        from: defaultInfo.nuevopuntocinco.from,
+        subject: `La entrada ${
+          ticketType === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"
+        } 9.5 para ${userTicketTransfer.recipientUser.name ?? ""} ha sido enviada`,
+      });
 
-    this.logger.info(`Transfer ticket notifications sent successfully`, {
-      transferId,
-    });
+      this.logger.info(`Transfer ticket notifications sent successfully`, {
+        transferId: userTicketTransfer.id
+      });
+    } else if (communityInfo.slug?.toLowerCase() === "jscl") {
+      // Send email to transfer recipient
+      await sendTransactionalHTMLEmail(this.resend, this.logger, {
+        htmlContent: render(
+          <JSConfCLTicketReceivedTransfer
+            eventName={eventInfo.name}
+            eventLogoCloudflareImageURL={eventInfo.eventLogoCloudflareImageURL}
+            recipientName={userTicketTransfer.recipientUser.name ?? ""}
+            senderName={userTicketTransfer.senderUser.name ?? ""}
+            transferMessage={userTicketTransfer.transferMessage ?? ""}
+            transferId={userTicketTransfer.id}
+            expirationDate={expirationDate}
+          />,
+        ),
+        to: [{ name: userTicketTransfer.recipientUser.name ?? userTicketTransfer.recipientUser.username ?? "", email: userTicketTransfer.recipientUser.email }],
+        from: defaultInfo.nuevopuntocinco.from,
+        replyTo: defaultInfo.nuevopuntocinco.replyTo,
+        subject: `Te han enviado una entrada para ${eventInfo.name}`,
+      });
+
+      // Send confirmation email to transfer sender
+      await sendTransactionalHTMLEmail(this.resend, this.logger, {
+        htmlContent: render(
+          <JSConfCLTicketStartTransfer
+            eventName={eventInfo.name}
+            eventLogoCloudflareImageURL={eventInfo.eventLogoCloudflareImageURL}
+            recipientName={userTicketTransfer.recipientUser.name ?? ""}
+            senderName={userTicketTransfer.senderUser.name ?? ""}
+            transferMessage={userTicketTransfer.transferMessage ?? ""}
+            recipientEmail={userTicketTransfer.recipientUser.email}
+            expirationDate={expirationDate}
+          />,
+        ),
+        to: [{ name: userTicketTransfer.senderUser.name ?? "", email: userTicketTransfer.senderUser.email ?? "" }],
+        from: defaultInfo.nuevopuntocinco.from,
+        subject: `La entrada a ${eventInfo.name} para ${userTicketTransfer.recipientUser.name ?? ""} ha sido enviada`,
+      });
+
+      this.logger.info(`Transfer ticket notifications sent successfully`, {
+        transferId: userTicketTransfer.id,
+      });
+    } else {
+      throw new Error(`No community/event handler found`);
+    }
   }
 
   async sendTransferAcceptanceNotificationToSender({
-    recipientName,
-    recipientEmail,
-    senderName,
-    ticketTags,
+    userTicketTransfer,
+    communityInfo,
+    eventInfo,
   }: {
-    recipientName: string;
-    recipientEmail: string;
-    senderName: string;
-    ticketTags: string[];
+    userTicketTransfer: UserTicketTransferInfo;
+    communityInfo: CommunityInfo;
+    eventInfo: EventInfo;
   }) {
     this.logger.info(`About to send TicketTransferAcceptedByReceiver`, {
-      recipientName,
-      recipientEmail,
-      senderName,
-      ticketTags,
+      userTicketTransferId: userTicketTransfer.id,
+      recipientName: userTicketTransfer.recipientUser.name,
+      recipientEmail: userTicketTransfer.recipientUser.email,
+      event: eventInfo.name,
     });
 
-    const ticketType = get9unto5TicketType(ticketTags);
+    if (communityInfo.name === "9punto5") {
+      const userTicket = userTicketTransfer.userTicket;
+      const ticketTemplate = userTicket.ticketTemplate;
 
-    await sendTransactionalHTMLEmail(this.resend, this.logger, {
-      htmlContent: render(
-        <TicketTransferAcceptedByReceiver9punto5
-          ticketType={ticketType}
-          recipientName={recipientName}
-          senderName={senderName}
-          recipientEmail={recipientEmail}
-        />,
-      ),
-      to: [
-        {
-          name: recipientName,
-          email: recipientEmail,
-        },
-      ],
-      from: {
-        name: "9punto5",
-        email: "tickets@updates.9punto5.cl",
-      },
-      subject: `${recipientName} aceptó tu entrada ${
-        ticketType === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"
-      } 9.5`,
-    });
+      const ticketType = get9unto5TicketType(ticketTemplate.tags);
+
+      await sendTransactionalHTMLEmail(this.resend, this.logger, {
+        htmlContent: render(
+          <TicketTransferAcceptedByReceiver9punto5
+            ticketType={ticketType}
+            recipientName={userTicketTransfer.recipientUser.name ?? ""}
+            recipientEmail={userTicketTransfer.recipientUser.email}
+            senderName={userTicketTransfer.senderUser.name ?? ""}
+          />,
+        ),
+        to: [
+          {
+            name: userTicketTransfer.senderUser.name ?? userTicketTransfer.senderUser.username ?? "",
+            email: userTicketTransfer.senderUser.email,
+          },
+        ],
+        from: defaultInfo.nuevopuntocinco.from,
+        subject: `${userTicketTransfer.recipientUser.name ?? ""} aceptó tu entrada ${
+          ticketType === "CONFERENCE" ? "CONFERENCIA" : "EXPERIENCIA"
+        } 9.5`,
+      });
+    } else if (communityInfo.slug?.toLowerCase() === "jscl") {
+      await sendTransactionalHTMLEmail(this.resend, this.logger, {
+        htmlContent: render(
+          <JSConfCLAcceptedTicketTransfer
+            eventName={eventInfo.name}
+            eventLogoCloudflareImageURL={eventInfo.eventLogoCloudflareImageURL}
+            recipientName={userTicketTransfer.recipientUser.name ?? ""}
+            recipientEmail={userTicketTransfer.recipientUser.email}
+            senderName={userTicketTransfer.senderUser.name ?? ""}
+          />,
+        ),
+        to: [
+          {
+            name: userTicketTransfer.senderUser.name ?? userTicketTransfer.senderUser.username ?? "",
+            email: userTicketTransfer.senderUser.email,
+          },
+        ],
+        from: defaultInfo.jscl.from,
+        subject: `${userTicketTransfer.recipientUser.name ?? ""} aceptó tu entrada para ${eventInfo.name}`
+      });
+    } else {
+      throw new Error(`No community/event handler found`);
+    }
   }
 }
