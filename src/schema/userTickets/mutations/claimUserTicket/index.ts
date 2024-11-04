@@ -1,4 +1,4 @@
-import { and, count, eq, inArray, sum } from "drizzle-orm";
+import { and, eq, inArray, sum } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 import { builder } from "~/builder";
@@ -518,54 +518,32 @@ async function verifyFinalUserTicketCounts(
   USER: NonNullable<Context["USER"]>,
   logger: Logger,
 ) {
-  // Global counts for existing tickets
-  const globalTicketCountsPromise = DB.select({
-    ticketTemplateId: userTicketsSchema.ticketTemplateId,
-    count: count(userTicketsSchema.id),
-  })
-    .from(userTicketsSchema)
-    .where(
-      and(
-        inArray(
-          userTicketsSchema.ticketTemplateId,
-          ticketInfo.tickets.map((t) => t.id),
-        ),
-        inArray(userTicketsSchema.approvalStatus, [
-          "approved",
-          "pending",
-          "not_required",
-          "gifted",
-          "gift_accepted",
-          "transfer_pending",
-          "transfer_accepted",
-        ]),
-      ),
-    )
-    .groupBy(userTicketsSchema.ticketTemplateId);
+  const validApprovalStatuses: UserTicketApprovalStatus[] = [
+    "approved",
+    "pending",
+    "not_required",
+    "gifted",
+    "gift_accepted",
+    "transfer_pending",
+    "transfer_accepted",
+  ];
 
-  // Bulk query for existing ticket counts for the current user
-  const userOwnedTicketCountsPromise = DB.query.userTicketsSchema
+  // Bulk query for existing ticket counts
+  const ticketCountsPromise = DB.query.userTicketsSchema
     .findMany({
       where: (t, ops) => {
         return ops.and(
-          ops.eq(userTicketsSchema.userId, USER.id),
           ops.inArray(
             userTicketsSchema.ticketTemplateId,
             ticketInfo.tickets.map((t) => t.id),
           ),
-          ops.inArray(userTicketsSchema.approvalStatus, [
-            "approved",
-            "pending",
-            "not_required",
-            "gifted",
-            "gift_accepted",
-            "transfer_accepted",
-          ]),
+          ops.inArray(userTicketsSchema.approvalStatus, validApprovalStatuses),
         );
       },
       columns: {
         ticketTemplateId: true,
         approvalStatus: true,
+        userId: true,
       },
       with: {
         transferAttempts: {
@@ -575,36 +553,44 @@ async function verifyFinalUserTicketCounts(
         },
       },
     })
-    .then((tickets) => {
-      return tickets.reduce(
+    .then((usersTickets) => {
+      return usersTickets.reduce(
         (acc, ticket) => {
           if (!acc[ticket.ticketTemplateId]) {
-            acc[ticket.ticketTemplateId] = 0;
+            acc[ticket.ticketTemplateId] = {
+              globalCount: 0,
+              userCount: 0,
+            };
           }
 
-          // If:
-          // - the ticket's approval status is pending|not_required
-          // - and has a transfer attempt
-          // we skip it because the current user will not
-          // own the ticket but the recipient will
-          // (the transferred ticket is being counted in the global count)
-          //
-          // TODO:
-          // handle the case where the transfer is rejected
-          // or the current user cancels the transfer
-          if (
-            (ticket.approvalStatus === "pending" ||
-              ticket.approvalStatus === "not_required") &&
-            ticket.transferAttempts.length > 0
-          ) {
-            return acc;
-          }
+          acc[ticket.ticketTemplateId].globalCount++;
 
-          acc[ticket.ticketTemplateId]++;
+          if (ticket.userId === USER.id) {
+            // If:
+            // - the ticket is transfer_pending
+            // OR:
+            // - the ticket's approval status is pending|not_required
+            // - and has a transfer attempt
+            // we skip it because the current user will not
+            // own the ticket but the recipient will
+            //
+            // TODO:
+            // handle the case where the transfer is rejected
+            // or the current user cancels the transfer
+            const skipTicket =
+              ticket.approvalStatus === "transfer_pending" ||
+              ((ticket.approvalStatus === "pending" ||
+                ticket.approvalStatus === "not_required") &&
+                ticket.transferAttempts.length > 0);
+
+            if (!skipTicket) {
+              acc[ticket.ticketTemplateId].userCount++;
+            }
+          }
 
           return acc;
         },
-        {} as Record<string, number>,
+        {} as Record<string, { globalCount: number; userCount: number }>,
       );
     });
 
@@ -648,29 +634,15 @@ async function verifyFinalUserTicketCounts(
       userTicketsSchema.ticketTemplateId,
     );
 
-  const [
-    globalTicketCounts,
-    userTicketCounts,
-    globalAddonClaimCounts,
-    userAddonClaimCounts,
-  ] = await Promise.all([
-    globalTicketCountsPromise,
-    userOwnedTicketCountsPromise,
-    globalAddonClaimCountsPromise,
-    userAddonClaimCountsPromise,
-  ]);
-
-  // combine each ticket template global and user counts
-  const ticketCounts = globalTicketCounts.map((globalCount) => ({
-    ticketTemplateId: globalCount.ticketTemplateId,
-    globalCount: globalCount.count,
-    userCount: userTicketCounts[globalCount.ticketTemplateId] ?? 0,
-  }));
+  const [ticketCounts, globalAddonClaimCounts, userAddonClaimCounts] =
+    await Promise.all([
+      ticketCountsPromise,
+      globalAddonClaimCountsPromise,
+      userAddonClaimCountsPromise,
+    ]);
 
   for (const ticketTemplate of ticketInfo.tickets) {
-    const countInfo = ticketCounts.find(
-      (count) => count.ticketTemplateId === ticketTemplate.id,
-    );
+    const countInfo = ticketCounts[ticketTemplate.id];
     const globalCount = countInfo?.globalCount ?? 0;
     const userCount = countInfo?.userCount ?? 0;
 
