@@ -42,6 +42,7 @@ import { teamsFetcher } from "~/schema/teams/teamsFetcher";
 import { TeamRef } from "~/schema/teams/types";
 import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
 import { UserLoadable } from "~/schema/user/types";
+import { ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES } from "~/schema/userTickets/constants";
 import {
   TicketApprovalStatus,
   TicketPaymentStatus,
@@ -435,7 +436,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
             eventIds: [root.id],
             userIds: [USER.id],
             paymentStatus: paymentStatus ? [paymentStatus] : undefined,
-            approvalStatus: ["approved", "not_required"],
+            approvalStatus: ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES,
             redemptionStatus: redemptionStatus ? [redemptionStatus] : undefined,
           },
         });
