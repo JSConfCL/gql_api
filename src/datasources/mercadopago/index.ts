@@ -41,7 +41,7 @@ const getPaymentStatusFromMercadoPago = (
   throw new Error(`Unknown payment status: ${theStatus}`);
 };
 
-const getPurchasOrderStatusFromMercadoPago = (
+const getPurchaseOrderStatusFromMercadoPago = (
   mercadoPagoStatus: PaymentResponse["status"],
 ): (typeof purchaseOrderStatusEnum)[number] => {
   const theStatus = mercadoPagoStatus?.toLowerCase();
@@ -178,9 +178,11 @@ export const getMercadoPagoPreference = async ({
 export const getMercadoPagoPayment = async ({
   purchaseOrderId,
   getMercadoPagoClient,
+  logger,
 }: {
   purchaseOrderId: string;
   getMercadoPagoClient: MercadoPagoFetch;
+  logger: Logger;
 }) => {
   const result = await getMercadoPagoClient<{ results: PaymentResponse[] }>({
     url: `/v1/payments/search?external_reference=${purchaseOrderId}`,
@@ -191,8 +193,18 @@ export const getMercadoPagoPayment = async ({
       ? result.results[result.results.length - 1]
       : null;
 
+  if (lastPaymentHistory) {
+    logger.info(`Payment found for PO with ID: ${purchaseOrderId}`, {
+      status: lastPaymentHistory.status,
+    });
+  } else {
+    logger.info(`No payment history found for PO with ID: ${purchaseOrderId}`, {
+      response: result,
+    });
+  }
+
   return {
     paymentStatus: getPaymentStatusFromMercadoPago(lastPaymentHistory?.status),
-    status: getPurchasOrderStatusFromMercadoPago(lastPaymentHistory?.status),
+    status: getPurchaseOrderStatusFromMercadoPago(lastPaymentHistory?.status),
   };
 };

@@ -5,6 +5,7 @@ import {
   PurchaseOrderStatus,
 } from "~/datasources/db/schema";
 import { someMinutesIntoTheFuture } from "~/datasources/helpers";
+import { Logger } from "~/logging";
 
 const getPaymentStatusFromStripeSession = (
   stripeStatus: Stripe.Response<Stripe.Checkout.Session>["payment_status"],
@@ -225,16 +226,25 @@ export const createStripePayment = async ({
 export const getStripePaymentStatus = async ({
   paymentId,
   getStripeClient,
+  logger,
 }: {
   paymentId: string;
   getStripeClient: () => Stripe;
+  logger: Logger;
 }) => {
   const stripeClient = getStripeClient();
   const payment = await stripeClient.checkout.sessions.retrieve(paymentId);
 
   if (!payment) {
+    logger.error(`Payment not found for id: ${paymentId}`);
+
     throw new Error(`Payment not found for id: ${paymentId}`);
   }
+
+  logger.info(`Payment found for id: ${paymentId}`, {
+    payment_status: payment.payment_status,
+    status: payment.status,
+  });
 
   return {
     paymentStatus: getPaymentStatusFromStripeSession(payment.payment_status),
