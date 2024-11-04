@@ -1426,7 +1426,11 @@ describe("Claim a user ticket", () => {
           },
         });
 
-      const [user1, user2] = await Promise.all([insertUser(), insertUser()]);
+      const [user1, user2, user3] = await Promise.all([
+        insertUser(),
+        insertUser(),
+        insertUser(),
+      ]);
 
       await Promise.all([
         insertUserToCommunity({
@@ -1437,6 +1441,11 @@ describe("Claim a user ticket", () => {
         insertUserToCommunity({
           communityId: community.id,
           userId: user2.id,
+          role: "member",
+        }),
+        insertUserToCommunity({
+          communityId: community.id,
+          userId: user3.id,
           role: "member",
         }),
       ]);
@@ -1495,7 +1504,7 @@ describe("Claim a user ticket", () => {
         "PurchaseOrder",
       );
 
-      // Third purchase should fail as only 2 tickets remain and user1 requests 3
+      // Third purchase should fail as only 2 tickets remain
       const response3 = await executeGraphqlOperationAsUser<
         ClaimUserTicketMutation,
         ClaimUserTicketMutationVariables
@@ -1514,12 +1523,48 @@ describe("Claim a user ticket", () => {
             },
           },
         },
-        user1,
+        user3,
       );
 
       assert.equal(
         response3.data?.claimUserTicket?.__typename,
         "RedeemUserTicketError",
+      );
+
+      if (
+        response3.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
+      ) {
+        assert.equal(
+          response3.data?.claimUserTicket?.errorMessage,
+          `We have gone over the limit of tickets for ticket template with id ${ticketTemplate.id}`,
+        );
+      }
+
+      // should succeed as 2 tickets remain
+      const response4 = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 2,
+                  itemsDetails: [],
+                },
+              ],
+            },
+          },
+        },
+        user3,
+      );
+
+      assert.equal(
+        response4.data?.claimUserTicket?.__typename,
+        "PurchaseOrder",
       );
     });
 
@@ -1676,6 +1721,23 @@ describe("Claim a user ticket", () => {
         );
 
         assert.equal(transferredTickets.length, 2);
+
+        // verify the tickets transferred to the correct users
+        const recipient1Ticket = transferredTickets.find(
+          (ticket) =>
+            ticket.transferAttempts[0].recipient.email === recipient1.email,
+        );
+
+        const recipient2Ticket = transferredTickets.find(
+          (ticket) =>
+            ticket.transferAttempts[0].recipient.email === recipient2.email,
+        );
+
+        assert.exists(recipient1Ticket);
+
+        assert.exists(recipient2Ticket);
+
+        assert.notEqual(recipient1Ticket?.id, recipient2Ticket?.id);
       }
     });
 
