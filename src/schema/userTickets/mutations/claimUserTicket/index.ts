@@ -518,26 +518,10 @@ async function verifyFinalUserTicketCounts(
   USER: NonNullable<Context["USER"]>,
   logger: Logger,
 ) {
-  const validApprovalStatuses: UserTicketApprovalStatus[] = [
-    "approved",
-    "pending",
-    "not_required",
-    "gifted",
-    "gift_accepted",
-    "transfer_pending",
-    "transfer_accepted",
-  ];
-
-  // Bulk query for existing ticket counts
-  const ticketCountsPromise = DB.select({
+  // Global counts for existing tickets
+  const globalTicketCountsPromise = DB.select({
     ticketTemplateId: userTicketsSchema.ticketTemplateId,
-    globalCount: count(userTicketsSchema.id),
-    userCount: count(
-      and(
-        eq(userTicketsSchema.userId, USER.id),
-        inArray(userTicketsSchema.approvalStatus, validApprovalStatuses),
-      ),
-    ),
+    count: count(userTicketsSchema.id),
   })
     .from(userTicketsSchema)
     .where(
@@ -546,10 +530,83 @@ async function verifyFinalUserTicketCounts(
           userTicketsSchema.ticketTemplateId,
           ticketInfo.tickets.map((t) => t.id),
         ),
-        inArray(userTicketsSchema.approvalStatus, validApprovalStatuses),
+        inArray(userTicketsSchema.approvalStatus, [
+          "approved",
+          "pending",
+          "not_required",
+          "gifted",
+          "gift_accepted",
+          "transfer_pending",
+          "transfer_accepted",
+        ]),
       ),
     )
     .groupBy(userTicketsSchema.ticketTemplateId);
+
+  // Bulk query for existing ticket counts for the current user
+  const userOwnedTicketCountsPromise = DB.query.userTicketsSchema
+    .findMany({
+      where: (t, ops) => {
+        return ops.and(
+          ops.eq(userTicketsSchema.userId, USER.id),
+          ops.inArray(
+            userTicketsSchema.ticketTemplateId,
+            ticketInfo.tickets.map((t) => t.id),
+          ),
+          ops.inArray(userTicketsSchema.approvalStatus, [
+            "approved",
+            "pending",
+            "not_required",
+            "gifted",
+            "gift_accepted",
+            "transfer_accepted",
+          ]),
+        );
+      },
+      columns: {
+        ticketTemplateId: true,
+        approvalStatus: true,
+      },
+      with: {
+        transferAttempts: {
+          columns: {
+            id: true,
+          },
+        },
+      },
+    })
+    .then((tickets) => {
+      return tickets.reduce(
+        (acc, ticket) => {
+          if (!acc[ticket.ticketTemplateId]) {
+            acc[ticket.ticketTemplateId] = 0;
+          }
+
+          // If:
+          // - the ticket's approval status is pending|not_required
+          // - and has a transfer attempt
+          // we skip it because the current user will not
+          // own the ticket but the recipient will
+          // (the transferred ticket is being counted in the global count)
+          //
+          // TODO:
+          // handle the case where the transfer is rejected
+          // or the current user cancels the transfer
+          if (
+            (ticket.approvalStatus === "pending" ||
+              ticket.approvalStatus === "not_required") &&
+            ticket.transferAttempts.length > 0
+          ) {
+            return acc;
+          }
+
+          acc[ticket.ticketTemplateId]++;
+
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
+    });
 
   // Bulk query for existing addon claims counts
   const globalAddonClaimCountsPromise = DB.select({
@@ -591,12 +648,24 @@ async function verifyFinalUserTicketCounts(
       userTicketsSchema.ticketTemplateId,
     );
 
-  const [ticketCounts, globalAddonClaimCounts, userAddonClaimCounts] =
-    await Promise.all([
-      ticketCountsPromise,
-      globalAddonClaimCountsPromise,
-      userAddonClaimCountsPromise,
-    ]);
+  const [
+    globalTicketCounts,
+    userTicketCounts,
+    globalAddonClaimCounts,
+    userAddonClaimCounts,
+  ] = await Promise.all([
+    globalTicketCountsPromise,
+    userOwnedTicketCountsPromise,
+    globalAddonClaimCountsPromise,
+    userAddonClaimCountsPromise,
+  ]);
+
+  // combine each ticket template global and user counts
+  const ticketCounts = globalTicketCounts.map((globalCount) => ({
+    ticketTemplateId: globalCount.ticketTemplateId,
+    globalCount: globalCount.count,
+    userCount: userTicketCounts[globalCount.ticketTemplateId] ?? 0,
+  }));
 
   for (const ticketTemplate of ticketInfo.tickets) {
     const countInfo = ticketCounts.find(

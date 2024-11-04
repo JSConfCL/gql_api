@@ -425,6 +425,99 @@ describe("Claim a user ticket", () => {
         assert.equal(response.data.claimUserTicket.tickets.length, 5);
       }
     });
+
+    it("Should not count transferred tickets towards maxTicketsPerUser limit", async () => {
+      const maxTicketsPerUser = 2;
+      const { community, user, ticketTemplate } =
+        await createCommunityEventUserAndTicketTemplate({
+          ticketTemplate: {
+            maxTicketsPerUser,
+            quantity: 200,
+          },
+        });
+
+      const transferRecipient = await insertUser();
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+
+      // First claim with transfer
+      const response1 = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 1,
+                  itemsDetails: [
+                    {
+                      transferInfo: {
+                        name: "John Doe",
+                        email: transferRecipient.email,
+                        message: "Enjoy!",
+                      },
+                      addons: [],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response1.errors, undefined);
+
+      assert.equal(
+        response1.data?.claimUserTicket?.__typename,
+        "PurchaseOrder",
+      );
+
+      // Second claim for maxTicketsPerUser tickets - should succeed as transferred tickets don't count
+      const response2 = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: maxTicketsPerUser,
+                  itemsDetails: [],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(response2.errors, undefined);
+
+      assert.equal(
+        response2.data?.claimUserTicket?.__typename,
+        "PurchaseOrder",
+      );
+
+      if (response2.data?.claimUserTicket?.__typename === "PurchaseOrder") {
+        assert.equal(
+          response2.data.claimUserTicket.tickets.length,
+          maxTicketsPerUser,
+        );
+      }
+    });
   });
 
   describe("Should handle transferring scenarios", () => {
@@ -1318,6 +1411,346 @@ describe("Claim a user ticket", () => {
           addon.id,
         );
       }
+    });
+  });
+
+  describe("Should handle complex ticket quantity scenarios", () => {
+    it("Should track global ticket count correctly across users", async () => {
+      const totalTickets = 10;
+      const { community, ticketTemplate } =
+        await createCommunityEventUserAndTicketTemplate({
+          ticketTemplate: {
+            quantity: totalTickets,
+            maxTicketsPerUser: 5,
+            isFree: true,
+          },
+        });
+
+      const [user1, user2] = await Promise.all([insertUser(), insertUser()]);
+
+      await Promise.all([
+        insertUserToCommunity({
+          communityId: community.id,
+          userId: user1.id,
+          role: "member",
+        }),
+        insertUserToCommunity({
+          communityId: community.id,
+          userId: user2.id,
+          role: "member",
+        }),
+      ]);
+
+      // First user purchases 4 tickets
+      const response1 = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 4,
+                  itemsDetails: [],
+                },
+              ],
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(
+        response1.data?.claimUserTicket?.__typename,
+        "PurchaseOrder",
+      );
+
+      // Second user purchases 4 tickets
+      const response2 = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 4,
+                  itemsDetails: [],
+                },
+              ],
+            },
+          },
+        },
+        user2,
+      );
+
+      assert.equal(
+        response2.data?.claimUserTicket?.__typename,
+        "PurchaseOrder",
+      );
+
+      // Third purchase should fail as only 2 tickets remain and user1 requests 3
+      const response3 = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 3,
+                  itemsDetails: [],
+                },
+              ],
+            },
+          },
+        },
+        user1,
+      );
+
+      assert.equal(
+        response3.data?.claimUserTicket?.__typename,
+        "RedeemUserTicketError",
+      );
+    });
+
+    it("Should handle concurrent ticket purchases correctly", async () => {
+      const totalTickets = 5;
+      const { community, ticketTemplate } =
+        await createCommunityEventUserAndTicketTemplate({
+          ticketTemplate: {
+            quantity: totalTickets,
+            maxTicketsPerUser: 5,
+            isFree: true,
+          },
+        });
+
+      const users = await Promise.all(
+        Array(3)
+          .fill(null)
+          .map(() => insertUser()),
+      );
+
+      await Promise.all(
+        users.map((user) =>
+          insertUserToCommunity({
+            communityId: community.id,
+            userId: user.id,
+            role: "member",
+          }),
+        ),
+      );
+
+      const ticketsPerUser = 2;
+
+      // Attempt concurrent purchases
+      const responses = await Promise.all(
+        users.map((user) =>
+          executeGraphqlOperationAsUser<
+            ClaimUserTicketMutation,
+            ClaimUserTicketMutationVariables
+          >(
+            {
+              document: ClaimUserTicket,
+              variables: {
+                input: {
+                  purchaseOrder: [
+                    {
+                      ticketId: ticketTemplate.id,
+                      quantity: ticketsPerUser,
+                      itemsDetails: [],
+                    },
+                  ],
+                },
+              },
+            },
+            user,
+          ),
+        ),
+      );
+
+      // Count successful purchases
+      const successfulPurchases = responses.filter(
+        (response) =>
+          response.data?.claimUserTicket?.__typename === "PurchaseOrder",
+      ).length;
+
+      // Verify we didn't oversell tickets
+      assert.isTrue(
+        successfulPurchases <= Math.floor(totalTickets / ticketsPerUser),
+      );
+    });
+
+    it("Should handle mixed transfer and direct purchase scenarios", async () => {
+      const { community, ticketTemplate } =
+        await createCommunityEventUserAndTicketTemplate({
+          ticketTemplate: {
+            quantity: 10,
+            maxTicketsPerUser: 3,
+            isFree: true,
+          },
+        });
+
+      const [purchaser, recipient1, recipient2] = await Promise.all([
+        insertUser(),
+        insertUser(),
+        insertUser(),
+      ]);
+
+      await Promise.all([
+        insertUserToCommunity({
+          communityId: community.id,
+          userId: purchaser.id,
+          role: "member",
+        }),
+        insertUserToCommunity({
+          communityId: community.id,
+          userId: recipient1.id,
+          role: "member",
+        }),
+        insertUserToCommunity({
+          communityId: community.id,
+          userId: recipient2.id,
+          role: "member",
+        }),
+      ]);
+
+      // Purchase tickets with mixed transfer and direct ownership
+      const response = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 3,
+                  itemsDetails: [
+                    {
+                      transferInfo: {
+                        name: "Recipient 1",
+                        email: recipient1.email,
+                        message: "Transfer 1",
+                      },
+                      addons: [],
+                    },
+                    {
+                      transferInfo: {
+                        name: "Recipient 2",
+                        email: recipient2.email,
+                        message: "Transfer 2",
+                      },
+                      addons: [],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        purchaser,
+      );
+
+      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+
+      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
+        const tickets = response.data.claimUserTicket.tickets;
+
+        assert.equal(tickets.length, 3);
+
+        // Verify transfer attempts
+        const transferredTickets = tickets.filter(
+          (ticket) => ticket.transferAttempts.length > 0,
+        );
+
+        assert.equal(transferredTickets.length, 2);
+      }
+    });
+
+    it("Should handle edge case of exactly reaching ticket limits", async () => {
+      const totalTickets = 3;
+      const { community, ticketTemplate } =
+        await createCommunityEventUserAndTicketTemplate({
+          ticketTemplate: {
+            quantity: totalTickets,
+            maxTicketsPerUser: totalTickets,
+            isFree: true,
+          },
+        });
+
+      const user = await insertUser();
+
+      await insertUserToCommunity({
+        communityId: community.id,
+        userId: user.id,
+        role: "member",
+      });
+
+      // Purchase exactly the maximum number of tickets
+      const response1 = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: totalTickets,
+                  itemsDetails: [],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(
+        response1.data?.claimUserTicket?.__typename,
+        "PurchaseOrder",
+      );
+
+      // Attempt to purchase one more ticket
+      const response2 = await executeGraphqlOperationAsUser<
+        ClaimUserTicketMutation,
+        ClaimUserTicketMutationVariables
+      >(
+        {
+          document: ClaimUserTicket,
+          variables: {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: 1,
+                  itemsDetails: [],
+                },
+              ],
+            },
+          },
+        },
+        user,
+      );
+
+      assert.equal(
+        response2.data?.claimUserTicket?.__typename,
+        "RedeemUserTicketError",
+      );
     });
   });
 });
