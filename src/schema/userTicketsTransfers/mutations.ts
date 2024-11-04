@@ -234,33 +234,6 @@ builder.mutationField("acceptTransferredTicket", (t) =>
                 username: true,
               },
             },
-            userTicket: {
-              with: {
-                ticketTemplate: {
-                  columns: {
-                    tags: true,
-                  },
-                  with: {
-                    event: {
-                      with: {
-                        logoImageReference: true,
-                        eventsToCommunities: {
-                          with: {
-                            community: {
-                              columns: {
-                                name: true,
-                                slug: true,
-                                logoImageSanityRef: true,
-                              },
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
           },
         },
       );
@@ -300,8 +273,37 @@ builder.mutationField("acceptTransferredTicket", (t) =>
         .returning()
         .then((t) => t?.[0]);
 
+      const userTicket = await DB.query.userTicketsSchema.findMany({
+        where: (ut, { eq }) => eq(ut.id, ticketTransfer.userTicketId),
+        with: {
+          ticketTemplate: {
+            with: {
+              event: {
+                with: {
+                  logoImageReference: true,
+                  eventsToCommunities: {
+                    with: {
+                      community: {
+                        columns: {
+                          name: true,
+                          slug: true,
+                          logoImageSanityRef: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
       await sendAcceptTransferTicketSuccesfulEmail({
-        userTicketTransfer: ticketTransfer,
+        userTicketTransfer: {
+          ...ticketTransfer,
+          userTicket: userTicket[0],
+        },
         logger,
         transactionalEmailService: RPC_SERVICE_EMAIL,
       });

@@ -469,8 +469,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
           />,
         ),
         to: [{ name: userTicketTransfer.recipientUser.name ?? userTicketTransfer.recipientUser.username ?? "", email: userTicketTransfer.recipientUser.email }],
-        from: defaultInfo.nuevopuntocinco.from,
-        replyTo: defaultInfo.nuevopuntocinco.replyTo,
+        from: defaultInfo.jscl.from,
         subject: `Te han enviado una entrada para ${eventInfo.name}`,
       });
 
@@ -488,7 +487,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
           />,
         ),
         to: [{ name: userTicketTransfer.senderUser.name ?? "", email: userTicketTransfer.senderUser.email ?? "" }],
-        from: defaultInfo.nuevopuntocinco.from,
+        from: defaultInfo.jscl.from,
         subject: `La entrada a ${eventInfo.name} para ${userTicketTransfer.recipientUser.name ?? ""} ha sido enviada`,
       });
 
