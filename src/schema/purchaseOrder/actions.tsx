@@ -1020,6 +1020,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
     const stripeStatus = await getStripePaymentStatus({
       paymentId: paymentPlatformReferenceID,
       getStripeClient: GET_STRIPE_CLIENT,
+      logger,
     });
 
     poPaymentStatus = stripeStatus.paymentStatus;
@@ -1031,12 +1032,18 @@ export const syncPurchaseOrderPaymentStatus = async ({
     const mercadoPagoStatus = await getMercadoPagoPayment({
       purchaseOrderId: purchaseOrder.id,
       getMercadoPagoClient: GET_MERCADOPAGO_CLIENT,
+      logger,
     });
 
     poPaymentStatus = mercadoPagoStatus.paymentStatus;
 
     poStatus = mercadoPagoStatus.status ?? poStatus;
   }
+
+  logger.info(`New purchase order ${purchaseOrderId} status`, {
+    poPaymentStatus,
+    poStatus,
+  });
 
   if (
     poPaymentStatus !== purchaseOrder.purchaseOrderPaymentStatus ||
