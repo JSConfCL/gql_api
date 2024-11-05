@@ -1091,6 +1091,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
                       username: purchaseOrder.user.username,
                     },
                     transferMessage: transferAttempt.transferMessage,
+                    expirationDate,
                     userTicket: userTicket,
                   },
                   logger,

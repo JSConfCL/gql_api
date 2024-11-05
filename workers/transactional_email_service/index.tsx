@@ -405,7 +405,7 @@ export default class EmailService extends WorkerEntrypoint<ENV> {
       recipientEmail: userTicketTransfer.recipientUser.email,
       senderEmail: userTicketTransfer.senderUser.email
     });
-    const expirationDate = add(new Date(), { weeks: 1 });
+    const expirationDate = userTicketTransfer.expirationDate ?? add(new Date(), { weeks: 1 });
 
     if (communityInfo.name === "9punto5") {
       const userTicket = userTicketTransfer.userTicket;

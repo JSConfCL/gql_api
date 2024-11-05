@@ -18,6 +18,7 @@ type SendStartTransferTicketSuccesfulEmailsArgs = {
       username: string | null;
     };
     transferMessage?: string | null;
+    expirationDate?: Date;
     userTicket: {
       publicId: string;
       ticketTemplate: {
@@ -113,6 +114,7 @@ type SendAcceptTransferTicketSuccesfulEmailArgs = {
       username: string | null;
     };
     transferMessage?: string | null;
+    expirationDate?: Date;
     userTicket: {
       publicId: string;
       ticketTemplate: {
@@ -154,7 +156,7 @@ export const sendAcceptTransferTicketSuccesfulEmail = async ({
     );
   }
 
-  const communityInfo = eventInfo.eventsToCommunities[0].community;
+  const communityInfo = eventInfo.eventsToCommunities?.[0].community;
 
   if (!communityInfo) {
     throw applicationError(
@@ -170,6 +172,7 @@ export const sendAcceptTransferTicketSuccesfulEmail = async ({
       recipientUser: userTicketTransfer.recipientUser,
       senderUser: userTicketTransfer.senderUser,
       userTicket: userTicketTransfer.userTicket,
+      expirationDate: userTicketTransfer.expirationDate,
       transferMessage: "",
     },
     communityInfo: {

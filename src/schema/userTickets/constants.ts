@@ -23,7 +23,7 @@ export const REDEEMABLE_USER_TICKET_APPROVAL_STATUSES: UserTicketApprovalStatus[
 
 /**
  * This statuses are taken into account
- * when counting the number of available stick
+ * when counting the number of available stock
  */
 export const RESERVED_USER_TICKET_APPROVAL_STATUSES: UserTicketApprovalStatus[] =
   [...ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES, "pending"];

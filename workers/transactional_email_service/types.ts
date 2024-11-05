@@ -30,6 +30,7 @@ export interface UserTicketTransferInfo {
     username: string | null;
   },
   transferMessage?: string | null;
+  expirationDate?: Date;
   userTicket: {
     publicId: string;
     ticketTemplate: {

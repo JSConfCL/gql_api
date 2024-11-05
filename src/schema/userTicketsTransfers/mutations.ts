@@ -239,11 +239,11 @@ builder.mutationField("acceptTransferredTicket", (t) =>
       );
 
       if (!ticketTransfer) {
-        throw new GraphQLError("Could not find ticket to accept");
+        throw new GraphQLError("Could not find Ticket Transfer to accept");
       }
 
       if (ticketTransfer.status !== UserTicketTransferStatus.Pending) {
-        throw new GraphQLError("Ticket is not transferable");
+        throw new GraphQLError("Ticket Transfer is not processable");
       }
 
       if (ticketTransfer.expirationDate <= new Date()) {
@@ -253,7 +253,7 @@ builder.mutationField("acceptTransferredTicket", (t) =>
           })
           .where(eq(userTicketTransfersSchema.id, ticketTransfer.id));
 
-        throw new GraphQLError("Transfer attempt has expired");
+        throw new GraphQLError("Ticket Transfer has expired");
       }
 
       await DB.update(userTicketsSchema)
@@ -273,7 +273,7 @@ builder.mutationField("acceptTransferredTicket", (t) =>
         .returning()
         .then((t) => t?.[0]);
 
-      const userTicket = await DB.query.userTicketsSchema.findMany({
+      const userTickets = await DB.query.userTicketsSchema.findMany({
         where: (ut, { eq }) => eq(ut.id, ticketTransfer.userTicketId),
         with: {
           ticketTemplate: {
@@ -299,10 +299,16 @@ builder.mutationField("acceptTransferredTicket", (t) =>
         },
       });
 
+      if (!userTickets.length) {
+        throw new GraphQLError(
+          "Could not find associated Ticket to Ticket Transfer",
+        );
+      }
+
       await sendAcceptTransferTicketSuccesfulEmail({
         userTicketTransfer: {
           ...ticketTransfer,
-          userTicket: userTicket[0],
+          userTicket: userTickets[0],
         },
         logger,
         transactionalEmailService: RPC_SERVICE_EMAIL,
