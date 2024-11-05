@@ -11,6 +11,10 @@ import {
 import { UserTicketTransferRef } from "~/schema/shared/refs";
 
 import {
+  sendAcceptTransferTicketSuccesfulEmail,
+  sendStartTransferTicketSuccesfulEmails,
+} from "./actions";
+import {
   getExpirationDateForTicketTransfer,
   getOrCreateTransferRecipients,
 } from "./helpers";
@@ -47,7 +51,7 @@ builder.mutationField("transferMyTicketToUser", (t) =>
     resolve: async (
       root,
       { ticketId, input },
-      { DB, USER, RPC_SERVICE_EMAIL },
+      { DB, USER, RPC_SERVICE_EMAIL, logger },
     ) => {
       if (!USER) {
         throw new GraphQLError("User not found");
@@ -63,6 +67,24 @@ builder.mutationField("transferMyTicketToUser", (t) =>
           ticketTemplate: {
             columns: {
               tags: true,
+            },
+            with: {
+              event: {
+                with: {
+                  logoImageReference: true,
+                  eventsToCommunities: {
+                    with: {
+                      community: {
+                        columns: {
+                          name: true,
+                          slug: true,
+                          logoImageSanityRef: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -143,15 +165,16 @@ builder.mutationField("transferMyTicketToUser", (t) =>
         throw new GraphQLError("Could not create user ticket transfer");
       }
 
-      await RPC_SERVICE_EMAIL.sendTransferTicketConfirmations({
-        transferId: createdUserTicketTransfer.id,
-        transferMessage: userTicketTransfer.transferMessage ?? null,
-        expirationDate: userTicketTransfer.expirationDate,
-        recipientName: recipientUser.name ?? recipientUser.username,
-        recipientEmail: recipientUser.email,
-        senderName: USER.name ?? USER.username,
-        ticketTags: userTicket.ticketTemplate.tags,
-        senderEmail: USER.email,
+      await sendStartTransferTicketSuccesfulEmails({
+        userTicketTransfer: {
+          ...userTicketTransfer,
+          id: createdUserTicketTransfer.id,
+          recipientUser,
+          senderUser: USER,
+          userTicket,
+        },
+        logger,
+        transactionalEmailService: RPC_SERVICE_EMAIL,
       });
 
       return createdUserTicketTransfer;
@@ -170,7 +193,11 @@ builder.mutationField("acceptTransferredTicket", (t) =>
     authz: {
       rules: ["IsAuthenticated"],
     },
-    resolve: async (root, { transferId }, { DB, USER, RPC_SERVICE_EMAIL }) => {
+    resolve: async (
+      root,
+      { transferId },
+      { DB, USER, RPC_SERVICE_EMAIL, logger },
+    ) => {
       if (!USER) {
         throw new GraphQLError("User not found");
       }
@@ -188,6 +215,13 @@ builder.mutationField("acceptTransferredTicket", (t) =>
             senderUserId: true,
           },
           with: {
+            recipientUser: {
+              columns: {
+                name: true,
+                email: true,
+                username: true,
+              },
+            },
             senderUser: {
               columns: {
                 name: true,
@@ -195,25 +229,16 @@ builder.mutationField("acceptTransferredTicket", (t) =>
                 username: true,
               },
             },
-            userTicket: {
-              with: {
-                ticketTemplate: {
-                  columns: {
-                    tags: true,
-                  },
-                },
-              },
-            },
           },
         },
       );
 
       if (!ticketTransfer) {
-        throw new GraphQLError("Could not find ticket to accept");
+        throw new GraphQLError("Could not find Ticket Transfer to accept");
       }
 
       if (ticketTransfer.status !== UserTicketTransferStatus.Pending) {
-        throw new GraphQLError("Ticket is not transferable");
+        throw new GraphQLError("Ticket Transfer is not processable");
       }
 
       if (ticketTransfer.expirationDate <= new Date()) {
@@ -223,7 +248,7 @@ builder.mutationField("acceptTransferredTicket", (t) =>
           })
           .where(eq(userTicketTransfersSchema.id, ticketTransfer.id));
 
-        throw new GraphQLError("Transfer attempt has expired");
+        throw new GraphQLError("Ticket Transfer has expired");
       }
 
       await DB.update(userTicketsSchema)
@@ -243,12 +268,45 @@ builder.mutationField("acceptTransferredTicket", (t) =>
         .returning()
         .then((t) => t?.[0]);
 
-      await RPC_SERVICE_EMAIL.sendTransferAcceptanceNotificationToSender({
-        recipientName: USER.name ?? USER.username,
-        recipientEmail: USER.email,
-        senderName:
-          ticketTransfer.senderUser.name ?? ticketTransfer.senderUser.username,
-        ticketTags: ticketTransfer.userTicket.ticketTemplate.tags,
+      const userTickets = await DB.query.userTicketsSchema.findMany({
+        where: (ut, { eq }) => eq(ut.id, ticketTransfer.userTicketId),
+        with: {
+          ticketTemplate: {
+            with: {
+              event: {
+                with: {
+                  logoImageReference: true,
+                  eventsToCommunities: {
+                    with: {
+                      community: {
+                        columns: {
+                          name: true,
+                          slug: true,
+                          logoImageSanityRef: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!userTickets.length) {
+        throw new GraphQLError(
+          "Could not find associated Ticket to Ticket Transfer",
+        );
+      }
+
+      await sendAcceptTransferTicketSuccesfulEmail({
+        userTicketTransfer: {
+          ...ticketTransfer,
+          userTicket: userTickets[0],
+        },
+        logger,
+        transactionalEmailService: RPC_SERVICE_EMAIL,
       });
 
       return updatedUserTicketTransfer;

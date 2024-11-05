@@ -18,7 +18,6 @@ import { TicketRef, UserTicketRef, PriceRef } from "~/schema/shared/refs";
 
 import { RESERVED_USER_TICKET_ADDON_APPROVAL_STATUSES } from "./constants";
 import { PurchaseOrderRef } from "../purchaseOrder/types";
-import { RESERVED_USER_TICKET_APPROVAL_STATUSES } from "../userTickets/constants";
 
 export const AddonConstraintTypeEnum = builder.enumType(AddonConstraintType, {
   name: "AddonConstraintType",
@@ -84,30 +83,11 @@ builder.objectType(AddonRef, {
           return null;
         }
 
-        const userTickets = await DB.query.userTicketsSchema.findMany({
-          where: (ut, { eq, and, inArray }) =>
-            and(
-              eq(ut.ticketTemplateId, root.id),
-              inArray(
-                ut.approvalStatus,
-                RESERVED_USER_TICKET_APPROVAL_STATUSES,
-              ),
-            ),
-        });
-
-        if (userTickets.length === 0) {
-          return root.totalStock;
-        }
-
         const userTicketAddons = await DB.query.userTicketAddonsSchema.findMany(
           {
             where: (ut, ops) =>
               ops.and(
                 ops.eq(ut.addonId, root.id),
-                ops.inArray(
-                  ut.userTicketId,
-                  userTickets.map((ut) => ut.id),
-                ),
                 ops.inArray(
                   ut.approvalStatus,
                   RESERVED_USER_TICKET_ADDON_APPROVAL_STATUSES,

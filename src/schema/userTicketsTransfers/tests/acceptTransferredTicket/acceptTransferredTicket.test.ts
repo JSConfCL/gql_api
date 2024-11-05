@@ -108,7 +108,7 @@ describe("Accept user ticket transfer", () => {
 
       assert.equal(
         response.errors?.[0].message,
-        "Could not find ticket to accept",
+        "Could not find Ticket Transfer to accept",
       );
     });
 
@@ -146,7 +146,10 @@ describe("Accept user ticket transfer", () => {
         recipientUser,
       );
 
-      assert.equal(response.errors?.[0].message, "Ticket is not transferable");
+      assert.equal(
+        response.errors?.[0].message,
+        "Ticket Transfer is not processable",
+      );
     });
   });
 });

@@ -5,7 +5,7 @@ import { UserTicketApprovalStatus } from "~/datasources/db/userTickets";
  * in the sense that they are visible to the user
  * and can be potentially used to redeem a user ticket
  */
-export const NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES: UserTicketApprovalStatus[] =
+export const ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES: UserTicketApprovalStatus[] =
   [
     "approved",
     "not_required",
@@ -23,10 +23,10 @@ export const REDEEMABLE_USER_TICKET_APPROVAL_STATUSES: UserTicketApprovalStatus[
 
 /**
  * This statuses are taken into account
- * when counting the number of available stick
+ * when counting the number of available stock
  */
 export const RESERVED_USER_TICKET_APPROVAL_STATUSES: UserTicketApprovalStatus[] =
-  [...NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES, "pending"];
+  [...ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES, "pending"];
 
 /**
  * Invalid statuses for a user ticket

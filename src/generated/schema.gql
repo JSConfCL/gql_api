@@ -431,6 +431,16 @@ type Mutation {
   cancelUserTicket(userTicketId: String!): UserTicket!
 
   """
+  Cancel multiple user ticket addons
+  """
+  cancelUserTicketAddons(
+    """
+    The IDs of the user ticket addons to cancel
+    """
+    userTicketAddonIds: [String!]!
+  ): [UserTicketAddon!]!
+
+  """
   Check the status of a purchase order
   """
   checkPurchaseOrderStatus(input: CheckForPurchaseOrderInput!): PurchaseOrder!
@@ -441,7 +451,7 @@ type Mutation {
   claimUserTicket(input: TicketClaimInput!): RedeemUserTicketResponse!
 
   """
-  Claim ticket addons for multiple tickets
+  Claim addons for multiple user tickets
   """
   claimUserTicketAddons(
     addonsClaims: [ClaimUserTicketAddonInput!]!

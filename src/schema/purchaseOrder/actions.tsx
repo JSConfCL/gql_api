@@ -31,6 +31,7 @@ import { Logger } from "~/logging";
 import { Context } from "~/types";
 
 import { ensureProductsAreCreated } from "../ticket/helpers";
+import { sendStartTransferTicketSuccesfulEmails } from "../userTicketsTransfers/actions";
 import { getExpirationDateForTicketTransfer } from "../userTicketsTransfers/helpers";
 
 const fetchPurchaseOrderInformation = async (
@@ -1020,6 +1021,7 @@ export const syncPurchaseOrderPaymentStatus = async ({
     const stripeStatus = await getStripePaymentStatus({
       paymentId: paymentPlatformReferenceID,
       getStripeClient: GET_STRIPE_CLIENT,
+      logger,
     });
 
     poPaymentStatus = stripeStatus.paymentStatus;
@@ -1031,12 +1033,18 @@ export const syncPurchaseOrderPaymentStatus = async ({
     const mercadoPagoStatus = await getMercadoPagoPayment({
       purchaseOrderId: purchaseOrder.id,
       getMercadoPagoClient: GET_MERCADOPAGO_CLIENT,
+      logger,
     });
 
     poPaymentStatus = mercadoPagoStatus.paymentStatus;
 
     poStatus = mercadoPagoStatus.status ?? poStatus;
   }
+
+  logger.info(`New purchase order ${purchaseOrderId} status`, {
+    poPaymentStatus,
+    poStatus,
+  });
 
   if (
     poPaymentStatus !== purchaseOrder.purchaseOrderPaymentStatus ||
@@ -1076,21 +1084,26 @@ export const syncPurchaseOrderPaymentStatus = async ({
               const expirationDate = getExpirationDateForTicketTransfer();
 
               for (const transferAttempt of userTicket.transferAttempts) {
-                await transactionalEmailService.sendTransferTicketConfirmations(
-                  {
+                await sendStartTransferTicketSuccesfulEmails({
+                  userTicketTransfer: {
+                    id: transferAttempt.id,
+                    recipientUser: {
+                      name: transferAttempt.recipientUser.name ?? "",
+                      email: transferAttempt.recipientUser.email,
+                      username: transferAttempt.recipientUser.username,
+                    },
+                    senderUser: {
+                      name: purchaseOrder.user.name,
+                      email: purchaseOrder.user.email,
+                      username: purchaseOrder.user.username,
+                    },
                     transferMessage: transferAttempt.transferMessage,
-                    recipientEmail: transferAttempt.recipientUser.email,
-                    recipientName:
-                      transferAttempt.recipientUser.name ??
-                      transferAttempt.recipientUser.username,
-                    senderName:
-                      purchaseOrder.user.name ?? purchaseOrder.user.username,
-                    ticketTags: userTicket.ticketTemplate.tags,
-                    transferId: transferAttempt.id,
-                    expirationDate: expirationDate,
-                    senderEmail: purchaseOrder.user.email,
+                    expirationDate,
+                    userTicket: userTicket,
                   },
-                );
+                  logger,
+                  transactionalEmailService,
+                });
               }
 
               const updateTransferValues: Partial<InsertUserTicketTransferSchema> =
@@ -1181,6 +1194,18 @@ export const clearExpiredPurchaseOrders = async ({
       .where(
         inArray(
           userTicketsSchema.purchaseOrderId,
+          expiredOrders.map((po) => po.id),
+        ),
+      )
+      .returning();
+
+    await DB.update(userTicketAddonsSchema)
+      .set({
+        approvalStatus: UserTicketAddonApprovalStatus.CANCELLED,
+      })
+      .where(
+        inArray(
+          userTicketAddonsSchema.purchaseOrderId,
           expiredOrders.map((po) => po.id),
         ),
       )
