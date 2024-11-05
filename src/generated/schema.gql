@@ -431,7 +431,7 @@ type Mutation {
   cancelUserTicket(userTicketId: String!): UserTicket!
 
   """
-  Cancel addons for multiple user tickets
+  Cancel multiple user ticket addons
   """
   cancelUserTicketAddons(
     """

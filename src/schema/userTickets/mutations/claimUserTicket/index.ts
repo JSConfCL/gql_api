@@ -11,7 +11,6 @@ import {
   userTicketTransfersSchema,
   userTicketsSchema,
   SelectUserTicketSchema,
-  UserTicketApprovalStatus,
   AddonConstraintType,
   InsertUserTicketAddonClaimSchema,
   UserTicketAddonRedemptionStatus,
@@ -36,6 +35,7 @@ import {
   TicketClaimInput,
   TicketClaimInputType,
 } from "./refs";
+import { RESERVED_USER_TICKET_APPROVAL_STATUSES } from "../../constants";
 import { assertCanStartTicketClaimingForEvent } from "../../helpers";
 
 // Types
@@ -518,16 +518,6 @@ async function verifyFinalUserTicketCounts(
   USER: NonNullable<Context["USER"]>,
   logger: Logger,
 ) {
-  const validApprovalStatuses: UserTicketApprovalStatus[] = [
-    "approved",
-    "pending",
-    "not_required",
-    "gifted",
-    "gift_accepted",
-    "transfer_pending",
-    "transfer_accepted",
-  ];
-
   // Bulk query for existing ticket counts
   const ticketCountsPromise = DB.query.userTicketsSchema
     .findMany({
@@ -537,7 +527,10 @@ async function verifyFinalUserTicketCounts(
             userTicketsSchema.ticketTemplateId,
             ticketInfo.tickets.map((t) => t.id),
           ),
-          ops.inArray(userTicketsSchema.approvalStatus, validApprovalStatuses),
+          ops.inArray(
+            userTicketsSchema.approvalStatus,
+            RESERVED_USER_TICKET_APPROVAL_STATUSES,
+          ),
         );
       },
       columns: {

@@ -5,6 +5,8 @@ import { userTicketsSchema } from "~/datasources/db/userTickets";
 import { userTicketTransfersSchema } from "~/datasources/db/userTicketsTransfers";
 import { UserTicketTransferRef } from "~/schema/shared/refs";
 
+import { ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES } from "../userTickets/constants";
+
 const SearchTicketTransferTypeEnum = builder.enumType("TicketTransferType", {
   values: ["SENT", "RECEIVED", "ALL"] as const,
 });
@@ -57,14 +59,10 @@ builder.queryFields((t) => ({
             eq(userTicketTransfersSchema.userTicketId, userTicketsSchema.id),
             // we ensure that the user cannot see tickets that where rejected
             // or are pending of payment for example
-            inArray(userTicketsSchema.approvalStatus, [
-              "approved",
-              "not_required",
-              "gifted",
-              "gift_accepted",
-              "transfer_pending",
-              "transfer_accepted",
-            ]),
+            inArray(
+              userTicketsSchema.approvalStatus,
+              ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES,
+            ),
             transferTypeWheres,
           ),
         );

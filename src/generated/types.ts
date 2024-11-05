@@ -416,7 +416,7 @@ export type Mutation = {
   approvalUserTicket: UserTicket;
   /** Cancel a ticket */
   cancelUserTicket: UserTicket;
-  /** Cancel addons for multiple user tickets */
+  /** Cancel multiple user ticket addons */
   cancelUserTicketAddons: Array<UserTicketAddon>;
   /** Check the status of a purchase order */
   checkPurchaseOrderStatus: PurchaseOrder;

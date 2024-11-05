@@ -3,13 +3,13 @@ import { SQL, and, desc, eq, inArray } from "drizzle-orm";
 import { ORM_TYPE } from "~/datasources/db";
 import { eventsSchema } from "~/datasources/db/events";
 import {
-  puchaseOrderPaymentStatusEnum,
+  PurchaseOrderPaymentStatus,
   purchaseOrdersSchema,
 } from "~/datasources/db/purchaseOrders";
 import { ticketsSchema } from "~/datasources/db/tickets";
 import {
-  userTicketsApprovalStatusEnum,
-  userTicketsRedemptionStatusEnum,
+  UserTicketApprovalStatus,
+  UserTicketRedemptionStatus,
   userTicketsSchema,
 } from "~/datasources/db/userTickets";
 import {
@@ -24,9 +24,9 @@ export type UserTicketSearch = {
   userTicketIds?: string[];
   ticketIds?: string[];
   eventName?: string;
-  approvalStatus?: (typeof userTicketsApprovalStatusEnum)[number][];
-  paymentStatus?: (typeof puchaseOrderPaymentStatusEnum)[number][];
-  redemptionStatus?: (typeof userTicketsRedemptionStatusEnum)[number][];
+  approvalStatus?: UserTicketApprovalStatus[];
+  paymentStatus?: PurchaseOrderPaymentStatus[];
+  redemptionStatus?: UserTicketRedemptionStatus[];
 };
 
 const getSearchUserTicketsQuery = (

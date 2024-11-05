@@ -15,7 +15,7 @@ export type CancelUserTicketAddonsMutation = { __typename?: 'Mutation', cancelUs
 
 
 export const CancelUserTicketAddons = gql`
-    mutation cancelUserTicketAddons($userTicketAddonIds: [String!]!) {
+    mutation CancelUserTicketAddons($userTicketAddonIds: [String!]!) {
   cancelUserTicketAddons(userTicketAddonIds: $userTicketAddonIds) {
     id
     approvalStatus

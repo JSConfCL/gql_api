@@ -136,7 +136,6 @@ builder.mutationField("claimUserTicketAddons", (t) =>
           // validate that all addons constraints are respected
           for (const [userTicketId, claims] of Object.entries(claimsByTicket)) {
             const userTicket = userTickets.find((ut) => ut.id === userTicketId);
-
             const validAddons = aggregatedAddons.filter(
               (ta) => ta.ticketId === userTicket?.ticketTemplate.id,
             );
