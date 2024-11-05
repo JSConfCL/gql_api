@@ -1,4 +1,4 @@
-import { Img, Text } from "@react-email/components";
+import { Text } from "@react-email/components";
 import * as React from "react";
 
 import { TicketTemplate9punto5 } from "emails/templates/helpers/9punto5";
