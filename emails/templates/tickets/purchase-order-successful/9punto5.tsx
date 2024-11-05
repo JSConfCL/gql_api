@@ -53,11 +53,6 @@ export const PurchaseOrderSuccessful9punto5 = ({
 
       <Text>Incluye kit de bienvenida 2024 y coffee breaks.</Text>
 
-      <Text className="mb-0">Además considera que pronto podrás agregar:</Text>
-      <ul className="list-disc pl-5 ml-0">
-        <li>Almuerzo para los 3 días</li>
-      </ul>
-
       <Text>Puedes ver tu entrada y novedades ingresando a tu perfil:</Text>
 
       <table
