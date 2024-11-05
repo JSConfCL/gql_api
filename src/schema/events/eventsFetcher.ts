@@ -26,7 +26,7 @@ import { SortableSchemaFields } from "~/datasources/helpers/sorting";
 import { eventStatus, eventVisibility } from "~/schema/events/types";
 import { sanitizeForLikeSearch } from "~/schema/shared/helpers";
 
-import { NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES } from "../userTickets/constants";
+import { ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES } from "../userTickets/constants";
 
 export type UserTicketSearch = {
   userId?: string;
@@ -99,7 +99,7 @@ const getSearchEventsQuery = (
             inArray(userTicketsSchema.ticketTemplateId, subquery),
             inArray(
               userTicketsSchema.approvalStatus,
-              NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES,
+              ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES,
             ),
             eq(userTicketsSchema.userId, userId),
           ),

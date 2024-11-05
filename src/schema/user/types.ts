@@ -19,7 +19,7 @@ import { TeamRef } from "~/schema/teams/types";
 import { usersFetcher } from "~/schema/user/userFetcher";
 import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 
-import { NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES } from "../userTickets/constants";
+import { ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES } from "../userTickets/constants";
 
 export const pronounsEnum = builder.enumType(PronounsEnum, {
   name: "PronounsEnum",
@@ -134,7 +134,7 @@ export const UserLoadable = builder.loadableObject(UserRef, {
             userIds: [root.id],
             approvalStatus: ctx.USER?.isSuperAdmin
               ? undefined
-              : NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES,
+              : ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES,
           },
         });
 

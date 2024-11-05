@@ -5,7 +5,7 @@ import { userTicketsSchema } from "~/datasources/db/userTickets";
 import { userTicketTransfersSchema } from "~/datasources/db/userTicketsTransfers";
 import { UserTicketTransferRef } from "~/schema/shared/refs";
 
-import { NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES } from "../userTickets/constants";
+import { ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES } from "../userTickets/constants";
 
 const SearchTicketTransferTypeEnum = builder.enumType("TicketTransferType", {
   values: ["SENT", "RECEIVED", "ALL"] as const,
@@ -61,7 +61,7 @@ builder.queryFields((t) => ({
             // or are pending of payment for example
             inArray(
               userTicketsSchema.approvalStatus,
-              NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES,
+              ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES,
             ),
             transferTypeWheres,
           ),

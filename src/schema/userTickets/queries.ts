@@ -13,7 +13,7 @@ import { PublicUserTicketRef, UserTicketRef } from "~/schema/shared/refs";
 import { userTicketFetcher } from "~/schema/userTickets/userTicketFetcher";
 
 import {
-  NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES,
+  ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES,
   REDEEMABLE_USER_TICKET_APPROVAL_STATUSES,
 } from "./constants";
 import {
@@ -55,10 +55,10 @@ const getQueryApprovalStatus = (
 
   if (approvalStatus) {
     return approvalStatus.filter((status) =>
-      NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES.includes(status),
+      ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES.includes(status),
     );
   } else {
-    return NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES;
+    return ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES;
   }
 };
 

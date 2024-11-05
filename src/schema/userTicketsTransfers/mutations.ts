@@ -19,7 +19,7 @@ import {
   getOrCreateTransferRecipients,
 } from "./helpers";
 import { cleanEmail } from "../user/userHelpers";
-import { NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES } from "../userTickets/constants";
+import { ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES } from "../userTickets/constants";
 
 export const UserTicketTransferInfoInputRef = builder.inputType(
   "UserTicketTransferInfoInput",
@@ -95,7 +95,7 @@ builder.mutationField("transferMyTicketToUser", (t) =>
       }
 
       if (
-        !NORMAL_USER_VISIBLE_TICKET_APPROVAL_STATUSES.includes(
+        !ACCESSIBLE_USER_TICKET_APPROVAL_STATUSES.includes(
           userTicket.approvalStatus,
         )
       ) {
