@@ -67,11 +67,6 @@ export const TicketTransferReceived9punto5 = ({
 
       <Text>Incluye kit de bienvenida 2024 y coffee breaks.</Text>
 
-      <Text className="mb-0">Además, pronto podrás agregar:</Text>
-      <ul className="list-disc pl-5 ml-0">
-        <li>Almuerzo para los 3 días</li>
-      </ul>
-
       <Text>
         Para confirmar tu asistencia y ver los detalles de tu entrada, por favor
         ingresa a tu perfil:
