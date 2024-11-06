@@ -34,12 +34,12 @@ export const getTestDB = async (maybeDatabaseName?: string) => {
   const databaseName = maybeDatabaseName || `test_${v4()}`;
 
   if (db) {
-    console.log("Retornando BDD previa");
+    // console.log("Retornando BDD previa");
 
     return db as unknown as ORM_TYPE;
   }
 
-  console.log("🆕 Creando una nueva BDD");
+  // console.log("🆕 Creando una nueva BDD");
 
   await ensureDBIsClean(databaseName);
   const migrationClient = postgres(`${dbUrl}/${databaseName}`, {

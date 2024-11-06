@@ -1,9 +1,15 @@
+import { eq, inArray } from "drizzle-orm";
+
 import { builder } from "~/builder";
 import {
   userTicketsApprovalStatusEnum,
   puchaseOrderPaymentStatusEnum,
   userTicketsRedemptionStatusEnum,
   selectUsersSchema,
+  SelectUserTicketTransferSchema,
+  usersSchema,
+  userTicketTransfersSchema,
+  userTicketsSchema,
 } from "~/datasources/db/schema";
 import {
   PurchaseOrderLoadable,
@@ -52,7 +58,7 @@ builder.objectType(UserTicketRef, {
           return null;
         }
 
-        return purchaseOrder.purchaseOrder.purchaseOrderPaymentStatus;
+        return purchaseOrder.purchaseOrderPaymentStatus;
       },
     }),
     user: t.field({
@@ -108,27 +114,45 @@ builder.objectType(UserTicketRef, {
       nullable: false,
       resolve: (root) => new Date(root.createdAt),
     }),
-    transferAttempts: t.field({
-      type: [UserTicketTransferRef],
-      resolve: async (root, args, context) => {
-        const canRequest =
-          context.USER?.id === root.userId || context.USER?.isSuperAdmin;
+    transferAttempts: t.loadableList({
+      type: UserTicketTransferRef,
+      load: async (ids: string[], ctx) => {
+        const idToUserTicketTransferMap: Record<
+          string,
+          SelectUserTicketTransferSchema[] | undefined
+        > = {};
 
-        if (!canRequest) {
-          return [];
-        }
+        const userTicketTransfers = await ctx.DB.select({
+          transfer: userTicketTransfersSchema,
+          userId: usersSchema.id,
+        })
+          .from(userTicketTransfersSchema)
+          .innerJoin(
+            userTicketsSchema,
+            eq(userTicketTransfersSchema.userTicketId, userTicketsSchema.id),
+          )
+          .innerJoin(usersSchema, eq(userTicketsSchema.userId, usersSchema.id))
+          .where(inArray(userTicketsSchema.id, ids));
 
-        if (!root.userId) {
-          return [];
-        }
+        userTicketTransfers.forEach((userTicketTransfer) => {
+          const { transfer, userId } = userTicketTransfer;
 
-        const userTicketTransfers =
-          await context.DB.query.userTicketTransfersSchema.findMany({
-            where: (utg, { eq }) => eq(utg.userTicketId, root.id),
-          });
+          const canRequest = ctx.USER?.id === userId || ctx.USER?.isSuperAdmin;
 
-        return userTicketTransfers;
+          if (!idToUserTicketTransferMap[transfer.userTicketId]) {
+            idToUserTicketTransferMap[transfer.userTicketId] = [];
+          }
+
+          if (!canRequest) {
+            return;
+          }
+
+          idToUserTicketTransferMap[transfer.userTicketId]?.push(transfer);
+        });
+
+        return ids.map((id) => idToUserTicketTransferMap[id] ?? []);
       },
+      resolve: (root) => root.id,
     }),
     userTicketAddons: t.loadableList({
       type: UserTicketAddonRef,

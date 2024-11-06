@@ -1,5 +1,4 @@
 import { builder } from "~/builder";
-import { selectPurchaseOrdersSchema } from "~/datasources/db/purchaseOrders";
 import {
   AddonConstraintType,
   SelectAddonConstraintSchema,
@@ -7,8 +6,8 @@ import {
   selectAddonSchema,
   SelectTicketAddonSchema,
 } from "~/datasources/db/ticketAddons";
-import { selectTicketSchema } from "~/datasources/db/tickets";
-import { selectUserTicketsSchema } from "~/datasources/db/userTickets";
+import { SelectTicketSchema } from "~/datasources/db/tickets";
+import { SelectUserTicketSchema } from "~/datasources/db/userTickets";
 import {
   SelectUserTicketAddonSchema,
   UserTicketAddonApprovalStatus,
@@ -17,7 +16,7 @@ import {
 import { TicketRef, UserTicketRef, PriceRef } from "~/schema/shared/refs";
 
 import { RESERVED_USER_TICKET_ADDON_APPROVAL_STATUSES } from "./constants";
-import { PurchaseOrderRef } from "../purchaseOrder/types";
+import { PurchaseOrderLoadable } from "../purchaseOrder/types";
 
 export const AddonConstraintTypeEnum = builder.enumType(AddonConstraintType, {
   name: "AddonConstraintType",
@@ -128,33 +127,43 @@ builder.objectType(TicketAddonRef, {
     addonId: t.exposeID("addonId"),
     ticketId: t.exposeID("ticketId"),
     orderDisplay: t.exposeInt("orderDisplay"),
-    addon: t.field({
+    addon: t.loadable({
       type: AddonRef,
-      resolve: async (root, _, { DB }) => {
-        const result = await DB.query.addonsSchema.findFirst({
-          where: (addons, { eq }) => eq(addons.id, root.addonId),
+      load: async (ids: string[], ctx) => {
+        const idToAddonMap: Record<string, SelectAddonSchema> = {};
+
+        const result = await ctx.DB.query.addonsSchema.findMany({
+          where: (addons, { inArray }) => inArray(addons.id, ids),
         });
 
-        if (!result) {
-          throw new Error("Addon not found");
-        }
+        result.forEach((addon) => {
+          idToAddonMap[addon.id] = addon;
+        });
 
-        return selectAddonSchema.parse(result);
+        return ids.map(
+          (id) => idToAddonMap[id] || new Error(`Addon ${id} not found`),
+        );
       },
+      resolve: (root) => root.addonId,
     }),
-    ticket: t.field({
+    ticket: t.loadable({
       type: TicketRef,
-      resolve: async (root, _, { DB }) => {
-        const result = await DB.query.ticketsSchema.findFirst({
-          where: (tickets, { eq }) => eq(tickets.id, root.ticketId),
+      load: async (ids: string[], ctx) => {
+        const idToTicketMap: Record<string, SelectTicketSchema> = {};
+
+        const result = await ctx.DB.query.ticketsSchema.findMany({
+          where: (tickets, { inArray }) => inArray(tickets.id, ids),
         });
 
-        if (!result) {
-          throw new Error("Ticket not found");
-        }
+        result.forEach((ticket) => {
+          idToTicketMap[ticket.id] = ticket;
+        });
 
-        return selectTicketSchema.parse(result);
+        return ids.map(
+          (id) => idToTicketMap[id] || new Error(`Ticket ${id} not found`),
+        );
       },
+      resolve: (root) => root.ticketId,
     }),
   }),
 });
@@ -177,58 +186,52 @@ builder.objectType(UserTicketAddonRef, {
       type: UserTicketAddonApprovalStatusEnum,
     }),
     purchaseOrderId: t.exposeID("purchaseOrderId"),
-    userTicket: t.field({
+    userTicket: t.loadable({
       type: UserTicketRef,
-      resolve: async (root, _, { DB }) => {
-        const result = await DB.query.userTicketsSchema.findFirst({
-          where: (userTickets, { eq }) => eq(userTickets.id, root.userTicketId),
-        });
+      load: async (ids: string[], { DB }) => {
+        const idToUserTicketMap: Record<string, SelectUserTicketSchema> = {};
 
-        if (!result) {
-          throw new Error("User ticket not found");
-        }
-
-        return selectUserTicketsSchema.parse(result);
-      },
-    }),
-    addon: t.field({
-      type: AddonRef,
-      resolve: async (root, _, { DB }) => {
-        const result = await DB.query.addonsSchema.findFirst({
-          where: (addons, { eq }) => eq(addons.id, root.addonId),
-        });
-
-        if (!result) {
-          throw new Error("Addon not found");
-        }
-
-        return selectAddonSchema.parse(result);
-      },
-    }),
-    purchaseOrder: t.field({
-      type: PurchaseOrderRef,
-      resolve: async (root, _, { DB }) => {
-        const result = await DB.query.purchaseOrdersSchema.findFirst({
-          where: (purchaseOrders, { eq }) =>
-            eq(purchaseOrders.id, root.purchaseOrderId),
-          with: {
-            userTickets: {
-              columns: {
-                id: true,
-              },
-            },
+        const result = await DB.query.userTicketsSchema.findMany({
+          where: (userTickets, ops) => {
+            return ops.inArray(userTickets.id, ids);
           },
         });
 
-        if (!result) {
-          throw new Error("Purchase order not found");
-        }
+        result.forEach((userTicket) => {
+          idToUserTicketMap[userTicket.id] = userTicket;
+        });
 
-        return {
-          ticketsIds: result.userTickets.map((ut) => ut.id),
-          purchaseOrder: selectPurchaseOrdersSchema.parse(result),
-        };
+        return ids.map(
+          (id) =>
+            idToUserTicketMap[id] || new Error(`User ticket ${id} not found`),
+        );
       },
+      resolve: (root) => root.userTicketId,
+    }),
+    addon: t.loadable({
+      type: AddonRef,
+      load: async (ids: string[], { DB }) => {
+        const idToAddonMap: Record<string, SelectAddonSchema> = {};
+
+        const result = await DB.query.addonsSchema.findMany({
+          where: (addons, ops) => {
+            return ops.inArray(addons.id, ids);
+          },
+        });
+
+        result.forEach((addon) => {
+          idToAddonMap[addon.id] = addon;
+        });
+
+        return ids.map(
+          (id) => idToAddonMap[id] || new Error(`Addon ${id} not found`),
+        );
+      },
+      resolve: (root) => root.addonId,
+    }),
+    purchaseOrder: t.field({
+      type: PurchaseOrderLoadable,
+      resolve: (root) => root.purchaseOrderId,
     }),
   }),
 });

@@ -8,6 +8,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 import {
   allowedCurrencySchema,
@@ -87,5 +88,13 @@ export const purchaseOrdersRelations = relations(
 export const selectPurchaseOrdersSchema =
   createSelectSchema(purchaseOrdersSchema);
 
+export type SelectPurchaseOrderSchema = z.infer<
+  typeof selectPurchaseOrdersSchema
+>;
+
 export const insertPurchaseOrdersSchema =
   createInsertSchema(purchaseOrdersSchema);
+
+export type InsertPurchaseOrderSchema = z.infer<
+  typeof insertPurchaseOrdersSchema
+>;

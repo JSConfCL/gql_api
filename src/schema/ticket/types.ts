@@ -1,4 +1,7 @@
+import { and, count, eq, inArray } from "drizzle-orm";
+
 import { builder } from "~/builder";
+import { userTicketsSchema } from "~/datasources/db/userTickets";
 import { EventLoadable } from "~/schema/events/types";
 import { PriceRef, TicketRef } from "~/schema/shared/refs";
 
@@ -81,18 +84,21 @@ export const TicketLoadable = builder.loadableObject(TicketRef, {
           return null;
         }
 
-        const userTickets = await ctx.DB.query.userTicketsSchema.findMany({
-          where: (ut, { eq, and, inArray }) =>
+        const [userTicketsCount] = await ctx.DB.select({
+          count: count(userTicketsSchema.id),
+        })
+          .from(userTicketsSchema)
+          .where(
             and(
-              eq(ut.ticketTemplateId, root.id),
+              eq(userTicketsSchema.ticketTemplateId, root.id),
               inArray(
-                ut.approvalStatus,
+                userTicketsSchema.approvalStatus,
                 RESERVED_USER_TICKET_APPROVAL_STATUSES,
               ),
             ),
-        });
+          );
 
-        return root.quantity - userTickets.length;
+        return root.quantity - userTicketsCount.count;
       },
     }),
     imageLink: t.exposeString("imageLink", { nullable: true }),

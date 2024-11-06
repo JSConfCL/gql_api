@@ -1,10 +1,11 @@
 import { builder } from "~/builder";
 import {
-  selectUserTicketsSchema,
   selectPurchaseOrdersSchema,
   puchaseOrderPaymentStatusEnum,
   purchaseOrderStatusEnum,
   SelectUserTicketAddonSchema,
+  SelectUserTicketSchema,
+  SelectPurchaseOrderSchema,
 } from "~/datasources/db/schema";
 import { UserTicketRef } from "~/schema/shared/refs";
 
@@ -22,38 +23,18 @@ const PurchaseOrderStatusEnum = builder.enumType("PurchaseOrderStatusEnum", {
   values: purchaseOrderStatusEnum,
 });
 
-export const PurchaseOrderRef = builder.objectRef<{
-  ticketsIds: string[];
-  purchaseOrder: typeof selectPurchaseOrdersSchema._type;
-}>("PurchaseOrder");
+export const PurchaseOrderRef =
+  builder.objectRef<SelectPurchaseOrderSchema>("PurchaseOrder");
 
 export const PurchaseOrderLoadable = builder.loadableObject(PurchaseOrderRef, {
   description: "Representation of a Purchase Order",
   load: async (ids: string[], context) => {
-    const result = await context.DB.query.purchaseOrdersSchema
-      .findMany({
-        where: (t, { inArray }) => inArray(t.id, ids),
-        with: {
-          userTickets: {
-            columns: {
-              id: true,
-            },
-          },
-        },
-      })
-      .then((purchaseOrders) => {
-        return purchaseOrders.map((somePurchaseOrder) => {
-          const ticketsIds = somePurchaseOrder.userTickets.map((ut) => ut.id);
-
-          return {
-            ticketsIds,
-            purchaseOrder: selectPurchaseOrdersSchema.parse(somePurchaseOrder),
-          };
-        });
-      });
+    const result = await context.DB.query.purchaseOrdersSchema.findMany({
+      where: (t, { inArray }) => inArray(t.id, ids),
+    });
 
     const resultByIdMap = new Map(
-      result.map((item) => [item.purchaseOrder.id, item]),
+      result.map((item) => [item.id, selectPurchaseOrdersSchema.parse(item)]),
     );
 
     return ids.map(
@@ -65,78 +46,94 @@ export const PurchaseOrderLoadable = builder.loadableObject(PurchaseOrderRef, {
     id: t.field({
       type: "ID",
       nullable: false,
-      resolve: (root) => root.purchaseOrder.id,
+      resolve: (root) => root.id,
     }),
     finalPrice: t.field({
       type: "Float",
       nullable: true,
       resolve: (root) => {
-        return root.purchaseOrder.totalPrice
-          ? parseFloat(root.purchaseOrder.totalPrice)
-          : null;
+        return root.totalPrice ? parseFloat(root.totalPrice) : null;
       },
     }),
     paymentLink: t.field({
       type: "String",
       nullable: true,
       resolve: (root) => {
-        return root.purchaseOrder.paymentPlatformPaymentLink;
+        return root.paymentPlatformPaymentLink;
       },
     }),
     currency: t.field({
       type: AllowedCurrencyLoadable,
       nullable: true,
-      resolve: (root) => root.purchaseOrder.currencyId,
+      resolve: (root) => root.currencyId,
     }),
     purchasePaymentStatus: t.field({
       type: PurchaseOrderPaymentStatusEnum,
       nullable: true,
       resolve: (root) => {
-        return root.purchaseOrder.purchaseOrderPaymentStatus;
+        return root.purchaseOrderPaymentStatus;
       },
     }),
     status: t.field({
       type: PurchaseOrderStatusEnum,
       nullable: true,
       resolve: (root) => {
-        return root.purchaseOrder.status;
+        return root.status;
       },
     }),
     paymentPlatform: t.field({
       type: "String",
       nullable: true,
       resolve: (root) => {
-        return root.purchaseOrder.paymentPlatform;
+        return root.paymentPlatform;
       },
     }),
     createdAt: t.field({
       type: "DateTime",
       nullable: true,
       resolve: (root) => {
-        return root.purchaseOrder.createdAt;
+        return root.createdAt;
       },
     }),
     publicId: t.field({
       type: "String",
       nullable: true,
       resolve: (root) => {
-        return root.purchaseOrder.publicId;
+        return root.publicId;
       },
     }),
-    tickets: t.field({
-      type: [UserTicketRef],
-      resolve: async (root, s, { DB }) => {
+    tickets: t.loadableList({
+      type: UserTicketRef,
+      load: async (ids: string[], { DB }) => {
+        const userTicketsByPurchaseOrderIdMap: Record<
+          string,
+          SelectUserTicketSchema[] | undefined
+        > = {};
+
         const userTickets = await DB.query.userTicketsSchema.findMany({
-          where: (ut, { eq, and }) =>
-            and(eq(ut.purchaseOrderId, root.purchaseOrder.id)),
+          where: (ut, ops) => ops.inArray(ut.purchaseOrderId, ids),
         });
 
-        return userTickets.map((ut) => selectUserTicketsSchema.parse(ut));
+        userTickets.forEach((ut) => {
+          if (!userTicketsByPurchaseOrderIdMap[ut.purchaseOrderId]) {
+            userTicketsByPurchaseOrderIdMap[ut.purchaseOrderId] = [];
+          }
+
+          userTicketsByPurchaseOrderIdMap[ut.purchaseOrderId]?.push(ut);
+        });
+
+        return ids.map((id) => userTicketsByPurchaseOrderIdMap[id] || []);
       },
+      resolve: (root) => root.id,
     }),
     userTicketAddons: t.loadableList({
       type: UserTicketAddonRef,
       load: async (ids: string[], { DB }) => {
+        const userTicketAddonsByPurchaseOrderIdMap: Record<
+          string,
+          SelectUserTicketAddonSchema[] | undefined
+        > = {};
+
         const userTicketAddons = await DB.query.userTicketAddonsSchema.findMany(
           {
             where: (uat, ops) => {
@@ -145,22 +142,17 @@ export const PurchaseOrderLoadable = builder.loadableObject(PurchaseOrderRef, {
           },
         );
 
-        const userTicketAddonsByPurchaseOrderIdMap: Record<
-          string,
-          SelectUserTicketAddonSchema[]
-        > = {};
-
         userTicketAddons.forEach((uat) => {
           if (!userTicketAddonsByPurchaseOrderIdMap[uat.purchaseOrderId]) {
             userTicketAddonsByPurchaseOrderIdMap[uat.purchaseOrderId] = [];
           }
 
-          userTicketAddonsByPurchaseOrderIdMap[uat.purchaseOrderId].push(uat);
+          userTicketAddonsByPurchaseOrderIdMap[uat.purchaseOrderId]?.push(uat);
         });
 
         return ids.map((id) => userTicketAddonsByPurchaseOrderIdMap[id] || []);
       },
-      resolve: (root) => root.purchaseOrder.id,
+      resolve: (root) => root.id,
     }),
   }),
 });
