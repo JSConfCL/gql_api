@@ -345,7 +345,7 @@ const constraintHelpers = {
           ${sql.join(
             constraints.map(
               (c) =>
-                sql`(${c.id}::uuid, ${c.relatedAddonId}::uuid, '${c.constraintType}')`,
+                sql`(${c.id}::uuid, ${c.relatedAddonId}::uuid, ${c.constraintType}::text)`,
             ),
             sql.raw(","),
           )}
