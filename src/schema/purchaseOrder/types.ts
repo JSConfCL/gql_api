@@ -104,14 +104,14 @@ export const PurchaseOrderLoadable = builder.loadableObject(PurchaseOrderRef, {
     }),
     tickets: t.loadableList({
       type: UserTicketRef,
-      load: async (ids: string[], { DB }) => {
+      load: async (purchaseOrderIds: string[], { DB }) => {
         const userTicketsByPurchaseOrderIdMap: Record<
           string,
           SelectUserTicketSchema[] | undefined
         > = {};
 
         const userTickets = await DB.query.userTicketsSchema.findMany({
-          where: (ut, ops) => ops.inArray(ut.purchaseOrderId, ids),
+          where: (ut, ops) => ops.inArray(ut.purchaseOrderId, purchaseOrderIds),
         });
 
         userTickets.forEach((ut) => {
@@ -122,13 +122,15 @@ export const PurchaseOrderLoadable = builder.loadableObject(PurchaseOrderRef, {
           userTicketsByPurchaseOrderIdMap[ut.purchaseOrderId]?.push(ut);
         });
 
-        return ids.map((id) => userTicketsByPurchaseOrderIdMap[id] || []);
+        return purchaseOrderIds.map(
+          (id) => userTicketsByPurchaseOrderIdMap[id] || [],
+        );
       },
       resolve: (root) => root.id,
     }),
     userTicketAddons: t.loadableList({
       type: UserTicketAddonRef,
-      load: async (ids: string[], { DB }) => {
+      load: async (purchaseOrdersIds: string[], { DB }) => {
         const userTicketAddonsByPurchaseOrderIdMap: Record<
           string,
           SelectUserTicketAddonSchema[] | undefined
@@ -137,7 +139,7 @@ export const PurchaseOrderLoadable = builder.loadableObject(PurchaseOrderRef, {
         const userTicketAddons = await DB.query.userTicketAddonsSchema.findMany(
           {
             where: (uat, ops) => {
-              return ops.inArray(uat.purchaseOrderId, ids);
+              return ops.inArray(uat.purchaseOrderId, purchaseOrdersIds);
             },
           },
         );
@@ -150,7 +152,9 @@ export const PurchaseOrderLoadable = builder.loadableObject(PurchaseOrderRef, {
           userTicketAddonsByPurchaseOrderIdMap[uat.purchaseOrderId]?.push(uat);
         });
 
-        return ids.map((id) => userTicketAddonsByPurchaseOrderIdMap[id] || []);
+        return purchaseOrdersIds.map(
+          (id) => userTicketAddonsByPurchaseOrderIdMap[id] || [],
+        );
       },
       resolve: (root) => root.id,
     }),

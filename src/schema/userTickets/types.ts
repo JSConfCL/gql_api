@@ -42,7 +42,12 @@ export const TicketRedemptionStatus = builder.enumType(
   },
 );
 
-builder.objectType(UserTicketRef, {
+export const UserTicketLoadable = builder.loadableObject(UserTicketRef, {
+  load: async (ids: string[], ctx) => {
+    return ctx.DB.query.userTicketsSchema.findMany({
+      where: (userTickets, { inArray }) => inArray(userTickets.id, ids),
+    });
+  },
   description: "Representation of a User ticket",
   fields: (t) => ({
     id: t.exposeID("id"),
@@ -116,7 +121,7 @@ builder.objectType(UserTicketRef, {
     }),
     transferAttempts: t.loadableList({
       type: UserTicketTransferRef,
-      load: async (ids: string[], ctx) => {
+      load: async (userTicketsIds: string[], ctx) => {
         const idToUserTicketTransferMap: Record<
           string,
           SelectUserTicketTransferSchema[] | undefined
@@ -132,7 +137,7 @@ builder.objectType(UserTicketRef, {
             eq(userTicketTransfersSchema.userTicketId, userTicketsSchema.id),
           )
           .innerJoin(usersSchema, eq(userTicketsSchema.userId, usersSchema.id))
-          .where(inArray(userTicketsSchema.id, ids));
+          .where(inArray(userTicketsSchema.id, userTicketsIds));
 
         userTicketTransfers.forEach((userTicketTransfer) => {
           const { transfer, userId } = userTicketTransfer;
@@ -150,20 +155,21 @@ builder.objectType(UserTicketRef, {
           idToUserTicketTransferMap[transfer.userTicketId]?.push(transfer);
         });
 
-        return ids.map((id) => idToUserTicketTransferMap[id] ?? []);
+        return userTicketsIds.map((id) => idToUserTicketTransferMap[id] ?? []);
       },
       resolve: (root) => root.id,
     }),
     userTicketAddons: t.loadableList({
       type: UserTicketAddonRef,
-      load: async (ids: string[], { DB }) => {
+      load: async (userTicketsIds: string[], { DB }) => {
         const userTicketAddons = await DB.query.userTicketAddonsSchema.findMany(
           {
-            where: (etc, { inArray }) => inArray(etc.userTicketId, ids),
+            where: (etc, { inArray }) =>
+              inArray(etc.userTicketId, userTicketsIds),
           },
         );
 
-        const resultGroupedByUserTicketId = ids.map((id) => {
+        const resultGroupedByUserTicketId = userTicketsIds.map((id) => {
           return userTicketAddons.filter((addon) => addon.userTicketId === id);
         });
 

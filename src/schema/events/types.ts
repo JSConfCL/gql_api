@@ -351,7 +351,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
         }),
       },
       byPath: true,
-      load: async (ids: string[], context, args) => {
+      load: async (eventsIds: string[], context, args) => {
         const { DB, USER } = context;
         const { input } = args;
 
@@ -360,7 +360,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
           SelectTicketSchema[] | undefined
         >();
 
-        const ticketsPromises = ids.map(async (eventId) => {
+        const ticketsPromises = eventsIds.map(async (eventId) => {
           // If the user is an admin, they can see all tickets, otherwise, only
           // active tickets are shown.
           let statusCheck: (typeof ticketStatusEnum)[number][] = ["active"];
@@ -407,7 +407,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
 
         await Promise.all(ticketsPromises);
 
-        return ids.map((id) => idToTicketsMap.get(id) || []);
+        return eventsIds.map((id) => idToTicketsMap.get(id) || []);
       },
       resolve: (root) => root.id,
     }),

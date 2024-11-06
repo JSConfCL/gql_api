@@ -6,17 +6,17 @@ import {
   selectAddonSchema,
   SelectTicketAddonSchema,
 } from "~/datasources/db/ticketAddons";
-import { SelectTicketSchema } from "~/datasources/db/tickets";
-import { SelectUserTicketSchema } from "~/datasources/db/userTickets";
 import {
   SelectUserTicketAddonSchema,
   UserTicketAddonApprovalStatus,
   UserTicketAddonRedemptionStatus,
 } from "~/datasources/db/userTicketsAddons";
-import { TicketRef, UserTicketRef, PriceRef } from "~/schema/shared/refs";
+import { PriceRef } from "~/schema/shared/refs";
 
 import { RESERVED_USER_TICKET_ADDON_APPROVAL_STATUSES } from "./constants";
 import { PurchaseOrderLoadable } from "../purchaseOrder/types";
+import { TicketLoadable } from "../ticket/types";
+import { UserTicketLoadable } from "../userTickets/types";
 
 export const AddonConstraintTypeEnum = builder.enumType(AddonConstraintType, {
   name: "AddonConstraintType",
@@ -38,7 +38,12 @@ export const UserTicketAddonApprovalStatusEnum = builder.enumType(
 
 export const AddonRef = builder.objectRef<SelectAddonSchema>("Addon");
 
-builder.objectType(AddonRef, {
+const AddonLoadable = builder.loadableObject(AddonRef, {
+  load: async (ids: string[], ctx) => {
+    return ctx.DB.query.addonsSchema.findMany({
+      where: (addons, { inArray }) => inArray(addons.id, ids),
+    });
+  },
   description: "Representation of an Addon",
   fields: (t) => ({
     id: t.exposeID("id"),
@@ -127,42 +132,12 @@ builder.objectType(TicketAddonRef, {
     addonId: t.exposeID("addonId"),
     ticketId: t.exposeID("ticketId"),
     orderDisplay: t.exposeInt("orderDisplay"),
-    addon: t.loadable({
-      type: AddonRef,
-      load: async (ids: string[], ctx) => {
-        const idToAddonMap: Record<string, SelectAddonSchema> = {};
-
-        const result = await ctx.DB.query.addonsSchema.findMany({
-          where: (addons, { inArray }) => inArray(addons.id, ids),
-        });
-
-        result.forEach((addon) => {
-          idToAddonMap[addon.id] = addon;
-        });
-
-        return ids.map(
-          (id) => idToAddonMap[id] || new Error(`Addon ${id} not found`),
-        );
-      },
+    addon: t.field({
+      type: AddonLoadable,
       resolve: (root) => root.addonId,
     }),
-    ticket: t.loadable({
-      type: TicketRef,
-      load: async (ids: string[], ctx) => {
-        const idToTicketMap: Record<string, SelectTicketSchema> = {};
-
-        const result = await ctx.DB.query.ticketsSchema.findMany({
-          where: (tickets, { inArray }) => inArray(tickets.id, ids),
-        });
-
-        result.forEach((ticket) => {
-          idToTicketMap[ticket.id] = ticket;
-        });
-
-        return ids.map(
-          (id) => idToTicketMap[id] || new Error(`Ticket ${id} not found`),
-        );
-      },
+    ticket: t.field({
+      type: TicketLoadable,
       resolve: (root) => root.ticketId,
     }),
   }),
@@ -186,47 +161,12 @@ builder.objectType(UserTicketAddonRef, {
       type: UserTicketAddonApprovalStatusEnum,
     }),
     purchaseOrderId: t.exposeID("purchaseOrderId"),
-    userTicket: t.loadable({
-      type: UserTicketRef,
-      load: async (ids: string[], { DB }) => {
-        const idToUserTicketMap: Record<string, SelectUserTicketSchema> = {};
-
-        const result = await DB.query.userTicketsSchema.findMany({
-          where: (userTickets, ops) => {
-            return ops.inArray(userTickets.id, ids);
-          },
-        });
-
-        result.forEach((userTicket) => {
-          idToUserTicketMap[userTicket.id] = userTicket;
-        });
-
-        return ids.map(
-          (id) =>
-            idToUserTicketMap[id] || new Error(`User ticket ${id} not found`),
-        );
-      },
+    userTicket: t.field({
+      type: UserTicketLoadable,
       resolve: (root) => root.userTicketId,
     }),
-    addon: t.loadable({
-      type: AddonRef,
-      load: async (ids: string[], { DB }) => {
-        const idToAddonMap: Record<string, SelectAddonSchema> = {};
-
-        const result = await DB.query.addonsSchema.findMany({
-          where: (addons, ops) => {
-            return ops.inArray(addons.id, ids);
-          },
-        });
-
-        result.forEach((addon) => {
-          idToAddonMap[addon.id] = addon;
-        });
-
-        return ids.map(
-          (id) => idToAddonMap[id] || new Error(`Addon ${id} not found`),
-        );
-      },
+    addon: t.field({
+      type: AddonLoadable,
       resolve: (root) => root.addonId,
     }),
     purchaseOrder: t.field({
