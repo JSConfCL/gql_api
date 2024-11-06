@@ -8,28 +8,36 @@ import { TicketTemplate9punto5 } from "emails/templates/helpers/9punto5";
 setDefaultOptions({ locale: es });
 
 type Props = {
-  recipientName: string;
-  recipientEmail: string;
-  senderName: string;
+  recipient: {
+    name: string;
+    email: string;
+  };
+  sender: {
+    name: string;
+  };
   ticketType: "CONFERENCE" | "EXPERIENCE";
   transferMessage?: string | null;
   expirationDate: Date;
 };
 
 export const TicketTransferSent9punto5 = ({
-  recipientName = "Juan",
-  recipientEmail = "pedro@example.com",
-  senderName = "Pedro",
-  ticketType = "CONFERENCE",
-  transferMessage = "Mensaje de regalo",
+  recipient = {
+    name: "Juan",
+    email: "juan@example.com",
+  },
+  sender = {
+    name: "Pedro",
+  },
+  ticketType,
+  transferMessage,
   expirationDate,
 }: Props) => {
   return (
     <TicketTemplate9punto5>
-      <Text>¡Hola {senderName}!</Text>
+      <Text>¡Hola {sender.name}!</Text>
 
       <Text>
-        Tu entrada para {recipientName} ({recipientEmail}) ha sido enviada con
+        Tu entrada para {recipient.name} ({recipient.email}) ha sido enviada con
         éxito. Aquí están los detalles:
       </Text>
 
@@ -44,12 +52,12 @@ export const TicketTransferSent9punto5 = ({
       )}
 
       <Text>
-        Hemos notificado a {recipientName} y le hemos proporcionado un enlace
+        Hemos notificado a {recipient.name} y le hemos proporcionado un enlace
         para confirmar su asistencia ingresando a https://9punto5.cl
       </Text>
 
       <Text>
-        {recipientName} tendrá hasta el{" "}
+        {recipient.name} tendrá hasta el{" "}
         <strong>
           {format(expirationDate, "dd 'de' MMMM 'a las' HH:mm")} hs
         </strong>{" "}

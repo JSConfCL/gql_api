@@ -9,8 +9,12 @@ setDefaultOptions({ locale: es });
 
 type Props = {
   transferId: string;
-  recipientName: string;
-  senderName: string;
+  recipient: {
+    name: string;
+  };
+  sender: {
+    name: string;
+  };
   ticketType: "CONFERENCE" | "EXPERIENCE";
   transferMessage?: string | null;
   expirationDate: Date;
@@ -18,18 +22,22 @@ type Props = {
 
 export const TicketTransferReceived9punto5 = ({
   transferId,
-  recipientName = "Juan",
-  senderName = "Pedro",
-  ticketType = "CONFERENCE",
-  transferMessage = "Mensaje de regalo",
+  recipient = {
+    name: "Juan",
+  },
+  sender = {
+    name: "Pedro",
+  },
+  ticketType,
+  transferMessage,
   expirationDate,
 }: Props) => {
   return (
     <TicketTemplate9punto5>
-      <Text>¡Hola {recipientName}!</Text>
+      <Text>¡Hola {recipient.name}!</Text>
 
       <Text>
-        Tenemos una gran noticia para ti. <strong>{senderName}</strong> te ha
+        Tenemos una gran noticia para ti. <strong>{sender.name}</strong> te ha
         enviado una entrada para:
       </Text>
 
