@@ -98,6 +98,70 @@ const executeClaimTicket = async (
   );
 };
 
+// Helper functions
+const assertSuccessfulPurchase = ({
+  response,
+  expectedTicketsCount,
+  message = "Should be a successful purchase",
+}: {
+  response: Awaited<ReturnType<typeof executeClaimTicket>>;
+  expectedTicketsCount?: number;
+  message?: string;
+}) => {
+  assert.equal(response.errors, undefined, `${message} - no errors`);
+
+  assert.equal(
+    response.data?.claimUserTicket?.__typename,
+    "PurchaseOrder",
+    `${message} - correct type`,
+  );
+
+  if (
+    response.data?.claimUserTicket?.__typename === "PurchaseOrder" &&
+    typeof expectedTicketsCount !== "undefined"
+  ) {
+    assert.equal(
+      response.data.claimUserTicket.tickets.length,
+      expectedTicketsCount,
+      `${message} - correct ticket count`,
+    );
+  }
+
+  if (response.data?.claimUserTicket?.__typename !== "PurchaseOrder") {
+    throw new Error("Unexpected response type");
+  }
+
+  return response.data.claimUserTicket;
+};
+
+const assertPurchaseError = ({
+  response,
+  expectedError,
+  message = "Should return expected error",
+}: {
+  response: Awaited<ReturnType<typeof executeClaimTicket>>;
+  expectedError: string;
+  message?: string;
+}) => {
+  assert.equal(response.errors, undefined, `${message} - no errors`);
+
+  assert.equal(
+    response.data?.claimUserTicket?.__typename,
+    "RedeemUserTicketError",
+    `${message} - error type`,
+  );
+
+  if (response.data?.claimUserTicket?.__typename === "RedeemUserTicketError") {
+    assert.include(
+      response.data.claimUserTicket.errorMessage,
+      expectedError,
+      `${message} - error message`,
+    );
+  }
+
+  return response.data?.claimUserTicket;
+};
+
 // Mock the handlePaymentLinkGeneration function
 vi.mock("~/schema/purchaseOrder/actions", () => ({
   handlePaymentLinkGeneration: vi.fn(),
@@ -132,13 +196,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
-
-      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
-
-      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
-        assert.equal(response.data?.claimUserTicket.tickets.length, 3);
-      }
+      assertSuccessfulPurchase({
+        response,
+        expectedTicketsCount: 3,
+      });
     });
 
     it("For an ADMIN user", async () => {
@@ -168,13 +229,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
-
-      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
-
-      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
-        assert.equal(response.data?.claimUserTicket.tickets.length, 3);
-      }
+      assertSuccessfulPurchase({
+        response,
+        expectedTicketsCount: 3,
+      });
     });
 
     it("For a COLLABORATOR user", async () => {
@@ -204,13 +262,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
-
-      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
-
-      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
-        assert.equal(response.data?.claimUserTicket.tickets.length, 3);
-      }
+      assertSuccessfulPurchase({
+        response,
+        expectedTicketsCount: 3,
+      });
     });
 
     it("For a SUPER ADMIN user", async () => {
@@ -238,13 +293,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
-
-      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
-
-      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
-        assert.equal(response.data?.claimUserTicket.tickets.length, 3);
-      }
+      assertSuccessfulPurchase({
+        response,
+        expectedTicketsCount: 3,
+      });
     });
   });
 
@@ -282,19 +334,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(
-        response.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
-
-      if (
-        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.equal(
-          response.data?.claimUserTicket.errorMessage,
-          `You cannot get more than ${maxTicketsPerUser} for ticket ${ticketTemplate.id}`,
-        );
-      }
+      assertPurchaseError({
+        response,
+        expectedError: `You cannot get more than ${maxTicketsPerUser} for ticket`,
+      });
     });
 
     it("Should not allow claiming more tickets than available", async () => {
@@ -327,21 +370,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
-
-      assert.equal(
-        response.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
-
-      if (
-        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.equal(
-          response.data?.claimUserTicket.errorMessage,
-          `We have gone over the limit of tickets for ticket template with id ${ticketTemplate.id}`,
-        );
-      }
+      assertPurchaseError({
+        response,
+        expectedError: `We have gone over the limit of tickets for ticket template with id ${ticketTemplate.id}`,
+      });
     });
 
     it("Should allow claiming up to the available quantity", async () => {
@@ -373,13 +405,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
-
-      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
-
-      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
-        assert.equal(response.data.claimUserTicket.tickets.length, 5);
-      }
+      assertSuccessfulPurchase({
+        response,
+        expectedTicketsCount: 5,
+      });
     });
 
     it("Should not count transferred tickets towards maxTicketsPerUser limit", async () => {
@@ -442,19 +471,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response2.errors, undefined);
-
-      assert.equal(
-        response2.data?.claimUserTicket?.__typename,
-        "PurchaseOrder",
-      );
-
-      if (response2.data?.claimUserTicket?.__typename === "PurchaseOrder") {
-        assert.equal(
-          response2.data.claimUserTicket.tickets.length,
-          maxTicketsPerUser,
-        );
-      }
+      assertSuccessfulPurchase({
+        response: response2,
+        expectedTicketsCount: maxTicketsPerUser,
+      });
     });
   });
 
@@ -495,24 +515,17 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
+      const purchaseOrder = assertSuccessfulPurchase({
+        response,
+        expectedTicketsCount: 2,
+      });
 
-      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+      assert.equal(purchaseOrder.tickets[0].transferAttempts.length, 1);
 
-      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
-        assert.equal(response.data.claimUserTicket.tickets.length, 2);
-
-        assert.equal(
-          response.data.claimUserTicket.tickets[0].transferAttempts.length,
-          1,
-        );
-
-        assert.equal(
-          response.data.claimUserTicket.tickets[0].transferAttempts[0].recipient
-            .email,
-          transferRecipient.email,
-        );
-      }
+      assert.equal(
+        purchaseOrder.tickets[0].transferAttempts[0].recipient.email,
+        transferRecipient.email,
+      );
     });
 
     it("Should not allow transferring to self", async () => {
@@ -546,21 +559,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
-
-      assert.equal(
-        response.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
-
-      if (
-        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.equal(
-          response.data.claimUserTicket.errorMessage,
-          "Cannot transfer to yourself",
-        );
-      }
+      assertPurchaseError({
+        response,
+        expectedError: "Cannot transfer to yourself",
+      });
     });
   });
 
@@ -585,21 +587,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
-
-      assert.equal(
-        response.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
-
-      if (
-        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.equal(
-          response.data?.claimUserTicket.errorMessage,
-          `Ticket ${ticketTemplate.id} is a waitlist ticket. Cannot claim waitlist tickets`,
-        );
-      }
+      assertPurchaseError({
+        response,
+        expectedError: `Ticket ${ticketTemplate.id} is a waitlist ticket. Cannot claim waitlist tickets`,
+      });
     });
   });
 
@@ -634,21 +625,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
-
-      assert.equal(
-        response.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
-
-      if (
-        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.equal(
-          response.data?.claimUserTicket.errorMessage,
-          `Event ${event.id} is not active. Cannot claim tickets for an inactive event.`,
-        );
-      }
+      assertPurchaseError({
+        response,
+        expectedError: `Event ${event.id} is not active. Cannot claim tickets for an inactive event.`,
+      });
     });
   });
 
@@ -707,18 +687,13 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
+      const purchaseOrder = assertSuccessfulPurchase({
+        response,
+      });
 
-      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+      assert.equal(purchaseOrder.paymentLink, "https://stripe.com/pay/123");
 
-      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
-        assert.equal(
-          response.data.claimUserTicket.paymentLink,
-          "https://stripe.com/pay/123",
-        );
-
-        assert.equal(response.data.claimUserTicket.paymentPlatform, "stripe");
-      }
+      assert.equal(purchaseOrder.paymentPlatform, "stripe");
 
       expect(handlePaymentLinkGeneration).toHaveBeenCalled();
     });
@@ -745,15 +720,13 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
+      const purchaseOrder = assertSuccessfulPurchase({
+        response,
+      });
 
-      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+      assert.isNull(purchaseOrder.paymentLink);
 
-      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
-        assert.isNull(response.data.claimUserTicket.paymentLink);
-
-        assert.isNull(response.data.claimUserTicket.paymentPlatform);
-      }
+      assert.isNull(purchaseOrder.paymentPlatform);
 
       expect(handlePaymentLinkGeneration).not.toHaveBeenCalled();
     });
@@ -816,28 +789,20 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
+      const purchaseOrder = assertSuccessfulPurchase({
+        response,
+        expectedTicketsCount: 1,
+        message: "Should successfully claim tickets with addons",
+      });
 
-      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+      assert.equal(purchaseOrder.tickets[0].userTicketAddons.length, 1);
 
-      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
-        assert.equal(response.data.claimUserTicket.tickets.length, 1);
+      assert.equal(purchaseOrder.tickets[0].userTicketAddons[0].quantity, 2);
 
-        assert.equal(
-          response.data.claimUserTicket.tickets[0].userTicketAddons.length,
-          1,
-        );
-
-        assert.equal(
-          response.data.claimUserTicket.tickets[0].userTicketAddons[0].quantity,
-          2,
-        );
-
-        assert.equal(
-          response.data.claimUserTicket.tickets[0].userTicketAddons[0].addon.id,
-          addon.id,
-        );
-      }
+      assert.equal(
+        purchaseOrder.tickets[0].userTicketAddons[0].addon.id,
+        addon.id,
+      );
     });
 
     it("Should not allow claiming more addons than maxPerTicket", async () => {
@@ -896,21 +861,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
-
-      assert.equal(
-        response.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
-
-      if (
-        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.include(
-          response.data.claimUserTicket.errorMessage,
-          `total quantity exceeds limit per ticket for ticket`,
-        );
-      }
+      assertPurchaseError({
+        response,
+        expectedError: `total quantity exceeds limit per ticket for ticket`,
+      });
     });
 
     it("Should not allow claiming addons that are not associated with the ticket", async () => {
@@ -927,7 +881,6 @@ describe("Claim a user ticket", () => {
       });
 
       // Not associating the addon with the ticket
-
       await insertAddonPrice({
         addonId: addon.id,
         priceId: (
@@ -965,21 +918,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
-
-      assert.equal(
-        response.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
-
-      if (
-        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.include(
-          response.data.claimUserTicket.errorMessage,
-          `Addon ${addon.id} is not related to ticket ${ticketTemplate.id}`,
-        );
-      }
+      assertPurchaseError({
+        response,
+        expectedError: `Addon ${addon.id} is not related to ticket ${ticketTemplate.id}`,
+      });
     });
 
     it("Should handle addon constraints", async () => {
@@ -1073,21 +1015,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
-
-      assert.equal(
-        response.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
-
-      if (
-        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.include(
-          response.data.claimUserTicket.errorMessage,
-          "mutually exclusive",
-        );
-      }
+      assertPurchaseError({
+        response,
+        expectedError: "mutually exclusive",
+      });
     });
 
     it("Should not allow claiming more addons than total stock", async () => {
@@ -1146,21 +1077,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
-
-      assert.equal(
-        response.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
-
-      if (
-        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.include(
-          response.data.claimUserTicket.errorMessage,
-          "gone over the limit of addons",
-        );
-      }
+      assertPurchaseError({
+        response,
+        expectedError: "gone over the limit of addons",
+      });
     });
 
     it("Should allow claiming unlimited addons", async () => {
@@ -1219,28 +1139,16 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
+      const result = assertSuccessfulPurchase({
+        response,
+        expectedTicketsCount: 1,
+      });
 
-      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+      assert.equal(result.tickets[0].userTicketAddons.length, 1);
 
-      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
-        assert.equal(response.data.claimUserTicket.tickets.length, 1);
+      assert.equal(result.tickets[0].userTicketAddons[0].quantity, 1000);
 
-        assert.equal(
-          response.data.claimUserTicket.tickets[0].userTicketAddons.length,
-          1,
-        );
-
-        assert.equal(
-          response.data.claimUserTicket.tickets[0].userTicketAddons[0].quantity,
-          100,
-        );
-
-        assert.equal(
-          response.data.claimUserTicket.tickets[0].userTicketAddons[0].addon.id,
-          addon.id,
-        );
-      }
+      assert.equal(result.tickets[0].userTicketAddons[0].addon.id, addon.id);
     });
   });
 
@@ -1293,10 +1201,9 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(
-        response1.data?.claimUserTicket?.__typename,
-        "PurchaseOrder",
-      );
+      assertSuccessfulPurchase({
+        response: response1,
+      });
 
       // Second user purchases 4 tickets
       const response2 = await executeClaimTicket(user2, {
@@ -1311,10 +1218,9 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(
-        response2.data?.claimUserTicket?.__typename,
-        "PurchaseOrder",
-      );
+      assertSuccessfulPurchase({
+        response: response2,
+      });
 
       // Third purchase should fail as only 2 tickets remain
       const response3 = await executeClaimTicket(user3, {
@@ -1329,19 +1235,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(
-        response3.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
-
-      if (
-        response3.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
-      ) {
-        assert.equal(
-          response3.data?.claimUserTicket?.errorMessage,
-          `We have gone over the limit of tickets for ticket template with id ${ticketTemplate.id}`,
-        );
-      }
+      assertPurchaseError({
+        response: response3,
+        expectedError: `We have gone over the limit of tickets for ticket template with id ${ticketTemplate.id}`,
+      });
 
       // should succeed as 2 tickets remain
       const response4 = await executeClaimTicket(user3, {
@@ -1356,10 +1253,9 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(
-        response4.data?.claimUserTicket?.__typename,
-        "PurchaseOrder",
-      );
+      assertSuccessfulPurchase({
+        response: response4,
+      });
     });
 
     it("Should handle concurrent ticket purchases correctly", async () => {
@@ -1484,39 +1380,36 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response.errors, undefined);
+      const result = assertSuccessfulPurchase({
+        response,
+        expectedTicketsCount: 3,
+      });
 
-      assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
+      const tickets = result.tickets;
 
-      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
-        const tickets = response.data.claimUserTicket.tickets;
+      // Verify transfer attempts
+      const transferredTickets = tickets.filter(
+        (ticket) => ticket.transferAttempts.length > 0,
+      );
 
-        assert.equal(tickets.length, 3);
+      assert.equal(transferredTickets.length, 2);
 
-        // Verify transfer attempts
-        const transferredTickets = tickets.filter(
-          (ticket) => ticket.transferAttempts.length > 0,
-        );
+      // verify the tickets transferred to the correct users
+      const recipient1Ticket = transferredTickets.find(
+        (ticket) =>
+          ticket.transferAttempts[0].recipient.email === recipient1.email,
+      );
 
-        assert.equal(transferredTickets.length, 2);
+      const recipient2Ticket = transferredTickets.find(
+        (ticket) =>
+          ticket.transferAttempts[0].recipient.email === recipient2.email,
+      );
 
-        // verify the tickets transferred to the correct users
-        const recipient1Ticket = transferredTickets.find(
-          (ticket) =>
-            ticket.transferAttempts[0].recipient.email === recipient1.email,
-        );
+      assert.exists(recipient1Ticket);
 
-        const recipient2Ticket = transferredTickets.find(
-          (ticket) =>
-            ticket.transferAttempts[0].recipient.email === recipient2.email,
-        );
+      assert.exists(recipient2Ticket);
 
-        assert.exists(recipient1Ticket);
-
-        assert.exists(recipient2Ticket);
-
-        assert.notEqual(recipient1Ticket?.id, recipient2Ticket?.id);
-      }
+      assert.notEqual(recipient1Ticket?.id, recipient2Ticket?.id);
     });
 
     it("Should handle edge case of exactly reaching ticket limits", async () => {
@@ -1551,10 +1444,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(
-        response1.data?.claimUserTicket?.__typename,
-        "PurchaseOrder",
-      );
+      assertSuccessfulPurchase({
+        response: response1,
+        expectedTicketsCount: totalTickets,
+      });
 
       // Attempt to purchase one more ticket
       const response2 = await executeClaimTicket(user, {
@@ -1569,10 +1462,10 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(
-        response2.data?.claimUserTicket?.__typename,
-        "RedeemUserTicketError",
-      );
+      assertPurchaseError({
+        response: response2,
+        expectedError: `We have gone over the limit of tickets for ticket template with id ${ticketTemplate.id}`,
+      });
     });
   });
 });
