@@ -1,6 +1,7 @@
 import { and, count, eq, inArray } from "drizzle-orm";
 
 import { builder } from "~/builder";
+import { ticketsSchema } from "~/datasources/db/tickets";
 import { userTicketsSchema } from "~/datasources/db/userTickets";
 import { EventLoadable } from "~/schema/events/types";
 import { PriceRef, TicketRef } from "~/schema/shared/refs";
@@ -72,34 +73,53 @@ export const TicketLoadable = builder.loadableObject(TicketRef, {
       description: "The number of tickets available for this ticket type",
       nullable: true,
     }),
-    quantityLeft: t.field({
+    quantityLeft: t.loadable({
       type: "Int",
       nullable: true,
-      resolve: async (root, args, ctx) => {
-        if (root.isUnlimited) {
-          return null;
-        }
-
-        if (root.quantity === null) {
-          return null;
-        }
-
-        const [userTicketsCount] = await ctx.DB.select({
-          count: count(userTicketsSchema.id),
+      load: async (ticketIds: string[], ctx) => {
+        // Get all tickets and their reserved counts in one query
+        const ticketsWithCounts = await ctx.DB.select({
+          id: ticketsSchema.id,
+          isUnlimited: ticketsSchema.isUnlimited,
+          quantity: ticketsSchema.quantity,
+          reservedCount: count(userTicketsSchema.id),
         })
-          .from(userTicketsSchema)
-          .where(
+          .from(ticketsSchema)
+          .leftJoin(
+            userTicketsSchema,
             and(
-              eq(userTicketsSchema.ticketTemplateId, root.id),
+              eq(ticketsSchema.id, userTicketsSchema.ticketTemplateId),
               inArray(
                 userTicketsSchema.approvalStatus,
                 RESERVED_USER_TICKET_APPROVAL_STATUSES,
               ),
             ),
-          );
+          )
+          .where(inArray(ticketsSchema.id, ticketIds))
+          .groupBy(ticketsSchema.id);
 
-        return root.quantity - userTicketsCount.count;
+        // Create a map for easy lookup
+        const countsMap = new Map(
+          ticketsWithCounts.map(
+            ({ id, isUnlimited, quantity, reservedCount }) => [
+              id,
+              { isUnlimited, quantity, reservedCount },
+            ],
+          ),
+        );
+
+        // Return array matching the input ticketIds order
+        return ticketIds.map((id) => {
+          const ticket = countsMap.get(id);
+
+          if (!ticket || ticket.isUnlimited || ticket.quantity === null) {
+            return null;
+          }
+
+          return ticket.quantity - ticket.reservedCount;
+        });
       },
+      resolve: (root) => root.id,
     }),
     imageLink: t.exposeString("imageLink", { nullable: true }),
     externalLink: t.exposeString("externalLink", { nullable: true }),
