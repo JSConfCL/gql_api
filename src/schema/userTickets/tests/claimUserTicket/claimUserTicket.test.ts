@@ -1146,7 +1146,7 @@ describe("Claim a user ticket", () => {
 
       assert.equal(result.tickets[0].userTicketAddons.length, 1);
 
-      assert.equal(result.tickets[0].userTicketAddons[0].quantity, 1000);
+      assert.equal(result.tickets[0].userTicketAddons[0].quantity, 100);
 
       assert.equal(result.tickets[0].userTicketAddons[0].addon.id, addon.id);
     });
