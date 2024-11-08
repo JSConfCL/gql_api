@@ -73,3 +73,5 @@ export * from "~/datasources/db/ticketAddons";
 export * from "~/datasources/db/ticketsAddonsPrices";
 
 export * from "~/datasources/db/userTicketsAddons";
+
+export * from "~/datasources/db/coupons";
