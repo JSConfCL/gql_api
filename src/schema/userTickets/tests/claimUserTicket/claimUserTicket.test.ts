@@ -25,7 +25,6 @@ import {
   insertAddon,
   insertAddonConstraint,
   insertTicketAddon,
-  insertAddonPrice,
   SAMPLE_TEST_UUID,
 } from "~/tests/fixtures";
 
@@ -94,6 +93,43 @@ const createTestSetup = async ({
     ticketPrice: createdTicketPrice,
     usdAllowedCurrency,
   };
+};
+
+const setupAddonTest = async ({
+  testSetup,
+  addonOptions = {},
+  orderDisplay = 1,
+}: {
+  testSetup: TestSetupResult;
+  addonOptions?: Partial<{
+    name: string;
+    description: string;
+    totalStock: number | null;
+    maxPerTicket: number | null;
+    isUnlimited: boolean;
+    eventId: string;
+  }>;
+  orderDisplay?: number;
+}) => {
+  const { event, ticketTemplate } = testSetup;
+
+  const addon = await insertAddon({
+    name: "Test Addon",
+    description: "Test Addon Description",
+    totalStock: 100,
+    maxPerTicket: 2,
+    isUnlimited: false,
+    eventId: event.id,
+    ...addonOptions,
+  });
+
+  await insertTicketAddon({
+    ticketId: ticketTemplate.id,
+    addonId: addon.id,
+    orderDisplay,
+  });
+
+  return addon;
 };
 
 const executeClaimTicket = async (
@@ -313,25 +349,19 @@ describe("Claim a user ticket", () => {
   describe("Should handle quantity limits", () => {
     it("Should not allow claiming more tickets than the max per user", async () => {
       const maxTicketsPerUser = 2;
-
-      const { community, user, ticketTemplate } = await createTestSetup({
+      const { user, ticketTemplate } = await createTestSetup({
         ticketTemplate: {
           maxTicketsPerUser,
           quantity: 200,
         },
       });
 
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
       const response = await executeClaimTicket(user, {
         input: {
           purchaseOrder: [
             {
               ticketId: ticketTemplate.id,
-              quantity: 2,
+              quantity: maxTicketsPerUser,
               itemsDetails: [],
             },
             {
@@ -350,23 +380,20 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should not allow claiming more tickets than available", async () => {
-      const { community, user, ticketTemplate } = await createTestSetup({
+      const maxTickets = 5;
+
+      const { user, ticketTemplate } = await createTestSetup({
         ticketTemplate: {
-          quantity: 5,
+          quantity: maxTickets,
         },
       });
 
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
       const response = await executeClaimTicket(user, {
         input: {
           purchaseOrder: [
             {
               ticketId: ticketTemplate.id,
-              quantity: 10,
+              quantity: maxTickets,
               itemsDetails: [],
             },
             {
@@ -385,12 +412,14 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should allow claiming up to the available quantity", async () => {
+      const maxGlobalTicketsAndPerUser = 5;
+
       const { community, user, ticketTemplate } = await createTestSetup({
         ticketTemplate: {
-          quantity: 5,
+          quantity: maxGlobalTicketsAndPerUser,
           isFree: true,
           isUnlimited: false,
-          maxTicketsPerUser: 5,
+          maxTicketsPerUser: maxGlobalTicketsAndPerUser,
         },
       });
 
@@ -405,7 +434,7 @@ describe("Claim a user ticket", () => {
           purchaseOrder: [
             {
               ticketId: ticketTemplate.id,
-              quantity: 5,
+              quantity: maxGlobalTicketsAndPerUser,
               itemsDetails: [],
             },
           ],
@@ -414,26 +443,21 @@ describe("Claim a user ticket", () => {
 
       assertSuccessfulPurchase({
         response,
-        expectedTicketsCount: 5,
+        expectedTicketsCount: maxGlobalTicketsAndPerUser,
       });
     });
 
     it("Should not count transferred tickets towards maxTicketsPerUser limit", async () => {
       const maxTicketsPerUser = 2;
-      const { community, user, ticketTemplate } = await createTestSetup({
-        ticketTemplate: {
-          maxTicketsPerUser,
-          quantity: 200,
-        },
-      });
 
-      const transferRecipient = await insertUser();
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
+      const [{ user, ticketTemplate }, transferRecipient] = await Promise.all([
+        createTestSetup({
+          ticketTemplate: {
+            maxTicketsPerUser,
+          },
+        }),
+        insertUser(),
+      ]);
 
       // First claim with transfer
       const response1 = await executeClaimTicket(user, {
@@ -457,12 +481,7 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      assert.equal(response1.errors, undefined);
-
-      assert.equal(
-        response1.data?.claimUserTicket?.__typename,
-        "PurchaseOrder",
-      );
+      assertSuccessfulPurchase({ response: response1 });
 
       // Second claim for maxTicketsPerUser tickets - should succeed as transferred tickets don't count
       const response2 = await executeClaimTicket(user, {
@@ -486,18 +505,10 @@ describe("Claim a user ticket", () => {
 
   describe("Should handle transferring scenarios", () => {
     it("Should handle transferring to another user", async () => {
-      const { community, user, ticketTemplate } = await createTestSetup({
-        ticketTemplate: {
-          quantity: 10,
-        },
-      });
-      const transferRecipient = await insertUser();
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
+      const [{ user, ticketTemplate }, transferRecipient] = await Promise.all([
+        createTestSetup(),
+        insertUser(),
+      ]);
 
       const response = await executeClaimTicket(user, {
         input: {
@@ -534,13 +545,7 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should not allow transferring to self", async () => {
-      const { community, user, ticketTemplate } = await createTestSetup();
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
+      const { user, ticketTemplate } = await createTestSetup();
 
       const response = await executeClaimTicket(user, {
         input: {
@@ -599,17 +604,12 @@ describe("Claim a user ticket", () => {
 
   describe("Should NOT allow claiming", () => {
     it("if the event is Inactive", async () => {
-      const { community, user, ticketTemplate, event } = await createTestSetup({
+      const { user, ticketTemplate, event } = await createTestSetup({
         event: {
           status: "inactive",
         },
       });
 
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
       const response = await executeClaimTicket(user, {
         input: {
           purchaseOrder: [
@@ -641,19 +641,14 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should generate a payment link when requested", async () => {
-      const { community, user, ticketTemplate } = await createTestSetup();
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
+      const { user, ticketTemplate, usdAllowedCurrency } =
+        await createTestSetup();
 
       vi.mocked(handlePaymentLinkGeneration).mockResolvedValue({
         purchaseOrder: {
           id: SAMPLE_TEST_UUID,
           publicId: "some-public-id",
-          userId: "some-user-id",
+          userId: user.id,
           idempotencyUUIDKey: "some-idempotency-key",
           totalPrice: "100",
           description: null,
@@ -683,7 +678,7 @@ describe("Claim a user ticket", () => {
             },
           ],
           generatePaymentLink: {
-            currencyId: "some-currency-id",
+            currencyId: usdAllowedCurrency.id,
           },
         },
       });
@@ -700,13 +695,7 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should not generate a payment link when not requested", async () => {
-      const { community, user, ticketTemplate } = await createTestSetup();
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
+      const { user, ticketTemplate } = await createTestSetup();
 
       const response = await executeClaimTicket(user, {
         input: {
@@ -734,39 +723,9 @@ describe("Claim a user ticket", () => {
 
   describe("Addon handling", () => {
     it("Should allow claiming tickets with addons", async () => {
-      const { community, user, ticketTemplate, event, usdAllowedCurrency } =
-        await createTestSetup();
-
-      const addon = await insertAddon({
-        name: "Test Addon",
-        description: "Test Addon Description",
-        totalStock: 100,
-        maxPerTicket: 2,
-        isUnlimited: false,
-        eventId: event.id,
-      });
-
-      await insertTicketAddon({
-        ticketId: ticketTemplate.id,
-        addonId: addon.id,
-        orderDisplay: 1,
-      });
-
-      await insertAddonPrice({
-        addonId: addon.id,
-        priceId: (
-          await insertPrice({
-            price_in_cents: 100_00,
-            currencyId: usdAllowedCurrency.id,
-          })
-        ).id,
-      });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
+      const testSetup = await createTestSetup();
+      const { user, ticketTemplate } = testSetup;
+      const addon = await setupAddonTest({ testSetup });
 
       const response = await executeClaimTicket(user, {
         input: {
@@ -806,39 +765,9 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should not allow claiming more addons than maxPerTicket", async () => {
-      const { community, user, ticketTemplate, event, usdAllowedCurrency } =
-        await createTestSetup();
-
-      const addon = await insertAddon({
-        name: "Test Addon",
-        description: "Test Addon Description",
-        totalStock: 100,
-        maxPerTicket: 2,
-        isUnlimited: false,
-        eventId: event.id,
-      });
-
-      await insertTicketAddon({
-        ticketId: ticketTemplate.id,
-        addonId: addon.id,
-        orderDisplay: 1,
-      });
-
-      await insertAddonPrice({
-        addonId: addon.id,
-        priceId: (
-          await insertPrice({
-            price_in_cents: 100_00,
-            currencyId: usdAllowedCurrency.id,
-          })
-        ).id,
-      });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
+      const testSetup = await createTestSetup();
+      const { user, ticketTemplate } = testSetup;
+      const addon = await setupAddonTest({ testSetup });
 
       const response = await executeClaimTicket(user, {
         input: {
@@ -868,9 +797,10 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should not allow claiming addons that are not associated with the ticket", async () => {
-      const { community, user, ticketTemplate, event, usdAllowedCurrency } =
-        await createTestSetup();
+      const testSetup = await createTestSetup();
+      const { user, ticketTemplate, event } = testSetup;
 
+      // Not associating the addon with the ticket
       const addon = await insertAddon({
         name: "Test Addon",
         description: "Test Addon Description",
@@ -878,23 +808,6 @@ describe("Claim a user ticket", () => {
         maxPerTicket: 2,
         isUnlimited: false,
         eventId: event.id,
-      });
-
-      // Not associating the addon with the ticket
-      await insertAddonPrice({
-        addonId: addon.id,
-        priceId: (
-          await insertPrice({
-            price_in_cents: 100_00,
-            currencyId: usdAllowedCurrency.id,
-          })
-        ).id,
-      });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
       });
 
       const response = await executeClaimTicket(user, {
@@ -925,69 +838,38 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should handle addon constraints", async () => {
-      const { community, user, ticketTemplate, event, usdAllowedCurrency } =
-        await createTestSetup();
+      const testSetup = await createTestSetup();
+      const { user, ticketTemplate } = testSetup;
 
-      const addon1 = await insertAddon({
-        name: "Addon 1",
-        description: "Addon 1 Description",
-        totalStock: 100,
-        maxPerTicket: 1,
-        isUnlimited: false,
-        eventId: event.id,
-      });
-
-      const addon2 = await insertAddon({
-        name: "Addon 2",
-        description: "Addon 2 Description",
-        totalStock: 100,
-        maxPerTicket: 1,
-        isUnlimited: false,
-        eventId: event.id,
-      });
-
-      await insertTicketAddon({
-        ticketId: ticketTemplate.id,
-        addonId: addon1.id,
-        orderDisplay: 1,
-      });
-
-      await insertTicketAddon({
-        ticketId: ticketTemplate.id,
-        addonId: addon2.id,
-        orderDisplay: 2,
-      });
-
-      await insertAddonPrice({
-        addonId: addon1.id,
-        priceId: (
-          await insertPrice({
-            price_in_cents: 100_00,
-            currencyId: usdAllowedCurrency.id,
-          })
-        ).id,
-      });
-
-      await insertAddonPrice({
-        addonId: addon2.id,
-        priceId: (
-          await insertPrice({
-            price_in_cents: 100_00,
-            currencyId: usdAllowedCurrency.id,
-          })
-        ).id,
-      });
+      const [addon1, addon2] = await Promise.all([
+        setupAddonTest({
+          testSetup,
+          addonOptions: {
+            name: "Addon 1",
+            description: "Addon 1 Description",
+            totalStock: 100,
+            maxPerTicket: 1,
+            isUnlimited: false,
+          },
+          orderDisplay: 1,
+        }),
+        setupAddonTest({
+          testSetup,
+          addonOptions: {
+            name: "Addon 2",
+            description: "Addon 2 Description",
+            totalStock: 100,
+            maxPerTicket: 1,
+            isUnlimited: false,
+          },
+          orderDisplay: 2,
+        }),
+      ]);
 
       await insertAddonConstraint({
         addonId: addon1.id,
         relatedAddonId: addon2.id,
         constraintType: AddonConstraintType.MUTUAL_EXCLUSION,
-      });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
       });
 
       const response = await executeClaimTicket(user, {
@@ -1022,38 +904,20 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should not allow claiming more addons than total stock", async () => {
-      const { community, user, ticketTemplate, event, usdAllowedCurrency } =
-        await createTestSetup();
+      const testSetup = await createTestSetup();
+      const { user, ticketTemplate } = testSetup;
 
-      const addon = await insertAddon({
-        name: "Limited Addon",
-        description: "Limited Addon Description",
-        totalStock: 5,
-        maxPerTicket: 10,
-        isUnlimited: false,
-        eventId: event.id,
-      });
+      const MAX_ADDON_TOTAL_STOCK = 5;
 
-      await insertTicketAddon({
-        ticketId: ticketTemplate.id,
-        addonId: addon.id,
-        orderDisplay: 1,
-      });
-
-      await insertAddonPrice({
-        addonId: addon.id,
-        priceId: (
-          await insertPrice({
-            price_in_cents: 100_00,
-            currencyId: usdAllowedCurrency.id,
-          })
-        ).id,
-      });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
+      const addon = await setupAddonTest({
+        testSetup,
+        addonOptions: {
+          name: "Limited Addon",
+          description: "Limited Addon Description",
+          totalStock: MAX_ADDON_TOTAL_STOCK,
+          maxPerTicket: 10,
+          isUnlimited: false,
+        },
       });
 
       const response = await executeClaimTicket(user, {
@@ -1067,7 +931,7 @@ describe("Claim a user ticket", () => {
                   addons: [
                     {
                       addonId: addon.id,
-                      quantity: 6,
+                      quantity: MAX_ADDON_TOTAL_STOCK + 1,
                     },
                   ],
                 },
@@ -1084,38 +948,17 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should allow claiming unlimited addons", async () => {
-      const { community, user, ticketTemplate, event, usdAllowedCurrency } =
-        await createTestSetup();
-
-      const addon = await insertAddon({
-        name: "Unlimited Addon",
-        description: "Unlimited Addon Description",
-        totalStock: null,
-        maxPerTicket: null,
-        isUnlimited: true,
-        eventId: event.id,
-      });
-
-      await insertTicketAddon({
-        ticketId: ticketTemplate.id,
-        addonId: addon.id,
-        orderDisplay: 1,
-      });
-
-      await insertAddonPrice({
-        addonId: addon.id,
-        priceId: (
-          await insertPrice({
-            price_in_cents: 100_00,
-            currencyId: usdAllowedCurrency.id,
-          })
-        ).id,
-      });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
+      const testSetup = await createTestSetup();
+      const { user, ticketTemplate } = testSetup;
+      const addon = await setupAddonTest({
+        testSetup,
+        addonOptions: {
+          name: "Unlimited Addon",
+          description: "Unlimited Addon Description",
+          totalStock: null,
+          maxPerTicket: null,
+          isUnlimited: true,
+        },
       });
 
       const response = await executeClaimTicket(user, {
@@ -1139,56 +982,40 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      const result = assertSuccessfulPurchase({
+      const purchaseOrder = assertSuccessfulPurchase({
         response,
         expectedTicketsCount: 1,
       });
 
-      assert.equal(result.tickets[0].userTicketAddons.length, 1);
+      assert.equal(purchaseOrder.tickets[0].userTicketAddons.length, 1);
 
-      assert.equal(result.tickets[0].userTicketAddons[0].quantity, 100);
+      assert.equal(purchaseOrder.tickets[0].userTicketAddons[0].quantity, 100);
 
-      assert.equal(result.tickets[0].userTicketAddons[0].addon.id, addon.id);
+      assert.equal(
+        purchaseOrder.tickets[0].userTicketAddons[0].addon.id,
+        addon.id,
+      );
     });
   });
 
   describe("Should handle complex ticket quantity scenarios", () => {
     it("Should track global ticket count correctly across users", async () => {
       const totalTickets = 10;
-      const { community, ticketTemplate } = await createTestSetup({
-        ticketTemplate: {
-          quantity: totalTickets,
-          maxTicketsPerUser: 5,
-          isFree: true,
-        },
-      });
-
-      const [user1, user2, user3] = await Promise.all([
+      const maxTicketsPerUser = 5;
+      const [{ ticketTemplate, user }, user2, user3] = await Promise.all([
+        createTestSetup({
+          ticketTemplate: {
+            quantity: totalTickets,
+            maxTicketsPerUser,
+            isFree: true,
+          },
+        }),
         insertUser(),
         insertUser(),
-        insertUser(),
-      ]);
-
-      await Promise.all([
-        insertUserToCommunity({
-          communityId: community.id,
-          userId: user1.id,
-          role: "member",
-        }),
-        insertUserToCommunity({
-          communityId: community.id,
-          userId: user2.id,
-          role: "member",
-        }),
-        insertUserToCommunity({
-          communityId: community.id,
-          userId: user3.id,
-          role: "member",
-        }),
       ]);
 
       // First user purchases 4 tickets
-      const response1 = await executeClaimTicket(user1, {
+      const response1 = await executeClaimTicket(user, {
         input: {
           purchaseOrder: [
             {
@@ -1259,29 +1086,19 @@ describe("Claim a user ticket", () => {
 
     it("Should handle concurrent ticket purchases correctly", async () => {
       const totalTickets = 5;
-      const { community, ticketTemplate } = await createTestSetup({
-        ticketTemplate: {
-          quantity: totalTickets,
-          maxTicketsPerUser: 5,
-          isFree: true,
-        },
-      });
-
-      const users = await Promise.all(
-        Array(3)
+      const maxTicketsPerUser = 5;
+      const [{ ticketTemplate }, ...users] = await Promise.all([
+        createTestSetup({
+          ticketTemplate: {
+            quantity: totalTickets,
+            maxTicketsPerUser,
+            isFree: true,
+          },
+        }),
+        ...Array(3)
           .fill(null)
           .map(() => insertUser()),
-      );
-
-      await Promise.all(
-        users.map((user) =>
-          insertUserToCommunity({
-            communityId: community.id,
-            userId: user.id,
-            role: "member",
-          }),
-        ),
-      );
+      ]);
 
       const ticketsPerUser = 2;
 
@@ -1315,37 +1132,18 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should handle mixed transfer and direct purchase scenarios", async () => {
-      const { community, ticketTemplate } = await createTestSetup({
-        ticketTemplate: {
-          quantity: 10,
-          maxTicketsPerUser: 3,
-          isFree: true,
-        },
-      });
-
-      const [purchaser, recipient1, recipient2] = await Promise.all([
-        insertUser(),
-        insertUser(),
-        insertUser(),
-      ]);
-
-      await Promise.all([
-        insertUserToCommunity({
-          communityId: community.id,
-          userId: purchaser.id,
-          role: "member",
-        }),
-        insertUserToCommunity({
-          communityId: community.id,
-          userId: recipient1.id,
-          role: "member",
-        }),
-        insertUserToCommunity({
-          communityId: community.id,
-          userId: recipient2.id,
-          role: "member",
-        }),
-      ]);
+      const [{ ticketTemplate, user: purchaser }, recipient1, recipient2] =
+        await Promise.all([
+          createTestSetup({
+            ticketTemplate: {
+              quantity: 10,
+              maxTicketsPerUser: 3,
+              isFree: true,
+            },
+          }),
+          insertUser(),
+          insertUser(),
+        ]);
 
       // Purchase tickets with mixed transfer and direct ownership
       const response = await executeClaimTicket(purchaser, {
@@ -1377,12 +1175,12 @@ describe("Claim a user ticket", () => {
         },
       });
 
-      const result = assertSuccessfulPurchase({
+      const purchaseOrder = assertSuccessfulPurchase({
         response,
         expectedTicketsCount: 3,
       });
 
-      const tickets = result.tickets;
+      const tickets = purchaseOrder.tickets;
 
       // Verify transfer attempts
       const transferredTickets = tickets.filter(
@@ -1411,20 +1209,12 @@ describe("Claim a user ticket", () => {
 
     it("Should handle edge case of exactly reaching ticket limits", async () => {
       const totalTickets = 3;
-      const { community, ticketTemplate } = await createTestSetup({
+      const { ticketTemplate, user } = await createTestSetup({
         ticketTemplate: {
           quantity: totalTickets,
           maxTicketsPerUser: totalTickets,
           isFree: true,
         },
-      });
-
-      const user = await insertUser();
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
       });
 
       // Purchase exactly the maximum number of tickets
