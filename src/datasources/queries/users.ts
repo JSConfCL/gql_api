@@ -63,8 +63,6 @@ export const upsertUserProfileInfo = async (
       throw new Error("User operation failed");
     }
 
-    logger.info(result.length > 1 ? "User updated" : "New user created");
-
     return selectUsersSchema.parse(updatedUser);
   } catch (error) {
     logger.error("Error in user operation", { error });
