@@ -6,7 +6,6 @@ import {
   uniqueIndex,
   uuid,
   boolean,
-  timestamp,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
