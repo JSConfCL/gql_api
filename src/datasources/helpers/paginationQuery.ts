@@ -28,9 +28,10 @@ export const paginationDBHelper = async <
     total: sql<number>`count(*)`,
   }).from(subQuery);
 
-  // TODO: Considerar parallelizar estas queries en un Promise.all
-  const totalRecordsResult = await totalRecordsQuery.execute();
-  const results = await query.limit(safePageSize).offset(offset).execute();
+  const [totalRecordsResult, results] = await Promise.all([
+    totalRecordsQuery.execute(),
+    query.limit(safePageSize).offset(offset).execute(),
+  ]);
 
   const totalRecords = Number(totalRecordsResult[0].total);
   const totalPages = Math.ceil(totalRecords / safePageSize);
