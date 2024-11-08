@@ -3,7 +3,7 @@ import { assert, describe, it, vi, expect, beforeEach } from "vitest";
 import { InsertEventSchema } from "~/datasources/db/events";
 import { AddonConstraintType } from "~/datasources/db/ticketAddons";
 import { InsertTicketSchema } from "~/datasources/db/tickets";
-import { InsertUserSchema } from "~/datasources/db/users";
+import { InsertUserSchema, USER } from "~/datasources/db/users";
 import { handlePaymentLinkGeneration } from "~/schema/purchaseOrder/actions";
 import {
   executeGraphqlOperationAsUser,
@@ -82,6 +82,22 @@ const createCommunityEventUserAndTicketTemplate = async ({
   };
 };
 
+const executeClaimTicket = async (
+  user: USER,
+  variables: ClaimUserTicketMutationVariables,
+) => {
+  return executeGraphqlOperationAsUser<
+    ClaimUserTicketMutation,
+    ClaimUserTicketMutationVariables
+  >(
+    {
+      document: ClaimUserTicket,
+      variables,
+    },
+    user,
+  );
+};
+
 // Mock the handlePaymentLinkGeneration function
 vi.mock("~/schema/purchaseOrder/actions", () => ({
   handlePaymentLinkGeneration: vi.fn(),
@@ -98,31 +114,23 @@ describe("Claim a user ticket", () => {
         userId: user.id,
         role: "member",
       });
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 2,
-                  itemsDetails: [],
-                },
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [],
-                },
-              ],
+
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 2,
+              itemsDetails: [],
             },
-          },
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [],
+            },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -142,31 +150,23 @@ describe("Claim a user ticket", () => {
         userId: user.id,
         role: "admin",
       });
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 2,
-                  itemsDetails: [],
-                },
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [],
-                },
-              ],
+
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 2,
+              itemsDetails: [],
             },
-          },
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [],
+            },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -177,7 +177,7 @@ describe("Claim a user ticket", () => {
       }
     });
 
-    it("For a COLLABORATOR  user", async () => {
+    it("For a COLLABORATOR user", async () => {
       const { community, user, ticketTemplate } =
         await createCommunityEventUserAndTicketTemplate();
 
@@ -186,31 +186,23 @@ describe("Claim a user ticket", () => {
         userId: user.id,
         role: "collaborator",
       });
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 2,
-                  itemsDetails: [],
-                },
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [],
-                },
-              ],
+
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 2,
+              itemsDetails: [],
             },
-          },
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [],
+            },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -229,31 +221,22 @@ describe("Claim a user ticket", () => {
           },
         });
 
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 2,
-                  itemsDetails: [],
-                },
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [],
-                },
-              ],
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 2,
+              itemsDetails: [],
             },
-          },
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [],
+            },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -282,31 +265,22 @@ describe("Claim a user ticket", () => {
         userId: user.id,
         role: "member",
       });
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 2,
-                  itemsDetails: [],
-                },
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [],
-                },
-              ],
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 2,
+              itemsDetails: [],
             },
-          },
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [],
+            },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(
         response.data?.claimUserTicket?.__typename,
@@ -336,31 +310,22 @@ describe("Claim a user ticket", () => {
         userId: user.id,
         role: "member",
       });
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 10,
-                  itemsDetails: [],
-                },
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [],
-                },
-              ],
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 10,
+              itemsDetails: [],
             },
-          },
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [],
+            },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -396,26 +361,17 @@ describe("Claim a user ticket", () => {
         role: "member",
       });
 
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 5,
-                  itemsDetails: [],
-                },
-              ],
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 5,
+              itemsDetails: [],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -445,35 +401,26 @@ describe("Claim a user ticket", () => {
       });
 
       // First claim with transfer
-      const response1 = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
+      const response1 = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [
                 {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [
-                    {
-                      transferInfo: {
-                        name: "John Doe",
-                        email: transferRecipient.email,
-                        message: "Enjoy!",
-                      },
-                      addons: [],
-                    },
-                  ],
+                  transferInfo: {
+                    name: "John Doe",
+                    email: transferRecipient.email,
+                    message: "Enjoy!",
+                  },
+                  addons: [],
                 },
               ],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response1.errors, undefined);
 
@@ -483,26 +430,17 @@ describe("Claim a user ticket", () => {
       );
 
       // Second claim for maxTicketsPerUser tickets - should succeed as transferred tickets don't count
-      const response2 = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: maxTicketsPerUser,
-                  itemsDetails: [],
-                },
-              ],
+      const response2 = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: maxTicketsPerUser,
+              itemsDetails: [],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response2.errors, undefined);
 
@@ -536,35 +474,26 @@ describe("Claim a user ticket", () => {
         role: "member",
       });
 
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 2,
+              itemsDetails: [
                 {
-                  ticketId: ticketTemplate.id,
-                  quantity: 2,
-                  itemsDetails: [
-                    {
-                      transferInfo: {
-                        name: "John Doe",
-                        email: transferRecipient.email,
-                        message: "Enjoy the event!",
-                      },
-                      addons: [],
-                    },
-                  ],
+                  transferInfo: {
+                    name: "John Doe",
+                    email: transferRecipient.email,
+                    message: "Enjoy the event!",
+                  },
+                  addons: [],
                 },
               ],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -596,35 +525,26 @@ describe("Claim a user ticket", () => {
         role: "member",
       });
 
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [
                 {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [
-                    {
-                      transferInfo: {
-                        name: "Para mi",
-                        email: user.email,
-                        message: "Self-transfer",
-                      },
-                      addons: [],
-                    },
-                  ],
+                  transferInfo: {
+                    name: "Para mi",
+                    email: user.email,
+                    message: "Self-transfer",
+                  },
+                  addons: [],
                 },
               ],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -653,26 +573,17 @@ describe("Claim a user ticket", () => {
           },
         });
 
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 2,
-                  itemsDetails: [],
-                },
-              ],
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 2,
+              itemsDetails: [],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -706,31 +617,22 @@ describe("Claim a user ticket", () => {
         userId: user.id,
         role: "member",
       });
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 2,
-                  itemsDetails: [],
-                },
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [],
-                },
-              ],
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 2,
+              itemsDetails: [],
             },
-          },
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [],
+            },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -790,29 +692,20 @@ describe("Claim a user ticket", () => {
         ticketsIds: [ticketTemplate.id],
       });
 
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 2,
-                  itemsDetails: [],
-                },
-              ],
-              generatePaymentLink: {
-                currencyId: "some-currency-id",
-              },
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 2,
+              itemsDetails: [],
             },
+          ],
+          generatePaymentLink: {
+            currencyId: "some-currency-id",
           },
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -840,26 +733,17 @@ describe("Claim a user ticket", () => {
         role: "member",
       });
 
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 2,
-                  itemsDetails: [],
-                },
-              ],
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 2,
+              itemsDetails: [],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -911,35 +795,26 @@ describe("Claim a user ticket", () => {
         role: "member",
       });
 
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [
                 {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [
+                  addons: [
                     {
-                      addons: [
-                        {
-                          addonId: addon.id,
-                          quantity: 2,
-                        },
-                      ],
+                      addonId: addon.id,
+                      quantity: 2,
                     },
                   ],
                 },
               ],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -1000,35 +875,26 @@ describe("Claim a user ticket", () => {
         role: "member",
       });
 
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [
                 {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [
+                  addons: [
                     {
-                      addons: [
-                        {
-                          addonId: addon.id,
-                          quantity: 3,
-                        },
-                      ],
+                      addonId: addon.id,
+                      quantity: 3,
                     },
                   ],
                 },
               ],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -1078,35 +944,26 @@ describe("Claim a user ticket", () => {
         role: "member",
       });
 
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [
                 {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [
+                  addons: [
                     {
-                      addons: [
-                        {
-                          addonId: addon.id,
-                          quantity: 1,
-                        },
-                      ],
+                      addonId: addon.id,
+                      quantity: 1,
                     },
                   ],
                 },
               ],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -1191,39 +1048,30 @@ describe("Claim a user ticket", () => {
         role: "member",
       });
 
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [
                 {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [
+                  addons: [
                     {
-                      addons: [
-                        {
-                          addonId: addon1.id,
-                          quantity: 1,
-                        },
-                        {
-                          addonId: addon2.id,
-                          quantity: 1,
-                        },
-                      ],
+                      addonId: addon1.id,
+                      quantity: 1,
+                    },
+                    {
+                      addonId: addon2.id,
+                      quantity: 1,
                     },
                   ],
                 },
               ],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -1277,35 +1125,26 @@ describe("Claim a user ticket", () => {
         role: "member",
       });
 
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [
                 {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [
+                  addons: [
                     {
-                      addons: [
-                        {
-                          addonId: addon.id,
-                          quantity: 6,
-                        },
-                      ],
+                      addonId: addon.id,
+                      quantity: 6,
                     },
                   ],
                 },
               ],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -1359,35 +1198,26 @@ describe("Claim a user ticket", () => {
         role: "member",
       });
 
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [
                 {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [
+                  addons: [
                     {
-                      addons: [
-                        {
-                          addonId: addon.id,
-                          quantity: 100,
-                        },
-                      ],
+                      addonId: addon.id,
+                      quantity: 100,
                     },
                   ],
                 },
               ],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(response.errors, undefined);
 
@@ -1451,26 +1281,17 @@ describe("Claim a user ticket", () => {
       ]);
 
       // First user purchases 4 tickets
-      const response1 = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 4,
-                  itemsDetails: [],
-                },
-              ],
+      const response1 = await executeClaimTicket(user1, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 4,
+              itemsDetails: [],
             },
-          },
+          ],
         },
-        user1,
-      );
+      });
 
       assert.equal(
         response1.data?.claimUserTicket?.__typename,
@@ -1478,26 +1299,17 @@ describe("Claim a user ticket", () => {
       );
 
       // Second user purchases 4 tickets
-      const response2 = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 4,
-                  itemsDetails: [],
-                },
-              ],
+      const response2 = await executeClaimTicket(user2, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 4,
+              itemsDetails: [],
             },
-          },
+          ],
         },
-        user2,
-      );
+      });
 
       assert.equal(
         response2.data?.claimUserTicket?.__typename,
@@ -1505,26 +1317,17 @@ describe("Claim a user ticket", () => {
       );
 
       // Third purchase should fail as only 2 tickets remain
-      const response3 = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 3,
-                  itemsDetails: [],
-                },
-              ],
+      const response3 = await executeClaimTicket(user3, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 3,
+              itemsDetails: [],
             },
-          },
+          ],
         },
-        user3,
-      );
+      });
 
       assert.equal(
         response3.data?.claimUserTicket?.__typename,
@@ -1541,26 +1344,17 @@ describe("Claim a user ticket", () => {
       }
 
       // should succeed as 2 tickets remain
-      const response4 = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 2,
-                  itemsDetails: [],
-                },
-              ],
+      const response4 = await executeClaimTicket(user3, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 2,
+              itemsDetails: [],
             },
-          },
+          ],
         },
-        user3,
-      );
+      });
 
       assert.equal(
         response4.data?.claimUserTicket?.__typename,
@@ -1600,26 +1394,17 @@ describe("Claim a user ticket", () => {
       // Attempt concurrent purchases
       const responses = await Promise.all(
         users.map((user) =>
-          executeGraphqlOperationAsUser<
-            ClaimUserTicketMutation,
-            ClaimUserTicketMutationVariables
-          >(
-            {
-              document: ClaimUserTicket,
-              variables: {
-                input: {
-                  purchaseOrder: [
-                    {
-                      ticketId: ticketTemplate.id,
-                      quantity: ticketsPerUser,
-                      itemsDetails: [],
-                    },
-                  ],
+          executeClaimTicket(user, {
+            input: {
+              purchaseOrder: [
+                {
+                  ticketId: ticketTemplate.id,
+                  quantity: ticketsPerUser,
+                  itemsDetails: [],
                 },
-              },
+              ],
             },
-            user,
-          ),
+          }),
         ),
       );
 
@@ -1670,43 +1455,36 @@ describe("Claim a user ticket", () => {
       ]);
 
       // Purchase tickets with mixed transfer and direct ownership
-      const response = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
+      const response = await executeClaimTicket(purchaser, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 3,
+              itemsDetails: [
                 {
-                  ticketId: ticketTemplate.id,
-                  quantity: 3,
-                  itemsDetails: [
-                    {
-                      transferInfo: {
-                        name: "Recipient 1",
-                        email: recipient1.email,
-                        message: "Transfer 1",
-                      },
-                      addons: [],
-                    },
-                    {
-                      transferInfo: {
-                        name: "Recipient 2",
-                        email: recipient2.email,
-                        message: "Transfer 2",
-                      },
-                      addons: [],
-                    },
-                  ],
+                  transferInfo: {
+                    name: "Recipient 1",
+                    email: recipient1.email,
+                    message: "Transfer 1",
+                  },
+                  addons: [],
+                },
+                {
+                  transferInfo: {
+                    name: "Recipient 2",
+                    email: recipient2.email,
+                    message: "Transfer 2",
+                  },
+                  addons: [],
                 },
               ],
             },
-          },
+          ],
         },
-        purchaser,
-      );
+      });
+
+      assert.equal(response.errors, undefined);
 
       assert.equal(response.data?.claimUserTicket?.__typename, "PurchaseOrder");
 
@@ -1761,26 +1539,17 @@ describe("Claim a user ticket", () => {
       });
 
       // Purchase exactly the maximum number of tickets
-      const response1 = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: totalTickets,
-                  itemsDetails: [],
-                },
-              ],
+      const response1 = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: totalTickets,
+              itemsDetails: [],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(
         response1.data?.claimUserTicket?.__typename,
@@ -1788,26 +1557,17 @@ describe("Claim a user ticket", () => {
       );
 
       // Attempt to purchase one more ticket
-      const response2 = await executeGraphqlOperationAsUser<
-        ClaimUserTicketMutation,
-        ClaimUserTicketMutationVariables
-      >(
-        {
-          document: ClaimUserTicket,
-          variables: {
-            input: {
-              purchaseOrder: [
-                {
-                  ticketId: ticketTemplate.id,
-                  quantity: 1,
-                  itemsDetails: [],
-                },
-              ],
+      const response2 = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplate.id,
+              quantity: 1,
+              itemsDetails: [],
             },
-          },
+          ],
         },
-        user,
-      );
+      });
 
       assert.equal(
         response2.data?.claimUserTicket?.__typename,
