@@ -87,7 +87,7 @@ const priceHelpers = {
             prices.map(
               (p) => sql`(${p.priceId}::uuid, ${p.value_in_cents}::int)`,
             ),
-            ",",
+            sql.raw(","),
           )}
       ) AS tmp (price_id, value_in_cents)
       WHERE ${pricesSchema}.${sql.raw(pricesSchema.id.name)} = tmp.price_id
@@ -263,7 +263,7 @@ const ticketHelpers = {
             tickets.map(
               (t) => sql`(${t.ticketId}::uuid, ${t.orderDisplay}::int)`,
             ),
-            ",",
+            sql.raw(","),
           )}
       ) AS tmp (ticket_id, order_display)
       WHERE ${ticketAddonsSchema}.${sql.raw(
@@ -347,7 +347,7 @@ const constraintHelpers = {
               (c) =>
                 sql`(${c.id}::uuid, ${c.relatedAddonId}::uuid, ${c.constraintType}::text)`,
             ),
-            ",",
+            sql.raw(","),
           )}
       ) AS tmp (id, related_addon_id, constraint_type)
       WHERE 
