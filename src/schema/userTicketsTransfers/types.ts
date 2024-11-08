@@ -1,9 +1,8 @@
 import { builder } from "~/builder";
-import {
-  UserTicketTransferStatus,
-  selectUserTicketsSchema,
-} from "~/datasources/db/schema";
-import { UserTicketRef, UserTicketTransferRef } from "~/schema/shared/refs";
+import { UserTicketTransferStatus } from "~/datasources/db/schema";
+import { UserTicketTransferRef } from "~/schema/shared/refs";
+
+import { UserTicketLoadable } from "../userTickets/types";
 
 export const TicketTransferAttemptStatusEnum = builder.enumType(
   UserTicketTransferStatus,
@@ -34,39 +33,49 @@ builder.objectType(UserTicketTransferRef, {
       type: "DateTime",
       nullable: false,
     }),
-    sender: t.field({
+    sender: t.loadable({
       type: TicketTransferUserInfoRef,
-      resolve: async (root, args, { DB }) => {
-        const user = await DB.query.usersSchema.findFirst({
-          where: (u, { eq }) => eq(u.id, root.senderUserId),
+      load: async (sendersIds: string[], { DB }) => {
+        const users = await DB.query.usersSchema.findMany({
+          where: (u, { inArray }) => inArray(u.id, sendersIds),
         });
 
-        if (!user) {
-          throw new Error("User not found");
-        }
+        return sendersIds.map((id) => {
+          const user = users.find((u) => u.id === id);
 
-        return {
-          email: user.email,
-          name: user.name,
-        };
+          if (!user) {
+            throw new Error("User not found");
+          }
+
+          return {
+            email: user.email,
+            name: user.name,
+          };
+        });
       },
+      resolve: (root) => root.senderUserId,
     }),
-    recipient: t.field({
+    recipient: t.loadable({
       type: TicketTransferUserInfoRef,
-      resolve: async (root, args, { DB }) => {
-        const user = await DB.query.usersSchema.findFirst({
-          where: (u, { eq }) => eq(u.id, root.recipientUserId),
+      load: async (recipientIds: string[], { DB }) => {
+        const users = await DB.query.usersSchema.findMany({
+          where: (u, { inArray }) => inArray(u.id, recipientIds),
         });
 
-        if (!user) {
-          throw new Error("User not found");
-        }
+        return recipientIds.map((id) => {
+          const user = users.find((u) => u.id === id);
 
-        return {
-          email: user.email,
-          name: user.name,
-        };
+          if (!user) {
+            throw new Error("User not found");
+          }
+
+          return {
+            email: user.email,
+            name: user.name,
+          };
+        });
       },
+      resolve: (root) => root.recipientUserId,
     }),
     status: t.expose("status", { type: TicketTransferAttemptStatusEnum }),
     expirationDate: t.expose("expirationDate", {
@@ -78,18 +87,8 @@ builder.objectType(UserTicketTransferRef, {
       nullable: true,
     }),
     userTicket: t.field({
-      type: UserTicketRef,
-      resolve: async (root, args, { DB }) => {
-        const userTicket = await DB.query.userTicketsSchema.findFirst({
-          where: (ut, { eq }) => eq(ut.id, root.userTicketId),
-        });
-
-        if (!userTicket) {
-          throw new Error("User ticket not found");
-        }
-
-        return selectUserTicketsSchema.parse(userTicket);
-      },
+      type: UserTicketLoadable,
+      resolve: (root) => root.userTicketId,
     }),
   }),
 });
