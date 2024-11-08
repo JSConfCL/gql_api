@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 import {
   eventsToCommunitiesSchema,
@@ -35,6 +36,10 @@ export const communityRelations = relations(communitySchema, ({ many }) => ({
 
 export const selectCommunitySchema = createSelectSchema(communitySchema);
 
+export type SelectCommunitySchema = z.infer<typeof selectCommunitySchema>;
+
 export const insertCommunitySchema = createInsertSchema(communitySchema, {
   name: (schema) => schema.name.min(2).max(64),
 });
+
+export type InsertCommunitySchema = z.infer<typeof insertCommunitySchema>;
