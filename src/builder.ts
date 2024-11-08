@@ -1,14 +1,11 @@
 import SchemaBuilder from "@pothos/core";
 import AuthzPlugin from "@pothos/plugin-authz";
 import DataloaderPlugin from "@pothos/plugin-dataloader";
-import TracingPlugin, { wrapResolver } from "@pothos/plugin-tracing";
+import TracingPlugin, { isRootField } from "@pothos/plugin-tracing";
 import { DateResolver, DateTimeResolver } from "graphql-scalars";
 
 import * as rules from "~/authz";
-import { createLogger } from "~/logging";
 import { Context } from "~/types";
-
-const tracingLogger = createLogger("tracing");
 
 export const builder = new SchemaBuilder<{
   Context: Context;
@@ -26,13 +23,22 @@ export const builder = new SchemaBuilder<{
 }>({
   plugins: [TracingPlugin, AuthzPlugin, DataloaderPlugin],
   tracing: {
-    default: () => true,
-    wrap: (resolver, options, config) =>
-      wrapResolver(resolver, (error, duration) => {
-        tracingLogger.debug(
-          `[TRACING] ${config.parentType}.${config.name} in ${duration}ms`,
-        );
-      }),
+    default: (config) => isRootField(config),
+    wrap: (resolver) => {
+      return async (parent, args, context, info) => {
+        const start = Date.now();
+        const result = await resolver(parent, args, context, info);
+        const duration = Date.now() - start;
+
+        context.logger.debug("[TRACING]", {
+          path: info.path,
+          duration,
+          operation: info.operation?.operation,
+        });
+
+        return result;
+      };
+    },
   },
 });
 
