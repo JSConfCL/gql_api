@@ -11,7 +11,12 @@ import {
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { eventsSchema, ticketAddonsSchema, userTicketsSchema } from "./schema";
+import {
+  couponsSchema,
+  eventsSchema,
+  ticketAddonsSchema,
+  userTicketsSchema,
+} from "./schema";
 import { createdAndUpdatedAtFields } from "./shared";
 import { ticketsPricesSchema } from "./ticketPrice";
 
@@ -53,6 +58,7 @@ export const ticketsSchema = pgTable(
       .notNull(),
     stripeProductId: text("stripe_product_id"),
     mercadoPagoProductId: text("mercado_pago_product_id"),
+    couponId: uuid("coupon_id").references(() => couponsSchema.id),
     ...createdAndUpdatedAtFields,
   },
   (table) => ({
