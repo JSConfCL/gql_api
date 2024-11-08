@@ -349,18 +349,11 @@ describe("Claim a user ticket", () => {
   describe("Should handle quantity limits", () => {
     it("Should not allow claiming more tickets than the max per user", async () => {
       const maxTicketsPerUser = 2;
-
-      const { community, user, ticketTemplate } = await createTestSetup({
+      const { user, ticketTemplate } = await createTestSetup({
         ticketTemplate: {
           maxTicketsPerUser,
           quantity: 200,
         },
-      });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
       });
 
       const response = await executeClaimTicket(user, {
@@ -389,16 +382,10 @@ describe("Claim a user ticket", () => {
     it("Should not allow claiming more tickets than available", async () => {
       const maxTickets = 5;
 
-      const { community, user, ticketTemplate } = await createTestSetup({
+      const { user, ticketTemplate } = await createTestSetup({
         ticketTemplate: {
           quantity: maxTickets,
         },
-      });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
       });
 
       const response = await executeClaimTicket(user, {
@@ -463,21 +450,14 @@ describe("Claim a user ticket", () => {
     it("Should not count transferred tickets towards maxTicketsPerUser limit", async () => {
       const maxTicketsPerUser = 2;
 
-      const [{ community, user, ticketTemplate }, transferRecipient] =
-        await Promise.all([
-          createTestSetup({
-            ticketTemplate: {
-              maxTicketsPerUser,
-            },
-          }),
-          insertUser(),
-        ]);
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
+      const [{ user, ticketTemplate }, transferRecipient] = await Promise.all([
+        createTestSetup({
+          ticketTemplate: {
+            maxTicketsPerUser,
+          },
+        }),
+        insertUser(),
+      ]);
 
       // First claim with transfer
       const response1 = await executeClaimTicket(user, {
@@ -525,14 +505,10 @@ describe("Claim a user ticket", () => {
 
   describe("Should handle transferring scenarios", () => {
     it("Should handle transferring to another user", async () => {
-      const [{ community, user, ticketTemplate }, transferRecipient] =
-        await Promise.all([createTestSetup(), insertUser()]);
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
+      const [{ user, ticketTemplate }, transferRecipient] = await Promise.all([
+        createTestSetup(),
+        insertUser(),
+      ]);
 
       const response = await executeClaimTicket(user, {
         input: {
@@ -569,13 +545,7 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should not allow transferring to self", async () => {
-      const { community, user, ticketTemplate } = await createTestSetup();
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
+      const { user, ticketTemplate } = await createTestSetup();
 
       const response = await executeClaimTicket(user, {
         input: {
@@ -634,16 +604,10 @@ describe("Claim a user ticket", () => {
 
   describe("Should NOT allow claiming", () => {
     it("if the event is Inactive", async () => {
-      const { community, user, ticketTemplate, event } = await createTestSetup({
+      const { user, ticketTemplate, event } = await createTestSetup({
         event: {
           status: "inactive",
         },
-      });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
       });
 
       const response = await executeClaimTicket(user, {
@@ -731,13 +695,7 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should not generate a payment link when not requested", async () => {
-      const { community, user, ticketTemplate } = await createTestSetup();
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
+      const { user, ticketTemplate } = await createTestSetup();
 
       const response = await executeClaimTicket(user, {
         input: {
@@ -766,14 +724,8 @@ describe("Claim a user ticket", () => {
   describe("Addon handling", () => {
     it("Should allow claiming tickets with addons", async () => {
       const testSetup = await createTestSetup();
-      const { community, user, ticketTemplate } = testSetup;
+      const { user, ticketTemplate } = testSetup;
       const addon = await setupAddonTest({ testSetup });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
 
       const response = await executeClaimTicket(user, {
         input: {
@@ -814,14 +766,8 @@ describe("Claim a user ticket", () => {
 
     it("Should not allow claiming more addons than maxPerTicket", async () => {
       const testSetup = await createTestSetup();
-      const { community, user, ticketTemplate } = testSetup;
+      const { user, ticketTemplate } = testSetup;
       const addon = await setupAddonTest({ testSetup });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
-      });
 
       const response = await executeClaimTicket(user, {
         input: {
@@ -852,7 +798,7 @@ describe("Claim a user ticket", () => {
 
     it("Should not allow claiming addons that are not associated with the ticket", async () => {
       const testSetup = await createTestSetup();
-      const { community, user, ticketTemplate, event } = testSetup;
+      const { user, ticketTemplate, event } = testSetup;
 
       // Not associating the addon with the ticket
       const addon = await insertAddon({
@@ -862,12 +808,6 @@ describe("Claim a user ticket", () => {
         maxPerTicket: 2,
         isUnlimited: false,
         eventId: event.id,
-      });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
       });
 
       const response = await executeClaimTicket(user, {
@@ -899,7 +839,7 @@ describe("Claim a user ticket", () => {
 
     it("Should handle addon constraints", async () => {
       const testSetup = await createTestSetup();
-      const { community, user, ticketTemplate } = testSetup;
+      const { user, ticketTemplate } = testSetup;
 
       const [addon1, addon2] = await Promise.all([
         setupAddonTest({
@@ -930,12 +870,6 @@ describe("Claim a user ticket", () => {
         addonId: addon1.id,
         relatedAddonId: addon2.id,
         constraintType: AddonConstraintType.MUTUAL_EXCLUSION,
-      });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
       });
 
       const response = await executeClaimTicket(user, {
@@ -971,7 +905,7 @@ describe("Claim a user ticket", () => {
 
     it("Should not allow claiming more addons than total stock", async () => {
       const testSetup = await createTestSetup();
-      const { community, user, ticketTemplate } = testSetup;
+      const { user, ticketTemplate } = testSetup;
 
       const MAX_ADDON_TOTAL_STOCK = 5;
 
@@ -984,12 +918,6 @@ describe("Claim a user ticket", () => {
           maxPerTicket: 10,
           isUnlimited: false,
         },
-      });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
       });
 
       const response = await executeClaimTicket(user, {
@@ -1021,7 +949,7 @@ describe("Claim a user ticket", () => {
 
     it("Should allow claiming unlimited addons", async () => {
       const testSetup = await createTestSetup();
-      const { community, user, ticketTemplate } = testSetup;
+      const { user, ticketTemplate } = testSetup;
       const addon = await setupAddonTest({
         testSetup,
         addonOptions: {
@@ -1031,12 +959,6 @@ describe("Claim a user ticket", () => {
           maxPerTicket: null,
           isUnlimited: true,
         },
-      });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
       });
 
       const response = await executeClaimTicket(user, {
@@ -1080,35 +1002,16 @@ describe("Claim a user ticket", () => {
     it("Should track global ticket count correctly across users", async () => {
       const totalTickets = 10;
       const maxTicketsPerUser = 5;
-      const [{ community, ticketTemplate, user }, user2, user3] =
-        await Promise.all([
-          createTestSetup({
-            ticketTemplate: {
-              quantity: totalTickets,
-              maxTicketsPerUser,
-              isFree: true,
-            },
-          }),
-          insertUser(),
-          insertUser(),
-        ]);
-
-      await Promise.all([
-        insertUserToCommunity({
-          communityId: community.id,
-          userId: user.id,
-          role: "member",
+      const [{ ticketTemplate, user }, user2, user3] = await Promise.all([
+        createTestSetup({
+          ticketTemplate: {
+            quantity: totalTickets,
+            maxTicketsPerUser,
+            isFree: true,
+          },
         }),
-        insertUserToCommunity({
-          communityId: community.id,
-          userId: user2.id,
-          role: "member",
-        }),
-        insertUserToCommunity({
-          communityId: community.id,
-          userId: user3.id,
-          role: "member",
-        }),
+        insertUser(),
+        insertUser(),
       ]);
 
       // First user purchases 4 tickets
@@ -1184,7 +1087,7 @@ describe("Claim a user ticket", () => {
     it("Should handle concurrent ticket purchases correctly", async () => {
       const totalTickets = 5;
       const maxTicketsPerUser = 5;
-      const [{ community, ticketTemplate }, ...users] = await Promise.all([
+      const [{ ticketTemplate }, ...users] = await Promise.all([
         createTestSetup({
           ticketTemplate: {
             quantity: totalTickets,
@@ -1196,16 +1099,6 @@ describe("Claim a user ticket", () => {
           .fill(null)
           .map(() => insertUser()),
       ]);
-
-      await Promise.all(
-        users.map((user) =>
-          insertUserToCommunity({
-            communityId: community.id,
-            userId: user.id,
-            role: "member",
-          }),
-        ),
-      );
 
       const ticketsPerUser = 2;
 
@@ -1239,39 +1132,18 @@ describe("Claim a user ticket", () => {
     });
 
     it("Should handle mixed transfer and direct purchase scenarios", async () => {
-      const [
-        { community, ticketTemplate, user: purchaser },
-        recipient1,
-        recipient2,
-      ] = await Promise.all([
-        createTestSetup({
-          ticketTemplate: {
-            quantity: 10,
-            maxTicketsPerUser: 3,
-            isFree: true,
-          },
-        }),
-        insertUser(),
-        insertUser(),
-      ]);
-
-      await Promise.all([
-        insertUserToCommunity({
-          communityId: community.id,
-          userId: purchaser.id,
-          role: "member",
-        }),
-        insertUserToCommunity({
-          communityId: community.id,
-          userId: recipient1.id,
-          role: "member",
-        }),
-        insertUserToCommunity({
-          communityId: community.id,
-          userId: recipient2.id,
-          role: "member",
-        }),
-      ]);
+      const [{ ticketTemplate, user: purchaser }, recipient1, recipient2] =
+        await Promise.all([
+          createTestSetup({
+            ticketTemplate: {
+              quantity: 10,
+              maxTicketsPerUser: 3,
+              isFree: true,
+            },
+          }),
+          insertUser(),
+          insertUser(),
+        ]);
 
       // Purchase tickets with mixed transfer and direct ownership
       const response = await executeClaimTicket(purchaser, {
@@ -1337,18 +1209,12 @@ describe("Claim a user ticket", () => {
 
     it("Should handle edge case of exactly reaching ticket limits", async () => {
       const totalTickets = 3;
-      const { community, ticketTemplate, user } = await createTestSetup({
+      const { ticketTemplate, user } = await createTestSetup({
         ticketTemplate: {
           quantity: totalTickets,
           maxTicketsPerUser: totalTickets,
           isFree: true,
         },
-      });
-
-      await insertUserToCommunity({
-        communityId: community.id,
-        userId: user.id,
-        role: "member",
       });
 
       // Purchase exactly the maximum number of tickets
