@@ -260,6 +260,13 @@
       "when": 1730059746855,
       "tag": "0036_lumpy_may_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1730994316483,
+      "tag": "0037_condemned_red_hulk",
+      "breakpoints": true
     }
   ]
 }

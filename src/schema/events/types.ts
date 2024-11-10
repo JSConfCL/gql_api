@@ -88,6 +88,7 @@ const EventsTicketTemplateSearchInput = builder.inputType(
       tags: t.stringList({
         required: false,
       }),
+      coupon: t.string({ required: false }),
     }),
   },
 );
@@ -388,6 +389,20 @@ export const EventLoadable = builder.loadableObject(EventRef, {
             }
           }
 
+          const coupon = input?.coupon?.length
+            ? await DB.query.couponsSchema.findFirst({
+                where: (c, { eq, and }) =>
+                  and(
+                    eq(c.eventId, eventId),
+                    eq(c.isActive, true),
+                    eq(c.code, input.coupon ?? ""),
+                  ),
+                columns: {
+                  id: true,
+                },
+              })
+            : null;
+
           const tickets = await ticketsFetcher.searchTickets({
             DB,
             search: {
@@ -395,6 +410,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
               visibility: visibilityCheck,
               eventIds: [eventId],
               tags: input?.tags ? input.tags : undefined,
+              couponId: coupon?.id,
             },
             sort: [["createdAt", "asc"]],
           });

@@ -1,4 +1,13 @@
-import { SQL, and, arrayContains, asc, desc, inArray } from "drizzle-orm";
+import {
+  SQL,
+  and,
+  arrayContains,
+  asc,
+  desc,
+  inArray,
+  eq,
+  isNull,
+} from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
 import {
@@ -13,6 +22,7 @@ import {
 import { SortableSchemaFields } from "~/datasources/helpers/sorting";
 
 export type TicketsSearch = {
+  couponId?: string;
   ticketIds?: string[];
   ticketTags?: string[];
   eventIds?: string[];
@@ -29,7 +39,15 @@ const getSearchTicketQuery = (
   search: TicketsSearch = {},
   sort: TicketFetcherSort,
 ) => {
-  const { ticketIds, eventIds, ticketTags, status, visibility, tags } = search;
+  const {
+    ticketIds,
+    eventIds,
+    ticketTags,
+    status,
+    visibility,
+    tags,
+    couponId,
+  } = search;
 
   const query = DB.select().from(ticketsSchema);
   const wheres: SQL[] = [];
@@ -58,6 +76,12 @@ const getSearchTicketQuery = (
 
   if (eventIds && eventIds.length > 0) {
     wheres.push(inArray(ticketsSchema.eventId, eventIds));
+  }
+
+  if (couponId && couponId.length > 0) {
+    wheres.push(eq(ticketsSchema.couponId, couponId));
+  } else {
+    wheres.push(isNull(ticketsSchema.couponId));
   }
 
   const orderBy: SQL<unknown>[] = [];
