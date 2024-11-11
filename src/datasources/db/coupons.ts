@@ -10,7 +10,7 @@ import {
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { eventsSchema, ticketsSchema } from "./schema";
-import { createdAndUpdatedAtFields } from "./shared";
+import { createdAndUpdatedAtFields, lower } from "./shared";
 
 export const couponsSchema = pgTable(
   "coupons",
@@ -27,7 +27,7 @@ export const couponsSchema = pgTable(
   },
   (t) => ({
     eventIdIndex: index("coupons_event_id_index").on(t.eventId),
-    codeIndex: index("coupons_code_index").on(t.code),
+    codeIndex: index("coupons_code_index").on(lower(t.code)),
     uniqueEventCodeIndex: uniqueIndex("coupons_event_code_unique_index").on(
       t.eventId,
       t.code,
