@@ -19,6 +19,7 @@ import {
   ticketsSchema,
   usersSchema,
 } from "~/datasources/db/schema";
+import { lower } from "~/datasources/db/shared";
 import { getImagesBySanityEventId } from "~/datasources/sanity/images";
 import { eventsFetcher } from "~/schema/events/eventsFetcher";
 import { GalleryRef } from "~/schema/gallery/types";
@@ -389,7 +390,7 @@ export const EventLoadable = builder.loadableObject(EventRef, {
                 and(
                   eq(c.eventId, root.id),
                   eq(c.isActive, true),
-                  eq(c.code, input.coupon ?? ""),
+                  eq(lower(c.code), input.coupon?.toLowerCase() ?? ""),
                 ),
               columns: {
                 id: true,
