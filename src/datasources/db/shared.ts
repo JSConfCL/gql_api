@@ -1,4 +1,5 @@
-import { timestamp } from "drizzle-orm/pg-core";
+import { SQL, sql } from "drizzle-orm";
+import { PgColumn, timestamp } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 export const createdAndUpdatedAtFields = {
@@ -47,3 +48,5 @@ export const TypescriptEnumAsDBEnumOptions = <
 ) => {
   return Object.values(enumObject) as EnumValuesAsTuple<E>;
 };
+
+export const lower = (column: PgColumn): SQL => sql`lower(${column})`;
