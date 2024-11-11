@@ -10,6 +10,7 @@ import {
   usersSchema,
   userTicketTransfersSchema,
   userTicketsSchema,
+  SelectUserTicketSchema,
 } from "~/datasources/db/schema";
 import {
   PurchaseOrderLoadable,
@@ -44,8 +45,24 @@ export const TicketRedemptionStatus = builder.enumType(
 
 export const UserTicketLoadable = builder.loadableObject(UserTicketRef, {
   load: async (ids: string[], ctx) => {
-    return ctx.DB.query.userTicketsSchema.findMany({
+    const results = await ctx.DB.query.userTicketsSchema.findMany({
       where: (userTickets, { inArray }) => inArray(userTickets.id, ids),
+    });
+
+    const idsToResultsMap: Map<string, SelectUserTicketSchema> = new Map();
+
+    results.forEach((result) => {
+      idsToResultsMap.set(result.id, result);
+    });
+
+    return ids.map((id) => {
+      const result = idsToResultsMap.get(id);
+
+      if (!result) {
+        throw new Error("User ticket not found");
+      }
+
+      return result;
     });
   },
   description: "Representation of a User ticket",
