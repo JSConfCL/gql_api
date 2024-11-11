@@ -40,8 +40,24 @@ export const AddonRef = builder.objectRef<SelectAddonSchema>("Addon");
 
 const AddonLoadable = builder.loadableObject(AddonRef, {
   load: async (ids: string[], ctx) => {
-    return ctx.DB.query.addonsSchema.findMany({
+    const results = await ctx.DB.query.addonsSchema.findMany({
       where: (addons, { inArray }) => inArray(addons.id, ids),
+    });
+
+    const idsToResultsMap: Map<string, SelectAddonSchema> = new Map();
+
+    results.forEach((result) => {
+      idsToResultsMap.set(result.id, result);
+    });
+
+    return ids.map((id) => {
+      const result = idsToResultsMap.get(id);
+
+      if (!result) {
+        throw new Error("Addon not found");
+      }
+
+      return result;
     });
   },
   description: "Representation of an Addon",
