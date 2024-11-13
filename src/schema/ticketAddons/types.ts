@@ -1,5 +1,4 @@
 import { builder } from "~/builder";
-import { selectPurchaseOrdersSchema } from "~/datasources/db/purchaseOrders";
 import {
   AddonConstraintType,
   SelectAddonConstraintSchema,
@@ -7,17 +6,17 @@ import {
   selectAddonSchema,
   SelectTicketAddonSchema,
 } from "~/datasources/db/ticketAddons";
-import { selectTicketSchema } from "~/datasources/db/tickets";
-import { selectUserTicketsSchema } from "~/datasources/db/userTickets";
 import {
   SelectUserTicketAddonSchema,
   UserTicketAddonApprovalStatus,
   UserTicketAddonRedemptionStatus,
 } from "~/datasources/db/userTicketsAddons";
-import { TicketRef, UserTicketRef, PriceRef } from "~/schema/shared/refs";
+import { PriceRef } from "~/schema/shared/refs";
 
 import { RESERVED_USER_TICKET_ADDON_APPROVAL_STATUSES } from "./constants";
-import { PurchaseOrderRef } from "../purchaseOrder/types";
+import { PurchaseOrderLoadable } from "../purchaseOrder/types";
+import { TicketLoadable } from "../ticket/types";
+import { UserTicketLoadable } from "../userTickets/types";
 
 export const AddonConstraintTypeEnum = builder.enumType(AddonConstraintType, {
   name: "AddonConstraintType",
@@ -39,7 +38,28 @@ export const UserTicketAddonApprovalStatusEnum = builder.enumType(
 
 export const AddonRef = builder.objectRef<SelectAddonSchema>("Addon");
 
-builder.objectType(AddonRef, {
+const AddonLoadable = builder.loadableObject(AddonRef, {
+  load: async (ids: string[], ctx) => {
+    const results = await ctx.DB.query.addonsSchema.findMany({
+      where: (addons, { inArray }) => inArray(addons.id, ids),
+    });
+
+    const idsToResultsMap: Map<string, SelectAddonSchema> = new Map();
+
+    results.forEach((result) => {
+      idsToResultsMap.set(result.id, result);
+    });
+
+    return ids.map((id) => {
+      const result = idsToResultsMap.get(id);
+
+      if (!result) {
+        throw new Error("Addon not found");
+      }
+
+      return result;
+    });
+  },
   description: "Representation of an Addon",
   fields: (t) => ({
     id: t.exposeID("id"),
@@ -129,32 +149,12 @@ builder.objectType(TicketAddonRef, {
     ticketId: t.exposeID("ticketId"),
     orderDisplay: t.exposeInt("orderDisplay"),
     addon: t.field({
-      type: AddonRef,
-      resolve: async (root, _, { DB }) => {
-        const result = await DB.query.addonsSchema.findFirst({
-          where: (addons, { eq }) => eq(addons.id, root.addonId),
-        });
-
-        if (!result) {
-          throw new Error("Addon not found");
-        }
-
-        return selectAddonSchema.parse(result);
-      },
+      type: AddonLoadable,
+      resolve: (root) => root.addonId,
     }),
     ticket: t.field({
-      type: TicketRef,
-      resolve: async (root, _, { DB }) => {
-        const result = await DB.query.ticketsSchema.findFirst({
-          where: (tickets, { eq }) => eq(tickets.id, root.ticketId),
-        });
-
-        if (!result) {
-          throw new Error("Ticket not found");
-        }
-
-        return selectTicketSchema.parse(result);
-      },
+      type: TicketLoadable,
+      resolve: (root) => root.ticketId,
     }),
   }),
 });
@@ -178,57 +178,16 @@ builder.objectType(UserTicketAddonRef, {
     }),
     purchaseOrderId: t.exposeID("purchaseOrderId"),
     userTicket: t.field({
-      type: UserTicketRef,
-      resolve: async (root, _, { DB }) => {
-        const result = await DB.query.userTicketsSchema.findFirst({
-          where: (userTickets, { eq }) => eq(userTickets.id, root.userTicketId),
-        });
-
-        if (!result) {
-          throw new Error("User ticket not found");
-        }
-
-        return selectUserTicketsSchema.parse(result);
-      },
+      type: UserTicketLoadable,
+      resolve: (root) => root.userTicketId,
     }),
     addon: t.field({
-      type: AddonRef,
-      resolve: async (root, _, { DB }) => {
-        const result = await DB.query.addonsSchema.findFirst({
-          where: (addons, { eq }) => eq(addons.id, root.addonId),
-        });
-
-        if (!result) {
-          throw new Error("Addon not found");
-        }
-
-        return selectAddonSchema.parse(result);
-      },
+      type: AddonLoadable,
+      resolve: (root) => root.addonId,
     }),
     purchaseOrder: t.field({
-      type: PurchaseOrderRef,
-      resolve: async (root, _, { DB }) => {
-        const result = await DB.query.purchaseOrdersSchema.findFirst({
-          where: (purchaseOrders, { eq }) =>
-            eq(purchaseOrders.id, root.purchaseOrderId),
-          with: {
-            userTickets: {
-              columns: {
-                id: true,
-              },
-            },
-          },
-        });
-
-        if (!result) {
-          throw new Error("Purchase order not found");
-        }
-
-        return {
-          ticketsIds: result.userTickets.map((ut) => ut.id),
-          purchaseOrder: selectPurchaseOrdersSchema.parse(result),
-        };
-      },
+      type: PurchaseOrderLoadable,
+      resolve: (root) => root.purchaseOrderId,
     }),
   }),
 });

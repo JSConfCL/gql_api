@@ -1,9 +1,10 @@
-import { SQL, eq, inArray } from "drizzle-orm";
+import { SQL, inArray } from "drizzle-orm";
 
 import { authHelpers } from "~/authz/helpers";
 import { builder } from "~/builder";
 import {
   ScheduleStatus,
+  SelectTicketSchema,
   selectCommunitySchema,
   selectGalleriesSchema,
   selectImagesSchema,
@@ -16,7 +17,6 @@ import {
   selectUsersSchema,
   ticketStatusEnum,
   ticketVisibilityEnum,
-  ticketsSchema,
   usersSchema,
 } from "~/datasources/db/schema";
 import { lower } from "~/datasources/db/shared";
@@ -342,76 +342,91 @@ export const EventLoadable = builder.loadableObject(EventRef, {
         return tags.map((t) => selectTagsSchema.parse(t));
       },
     }),
-    tickets: t.field({
+    tickets: t.loadableList({
       description:
         "List of tickets for sale or redemption for this event. (If you are looking for a user's tickets, use the usersTickets field)",
-      type: [TicketRef],
+      type: TicketRef,
       args: {
         input: t.arg({
           type: EventsTicketTemplateSearchInput,
           required: false,
         }),
       },
-      resolve: async (root, { input }, { DB, USER }) => {
-        const wheres: SQL[] = [];
+      byPath: true,
+      load: async (eventsIds: string[], context, args) => {
+        const { DB, USER } = context;
+        const { input } = args;
 
-        wheres.push(eq(ticketsSchema.eventId, root.id));
+        const idToTicketsMap = new Map<
+          string,
+          SelectTicketSchema[] | undefined
+        >();
 
-        // If the user is an admin, they can see all tickets, otherwise, only
-        // active tickets are shown.
-        let statusCheck: (typeof ticketStatusEnum)[number][] = ["active"];
-        let visibilityCheck: (typeof ticketVisibilityEnum)[number][] = [
-          "public",
-        ];
+        const ticketsPromises = eventsIds.map(async (eventId) => {
+          // If the user is an admin, they can see all tickets, otherwise, only
+          // active tickets are shown.
+          let statusCheck: (typeof ticketStatusEnum)[number][] = ["active"];
+          let visibilityCheck: (typeof ticketVisibilityEnum)[number][] = [
+            "public",
+          ];
 
-        if (USER) {
-          if (USER.isSuperAdmin) {
-            statusCheck = ["active", "inactive"];
-
-            visibilityCheck = ["public", "private", "unlisted"];
-          } else {
-            const isAdmin = await authHelpers.isAdminOfEventCommunity({
-              userId: USER.id,
-              eventId: root.id,
-              DB,
-            });
-
-            if (isAdmin) {
+          if (USER) {
+            if (USER.isSuperAdmin) {
               statusCheck = ["active", "inactive"];
 
               visibilityCheck = ["public", "private", "unlisted"];
+            } else {
+              const isAdmin = await authHelpers.isAdminOfEventCommunity({
+                userId: USER.id,
+                eventId: eventId,
+                DB,
+              });
+
+              if (isAdmin) {
+                statusCheck = ["active", "inactive"];
+
+                visibilityCheck = ["public", "private", "unlisted"];
+              }
             }
           }
-        }
 
-        const coupon = input?.coupon?.length
-          ? await DB.query.couponsSchema.findFirst({
-              where: (c, { eq, and }) =>
-                and(
-                  eq(c.eventId, root.id),
-                  eq(c.isActive, true),
-                  eq(lower(c.code), input.coupon?.toLowerCase() ?? ""),
-                ),
-              columns: {
-                id: true,
-              },
-            })
-          : null;
+          const coupon = input?.coupon?.length
+            ? await DB.query.couponsSchema.findFirst({
+                where: (c, { eq, and }) =>
+                  and(
+                    eq(c.eventId, eventId),
+                    eq(c.isActive, true),
+                    eq(lower(c.code), input.coupon?.toLowerCase() ?? ""),
+                  ),
+                columns: {
+                  id: true,
+                },
+              })
+            : null;
 
-        const tickets = await ticketsFetcher.searchTickets({
-          DB,
-          search: {
-            status: statusCheck,
-            visibility: visibilityCheck,
-            eventIds: [root.id],
-            tags: input?.tags ? input.tags : undefined,
-            couponId: coupon?.id,
-          },
-          sort: [["createdAt", "asc"]],
+          const tickets = await ticketsFetcher.searchTickets({
+            DB,
+            search: {
+              status: statusCheck,
+              visibility: visibilityCheck,
+              eventIds: [eventId],
+              tags: input?.tags ? input.tags : undefined,
+              couponId: coupon?.id,
+            },
+            sort: [["createdAt", "asc"]],
+          });
+
+          idToTicketsMap.set(
+            eventId,
+            tickets.map((t) => selectTicketSchema.parse(t)),
+          );
         });
 
-        return tickets.map((t) => selectTicketSchema.parse(t));
+        await Promise.all(ticketsPromises);
+
+        return eventsIds.map((id) => idToTicketsMap.get(id) || []);
       },
+      resolve: (root) => root.id,
     }),
     schedules: t.field({
       type: [ScheduleRef],

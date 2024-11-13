@@ -184,10 +184,7 @@ async function processTicketClaim({
     logger,
   });
 
-  const createdUserTickets = await saveUserTicketsAndRelatedData(
-    DB,
-    userTicketsToClaim,
-  );
+  await saveUserTicketsAndRelatedData(DB, userTicketsToClaim);
 
   await verifyFinalUserTicketCounts(DB, ticketsAndAddonsInfo, USER, logger);
 
@@ -198,7 +195,7 @@ async function processTicketClaim({
       default_redirect_url: context.PURCHASE_CALLBACK_URL,
     });
 
-    return handlePaymentLinkGeneration({
+    const handleResult = await handlePaymentLinkGeneration({
       DB,
       USER,
       purchaseOrderId: purchaseOrderRecord.id,
@@ -209,12 +206,11 @@ async function processTicketClaim({
       paymentSuccessRedirectURL: redirectURLs.paymentSuccessRedirectURL,
       paymentCancelRedirectURL: redirectURLs.paymentCancelRedirectURL,
     });
+
+    return handleResult.purchaseOrder;
   }
 
-  return {
-    purchaseOrder: selectPurchaseOrdersSchema.parse(purchaseOrderRecord),
-    ticketsIds: createdUserTickets.map((ticket) => ticket.id),
-  };
+  return selectPurchaseOrdersSchema.parse(purchaseOrderRecord);
 }
 
 // Helper functions

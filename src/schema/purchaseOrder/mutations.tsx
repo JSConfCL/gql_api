@@ -59,7 +59,7 @@ builder.mutationField("payForPurchaseOrder", (t) =>
           default_redirect_url: PURCHASE_CALLBACK_URL,
           purchaseOrderId,
         });
-      const { purchaseOrder, ticketsIds } = await handlePaymentLinkGeneration({
+      const { purchaseOrder } = await handlePaymentLinkGeneration({
         DB,
         USER,
         purchaseOrderId,
@@ -72,10 +72,7 @@ builder.mutationField("payForPurchaseOrder", (t) =>
       });
 
       // 4. We return the payment link.
-      return {
-        purchaseOrder,
-        ticketsIds,
-      };
+      return purchaseOrder;
     },
   }),
 );
@@ -141,23 +138,11 @@ builder.mutationField("checkPurchaseOrderStatus", (t) =>
         transactionalEmailService: RPC_SERVICE_EMAIL,
       });
 
-      const tickets = await DB.query.userTicketsSchema.findMany({
-        where: (po, { eq }) => eq(po.purchaseOrderId, purchaseOrderId),
-        columns: {
-          id: true,
-        },
-      });
-
       if (!purchaseOrder) {
         throw new Error("Purchase order not found");
       }
 
-      const ticketsIds = tickets.map((t) => t.id);
-
-      return {
-        purchaseOrder: selectPurchaseOrdersSchema.parse(purchaseOrder),
-        ticketsIds,
-      };
+      return selectPurchaseOrdersSchema.parse(purchaseOrder);
     },
   }),
 );

@@ -199,7 +199,7 @@ builder.mutationField("claimUserTicketAddons", (t) =>
               },
             );
 
-            return handlePaymentLinkGeneration({
+            const { purchaseOrder } = await handlePaymentLinkGeneration({
               DB: trx,
               logger,
               GET_MERCADOPAGO_CLIENT: context.GET_MERCADOPAGO_CLIENT,
@@ -210,6 +210,8 @@ builder.mutationField("claimUserTicketAddons", (t) =>
               purchaseOrderId: createdPurchaseOrder.id,
               USER: USER,
             });
+
+            return purchaseOrder;
           }
 
           const [updatedPurchaseOrder] = await trx
@@ -230,11 +232,7 @@ builder.mutationField("claimUserTicketAddons", (t) =>
             );
           }
 
-          return {
-            purchaseOrder:
-              selectPurchaseOrdersSchema.parse(updatedPurchaseOrder),
-            ticketsIds: uniqueUserTicketIds,
-          };
+          return selectPurchaseOrdersSchema.parse(updatedPurchaseOrder);
         } catch (e: unknown) {
           logger.error("Error claiming user ticket addons", e);
 

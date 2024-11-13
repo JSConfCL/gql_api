@@ -1,9 +1,16 @@
+import { eq, inArray } from "drizzle-orm";
+
 import { builder } from "~/builder";
 import {
   userTicketsApprovalStatusEnum,
   puchaseOrderPaymentStatusEnum,
   userTicketsRedemptionStatusEnum,
   selectUsersSchema,
+  SelectUserTicketTransferSchema,
+  usersSchema,
+  userTicketTransfersSchema,
+  userTicketsSchema,
+  SelectUserTicketSchema,
 } from "~/datasources/db/schema";
 import {
   PurchaseOrderLoadable,
@@ -36,7 +43,28 @@ export const TicketRedemptionStatus = builder.enumType(
   },
 );
 
-builder.objectType(UserTicketRef, {
+export const UserTicketLoadable = builder.loadableObject(UserTicketRef, {
+  load: async (ids: string[], ctx) => {
+    const results = await ctx.DB.query.userTicketsSchema.findMany({
+      where: (userTickets, { inArray }) => inArray(userTickets.id, ids),
+    });
+
+    const idsToResultsMap: Map<string, SelectUserTicketSchema> = new Map();
+
+    results.forEach((result) => {
+      idsToResultsMap.set(result.id, result);
+    });
+
+    return ids.map((id) => {
+      const result = idsToResultsMap.get(id);
+
+      if (!result) {
+        throw new Error("User ticket not found");
+      }
+
+      return result;
+    });
+  },
   description: "Representation of a User ticket",
   fields: (t) => ({
     id: t.exposeID("id"),
@@ -52,7 +80,7 @@ builder.objectType(UserTicketRef, {
           return null;
         }
 
-        return purchaseOrder.purchaseOrder.purchaseOrderPaymentStatus;
+        return purchaseOrder.purchaseOrderPaymentStatus;
       },
     }),
     user: t.field({
@@ -108,38 +136,57 @@ builder.objectType(UserTicketRef, {
       nullable: false,
       resolve: (root) => new Date(root.createdAt),
     }),
-    transferAttempts: t.field({
-      type: [UserTicketTransferRef],
-      resolve: async (root, args, context) => {
-        const canRequest =
-          context.USER?.id === root.userId || context.USER?.isSuperAdmin;
+    transferAttempts: t.loadableList({
+      type: UserTicketTransferRef,
+      load: async (userTicketsIds: string[], ctx) => {
+        const idToUserTicketTransferMap: Record<
+          string,
+          SelectUserTicketTransferSchema[] | undefined
+        > = {};
 
-        if (!canRequest) {
-          return [];
-        }
+        const userTicketTransfers = await ctx.DB.select({
+          transfer: userTicketTransfersSchema,
+          userId: usersSchema.id,
+        })
+          .from(userTicketTransfersSchema)
+          .innerJoin(
+            userTicketsSchema,
+            eq(userTicketTransfersSchema.userTicketId, userTicketsSchema.id),
+          )
+          .innerJoin(usersSchema, eq(userTicketsSchema.userId, usersSchema.id))
+          .where(inArray(userTicketsSchema.id, userTicketsIds));
 
-        if (!root.userId) {
-          return [];
-        }
+        userTicketTransfers.forEach((userTicketTransfer) => {
+          const { transfer, userId } = userTicketTransfer;
 
-        const userTicketTransfers =
-          await context.DB.query.userTicketTransfersSchema.findMany({
-            where: (utg, { eq }) => eq(utg.userTicketId, root.id),
-          });
+          const canRequest = ctx.USER?.id === userId || ctx.USER?.isSuperAdmin;
 
-        return userTicketTransfers;
+          if (!idToUserTicketTransferMap[transfer.userTicketId]) {
+            idToUserTicketTransferMap[transfer.userTicketId] = [];
+          }
+
+          if (!canRequest) {
+            return;
+          }
+
+          idToUserTicketTransferMap[transfer.userTicketId]?.push(transfer);
+        });
+
+        return userTicketsIds.map((id) => idToUserTicketTransferMap[id] ?? []);
       },
+      resolve: (root) => root.id,
     }),
     userTicketAddons: t.loadableList({
       type: UserTicketAddonRef,
-      load: async (ids: string[], { DB }) => {
+      load: async (userTicketsIds: string[], { DB }) => {
         const userTicketAddons = await DB.query.userTicketAddonsSchema.findMany(
           {
-            where: (etc, { inArray }) => inArray(etc.userTicketId, ids),
+            where: (etc, { inArray }) =>
+              inArray(etc.userTicketId, userTicketsIds),
           },
         );
 
-        const resultGroupedByUserTicketId = ids.map((id) => {
+        const resultGroupedByUserTicketId = userTicketsIds.map((id) => {
           return userTicketAddons.filter((addon) => addon.userTicketId === id);
         });
 

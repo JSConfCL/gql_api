@@ -47,10 +47,7 @@ builder.queryField("myPurchaseOrders", (t) =>
 
       return {
         data: data.map((po) => {
-          return {
-            purchaseOrder: selectPurchaseOrdersSchema.parse(po),
-            ticketsIds: [],
-          };
+          return selectPurchaseOrdersSchema.parse(po);
         }),
         pagination,
       };
