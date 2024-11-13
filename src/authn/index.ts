@@ -140,8 +140,6 @@ export const upsertUserFromRequest = async ({
     throw new Error("Could not parse profile info", profileInfo.error);
   }
 
-  logger.info(`Updating profile Info for user ID: ${sub}`);
-
   return upsertUserProfileInfo(DB, profileInfo.data, logger);
 };
 

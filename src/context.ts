@@ -34,7 +34,7 @@ export const createGraphqlContext = async ({
   Env & {
     logger: Logger;
   }): Promise<Context> => {
-  logger.info("graphql-params", params);
+  logger.info("graphql-params", JSON.stringify(params, null, 2));
 
   if (!MAIL_QUEUE) {
     throw new Error("Missing MAIL_QUEUE");

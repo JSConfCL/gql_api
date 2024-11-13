@@ -1,6 +1,7 @@
 import { useMaskedErrors } from "@envelop/core";
 import { useImmediateIntrospection } from "@envelop/immediate-introspection";
 import { authZEnvelopPlugin } from "@graphql-authz/envelop-plugin";
+import { format } from "date-fns";
 import { createYoga, maskError } from "graphql-yoga";
 
 import { Env } from "worker-configuration";
@@ -78,6 +79,10 @@ export default {
       traceId,
     });
 
+    const start = Date.now();
+
+    logger.info(`⛳️ — Start Request ${format(start, "HH:mm:ss.SSS")}`);
+
     logTraceId(req, logger);
 
     logPossibleUserIdFromJWT(req, logger);
@@ -94,7 +99,11 @@ export default {
 
     response.headers.set("x-api-trace-id", traceId);
 
-    logger.info("🏁 — End Request");
+    const end = Date.now();
+
+    logger.info(
+      `🏁 — End Request ${format(end, "HH:mm:ss.SSS")} (${end - start}ms)`,
+    );
 
     return response;
   },
