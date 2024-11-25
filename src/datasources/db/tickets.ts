@@ -74,6 +74,10 @@ export const ticketRelations = relations(ticketsSchema, ({ one, many }) => ({
   userTickets: many(userTicketsSchema),
   ticketsPrices: many(ticketsPricesSchema),
   ticketAddons: many(ticketAddonsSchema),
+  coupon: one(couponsSchema, {
+    fields: [ticketsSchema.couponId],
+    references: [couponsSchema.id],
+  }),
 }));
 
 export const selectTicketSchema = createSelectSchema(ticketsSchema, {
