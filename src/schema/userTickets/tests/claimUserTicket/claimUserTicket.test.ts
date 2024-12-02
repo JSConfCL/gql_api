@@ -1,4 +1,13 @@
-import { assert, describe, it, vi, expect, beforeEach } from "vitest";
+import { eq } from "drizzle-orm";
+import {
+  assert,
+  describe,
+  it,
+  vi,
+  expect,
+  beforeEach,
+  expectTypeOf,
+} from "vitest";
 
 import { SelectAllowedCurrencySchema } from "~/datasources/db/allowedCurrencies";
 import { SelectCommunitySchema } from "~/datasources/db/communities";
@@ -10,6 +19,7 @@ import {
   SelectTicketSchema,
 } from "~/datasources/db/tickets";
 import { InsertUserSchema, USER } from "~/datasources/db/users";
+import { userTicketsSchema } from "~/datasources/db/userTickets";
 import { handlePaymentLinkGeneration } from "~/schema/purchaseOrder/actions";
 import {
   executeGraphqlOperationAsUser,
@@ -26,7 +36,9 @@ import {
   insertAddonConstraint,
   insertTicketAddon,
   SAMPLE_TEST_UUID,
+  insertTicketRequirement,
 } from "~/tests/fixtures";
+import { getTestDB } from "~/tests/fixtures/databaseHelper";
 
 import {
   ClaimUserTicket,
@@ -1252,6 +1264,131 @@ describe("Claim a user ticket", () => {
         response: response2,
         expectedError: `We have gone over the limit of tickets for ticket template with id ${ticketTemplate.id}`,
       });
+    });
+  });
+
+  describe("Create Purchase Order", () => {
+    it("should fail to create a purchase order if user does not meet ticket requirements", async () => {
+      const { community, user, event } = await createTestSetup();
+
+      const ticketTemplateToBeRequired = await insertTicketTemplate({
+        eventId: event.id,
+        quantity: 100,
+        isFree: false,
+      });
+
+      const ticketTemplateToPurchase = await insertTicketTemplate({
+        eventId: event.id,
+        quantity: 100,
+        isFree: false,
+      });
+
+      await insertTicketRequirement({
+        ticketId: ticketTemplateToPurchase.id,
+        requiredTicketId: ticketTemplateToBeRequired.id,
+        requirementType: "ticket_ownership",
+      });
+
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplateToPurchase.id,
+              quantity: 2,
+              itemsDetails: [],
+            },
+          ],
+        },
+      });
+
+      expect(response.data?.claimUserTicket?.__typename).toBe(
+        "RedeemUserTicketError",
+      );
+
+      if (
+        response.data?.claimUserTicket?.__typename === "RedeemUserTicketError"
+      ) {
+        expect(response.data?.claimUserTicket.errorMessage).toBe(
+          "User does not have all required tickets to purchase this ticket",
+        );
+      }
+    });
+
+    it.only("should create a purchase order if user meets ticket requirements", async () => {
+      const { community, user, event } = await createTestSetup();
+      const DB = await getTestDB();
+
+      const ticketTemplateToBeRequired = await insertTicketTemplate({
+        eventId: event.id,
+        quantity: 100,
+        isFree: false,
+      });
+
+      const ticketTemplateToPurchase = await insertTicketTemplate({
+        eventId: event.id,
+        quantity: 100,
+        isFree: false,
+      });
+
+      await insertTicketRequirement({
+        ticketId: ticketTemplateToPurchase.id,
+        requiredTicketId: ticketTemplateToBeRequired.id,
+        requirementType: "ticket_ownership",
+      });
+
+      // Claim the required ticket first
+      const responseRequiredTicket = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplateToBeRequired.id,
+              quantity: 1,
+              itemsDetails: [],
+            },
+          ],
+        },
+      });
+
+      const userTickets = responseRequiredTicket.data?.claimUserTicket;
+
+      if (!userTickets) {
+        throw new Error("Failed to claim required ticket");
+      }
+
+      if (userTickets.__typename === "RedeemUserTicketError") {
+        throw new Error("Failed to claim required ticket");
+      }
+
+      const id = userTickets.tickets.at(0)?.id;
+
+      if (!id) {
+        throw new Error("Failed to retrieved id of required ticket");
+      }
+
+      await DB.update(userTicketsSchema)
+        .set({
+          approvalStatus: "approved",
+        })
+        .where(eq(userTicketsSchema.id, id));
+
+      // Now claim the ticket that has the requirement
+      const response = await executeClaimTicket(user, {
+        input: {
+          purchaseOrder: [
+            {
+              ticketId: ticketTemplateToPurchase.id,
+              quantity: 2,
+              itemsDetails: [],
+            },
+          ],
+        },
+      });
+
+      expect(response.data?.claimUserTicket?.__typename).toBe("PurchaseOrder");
+
+      if (response.data?.claimUserTicket?.__typename === "PurchaseOrder") {
+        expect(response.data?.claimUserTicket.tickets).toHaveLength(2);
+      }
     });
   });
 });

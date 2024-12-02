@@ -332,6 +332,7 @@ export type EventsSearchInput = {
 };
 
 export type EventsTicketTemplateSearchInput = {
+  coupon?: InputMaybe<Scalars["String"]["input"]>;
   tags?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
 
@@ -1205,6 +1206,7 @@ export type Ticket = {
   /** The number of tickets available for this ticket type */
   quantity?: Maybe<Scalars["Int"]["output"]>;
   quantityLeft?: Maybe<Scalars["Int"]["output"]>;
+  requiredTicketIds: Array<Scalars["String"]["output"]>;
   requiresApproval: Scalars["Boolean"]["output"];
   startDateTime: Scalars["DateTime"]["output"];
   status: TicketTemplateStatus;

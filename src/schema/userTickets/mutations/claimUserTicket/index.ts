@@ -25,6 +25,7 @@ import {
   getPurchaseRedirectURLsFromPurchaseOrder,
 } from "~/schema/purchaseOrder/helpers";
 import { isValidUUID } from "~/schema/shared/helpers";
+import { validateUserHasRequiredTickets } from "~/schema/ticket/helpers";
 import { cleanEmail } from "~/schema/user/userHelpers";
 import { getOrCreateTransferRecipients } from "~/schema/userTicketsTransfers/helpers";
 import { Context } from "~/types";
@@ -152,6 +153,20 @@ async function processTicketClaim({
   const { logger, USER, DB } = context;
 
   const normalizedInput = normalizeTicketClaimInput(purchaseOrder, logger);
+
+  console.log("normalizedInput", normalizedInput);
+
+  // Validate ticket requirements for each ticket being claimed
+  await Promise.all(
+    Object.keys(normalizedInput).map(async (ticketId) => {
+      await validateUserHasRequiredTickets({
+        DB,
+        userId: USER.id,
+        ticketId,
+        logger,
+      });
+    }),
+  );
 
   const [ticketsAndAddonsInfo, purchaseOrderRecord, transferRecipients] =
     await Promise.all([

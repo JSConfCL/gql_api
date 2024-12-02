@@ -330,6 +330,7 @@ input EventsSearchInput {
 }
 
 input EventsTicketTemplateSearchInput {
+  coupon: String
   tags: [String!]
 }
 
@@ -974,7 +975,7 @@ type RedeemUserTicketAddonsError {
 }
 
 union RedeemUserTicketAddonsResponse =
-    PurchaseOrder
+  | PurchaseOrder
   | RedeemUserTicketAddonsError
 
 type RedeemUserTicketError {
@@ -1179,6 +1180,7 @@ type Ticket {
   """
   quantity: Int
   quantityLeft: Int
+  requiredTicketIds: [String!]!
   requiresApproval: Boolean!
   startDateTime: DateTime!
   status: TicketTemplateStatus!
