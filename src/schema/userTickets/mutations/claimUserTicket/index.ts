@@ -154,8 +154,6 @@ async function processTicketClaim({
 
   const normalizedInput = normalizeTicketClaimInput(purchaseOrder, logger);
 
-  console.log("normalizedInput", normalizedInput);
-
   // Validate ticket requirements for each ticket being claimed
   await Promise.all(
     Object.keys(normalizedInput).map(async (ticketId) => {
