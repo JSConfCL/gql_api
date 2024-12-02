@@ -127,9 +127,8 @@ const priceHelpers = {
 
     if (existingPrices.length > 0) {
       const pricesToUpdate = existingPrices.map((ep) => {
-        const valueInCents = prices.find(
-          (p) => p.currencyId === ep.currencyId,
-        )?.value_in_cents;
+        const valueInCents = prices.find((p) => p.currencyId === ep.currencyId)
+          ?.value_in_cents;
 
         if (!valueInCents) {
           throw applicationError(

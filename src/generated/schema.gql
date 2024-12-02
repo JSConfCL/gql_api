@@ -975,7 +975,7 @@ type RedeemUserTicketAddonsError {
 }
 
 union RedeemUserTicketAddonsResponse =
-  | PurchaseOrder
+    PurchaseOrder
   | RedeemUserTicketAddonsError
 
 type RedeemUserTicketError {
