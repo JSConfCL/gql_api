@@ -1269,7 +1269,7 @@ describe("Claim a user ticket", () => {
 
   describe("Create Purchase Order", () => {
     it("should fail to create a purchase order if user does not meet ticket requirements", async () => {
-      const { community, user, event } = await createTestSetup();
+      const { user, event } = await createTestSetup();
 
       const ticketTemplateToBeRequired = await insertTicketTemplate({
         eventId: event.id,
@@ -1314,8 +1314,8 @@ describe("Claim a user ticket", () => {
       }
     });
 
-    it.only("should create a purchase order if user meets ticket requirements", async () => {
-      const { community, user, event } = await createTestSetup();
+    it("should create a purchase order if user meets ticket requirements", async () => {
+      const { user, event } = await createTestSetup();
       const DB = await getTestDB();
 
       const ticketTemplateToBeRequired = await insertTicketTemplate({
