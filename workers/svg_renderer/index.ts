@@ -96,9 +96,15 @@ app.get("/qr/svg/url/:encoded_url", (c) => {
   return c.text(svg);
 });
 
-app.get("/qr/png/url/:encoded_url", (c) => {
+app.get("/qr/png/url/:encoded_url", async (c) => {
   const logger = createLogger("qr-render-png");
   const encodedUrl = c.req.param("encoded_url").trim().toLowerCase();
+
+  try {
+    await initWasm(resvgwasm as WebAssembly.Module);
+  } catch (error) {
+    logger.error("Resvg wasm not initialized");
+  }
 
   try {
     const url = decodeURIComponent(encodedUrl);
