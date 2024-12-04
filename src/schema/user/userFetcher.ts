@@ -1,4 +1,4 @@
-import { SQL, and, asc, desc, ilike, inArray, or } from "drizzle-orm";
+import { SQL, and, asc, desc, ilike, inArray, or, sql } from "drizzle-orm";
 
 import { ORM_TYPE } from "~/datasources/db";
 import {
@@ -97,6 +97,15 @@ const getSearchUsersQuery = (
   }
 
   const orderBy: SQL<unknown>[] = [];
+
+  if (text) {
+    orderBy.push(sql`GREATEST(
+      similarity(LOWER(${usersSchema.name}), LOWER(${text})),
+      similarity(LOWER(${usersSchema.lastName}), LOWER(${text})),
+      similarity(LOWER(${usersSchema.username}), LOWER(${text})),
+      similarity(LOWER(${usersSchema.email}), LOWER(${text}))
+    ) DESC`);
+  }
 
   if (sort) {
     const sorts = sort.map(([field, direction]) => {
