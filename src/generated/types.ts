@@ -332,6 +332,7 @@ export type EventsSearchInput = {
 };
 
 export type EventsTicketTemplateSearchInput = {
+  coupon?: InputMaybe<Scalars["String"]["input"]>;
   tags?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
 
@@ -1430,6 +1431,7 @@ export type UserData = {
 export type UserSearchValues = {
   name?: InputMaybe<Scalars["String"]["input"]>;
   tags?: InputMaybe<Array<SearchableUserTags>>;
+  text?: InputMaybe<Scalars["String"]["input"]>;
   userIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
   userName?: InputMaybe<Scalars["String"]["input"]>;
 };

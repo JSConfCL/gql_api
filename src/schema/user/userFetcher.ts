@@ -21,6 +21,7 @@ export type UserTicketSearch = {
   email?: string;
   name?: string;
   tags?: AllowedUserTags[];
+  text?: string;
 };
 
 type SortableFields = "createdAt" | "name";
@@ -31,7 +32,7 @@ const getSearchUsersQuery = (
   search: UserTicketSearch = {},
   sort?: UserFetcherSort,
 ) => {
-  const { userIds, userName, name, email, tags } = search;
+  const { userIds, userName, name, email, tags, text } = search;
 
   const wheres: SQL[] = [];
   const query = DB.select().from(usersSchema);
@@ -76,6 +77,23 @@ const getSearchUsersQuery = (
 
   if (userName) {
     ilike(usersSchema.username, sanitizeForLikeSearch(userName));
+  }
+
+  if (text) {
+    const spacedText = text.split(" ").map((el) => el.trim());
+
+    const orChecks = or(
+      ...spacedText.map((word) =>
+        ilike(usersSchema.name, sanitizeForLikeSearch(word)),
+      ),
+      ilike(usersSchema.lastName, sanitizeForLikeSearch(text)),
+      ilike(usersSchema.username, sanitizeForLikeSearch(text)),
+      ilike(usersSchema.email, sanitizeForLikeSearch(text)),
+    );
+
+    if (orChecks) {
+      wheres.push(orChecks);
+    }
   }
 
   const orderBy: SQL<unknown>[] = [];

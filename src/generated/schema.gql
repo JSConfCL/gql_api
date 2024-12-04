@@ -330,6 +330,7 @@ input EventsSearchInput {
 }
 
 input EventsTicketTemplateSearchInput {
+  coupon: String
   tags: [String!]
 }
 
@@ -1418,6 +1419,7 @@ type UserData {
 input UserSearchValues {
   name: String
   tags: [SearchableUserTags!]
+  text: String
   userIds: [String!]
   userName: String
 }
