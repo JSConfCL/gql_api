@@ -3,7 +3,6 @@ import { Hono } from "hono";
 import { QR } from "qr-svg";
 
 import { createLogger } from "~/logging";
-import { isValidUUID } from "~/schema/shared/helpers";
 
 // @ts-expect-error This import actually exists
 import resvgwasm from "./index_bg.wasm";
@@ -12,28 +11,20 @@ const app = new Hono();
 
 app.get("/qr/raw/:id", (c) => {
   const logger = createLogger("qr-render");
-  const uuid = c.req.param("id").trim().toLowerCase();
+  const text = c.req.param("id").trim().toLowerCase();
 
-  if (!isValidUUID(uuid)) {
-    logger.error("Invalid id");
-    throw new Error("Invalid id");
-  }
-
-  const svg = QR(uuid);
+  logger.info("Rendering QR code for text", { text });
+  const svg = QR(text);
 
   return c.text(svg);
 });
 
 app.get("/qr/svg/:id", (c) => {
+  const text = c.req.param("id").trim().toLowerCase();
   const logger = createLogger("qr-render");
-  const uuid = c.req.param("id").trim().toLowerCase();
 
-  if (!isValidUUID(uuid)) {
-    logger.error("Invalid id");
-    throw new Error("Invalid id");
-  }
-
-  const svg = QR(uuid);
+  logger.info("Rendering QR code for text", { text });
+  const svg = QR(text);
 
   c.res.headers.set("Content-Type", "image/svg+xml");
 
@@ -42,12 +33,7 @@ app.get("/qr/svg/:id", (c) => {
 
 app.get("/qr/png/:id", async (c) => {
   const logger = createLogger("qr-render-png");
-  const uuid = c.req.param("id").trim().toLowerCase();
-
-  if (!isValidUUID(uuid)) {
-    logger.error("Invalid id");
-    throw new Error("Invalid id");
-  }
+  const text = c.req.param("id").trim().toLowerCase();
 
   try {
     await initWasm(resvgwasm as WebAssembly.Module);
@@ -55,7 +41,9 @@ app.get("/qr/png/:id", async (c) => {
     logger.error("Resvg wasm not initialized");
   }
 
-  const svg = QR(uuid);
+  logger.info("Rendering QR code for text", { text });
+
+  const svg = QR(text);
 
   const resvg = new Resvg(svg, {
     background: "white",
