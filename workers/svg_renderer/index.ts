@@ -72,7 +72,7 @@ app.get("/qr/png/:id", async (c) => {
 
 app.get("/qr/raw/url/:encoded_url", (c) => {
   const logger = createLogger("qr-render-raw");
-  const encodedUrl = c.req.param("encoded_url").trim().toLowerCase();
+  const encodedUrl = c.req.param("encoded_url").trim();
 
   const url = decodeURIComponent(encodedUrl);
 
@@ -84,7 +84,7 @@ app.get("/qr/raw/url/:encoded_url", (c) => {
 
 app.get("/qr/svg/url/:encoded_url", (c) => {
   const logger = createLogger("qr-render-svg");
-  const encodedUrl = c.req.param("encoded_url").trim().toLowerCase();
+  const encodedUrl = c.req.param("encoded_url").trim();
 
   const url = decodeURIComponent(encodedUrl);
 
@@ -98,7 +98,7 @@ app.get("/qr/svg/url/:encoded_url", (c) => {
 
 app.get("/qr/png/url/:encoded_url", async (c) => {
   const logger = createLogger("qr-render-png");
-  const encodedUrl = c.req.param("encoded_url").trim().toLowerCase();
+  const encodedUrl = c.req.param("encoded_url").trim();
 
   try {
     await initWasm(resvgwasm as WebAssembly.Module);
