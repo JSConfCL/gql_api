@@ -70,6 +70,8 @@ builder.mutationField("giftTicketsToUsers", (t) =>
       });
       const actualTicketIds = actualTickets.map((ticket) => ticket.id);
 
+      logger.info("actualTicketIds->", actualTicketIds);
+
       const usersWithTickets = await DB.query.userTicketsSchema.findMany({
         where: (u, { and, inArray }) =>
           and(
@@ -78,29 +80,27 @@ builder.mutationField("giftTicketsToUsers", (t) =>
           ),
       });
 
+      console.log("usersWithTickets->", usersWithTickets.toString());
+
+      usersWithTickets.forEach((userWithTicket) => {
+        logger.info("userWithTicket-->", JSON.stringify(userWithTicket));
+      });
+
       let ticketTemplatesUsersMap = new Map<string, Set<string>>();
 
       for (const ticket of actualTickets) {
         ticketTemplatesUsersMap.set(ticket.id, new Set());
       }
 
-      usersWithTickets.forEach((userWithTicket) => {
-        if (userWithTicket.userId) {
-          ticketTemplatesUsersMap
-            .get(userWithTicket.ticketTemplateId)
-            ?.add(userWithTicket.userId);
-        }
-      });
-
-      if (ticketTemplatesUsersMap.size === 0) {
-        throw applicationError(
-          "Ticket not found",
-          ServiceErrors.NOT_FOUND,
-          logger,
-        );
-      }
-
       if (!allowMultipleTicketsPerUsers) {
+        usersWithTickets.forEach((userWithTicket) => {
+          if (userWithTicket.userId) {
+            ticketTemplatesUsersMap
+              .get(userWithTicket.ticketTemplateId)
+              ?.add(userWithTicket.userId);
+          }
+        });
+
         const clearedTicketTemplatesUserMap = new Map<string, Set<string>>();
 
         ticketTemplatesUsersMap.forEach((existingUserSet, ticketTemplateId) => {
@@ -116,25 +116,60 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         });
 
         ticketTemplatesUsersMap = clearedTicketTemplatesUserMap;
+      } else {
+        ticketTemplatesUsersMap.forEach((userSet, ticketTemplateId) => {
+          userIds.forEach((userId) => {
+            userSet.add(userId);
+          });
+        });
       }
+
+      logger.info(
+        "ticketTemplatesUsersMap->",
+        JSON.stringify(ticketTemplatesUsersMap),
+      );
+
+      if (ticketTemplatesUsersMap.size === 0) {
+        throw applicationError(
+          "Ticket not found",
+          ServiceErrors.NOT_FOUND,
+          logger,
+        );
+      }
+
+      logger.info("Ticket templates users map", ticketTemplatesUsersMap);
 
       if (userIds.length === 0) {
         throw applicationError(
-          "All provided users already have tickets",
+          "All provided users already have tickets.",
           ServiceErrors.INVALID_ARGUMENT,
           logger,
         );
       }
 
+      logger.info("About to create purchase order");
       const purchaseOrder = await createInitialPurchaseOrder({
         DB,
         logger,
         userId: USER.id,
       });
 
+      logger.info("Purchase order created");
+
       const ticketsToInsert: (typeof insertUserTicketsSchema._type)[] = [];
 
+      logger.info("About to create tickets");
+
+      const jsonText = JSON.stringify(
+        Array.from(ticketTemplatesUsersMap.entries()),
+      );
+
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+      logger.info("------------" + jsonText);
+
       ticketTemplatesUsersMap.forEach((userSet, ticketTemplateId) => {
+        logger.info("userSet->", JSON.stringify(userSet));
+
         userSet.forEach((userId) => {
           const parsedData = insertUserTicketsSchema.parse({
             userId,
@@ -143,9 +178,13 @@ builder.mutationField("giftTicketsToUsers", (t) =>
             approvalStatus: autoApproveTickets ? "approved" : "gifted",
           });
 
+          logger.info("parsedData", parsedData);
+
           ticketsToInsert.push(parsedData);
         });
       });
+
+      logger.info("Tickets created");
 
       if (!ticketsToInsert.length) {
         throw applicationError(
@@ -155,9 +194,13 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         );
       }
 
+      logger.info("About to insert tickets");
+
       const createdUserTickets = await DB.insert(userTicketsSchema)
         .values(ticketsToInsert)
         .returning();
+
+      logger.info("Tickets inserted");
 
       if (notifyUsers) {
         const userTicketIds = createdUserTickets.map(
@@ -180,6 +223,8 @@ builder.mutationField("giftTicketsToUsers", (t) =>
           });
         }
       }
+
+      logger.info("Emails sent");
 
       return createdUserTickets.map((userTicket) =>
         selectUserTicketsSchema.parse(userTicket),

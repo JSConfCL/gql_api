@@ -87,6 +87,56 @@ describe("Should send tickets to users in bulk", () => {
 
     assert.equal(response.data?.giftTicketsToUsers.length, 1);
   });
+
+  it("should allow multiple tickets per user when allowMultipleTicketsPerUsers is true", async () => {
+    const user1 = await insertUser();
+    const user2 = await insertUser();
+    const event1 = await insertEvent();
+    const ticket1 = await insertTicketTemplate({
+      eventId: event1.id,
+    });
+    const ticket2 = await insertTicketTemplate({
+      eventId: event1.id,
+    });
+
+    // First, gift a ticket to user1 and user2
+    await executeGraphqlOperationAsSuperAdmin<
+      GiftTicketsToUsersMutation,
+      GiftTicketsToUsersMutationVariables
+    >({
+      document: GiftTicketsToUsers,
+      variables: {
+        input: {
+          allowMultipleTicketsPerUsers: false,
+          ticketIds: [ticket1.id],
+          userIds: [user1.id, user2.id],
+          notifyUsers: false,
+          autoApproveTickets: false,
+        },
+      },
+    });
+
+    // Now, attempt to gift another ticket to the same users with allowMultipleTicketsPerUsers set to true
+    const response = await executeGraphqlOperationAsSuperAdmin<
+      GiftTicketsToUsersMutation,
+      GiftTicketsToUsersMutationVariables
+    >({
+      document: GiftTicketsToUsers,
+      variables: {
+        input: {
+          allowMultipleTicketsPerUsers: true,
+          ticketIds: [ticket2.id],
+          userIds: [user1.id, user2.id],
+          notifyUsers: false,
+          autoApproveTickets: false,
+        },
+      },
+    });
+
+    assert.equal(response.errors, undefined);
+
+    assert.equal(response.data?.giftTicketsToUsers.length, 2);
+  });
 });
 
 describe("Should fail send tickets to users in bulk", () => {
