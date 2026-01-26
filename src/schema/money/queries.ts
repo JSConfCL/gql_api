@@ -94,8 +94,12 @@ builder.queryFields((t) => ({
 
       paymentLogs.forEach((p) => {
         const key = `${p.platform}-${p.currencyId}`;
-        const blob = p.originalResponseBlob as PaymentResponseBlob | null | undefined;
-        const isPaid = blob?.payment_status === "paid" || blob?.status === "approved";
+        const blob = p.originalResponseBlob as
+          | PaymentResponseBlob
+          | null
+          | undefined;
+        const isPaid =
+          blob?.payment_status === "paid" || blob?.status === "approved";
 
         if (!consolidatedPayments[key] || !isPaid) {
           consolidatedPayments[key] = {
