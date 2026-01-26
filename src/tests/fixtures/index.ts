@@ -107,6 +107,9 @@ import {
   insertAddonPriceSchema,
   selectAddonPriceSchema,
   addonsPricesSchema,
+  insertTicketRequirementsSchema,
+  selectTicketRequirementsSchema,
+  ticketRequirementsSchema,
 } from "~/datasources/db/schema";
 import { GenderOptionsEnum } from "~/datasources/db/shared";
 import {
@@ -922,3 +925,23 @@ export const toISODate = <T extends Date | null>(
 };
 
 export const SAMPLE_TEST_UUID = "00000000-0000-0000-0000-000000000000";
+
+export const insertTicketRequirement = async (
+  partialInput?: Partial<z.infer<typeof insertTicketRequirementsSchema>>,
+) => {
+  const possibleInput = {
+    ticketId: partialInput?.ticketId ?? faker.string.uuid(),
+    requiredTicketId: partialInput?.requiredTicketId ?? faker.string.uuid(),
+    requirementType: partialInput?.requirementType ?? "ticket_ownership",
+    description: partialInput?.description ?? faker.lorem.sentence(),
+
+    ...CRUDDates(partialInput),
+  } satisfies z.infer<typeof insertTicketRequirementsSchema>;
+
+  return insertOne(
+    insertTicketRequirementsSchema,
+    selectTicketRequirementsSchema,
+    ticketRequirementsSchema,
+    possibleInput,
+  );
+};

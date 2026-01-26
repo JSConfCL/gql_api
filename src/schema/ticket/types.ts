@@ -176,5 +176,19 @@ export const TicketLoadable = builder.loadableObject(TicketRef, {
         return root.id;
       },
     }),
+    requiredTicketIds: t.field({
+      type: ["String"],
+      resolve: async (root, _args, ctx) => {
+        const requirements =
+          await ctx.DB.query.ticketRequirementsSchema.findMany({
+            where: (tr, { eq }) => eq(tr.ticketId, root.id),
+            columns: {
+              requiredTicketId: true,
+            },
+          });
+
+        return requirements.map((r) => r.requiredTicketId);
+      },
+    }),
   }),
 });

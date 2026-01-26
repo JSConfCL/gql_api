@@ -23,12 +23,12 @@ export interface UserTicketTransferInfo {
     name: string | null;
     email: string;
     username: string | null;
-  }
+  };
   senderUser: {
     name: string | null;
     email: string;
     username: string | null;
-  },
+  };
   transferMessage?: string | null;
   expirationDate?: Date;
   userTicket: {
@@ -53,5 +53,5 @@ export interface UserTicketTransferInfo {
         }>;
       };
     };
-  }
+  };
 }

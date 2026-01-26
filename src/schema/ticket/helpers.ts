@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 
-import { TRANSACTION_HANDLER } from "~/datasources/db";
+import { TRANSACTION_HANDLER, ORM_TYPE } from "~/datasources/db";
 import { ticketsSchema, addonsSchema } from "~/datasources/db/schema";
 import {
   createOrUpdateStripeProductAndPrice,
@@ -165,3 +165,55 @@ const productInfoToStripeItem = (
     unit_amount: product.price.amount,
   };
 };
+
+export async function validateUserHasRequiredTickets({
+  DB,
+  userId,
+  ticketId,
+  logger,
+}: {
+  DB: ORM_TYPE;
+  userId: string;
+  ticketId: string;
+  logger: Logger;
+}): Promise<void> {
+  // Get all requirements for this ticket
+  const requirements = await DB.query.ticketRequirementsSchema.findMany({
+    where: (tr, { eq }) => eq(tr.ticketId, ticketId),
+  });
+
+  // If there are no requirements, the user can buy the ticket
+  if (requirements.length === 0) {
+    return;
+  }
+
+  // Get all user tickets that are approved or not requiring approval
+  const userTickets = await DB.query.userTicketsSchema.findMany({
+    where: (ut, { and, eq, inArray }) =>
+      and(
+        eq(ut.userId, userId),
+        inArray(ut.approvalStatus, [
+          "approved",
+          "not_required",
+          "gift_accepted",
+          "transfer_accepted",
+        ]),
+      ),
+  });
+
+  // Create a set of ticket IDs the user owns
+  const userTicketIds = new Set(userTickets.map((ut) => ut.ticketTemplateId));
+
+  // Check if user has all required tickets
+  const missingTickets = requirements.filter(
+    (req) => !userTicketIds.has(req.requiredTicketId),
+  );
+
+  if (missingTickets.length > 0) {
+    throw applicationError(
+      "User does not have all required tickets to purchase this ticket",
+      ServiceErrors.FAILED_PRECONDITION,
+      logger,
+    );
+  }
+}

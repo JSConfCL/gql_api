@@ -333,7 +333,7 @@ const constraintHelpers = {
   }): Promise<void> => {
     const updateSql = sql`
       UPDATE ${addonConstraintsSchema}
-      SET 
+      SET
         ${sql.raw(
           addonConstraintsSchema.relatedAddonId.name,
         )} = tmp.related_addon_id::uuid,
@@ -350,7 +350,7 @@ const constraintHelpers = {
             sql.raw(","),
           )}
       ) AS tmp (id, related_addon_id, constraint_type)
-      WHERE 
+      WHERE
         ${addonConstraintsSchema}.${sql.raw(
           addonConstraintsSchema.id.name,
         )} = tmp.id

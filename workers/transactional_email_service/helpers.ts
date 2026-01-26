@@ -18,7 +18,7 @@ export const defaultInfo = {
     from: {
       name: "CommunityOS",
       email: "contacto@communityos.io",
-    }
+    },
   },
   nuevopuntocinco: {
     from: {
@@ -31,6 +31,6 @@ export const defaultInfo = {
     from: {
       name: "JSConf Chile",
       email: "contacto@jsconf.cl",
-    }
-  }
-}
+    },
+  },
+};

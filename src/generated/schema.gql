@@ -1180,6 +1180,7 @@ type Ticket {
   """
   quantity: Int
   quantityLeft: Int
+  requiredTicketIds: [String!]!
   requiresApproval: Boolean!
   startDateTime: DateTime!
   status: TicketTemplateStatus!
