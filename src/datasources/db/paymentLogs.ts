@@ -30,7 +30,10 @@ export const paymentLogsSchema = pgTable(
       withTimezone: true,
     }),
     currencyId: text("currency_id").notNull(),
-    originalResponseBlob: jsonb("original_response_blob").notNull(),
+    originalResponseBlob: jsonb("original_response_blob").default({
+      payment_status: "pending",
+      status: "pending",
+    }),
     ...createdAndUpdatedAtFields,
   },
   (t) => ({
