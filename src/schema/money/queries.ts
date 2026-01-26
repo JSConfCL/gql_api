@@ -91,7 +91,7 @@ builder.queryFields((t) => ({
         const key = `${p.platform}-${p.currencyId}`;
         const isPaid = p.originalResponseBlob.payment_status === "paid" || p.originalResponseBlob.status === "approved";
 
-        if (!consolidatedPayments[key] && isPaid) {
+        if (!consolidatedPayments[key] || !isPaid) {
           consolidatedPayments[key] = {
             id: key,
             totalTransactionAmount: 0,
