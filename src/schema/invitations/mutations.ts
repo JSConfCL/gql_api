@@ -15,13 +15,14 @@ import { createInitialPurchaseOrder } from "~/schema/purchaseOrder/helpers";
 import { UserTicketRef } from "~/schema/shared/refs";
 import { ticketsFetcher } from "~/schema/ticket/ticketsFetcher";
 
+// Input type definition for the giftTicketsToUsers mutation
 const GiftTicketsToUserInput = builder.inputType("GiftTicketsToUserInput", {
   fields: (t) => ({
-    ticketIds: t.stringList({ required: true }),
-    userIds: t.stringList({ required: true }),
-    allowMultipleTicketsPerUsers: t.boolean({ required: true }),
-    autoApproveTickets: t.boolean({ required: true }),
-    notifyUsers: t.boolean({ required: true }),
+    ticketIds: t.stringList({ required: true }), // List of ticket template IDs to be gifted
+    userIds: t.stringList({ required: true }), // List of user IDs to receive tickets
+    allowMultipleTicketsPerUsers: t.boolean({ required: true }), // Whether users can receive duplicate tickets
+    autoApproveTickets: t.boolean({ required: true }), // Whether tickets should be auto-approved
+    notifyUsers: t.boolean({ required: true }), // Whether to send email notifications
   }),
 });
 
@@ -32,7 +33,7 @@ builder.mutationField("giftTicketsToUsers", (t) =>
     type: [UserTicketRef],
     nullable: false,
     authz: {
-      rules: ["IsSuperAdmin"],
+      rules: ["IsSuperAdmin"], // Only super admins can execute this mutation
     },
     args: {
       input: t.arg({ type: GiftTicketsToUserInput, required: true }),
@@ -42,6 +43,7 @@ builder.mutationField("giftTicketsToUsers", (t) =>
       { input },
       { DB, logger, USER, RPC_SERVICE_EMAIL },
     ) => {
+      // Verify user is authenticated
       if (!USER) {
         throw new GraphQLError("User not found");
       }
@@ -54,6 +56,7 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         userIds,
       } = input;
 
+      // Validate that users are provided
       if (userIds.length === 0) {
         throw applicationError(
           "No users provided",
@@ -62,6 +65,7 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         );
       }
 
+      // Fetch actual tickets from the database using provided IDs
       const actualTickets = await ticketsFetcher.searchTickets({
         DB,
         search: {
@@ -70,6 +74,9 @@ builder.mutationField("giftTicketsToUsers", (t) =>
       });
       const actualTicketIds = actualTickets.map((ticket) => ticket.id);
 
+      logger.info("actualTicketIds->", actualTicketIds);
+
+      // Find existing tickets for these users to prevent duplicates if needed
       const usersWithTickets = await DB.query.userTicketsSchema.findMany({
         where: (u, { and, inArray }) =>
           and(
@@ -78,29 +85,30 @@ builder.mutationField("giftTicketsToUsers", (t) =>
           ),
       });
 
+      // Debug logging
+      usersWithTickets.forEach((userWithTicket) => {
+        logger.info("userWithTicket-->", JSON.stringify(userWithTicket));
+      });
+
+      // Initialize map to track which users should receive which tickets
       let ticketTemplatesUsersMap = new Map<string, Set<string>>();
 
       for (const ticket of actualTickets) {
         ticketTemplatesUsersMap.set(ticket.id, new Set());
       }
 
-      usersWithTickets.forEach((userWithTicket) => {
-        if (userWithTicket.userId) {
-          ticketTemplatesUsersMap
-            .get(userWithTicket.ticketTemplateId)
-            ?.add(userWithTicket.userId);
-        }
-      });
-
-      if (ticketTemplatesUsersMap.size === 0) {
-        throw applicationError(
-          "Ticket not found",
-          ServiceErrors.NOT_FOUND,
-          logger,
-        );
-      }
-
+      // Handle user-ticket assignments based on allowMultipleTicketsPerUsers flag
       if (!allowMultipleTicketsPerUsers) {
+        // If multiple tickets aren't allowed, track existing tickets
+        usersWithTickets.forEach((userWithTicket) => {
+          if (userWithTicket.userId) {
+            ticketTemplatesUsersMap
+              .get(userWithTicket.ticketTemplateId)
+              ?.add(userWithTicket.userId);
+          }
+        });
+
+        // Filter out users who already have tickets
         const clearedTicketTemplatesUserMap = new Map<string, Set<string>>();
 
         ticketTemplatesUsersMap.forEach((existingUserSet, ticketTemplateId) => {
@@ -116,25 +124,66 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         });
 
         ticketTemplatesUsersMap = clearedTicketTemplatesUserMap;
+      } else {
+        // If multiple tickets are allowed, assign all tickets to all users
+        ticketTemplatesUsersMap.forEach((userSet, ticketTemplateId) => {
+          userIds.forEach((userId) => {
+            userSet.add(userId);
+          });
+        });
       }
+
+      // Debug logging
+      logger.info(
+        "ticketTemplatesUsersMap->",
+        JSON.stringify(ticketTemplatesUsersMap),
+      );
+
+      // Validate that we have tickets to process
+      if (ticketTemplatesUsersMap.size === 0) {
+        throw applicationError(
+          "Ticket not found",
+          ServiceErrors.NOT_FOUND,
+          logger,
+        );
+      }
+
+      logger.info("Ticket templates users map", ticketTemplatesUsersMap);
 
       if (userIds.length === 0) {
         throw applicationError(
-          "All provided users already have tickets",
+          "All provided users already have tickets.",
           ServiceErrors.INVALID_ARGUMENT,
           logger,
         );
       }
 
+      // Create purchase order for the tickets
+      logger.info("About to create purchase order");
       const purchaseOrder = await createInitialPurchaseOrder({
         DB,
         logger,
         userId: USER.id,
       });
 
+      logger.info("Purchase order created");
+
+      // Prepare tickets for insertion
       const ticketsToInsert: (typeof insertUserTicketsSchema._type)[] = [];
 
+      logger.info("About to create tickets");
+
+      // Debug logging
+      const jsonText = JSON.stringify(
+        Array.from(ticketTemplatesUsersMap.entries()),
+      );
+
+      logger.info("------------" + jsonText);
+
+      // Create ticket records for each user-ticket combination
       ticketTemplatesUsersMap.forEach((userSet, ticketTemplateId) => {
+        logger.info("userSet->", JSON.stringify(userSet));
+
         userSet.forEach((userId) => {
           const parsedData = insertUserTicketsSchema.parse({
             userId,
@@ -143,10 +192,15 @@ builder.mutationField("giftTicketsToUsers", (t) =>
             approvalStatus: autoApproveTickets ? "approved" : "gifted",
           });
 
+          logger.info("parsedData", parsedData);
+
           ticketsToInsert.push(parsedData);
         });
       });
 
+      logger.info("Tickets created");
+
+      // Validate that we have tickets to insert
       if (!ticketsToInsert.length) {
         throw applicationError(
           "All provided users already have tickets",
@@ -155,16 +209,22 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         );
       }
 
+      // Insert tickets into database
+      logger.info("About to insert tickets");
       const createdUserTickets = await DB.insert(userTicketsSchema)
         .values(ticketsToInsert)
         .returning();
 
+      logger.info("Tickets inserted");
+
+      // Handle email notifications if enabled
       if (notifyUsers) {
         const userTicketIds = createdUserTickets.map(
           (userTicket) => userTicket.id,
         );
 
         if (autoApproveTickets) {
+          // Send QR code emails for approved tickets
           await sendActualUserTicketQREmails({
             DB,
             logger,
@@ -172,6 +232,7 @@ builder.mutationField("giftTicketsToUsers", (t) =>
             RPC_SERVICE_EMAIL,
           });
         } else {
+          // Send invitation emails for gifted tickets
           await sendTicketInvitationEmails({
             DB,
             logger,
@@ -181,6 +242,9 @@ builder.mutationField("giftTicketsToUsers", (t) =>
         }
       }
 
+      logger.info("Emails sent");
+
+      // Return created tickets
       return createdUserTickets.map((userTicket) =>
         selectUserTicketsSchema.parse(userTicket),
       );

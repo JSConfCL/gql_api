@@ -129,6 +129,7 @@ export const createInitialPurchaseOrder = async ({
     .values(
       insertPurchaseOrdersSchema.parse({
         userId,
+        purchaseOrderPaymentStatus: "not_required",
       }),
     )
     .returning()
