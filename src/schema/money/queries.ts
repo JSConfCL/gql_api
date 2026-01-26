@@ -13,6 +13,7 @@ import {
 type PaymentResponseBlob = {
   payment_status?: string;
   status?: string;
+  paid?: boolean;
 };
 
 const SearchPaymentLogsInput = builder.inputType("SearchPaymentLogsInput", {
@@ -99,9 +100,9 @@ builder.queryFields((t) => ({
           | null
           | undefined;
         const isPaid =
-          blob?.payment_status === "paid" || blob?.status === "approved";
+          blob?.paid || blob?.status === "approved";
 
-        if (!consolidatedPayments[key] || !isPaid) {
+        if (!consolidatedPayments[key]) {
           consolidatedPayments[key] = {
             id: key,
             totalTransactionAmount: 0,
@@ -110,9 +111,9 @@ builder.queryFields((t) => ({
           };
         }
 
-        consolidatedPayments[key].totalTransactionAmount += parseFloat(
-          p.transactionAmount,
-        );
+        consolidatedPayments[key].totalTransactionAmount += isPaid ? parseFloat(
+           p.transactionAmount,
+        ) : 0;
       });
 
       return Object.values(consolidatedPayments);
